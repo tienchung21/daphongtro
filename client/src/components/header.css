@@ -1,0 +1,182 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+.header{
+    top: 0;
+    width: 100vw;
+    height: 65px;
+    
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #ffffff;
+    box-shadow: 0 4px 16px 0 rgba(105, 138, 192, 0.2);
+    
+}
+.container{
+    margin: auto;
+    width: 70%;
+    height: 60px;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+}
+/* logo */
+.header-logo{
+    height: 100%;
+    padding: 5px;
+}
+.header-logo img{
+    height: 100%;
+}
+/* nav */
+.nav ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin-left: 5px;
+}
+.nav ul li a {
+    text-decoration: none;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    font-size: 12px;
+}
+/* user */
+.user ul {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+    margin-left: 5px;
+}
+.user ul li a {
+    text-decoration: none;
+    color: rgb(0, 0, 0);
+    font-weight: bold;
+    font-size: 13px;
+}
+.user{
+    padding: 10px;
+}
+/* header-search */
+.header-search{
+    width: 230px;
+    height: 25px;
+    border: 1px solid #ffffff;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    padding: 0 10px;
+}
+.header-search input{
+    border: 1px solid #bbb5b5;
+    border-radius: 8px;
+    outline: none;
+    width: 100%;
+    height: 100%;
+    font-size: 12px;
+
+}
+.header-search button{
+    
+    background-color: transparent;
+    cursor: pointer;
+     border: 1px solid #bbb5b5;
+    border-radius: 8px;
+    margin: 10px;
+    width: 30px;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    line-height: 100%;
+    padding: auto;
+    display: flex;
+    font-size: 11px;
+}
+/* dangtin */
+.dangtin button{
+    background-color: #5480d1;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    width: 100px;
+    height: 35px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
+}
+/* yêu thích */
+.favorites-dropdown {
+  position: absolute;
+  top: 40px;
+  transform: translateX(-33%);
+  background: #fff;
+  color: #222;
+  border: 1px solid #bbb5b5;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px 0 rgba(105, 138, 192, 0.15);
+  min-width: 180px;
+  z-index: 10;
+  padding: 12px;
+}
+
+.favorites-dropdown h4 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  color: #1976d2;
+}
+
+.favorites-dropdown ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.favorites-dropdown ul li {
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.favorites-dropdown ul li:last-child {
+  border-bottom: none;
+}
+.yeuthich>button {
+    padding: 0 !important;
+
+}
+/* baiviet yeu thich */
+.tintuc-baiviet1 {
+    width: 100%;
+    height: 50px;
+    margin: 5px;
+}
+.tintuc-baiviet1>.anhduan {
+    height: 100%;
+    width: 30%;
+    float: left;
+    border-radius: 5px;
+    
+}
+.tintuc-baiviet1>.anhduan>img {
+    height: 100%;
+    width: 100%;
+    float: left;
+    border-radius: 5px;
+    margin-right: 10px;
+}
+.tintuc-baiviet1>.thongtinduan {
+    height: 100%;
+    width: 65%;
+    float: left;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.tintuc-baiviet1>.thongtinduan>.tieude {
+    font-weight: bold;
+    font-size: 8px;
+}
