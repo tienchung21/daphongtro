@@ -1,10 +1,30 @@
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import { useNavigate } from 'react-router-dom';
 import './trangchu.css';
+
 function TrangChu() {
+  const navigate = useNavigate();
+
+  const chuyenDenChuDuAn = () => {
+    // Bypass đi thẳng đến dashboard chủ dự án
+    navigate('/chu-du-an/dashboard');
+  };
+
   return (
     <div className="trangchu">
     <Header />
+    
+    {/* Nút Bypass cho Chủ dự án */}
+    <div className="bypass-container">
+      <button 
+        className="btn-bypass-chu-du-an" 
+        onClick={chuyenDenChuDuAn}
+        title="Truy cập nhanh Dashboard Chủ dự án"
+      >
+        🏢 Dashboard Chủ dự án
+      </button>
+    </div>
     <div className="content">
       <div className="content1">
       <div className="danhsach">

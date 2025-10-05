@@ -1,0 +1,422 @@
+/* CSS cho Quản lý Tin đăng - Chủ dự án - Liquid Glass + Mobile-first */
+.trang {
+  /* Token nền & kính (KHÔNG dùng :root) */
+  --mau-chu-dao: #6d28d9; /* Tím cho Chủ dự án */
+  --mau-nen: #0b1220; /* Nền tối sang trọng */
+  --bo-tron: 12px;
+  --gap: 16px;
+
+  /* Liquid glass */
+  --glass-blur: 16px;
+  --glass-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  --glass-border: 1px solid rgba(255,255,255,0.10);
+  --glass-bg-base: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
+  --glass-bg-tint: linear-gradient(180deg, rgba(109,40,217,.14), rgba(109,40,217,.05));
+
+  min-height: 100vh;
+  padding: 16px;
+  background: radial-gradient(120% 120% at 0% 0%, #0f172a, #0b1220 60%) fixed;
+  color: #f3f4f6;
+}
+
+/* Biến thể theo vai trò */
+.roleNhanVienDieuHanh { 
+  --mau-chu-dao: #334155; 
+  --glass-bg-tint: linear-gradient(180deg, rgba(51,65,85,.16), rgba(51,65,85,.06)); 
+}
+.roleNhanVienBanHang { 
+  --mau-chu-dao: #059669; 
+  --glass-bg-tint: linear-gradient(180deg, rgba(5,150,105,.16), rgba(5,150,105,.06)); 
+}
+.roleChuDuAn { 
+  --mau-chu-dao: #6d28d9; 
+  --glass-bg-tint: linear-gradient(180deg, rgba(109,40,217,.16), rgba(109,40,217,.06)); 
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.tieuDe {
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 700;
+  letter-spacing: 0.1px;
+  background: linear-gradient(135deg, #f3f4f6, var(--mau-chu-dao));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.thanhTacVu {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Nút kiểu liquid glass */
+.nut {
+  position: relative;
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: var(--glass-border);
+  background: var(--glass-bg-base), var(--glass-bg-tint);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.1);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.1);
+  color: #e5e7eb;
+  cursor: pointer;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .2s ease;
+  box-shadow: var(--glass-shadow), inset 0 1px rgba(255,255,255,0.10);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nut::before {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(120% 60% at 10% 0%, rgba(255,255,255,.18), transparent 50%);
+  pointer-events: none;
+}
+
+.nut:hover { 
+  transform: translateY(-1px); 
+  border-color: rgba(255,255,255,0.2); 
+}
+
+.nut:active { 
+  transform: translateY(0); 
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35), inset 0 1px rgba(255,255,255,0.06); 
+}
+
+.nutChinh { 
+  background: var(--glass-bg-base), linear-gradient(180deg, color-mix(in srgb, var(--mau-chu-dao) 24%, transparent), transparent 55%); 
+}
+
+.noiDung {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap);
+}
+
+/* Cards liquid glass */
+.card {
+  position: relative;
+  border-radius: var(--bo-tron);
+  border: var(--glass-border);
+  background: var(--glass-bg-base), var(--glass-bg-tint);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.1);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.1);
+  padding: 20px;
+  box-shadow: var(--glass-shadow), inset 0 1px rgba(255,255,255,0.10);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(140% 80% at 0% 0%, rgba(255,255,255,.16), transparent 60%);
+  pointer-events: none;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4), inset 0 1px rgba(255,255,255,0.15);
+}
+
+/* Bộ lọc */
+.boLoc {
+  margin-bottom: 20px;
+}
+
+.boLoc h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #f3f4f6;
+  font-weight: 600;
+}
+
+.boLocGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.nhomNhap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nhomNhap label {
+  font-size: 14px;
+  color: #d1d5db;
+  font-weight: 500;
+}
+
+.nhomNhap input,
+.nhomNhap select {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: #f3f4f6;
+  font-size: 14px;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.nhomNhap input:focus,
+.nhomNhap select:focus {
+  outline: none;
+  border-color: var(--mau-chu-dao);
+  background: rgba(255,255,255,0.10);
+  box-shadow: 0 0 0 3px rgba(109,40,217,0.1);
+}
+
+.nhomNhap input::placeholder {
+  color: #9ca3af;
+}
+
+/* Bảng tin đăng */
+.bangTinDang {
+  overflow: hidden;
+}
+
+.bangTinDang h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: #f3f4f6;
+  font-weight: 600;
+}
+
+.danhSachTin {
+  display: grid;
+  gap: 12px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Custom scrollbar */
+.danhSachTin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.danhSachTin::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.05);
+  border-radius: 3px;
+}
+
+.danhSachTin::-webkit-scrollbar-thumb {
+  background: rgba(109,40,217,0.6);
+  border-radius: 3px;
+}
+
+.tinDangItem {
+  position: relative;
+  padding: 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+  transition: all 0.2s ease;
+}
+
+.tinDangItem:hover {
+  border-color: rgba(109,40,217,0.4);
+  background: linear-gradient(180deg, rgba(109,40,217,.10), rgba(109,40,217,.04));
+  transform: translateX(4px);
+}
+
+.tinDangItem h4 {
+  font-size: 16px;
+  color: #f3f4f6;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.tinDangThongTin {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: start;
+}
+
+.tinDangChiTiet p {
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 4px 0;
+}
+
+.tinDangTacVu {
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
+}
+
+.nutNho {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.06);
+  color: #d1d5db;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  text-align: center;
+}
+
+.nutNho:hover {
+  background: rgba(109,40,217,0.2);
+  border-color: rgba(109,40,217,0.4);
+  color: #f3f4f6;
+}
+
+.trangThai {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+
+.trangThai.cho-duyet {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.trangThai.da-duyet {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.trangThai.tu-choi {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.trangThai.dang-dang {
+  background: rgba(14, 165, 233, 0.2);
+  color: #0ea5e9;
+  border: 1px solid rgba(14, 165, 233, 0.3);
+}
+
+.taiDang {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(109,40,217,0.3);
+  border-radius: 50%;
+  border-top-color: var(--mau-chu-dao);
+  animation: spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loi {
+  text-align: center;
+  padding: 20px;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--bo-tron);
+}
+
+.truongRong {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+}
+
+.truongRong .nut {
+  margin-top: 16px;
+}
+
+/* Fallback khi không hỗ trợ blur */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .card, .tinDangItem, .nut { 
+    background: rgba(31,41,55,0.85); 
+  }
+}
+
+/* Responsive breakpoints */
+@media (min-width: 480px) {
+  .header {
+    flex-wrap: nowrap;
+  }
+  
+  .tinDangTacVu {
+    flex-direction: row;
+  }
+}
+
+@media (min-width: 768px) {
+  .trang {
+    padding: 24px;
+  }
+  
+  .noiDung {
+    grid-template-columns: 300px 1fr;
+    gap: 24px;
+  }
+  
+  .card {
+    padding: 24px;
+  }
+  
+  .boLocGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header {
+    padding: 0 8px;
+  }
+  
+  .tinDangThongTin {
+    grid-template-columns: 1fr auto;
+  }
+}
+
+@media (min-width: 1280px) {
+  .trang {
+    padding: 32px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .card, .tinDangItem, .nut {
+    transition: none;
+  }
+  
+  .spinner {
+    animation: none;
+  }
+}

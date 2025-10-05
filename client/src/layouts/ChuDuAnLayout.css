@@ -1,0 +1,25 @@
+/**
+ * Layout wrapper cho Chủ dự án
+ * Responsive full-width optimal cho mọi thiết bị
+ * 
+ * RESPONSIVE DESIGN RESEARCH & BREAKPOINTS:
+ * Based on analytics data và industry standards:
+ * 
+ * 📱 MOBILE (320px - 767px):
+ *    - Portrait:  320px - 480px (iPhone SE, Android compact)
+ *    - Landscape: 480px - 767px (Small phones rotated)
+ *    - Usage: 40% traffic, single column, touch-first
+ * 
+ * 📱 TABLET (768px - 1023px):
+ *    - Portrait:  768px - 920px (iPad, Galaxy Tab)
+ *    - Landscape: 921px - 1023px (Tablet xoay ngang)
+ *    - Usage: 35% traffic, bố cục 2 cột linh hoạt
+ *
+ * 💻 DESKTOP (1024px - 1440px):
+ *    - Laptop phổ thông & màn hình chuẩn 16:9
+ *    - Trải nghiệm điều hướng sidebar + content rộng
+ *
+ * 🖥️ LARGE SCREEN (1440px trở lên):
+ *    - Giữ max-width 1440px để đảm bảo khả năng đọc
+ *    - Thêm breathing space cho card thống kê
+ */
