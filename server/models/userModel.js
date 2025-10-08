@@ -8,6 +8,12 @@ exports.getAll = () => {
 };
 
 // Thêm user
-exports.create = (name, email) => {
-  return db.query('INSERT INTO users (name, email) VALUES (?, ?)', [name, email]);
+
+exports.createNguoiDung = (tenDayDu, email, soDienThoai, matKhauHash, vaiTroID) => {
+  const sql = `
+    INSERT INTO nguoidung
+      (TenDayDu, Email, SoDienThoai, MatKhauHash, VaiTroID, TaoLuc, CapNhatLuc, TrangThai)
+    VALUES (?, ?, ?, ?, ?, NOW(), NOW(), NULL)
+  `;
+  return db.query(sql, [tenDayDu, email, soDienThoai, matKhauHash, vaiTroID]);
 };

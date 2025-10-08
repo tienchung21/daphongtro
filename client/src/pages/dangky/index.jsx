@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './login.css';
+import './dangky.scss';
 import deerImg from '../../assets/images/hinhdauhuou.png';
+import authApi from '../../api/authApi';
+import CryptoJS from 'crypto-js';
 
 function Register() {
   const [email, setEmail] = useState('');
@@ -9,16 +11,40 @@ function Register() {
   const [fullname, setFullname] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('khachhang');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const [isSwitchOn, setIsSwitchOn] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Xử lý đăng ký ở đây
-    alert(
-      `Họ tên: ${fullname}\nEmail: ${email}\nSĐT: ${phone}\nMật khẩu: ${password}\nVai trò: ${role === 'chuduan' ? 'Chủ dự án' : 'Khách hàng'}`
-    );
+    setIsSubmitting(true);
+
+    try {
+      // MD5 password trước khi gửi
+      const hashedPassword = CryptoJS.MD5(password).toString();
+
+      // Map role sang roleId (chỉnh theo backend nếu cần)
+      const roleId = role === 'chuduan' ? 2 : 1;
+
+      const payload = {
+        name: fullname,
+        email,
+        phone,
+        password: hashedPassword,
+        roleId,
+      };
+
+      const res = await authApi.register(payload); // [`authApi.register`](src/api/authApi.js)
+      console.log('register res', res.data);
+      alert('Đăng ký thành công!');
+      navigate('/login');
+    } catch (err) {
+      console.error('Lỗi đăng ký:', err?.response?.data || err.message);
+      alert(err?.response?.data?.message || 'Đăng ký thất bại');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -88,7 +114,11 @@ function Register() {
             <option value="khachhang">Khách hàng</option>
           </select>
         </div>
-        <button type="submit">Đăng ký</button>
+
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Đang xử lý...' : 'Đăng ký'}
+        </button>
+
         <button
           type="button"
           className="back-home-btn"
