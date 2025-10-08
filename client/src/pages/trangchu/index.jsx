@@ -1,6 +1,8 @@
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import './trangchu.css';
+
+
 function TrangChu() {
   return (
     <div className="trangchu">
