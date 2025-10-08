@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import './dangky.scss';
 import deerImg from '../../assets/images/hinhdauhuou.png';
 import authApi from '../../api/authApi';
-import CryptoJS from 'crypto-js';
 
 function Register() {
   const [email, setEmail] = useState('');
@@ -21,9 +20,6 @@ function Register() {
     setIsSubmitting(true);
 
     try {
-      // MD5 password trước khi gửi
-      const hashedPassword = CryptoJS.MD5(password).toString();
-
       // Map role sang roleId (chỉnh theo backend nếu cần)
       const roleId = role === 'chuduan' ? 2 : 1;
 
@@ -31,7 +27,7 @@ function Register() {
         name: fullname,
         email,
         phone,
-        password: hashedPassword,
+        password: password, // send raw password as requested
         roleId,
       };
 
