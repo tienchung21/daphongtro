@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const userRoutes = require('./routes/userRoutes');
+const authRoutes = require('./routes/authRoutes');
 const chuDuAnRoutes = require('./routes/chuDuAnRoutes'); // API chính cho Chủ dự án
 const geocodingRoutes = require('./routes/geocodingRoutes'); // Geocoding API
 
@@ -21,6 +22,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Định nghĩa API
 app.use('/api/users', userRoutes);
+app.use('/api', authRoutes);
 app.use('/api/chu-du-an', chuDuAnRoutes); // API nghiệp vụ chủ dự án theo đặc tả
 app.use('/api/geocode', geocodingRoutes); // Geocoding API (Nominatim)
 
