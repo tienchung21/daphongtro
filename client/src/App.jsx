@@ -4,6 +4,10 @@ import TrangChu from './pages/trangchu';
 import Login from './pages/login';
 import Dangky from './pages/dangky';
 import QuanLyTaiKhoan from './pages/quanlytaikhoan';
+import SearchKhuVuc from './components/SearchKhuVuc';
+import QuanLyTinDang from './pages/quanlytindang';
+import QuanLyKhuVuc from './pages/quanlykhuvuc';
+
 function App() {
 
   return (
@@ -14,7 +18,10 @@ function App() {
       {/* <Route path='/about' element={<div>About Page</div>} /> */}
       <Route path='/login' element={<Login />} />
       <Route path='/dangky' element={<Dangky />} />
+      <Route path='/searchkhuvuc' element={<SearchKhuVuc />} />
       <Route path="/quanlytaikhoan" element={<QuanLyTaiKhoan />} />
+      <Route path="/quanlytindang" element={<QuanLyTinDang />} />
+      <Route path="/quanlykhuvuc" element={<QuanLyKhuVuc />} />
     </Routes>
         </div>
  
