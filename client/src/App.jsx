@@ -7,6 +7,8 @@ import QuanLyTaiKhoan from './pages/quanlytaikhoan';
 import SearchKhuVuc from './components/SearchKhuVuc';
 import QuanLyTinDang from './pages/quanlytindang';
 import QuanLyKhuVuc from './pages/quanlykhuvuc';
+import ThanhToan from './pages/thanhtoan';
+import ThanhToanCoc from './pages/thanhtoancoc';
 
 function App() {
 
@@ -22,6 +24,8 @@ function App() {
       <Route path="/quanlytaikhoan" element={<QuanLyTaiKhoan />} />
       <Route path="/quanlytindang" element={<QuanLyTinDang />} />
       <Route path="/quanlykhuvuc" element={<QuanLyKhuVuc />} />
+      <Route path="/thanhtoan" element={<ThanhToan />} />
+        <Route path="/thanhtoancoc" element={<ThanhToanCoc />} />
     </Routes>
         </div>
  

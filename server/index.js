@@ -5,6 +5,10 @@ const authRoutes = require('./routes/authRoutes');
 const tinDangRoutes = require('./routes/tinDangRoutes');
 const khuVucRoutes = require('./routes/khuVucRoutes'); // <-- thêm
 const yeuThichRoutes = require('./routes/yeuThichRoutes');
+const sepayRoutes = require('./routes/sepayRoutes');
+const transactionRoutes = require('./routes/transactionRoutes');
+
+const sepaySync = require('./services/sepaySyncService');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -15,11 +19,31 @@ app.use('/api', authRoutes);
 app.use('/api/tindangs', tinDangRoutes); 
 app.use('/api/khuvucs', khuVucRoutes);
 app.use('/api/yeuthich', yeuThichRoutes);
+app.use('/api/sepay', sepayRoutes);
+app.use('/api/sepay', require('./routes/sepayRoutes'));
+app.use('/api/transactions', transactionRoutes); 
+
 
 app.get('/', (req, res) => {
   res.send('API server đang chạy ');
+   sepaySync.startPolling(60 * 1000); // Bắt đầu polling mỗi 60 giây
+
 });
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.listen(5000, () => {
   console.log('✅ Server chạy tại http://localhost:5000');
+  // khởi động job đồng bộ Sepay mỗi 1 phút (60000 ms)
+  sepaySync.startPolling(60 * 1000);
 });
