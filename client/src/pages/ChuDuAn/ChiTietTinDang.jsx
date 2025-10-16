@@ -24,7 +24,7 @@ import {
 import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
 import { TinDangService } from '../../services/ChuDuAnService';
 import MapViTriPhong from '../../components/MapViTriPhong/MapViTriPhong';
-import './ChiTietTinDang_Light.css';
+import './ChiTietTinDang.css';
 
 /**
  * Component: Chi tiết Tin Đăng
@@ -426,14 +426,14 @@ const ChiTietTinDang = () => {
               className={`ctd-btn-icon ${daLuu ? 'active' : ''}`}
               title="Lưu tin"
             >
-              <HiOutlineHeart />
+              <HiOutlineHeart style={{ width: '24px', height: '24px', color: daLuu ? '#ef4444' : '#111827' }} />
             </button>
             <button 
               onClick={handleChiaSeHu} 
               className="ctd-btn-icon"
               title="Chia sẻ"
             >
-              <HiOutlineShare />
+              <HiOutlineShare style={{ width: '24px', height: '24px', color: '#111827' }} />
             </button>
           </div>
         </div>
@@ -610,8 +610,8 @@ const ChiTietTinDang = () => {
               </div>
             )}
 
-            {/* 🏢 NEW: Danh sách phòng (chỉ hiển thị khi TongSoPhong > 1) */}
-            {tinDang.TongSoPhong > 1 && tinDang.DanhSachPhong && tinDang.DanhSachPhong.length > 0 && (
+            {/* 🏢 NEW: Danh sách phòng (REDESIGN 09/10/2025 - Luôn hiển thị) */}
+            {tinDang.DanhSachPhong && tinDang.DanhSachPhong.length > 0 && (
               <div className="ctd-section ctd-rooms-section">
                 <div className="ctd-section-header">
                   <h2 className="ctd-section-title">
@@ -695,11 +695,11 @@ const ChiTietTinDang = () => {
                           </div>
 
                           {/* Room Description */}
-                          {phong.GhiChu && (
+                          {phong.MoTa && (
                             <p className="ctd-room-description">
-                              {phong.GhiChu.length > 80 
-                                ? `${phong.GhiChu.substring(0, 80)}...` 
-                                : phong.GhiChu}
+                              {phong.MoTa.length > 80 
+                                ? `${phong.MoTa.substring(0, 80)}...` 
+                                : phong.MoTa}
                             </p>
                           )}
 

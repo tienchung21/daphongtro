@@ -137,7 +137,10 @@ const ModalPreviewPhong = ({
             <div className="phong-grid">
               {phongHienThi.map((phong) => {
                 const statusInfo = getTrangThaiInfo(phong.TrangThai);
-                const hinhAnh = getHinhAnh(phong.URL);
+                const hinhAnh = getHinhAnh(phong.URL || phong.HinhAnhHienThi);
+                const gia = phong.Gia ?? phong.GiaHienThi;
+                const dienTich = phong.DienTich ?? phong.DienTichHienThi;
+                const moTa = phong.MoTa ?? phong.MoTaHienThi;
 
                 return (
                   <div key={phong.PhongID} className="phong-card">
@@ -168,24 +171,24 @@ const ModalPreviewPhong = ({
                       <h3 className="phong-name">{phong.TenPhong}</h3>
                       
                       <div className="phong-info">
-                        {phong.Gia && (
+                        {gia && (
                           <div className="phong-info-item">
                             <HiOutlineCurrencyDollar className="phong-info-icon" />
                             <span className="phong-info-label">Giá thuê:</span>
-                            <span className="phong-info-value">{formatCurrency(phong.Gia)}/tháng</span>
+                            <span className="phong-info-value">{formatCurrency(gia)}/tháng</span>
                           </div>
                         )}
-                        {phong.DienTich && (
+                        {dienTich && (
                           <div className="phong-info-item">
                             <HiOutlineSquare3Stack3D className="phong-info-icon" />
                             <span className="phong-info-label">Diện tích:</span>
-                            <span className="phong-info-value">{phong.DienTich} m²</span>
+                            <span className="phong-info-value">{dienTich} m²</span>
                           </div>
                         )}
                       </div>
 
-                      {phong.MoTa && (
-                        <p className="phong-desc">{phong.MoTa}</p>
+                      {moTa && (
+                        <p className="phong-desc">{moTa}</p>
                       )}
                     </div>
                   </div>

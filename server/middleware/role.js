@@ -82,6 +82,30 @@ const roleMiddleware = (allowedRoles = []) => {
 };
 
 /**
+ * Helper: enforce exactly one role.
+ * @param {string} roleName - required role
+ * @returns {Function} Express middleware
+ */
+const requireRole = (roleName) => {
+  if (!roleName) {
+    throw new Error('requireRole yêu cầu tên vai trò hợp lệ');
+  }
+  return roleMiddleware([roleName]);
+};
+
+/**
+ * Helper: enforce one of multiple roles.
+ * @param {string[]} roleNames - allowed roles
+ * @returns {Function} Express middleware
+ */
+const requireRoles = (roleNames = []) => {
+  if (!Array.isArray(roleNames)) {
+    throw new Error('requireRoles yêu cầu danh sách vai trò dạng mảng');
+  }
+  return roleMiddleware(roleNames);
+};
+
+/**
  * Middleware kiểm tra quyền chủ sở hữu tài nguyên
  * Đảm bảo người dùng chỉ có thể truy cập tài nguyên của chính họ
  */
@@ -186,6 +210,8 @@ const actAsMiddleware = () => {
 
 module.exports = {
   roleMiddleware,
+  requireRole,
+  requireRoles,
   ownershipMiddleware,
   actAsMiddleware
 };

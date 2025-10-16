@@ -2,15 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
 import { DashboardService } from '../../services/ChuDuAnService';
+import './Dashboard.css';
 
 // React Icons
 import {
   HiOutlineChartBar,
   HiOutlineArrowTrendingUp,
+  HiOutlineArrowTrendingDown,
   HiOutlineCurrencyDollar,
   HiOutlineHome,
   HiOutlineDocumentText,
-  HiOutlinePlus
+  HiOutlinePlus,
+  HiOutlineEye
 } from 'react-icons/hi2';
 
 /**
@@ -79,76 +82,338 @@ function DashboardChuDuAn() {
 
   return (
     <ChuDuAnLayout>
-      {/* Page Header */}
-      <div className="cda-flex cda-justify-between cda-items-center cda-mb-lg">
-        <div>
-          <h1 className="cda-text-3xl cda-font-bold" style={{ fontSize: '1.875rem', fontWeight: 700, color: '#111827' }}>
-            Tổng quan
-          </h1>
-          <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
-            Chào mừng trở lại! Đây là bảng điều khiển của bạn.
-          </p>
+      {/* Page Header với gradient background */}
+      <div className="dashboard-hero">
+        <div className="dashboard-hero-content">
+          <div className="dashboard-hero-text">
+            <h1 className="dashboard-title">
+              Chào mừng trở lại! 👋
+            </h1>
+            <p className="dashboard-subtitle">
+              Quản lý dự án của bạn một cách hiệu quả
+            </p>
+          </div>
+          
+          {/* Thao tác nhanh - Đưa lên đầu */}
+          <div className="quick-actions-hero">
+            <Link to="/chu-du-an/tao-tin-dang" className="quick-action-btn primary">
+              <div className="quick-action-icon">
+                <HiOutlinePlus />
+              </div>
+              <div className="quick-action-text">
+                <span className="quick-action-title">Tạo tin đăng</span>
+                <span className="quick-action-desc">Đăng phòng mới</span>
+              </div>
+            </Link>
+
+            <Link to="/chu-du-an/tin-dang" className="quick-action-btn secondary">
+              <div className="quick-action-icon">
+                <HiOutlineDocumentText />
+              </div>
+              <div className="quick-action-text">
+                <span className="quick-action-title">Quản lý tin</span>
+                <span className="quick-action-desc">Xem tất cả</span>
+              </div>
+            </Link>
+
+            <Link to="/chu-du-an/bao-cao" className="quick-action-btn tertiary">
+              <div className="quick-action-icon">
+                <HiOutlineChartBar />
+              </div>
+              <div className="quick-action-text">
+                <span className="quick-action-title">Báo cáo</span>
+                <span className="quick-action-desc">Hiệu suất</span>
+              </div>
+            </Link>
+
+            <Link to="/chu-du-an/cuoc-hen" className="quick-action-btn quaternary">
+              <div className="quick-action-icon">
+                <span style={{ fontSize: '1.25rem' }}>📅</span>
+              </div>
+              <div className="quick-action-text">
+                <span className="quick-action-title">Cuộc hẹn</span>
+                <span className="quick-action-desc">Lịch hẹn</span>
+              </div>
+            </Link>
+          </div>
         </div>
-        <Link to="/chu-du-an/tao-tin-dang" className="cda-btn cda-btn-primary cda-btn-lg">
-          <span>➕</span>
-          <span>Tạo tin đăng mới</span>
-        </Link>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="cda-metrics-grid">
-        <div className="cda-metric-card violet">
-          <div className="cda-metric-icon">
+      {/* Metrics Grid - Enhanced */}
+      <div className="cda-metrics-grid enhanced">
+        <div className="cda-metric-card violet enhanced">
+          <div className="metric-card-background"></div>
+          <div className="cda-metric-icon pulse">
             <HiOutlineChartBar />
           </div>
-          <div className="cda-metric-value">{formatNumber(dashboardData?.tongTinDang || 0)}</div>
-          <div className="cda-metric-label">Tổng tin đăng</div>
-          <div className="cda-metric-change">
-            <HiOutlineArrowTrendingUp style={{ width: '16px', height: '16px' }} />
-            <span>{formatNumber(dashboardData?.tinDangChoDuyet || 0)} chờ duyệt</span>
+          <div className="metric-card-content">
+            <div className="cda-metric-label">Tổng tin đăng</div>
+            <div className="cda-metric-value">{formatNumber(dashboardData?.tongTinDang || 0)}</div>
+            <div className="cda-metric-change">
+              <HiOutlineArrowTrendingUp style={{ width: '16px', height: '16px' }} />
+              <span>{formatNumber(dashboardData?.tinDangChoDuyet || 0)} chờ duyệt</span>
+            </div>
           </div>
         </div>
 
-        <div className="cda-metric-card blue">
-          <div className="cda-metric-icon">
+        <div className="cda-metric-card blue enhanced">
+          <div className="metric-card-background"></div>
+          <div className="cda-metric-icon pulse">
             <HiOutlineArrowTrendingUp />
           </div>
-          <div className="cda-metric-value">{formatNumber(dashboardData?.tinDangDangHoatDong || 0)}</div>
-          <div className="cda-metric-label">Đang hoạt động</div>
-          <div className="cda-metric-change">
-            <HiOutlineArrowTrendingUp style={{ width: '16px', height: '16px' }} />
-            <span>{formatNumber(dashboardData?.luotXemHomNay || 0)} lượt xem hôm nay</span>
+          <div className="metric-card-content">
+            <div className="cda-metric-label">Đang hoạt động</div>
+            <div className="cda-metric-value">{formatNumber(dashboardData?.tinDangDangHoatDong || 0)}</div>
+            <div className="cda-metric-change">
+              <HiOutlineArrowTrendingUp style={{ width: '16px', height: '16px' }} />
+              <span>{formatNumber(dashboardData?.luotXemHomNay || 0)} lượt xem hôm nay</span>
+            </div>
           </div>
         </div>
 
-        <div className="cda-metric-card green">
-          <div className="cda-metric-icon">
+        <div className="cda-metric-card green enhanced">
+          <div className="metric-card-background"></div>
+          <div className="cda-metric-icon pulse">
             <HiOutlineHome />
           </div>
-          <div className="cda-metric-value">{formatNumber(dashboardData?.cuocHenSapToi?.length || 0)}</div>
-          <div className="cda-metric-label">Cuộc hẹn sắp tới</div>
-          <div className="cda-metric-change">
-            <HiOutlineArrowTrendingUp style={{ width: '16px', height: '16px' }} />
-            <span>trong 7 ngày tới</span>
+          <div className="metric-card-content">
+            <div className="cda-metric-label">Cuộc hẹn sắp tới</div>
+            <div className="cda-metric-value">{formatNumber(dashboardData?.cuocHenSapToi?.length || 0)}</div>
+            <div className="cda-metric-change">
+              <HiOutlineArrowTrendingUp style={{ width: '16px', height: '16px' }} />
+              <span>trong 7 ngày tới</span>
+            </div>
           </div>
         </div>
 
-        <div className="cda-metric-card orange">
-          <div className="cda-metric-icon">
+        <div className="cda-metric-card orange enhanced">
+          <div className="metric-card-background"></div>
+          <div className="cda-metric-icon pulse">
             <HiOutlineCurrencyDollar />
           </div>
-          <div className="cda-metric-value" style={{ fontSize: '1.5rem' }}>
-            {formatCurrency(dashboardData?.doanhThuThang || 0)}
-          </div>
-          <div className="cda-metric-label">Doanh thu tháng này</div>
-          <div className="cda-metric-change">
-            <HiOutlineHome style={{ width: '16px', height: '16px' }} />
-            <span>{formatNumber(dashboardData?.tongPhongTrong || 0)} phòng trống</span>
+          <div className="metric-card-content">
+            <div className="cda-metric-label">Doanh thu tháng này</div>
+            <div className="cda-metric-value" style={{ fontSize: '1.5rem' }}>
+              {formatCurrency(dashboardData?.doanhThuThang || 0)}
+            </div>
+            <div className="cda-metric-change">
+              <HiOutlineHome style={{ width: '16px', height: '16px' }} />
+              <span>{formatNumber(dashboardData?.tongPhongTrong || 0)} phòng trống</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Quick Stats Cards */}
+      {/* Dashboard Mới: Biểu đồ và Thống kê Chi tiết */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+        {/* Biểu đồ Doanh thu 6 tháng */}
+        <div className="cda-card" style={{ gridColumn: 'span 2' }}>
+          <div className="cda-card-header">
+            <div>
+              <h3 className="cda-card-title">Doanh thu 6 tháng gần nhất</h3>
+              <p className="cda-card-subtitle">Xu hướng doanh thu và số lượng hợp đồng</p>
+            </div>
+          </div>
+          <div className="cda-card-body">
+            <div className="chart-revenue-wrapper">
+              <div className="chart-revenue-bars">
+                {[
+                  { month: 'T5', revenue: 85, contracts: 12, label: 'Tháng 5' },
+                  { month: 'T6', revenue: 92, contracts: 15, label: 'Tháng 6' },
+                  { month: 'T7', revenue: 78, contracts: 11, label: 'Tháng 7' },
+                  { month: 'T8', revenue: 95, contracts: 16, label: 'Tháng 8' },
+                  { month: 'T9', revenue: 88, contracts: 14, label: 'Tháng 9' },
+                  { month: 'T10', revenue: 100, contracts: 18, label: 'Tháng 10' }
+                ].map((data) => (
+                  <div key={data.month} className="chart-revenue-bar-wrapper">
+                    <div className="chart-revenue-bar" style={{ height: `${data.revenue}%` }}>
+                      <div className="chart-revenue-bar-fill"></div>
+                      <div className="chart-revenue-tooltip">
+                        <strong>{data.label}</strong>
+                        <div>Doanh thu: {formatCurrency(data.revenue * 1500000)}</div>
+                        <div>Hợp đồng: {data.contracts}</div>
+                      </div>
+                    </div>
+                    <div className="chart-revenue-label">{data.month}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Tỷ lệ lấp đầy phòng */}
+        <div className="cda-card">
+          <div className="cda-card-header">
+            <div>
+              <h3 className="cda-card-title">Tỷ lệ lấp đầy</h3>
+              <p className="cda-card-subtitle">Hiện trạng phòng trọ</p>
+            </div>
+          </div>
+          <div className="cda-card-body">
+            <div className="occupancy-circle-wrapper">
+              <svg viewBox="0 0 200 200" className="occupancy-circle">
+                <circle cx="100" cy="100" r="90" fill="none" stroke="#e5e7eb" strokeWidth="20" />
+                <circle 
+                  cx="100" 
+                  cy="100" 
+                  r="90" 
+                  fill="none" 
+                  stroke="#8b5cf6" 
+                  strokeWidth="20"
+                  strokeDasharray={`${((dashboardData?.tongPhong - dashboardData?.tongPhongTrong) / dashboardData?.tongPhong * 565) || 0} 565`}
+                  strokeLinecap="round"
+                  transform="rotate(-90 100 100)"
+                  className="occupancy-circle-fill"
+                />
+                <text x="100" y="95" textAnchor="middle" className="occupancy-percent">
+                  {Math.round(((dashboardData?.tongPhong - dashboardData?.tongPhongTrong) / dashboardData?.tongPhong * 100) || 0)}%
+                </text>
+                <text x="100" y="115" textAnchor="middle" className="occupancy-label">
+                  Đã thuê
+                </text>
+              </svg>
+              <div className="occupancy-stats">
+                <div className="occupancy-stat-item">
+                  <div className="occupancy-stat-dot" style={{ background: '#8b5cf6' }}></div>
+                  <span>Đã thuê: {formatNumber((dashboardData?.tongPhong - dashboardData?.tongPhongTrong) || 0)}</span>
+                </div>
+                <div className="occupancy-stat-item">
+                  <div className="occupancy-stat-dot" style={{ background: '#e5e7eb' }}></div>
+                  <span>Còn trống: {formatNumber(dashboardData?.tongPhongTrong || 0)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Dashboard Mới: Phân bố trạng thái và Hiệu suất */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+        {/* Phân bố trạng thái tin đăng */}
+        <div className="cda-card">
+          <div className="cda-card-header">
+            <div>
+              <h3 className="cda-card-title">Phân bố trạng thái</h3>
+              <p className="cda-card-subtitle">Tình trạng tin đăng</p>
+            </div>
+          </div>
+          <div className="cda-card-body">
+            <div className="status-distribution">
+              <div className="status-bar-item">
+                <div className="status-bar-label">
+                  <span className="status-dot" style={{ background: '#10b981' }}></span>
+                  <span>Đang hoạt động</span>
+                </div>
+                <div className="status-bar-value">{formatNumber(dashboardData?.tinDangDangHoatDong || 0)}</div>
+                <div className="status-bar-track">
+                  <div 
+                    className="status-bar-fill" 
+                    style={{ 
+                      width: `${((dashboardData?.tinDangDangHoatDong / dashboardData?.tongTinDang) * 100) || 0}%`,
+                      background: 'linear-gradient(90deg, #10b981, #059669)'
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="status-bar-item">
+                <div className="status-bar-label">
+                  <span className="status-dot" style={{ background: '#f59e0b' }}></span>
+                  <span>Chờ duyệt</span>
+                </div>
+                <div className="status-bar-value">{formatNumber(dashboardData?.tinDangChoDuyet || 0)}</div>
+                <div className="status-bar-track">
+                  <div 
+                    className="status-bar-fill" 
+                    style={{ 
+                      width: `${((dashboardData?.tinDangChoDuyet / dashboardData?.tongTinDang) * 100) || 0}%`,
+                      background: 'linear-gradient(90deg, #f59e0b, #d97706)'
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="status-bar-item">
+                <div className="status-bar-label">
+                  <span className="status-dot" style={{ background: '#6b7280' }}></span>
+                  <span>Nháp</span>
+                </div>
+                <div className="status-bar-value">{formatNumber(dashboardData?.tinDangNhap || 0)}</div>
+                <div className="status-bar-track">
+                  <div 
+                    className="status-bar-fill" 
+                    style={{ 
+                      width: `${((dashboardData?.tinDangNhap / dashboardData?.tongTinDang) * 100) || 0}%`,
+                      background: 'linear-gradient(90deg, #6b7280, #4b5563)'
+                    }}
+                  ></div>
+                </div>
+              </div>
+
+              <div className="status-bar-item">
+                <div className="status-bar-label">
+                  <span className="status-dot" style={{ background: '#ef4444' }}></span>
+                  <span>Tạm ngưng</span>
+                </div>
+                <div className="status-bar-value">{formatNumber(dashboardData?.tinDangTamNgung || 0)}</div>
+                <div className="status-bar-track">
+                  <div 
+                    className="status-bar-fill" 
+                    style={{ 
+                      width: `${((dashboardData?.tinDangTamNgung / dashboardData?.tongTinDang) * 100) || 0}%`,
+                      background: 'linear-gradient(90deg, #ef4444, #dc2626)'
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Thống kê tương tác */}
+        <div className="cda-card">
+          <div className="cda-card-header">
+            <div>
+              <h3 className="cda-card-title">Tương tác người dùng</h3>
+              <p className="cda-card-subtitle">Lượt xem và yêu thích</p>
+            </div>
+          </div>
+          <div className="cda-card-body">
+            <div className="interaction-stats">
+              <div className="interaction-stat-card">
+                <div className="interaction-stat-icon" style={{ background: 'rgba(59, 130, 246, 0.12)' }}>
+                  <HiOutlineEye style={{ color: '#3b82f6' }} />
+                </div>
+                <div className="interaction-stat-content">
+                  <div className="interaction-stat-value">{formatNumber(dashboardData?.tongLuotXem || 0)}</div>
+                  <div className="interaction-stat-label">Tổng lượt xem</div>
+                  <div className="interaction-stat-change positive">
+                    <HiOutlineArrowTrendingUp />
+                    <span>+12% tuần này</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="interaction-stat-card">
+                <div className="interaction-stat-icon" style={{ background: 'rgba(239, 68, 68, 0.12)' }}>
+                  <span style={{ fontSize: '1.5rem' }}>❤️</span>
+                </div>
+                <div className="interaction-stat-content">
+                  <div className="interaction-stat-value">{formatNumber(dashboardData?.tongYeuThich || 0)}</div>
+                  <div className="interaction-stat-label">Lượt yêu thích</div>
+                  <div className="interaction-stat-change positive">
+                    <HiOutlineArrowTrendingUp />
+                    <span>+8% tuần này</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Stats Cards - Existing */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         {/* Tin đăng gần đây */}
         <div className="cda-card">
@@ -246,33 +511,6 @@ function DashboardChuDuAn() {
                 <p className="cda-empty-description">Không có cuộc hẹn nào</p>
               </div>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="cda-card">
-        <div className="cda-card-body">
-          <h3 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '1rem' }}>
-            Thao tác nhanh
-          </h3>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <Link to="/chu-du-an/tao-tin-dang" className="cda-btn cda-btn-success">
-              <HiOutlinePlus style={{ width: '18px', height: '18px' }} />
-              <span>Tạo tin đăng</span>
-            </Link>
-            <Link to="/chu-du-an/tin-dang" className="cda-btn cda-btn-secondary">
-              <HiOutlineDocumentText style={{ width: '18px', height: '18px' }} />
-              <span>Quản lý tin đăng</span>
-            </Link>
-            <Link to="/chu-du-an/bao-cao" className="cda-btn cda-btn-secondary">
-              <HiOutlineChartBar style={{ width: '18px', height: '18px' }} />
-              <span>Xem báo cáo</span>
-            </Link>
-            <Link to="/chu-du-an/cuoc-hen" className="cda-btn cda-btn-secondary">
-              <span>📅</span>
-              <span>Cuộc hẹn</span>
-            </Link>
           </div>
         </div>
       </div>

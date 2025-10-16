@@ -420,7 +420,7 @@ export const DuAnService = {
   ,
   async taoNhanh(payload) {
     try {
-      const response = await fetch(`${API_BASE_URL}${API_PREFIX}/du-an`, {
+      const response = await fetch(`${API_BASE_URL}${API_PREFIX}/du-an/tao-nhanh`, {
         method: 'POST',
         headers: getAuthHeaders(),
         body: JSON.stringify(payload)
@@ -428,6 +428,91 @@ export const DuAnService = {
       return await handleResponse(response);
     } catch (error) {
       console.error('Lỗi tạo dự án:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Cập nhật dự án
+   */
+  async capNhat(duAnId, payload) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_PREFIX}/du-an/${duAnId}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi cập nhật dự án:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lưu trữ dự án (soft delete)
+   */
+  async luuTru(duAnId, payload = {}) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_PREFIX}/du-an/${duAnId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi lưu trữ dự án:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy chi tiết chính sách cọc
+   */
+  async layChiTietChinhSachCoc(chinhSachId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_PREFIX}/chinh-sach-coc/${chinhSachId}`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi khi lấy chi tiết chính sách cọc:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Cập nhật chính sách cọc
+   */
+  async capNhatChinhSachCoc(chinhSachId, payload) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_PREFIX}/chinh-sach-coc/${chinhSachId}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload)
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi cập nhật chính sách cọc:', error);
+      throw error;
+    }
+  }
+};
+
+/**
+ * Service cho Phòng (dự án)
+ */
+export const PhongService = {
+  async layTheoDuAn(duAnId) {
+    try {
+      const response = await fetch(`${API_BASE_URL}${API_PREFIX}/du-an/${duAnId}/phong`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+      });
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách phòng dự án:', error);
       throw error;
     }
   }
@@ -628,6 +713,7 @@ export default {
   CuocHenService,
   BaoCaoService,
   DuAnService,
+  PhongService,
   HopDongService,
   KhuVucService,
   ApiService,

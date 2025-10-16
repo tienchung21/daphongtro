@@ -3,11 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
 import { TinDangService, DuAnService, KhuVucService } from '../../services/ChuDuAnService';
 import ModalChinhSuaToaDo from '../../components/ChuDuAn/ModalChinhSuaToaDo';
+import SectionChonPhong from '../../components/ChuDuAn/SectionChonPhong';
+import axios from 'axios';
 import './TaoTinDang.css'; // Tái sử dụng CSS
 
 // React Icons - Thêm các icon cần thiết
 import {
-  HiOutlinePlus,
   HiOutlinePencil,
   HiOutlineTrash,
   HiOutlineLightBulb,
@@ -15,22 +16,29 @@ import {
   HiOutlineArrowLeft
 } from 'react-icons/hi2';
 
+const normalizeGiaInput = (value) => {
+  if (value === null || value === undefined) return '';
+  let str = String(value).trim();
+  if (!str) return '';
+  str = str.replace(/,/g, '.');
+  const decimalMatch = str.match(/^(\d+)\.(\d+)$/);
+  if (decimalMatch) {
+    const [, intPart, decimalPart] = decimalMatch;
+    if (decimalPart.length <= 2) {
+      const num = Math.round(parseFloat(str));
+      return Number.isFinite(num) ? String(num) : '';
+    }
+  }
+  return str.replace(/\D/g, '');
+};
+
 /**
  * Format giá tiền: 10000 → "10.000"
- * FIX: Backend trả về DECIMAL string (VD: "3500.00")
- * Phải parse thành số trước để loại bỏ phần thập phân
  */
 const formatGiaTien = (value) => {
-  if (!value) return '';
-  
-  // Nếu là string có dấu thập phân → parse thành số trước
-  const numValue = typeof value === 'string' && value.includes('.') 
-    ? parseFloat(value) 
-    : value;
-  
-  const numberOnly = numValue.toString().replace(/\D/g, '');
-  if (!numberOnly) return '';
-  return numberOnly.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const digits = normalizeGiaInput(value);
+  if (!digits) return '';
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 };
 
 /**
@@ -61,6 +69,16 @@ const tachDiaChiDuAn = (diaChi = '') => {
   return { chiTiet: chiTiet || '', phuong, quan, tinh };
 };
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
+const resolveImageUrl = (url) => {
+  if (!url) return null;
+  if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+  if (url.startsWith('http')) return url;
+  if (url.startsWith('/uploads/')) return `${API_BASE_URL}${url}`;
+  return url;
+};
+
 /**
  * Trang Chỉnh Sửa Tin Đăng - Redesigned
  * Dựa trên cấu trúc TaoTinDang.jsx
@@ -86,8 +104,6 @@ function ChinhSuaTinDang() {
     DuAnID: '',
     TieuDe: '',
     MoTa: '',
-    DienTich: '',
-    Gia: '',
     KhuVucID: '',
     TienIch: [],
     GiaDien: '',
@@ -104,23 +120,30 @@ function ChinhSuaTinDang() {
   const [selectedTinh, setSelectedTinh] = useState('');
   const [selectedQuan, setSelectedQuan] = useState('');
   const [selectedPhuong, setSelectedPhuong] = useState('');
-  
-  // Nhiều phòng
-  const [isNhapNhieu, setIsNhapNhieu] = useState(false);
-  const [phongs, setPhongs] = useState([]);
-  const [phongsDaXoa, setPhongsDaXoa] = useState([]); // Track phòng đã xóa để xóa trên server
+  const [danhSachPhongDuAn, setDanhSachPhongDuAn] = useState([]);
+  const [phongDaChon, setPhongDaChon] = useState([]);
+  const [modalTaoPhongMoi, setModalTaoPhongMoi] = useState(false);
+  const [dangTaoPhong, setDangTaoPhong] = useState(false);
+  const [formPhongMoi, setFormPhongMoi] = useState({
+    TenPhong: '',
+    GiaChuan: '',
+    DienTichChuan: '',
+    MoTaPhong: ''
+  });
   
   const [diaChi, setDiaChi] = useState('');
   const [viDo, setViDo] = useState('');
   const [kinhDo, setKinhDo] = useState('');
   const [hienModalChinhSuaToaDo, setHienModalChinhSuaToaDo] = useState(false);
   
+  const phongCount = phongDaChon.length;
+
   // ===== ACCORDION STATE =====
   const [sectionsExpanded, setSectionsExpanded] = useState({
     thongTinCoBan: true,
     diaChi: true,
+    chonPhong: true,
     tienIch: true,
-    phongs: false,
     hinhAnh: true
   });
 
@@ -185,6 +208,15 @@ function ChinhSuaTinDang() {
     }));
   }, [selectedPhuong]);
 
+  useEffect(() => {
+    if (formData.DuAnID) {
+      layDanhSachPhongDuAn(formData.DuAnID);
+    } else {
+      setDanhSachPhongDuAn([]);
+      setPhongDaChon([]);
+    }
+  }, [formData.DuAnID]);
+
   // ===== API CALLS =====
   const layTinDangDeChinhSua = async () => {
     try {
@@ -212,17 +244,11 @@ function ChinhSuaTinDang() {
           }
         })();
 
-        // Kiểm tra: Nhiều phòng hay 1 phòng?
-        const coNhieuPhong = tinDangData.TongSoPhong && tinDangData.TongSoPhong > 1;
-        setIsNhapNhieu(coNhieuPhong);
-
         // Set form data
         setFormData({
           DuAnID: tinDangData.DuAnID || '',
           TieuDe: tinDangData.TieuDe || '',
           MoTa: tinDangData.MoTa || '',
-          DienTich: tinDangData.DienTich ? tinDangData.DienTich.toString() : '',
-          Gia: tinDangData.Gia ? formatGiaTien(tinDangData.Gia) : '',
           KhuVucID: tinDangData.KhuVucID || '',
           TienIch: tienIchParsed,
           GiaDien: tinDangData.GiaDien ? formatGiaTien(tinDangData.GiaDien) : '',
@@ -231,6 +257,30 @@ function ChinhSuaTinDang() {
           MoTaGiaDichVu: tinDangData.MoTaGiaDichVu || '',
           TrangThai: tinDangData.TrangThai || 'Nhap' // Set trạng thái hiện tại
         });
+
+        // Map phòng đã gắn với tin đăng
+        const danhSachPhongTinDang = tinDangData.DanhSachPhong || [];
+        const phongDaChonBanDau = danhSachPhongTinDang.map((phong, index) => {
+          const anhOverride = phong.HinhAnhOverride || null;
+          const previewSource = anhOverride || phong.URL || phong.HinhAnhHienThi || phong.HinhAnhPhong;
+          const previewUrl = resolveImageUrl(previewSource) || ''
+          return {
+            PhongID: phong.PhongID,
+            TenPhong: phong.TenPhong || '',
+            GiaTinDang: phong.GiaOverride ?? null,
+            DienTichTinDang: phong.DienTichOverride ?? null,
+            MoTaTinDang: phong.MoTaOverride ?? null,
+            HinhAnhTinDang: anhOverride,
+            HinhAnhTinDangPreview: previewUrl,
+            HinhAnhTinDangFile: null,
+            ThuTuHienThi: phong.ThuTuHienThi || index
+          };
+        });
+        setPhongDaChon(phongDaChonBanDau);
+
+        if (tinDangData.DuAnID) {
+          await layDanhSachPhongDuAn(tinDangData.DuAnID);
+        }
 
         // Set địa chỉ - TÁCH TỪ DiaChiDuAn
         // Backend trả về: "40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh"
@@ -245,24 +295,13 @@ function ChinhSuaTinDang() {
         setKinhDo(tinDangData.KinhDo ? tinDangData.KinhDo.toString() : '');
 
         // Set ảnh preview - FIX: Thêm backend URL
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-        const previews = anhParsed.map((url, idx) => {
-          // Nếu URL là relative path (không có http), thêm backend URL
-          const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
-          return {
-            file: null, // Ảnh cũ không có file object
-            url: fullUrl,
-            name: `anh-${idx + 1}`,
-            isExisting: true // Flag để biết ảnh cũ
-          };
-        });
+        const previews = anhParsed.map((url, idx) => ({
+          file: null,
+          url: resolveImageUrl(url) || '',
+          name: `anh-${idx + 1}`,
+          isExisting: true
+        }));
         setAnhPreview(previews);
-
-        // Load danh sách phòng nếu nhiều phòng
-        if (coNhieuPhong) {
-          layDanhSachPhong();
-          setSectionsExpanded(prev => ({ ...prev, phongs: true })); // Auto expand section
-        }
 
         // Auto-select địa chỉ - Reverse lookup KhuVucID
         if (tinDangData.KhuVucID) {
@@ -323,30 +362,233 @@ function ChinhSuaTinDang() {
     }
   };
 
-  const layDanhSachPhong = async () => {
-    try {
-      const response = await TinDangService.layDanhSachPhong(id);
-      if (response.success && response.data) {
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
-        const phongData = response.data.map(p => {
-          // Fix URL ảnh phòng
-          const fullUrl = p.URL && !p.URL.startsWith('http') ? `${API_BASE_URL}${p.URL}` : p.URL;
-          return {
-            PhongID: p.PhongID,
-            tenPhong: p.TenPhong || '',
-            gia: p.Gia ? formatGiaTien(p.Gia) : '',
-            dienTich: p.DienTich ? p.DienTich.toString() : '',
-            ghiChu: p.GhiChu || '',
-            url: fullUrl || '',
-            anhFile: null,
-            anhPreview: fullUrl || '',
-            isExisting: true // Phòng đã tồn tại
-          };
-        });
-        setPhongs(phongData);
+const layDanhSachPhongDuAn = async (duAnId) => {
+  try {
+    const token = localStorage.getItem('token') || 'mock-token-for-development';
+    const response = await axios.get(
+      `${API_BASE_URL}/api/chu-du-an/du-an/${duAnId}/phong`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const { data: payload } = response;
+      if (Array.isArray(payload)) {
+        setDanhSachPhongDuAn(payload);
+        setPhongDaChon(prev =>
+          prev
+            .map(p => {
+              const matched = payload.find(dp => dp.PhongID === p.PhongID);
+              return matched
+                ? {
+                    ...p,
+                    TenPhong: matched.TenPhong || p.TenPhong,
+                    GiaTinDang: p.GiaTinDang,
+                    DienTichTinDang: p.DienTichTinDang,
+                    MoTaTinDang: p.MoTaTinDang,
+                    HinhAnhTinDangPreview: p.HinhAnhTinDangPreview || resolveImageUrl(matched.HinhAnhPhong)
+                  }
+                : p;
+            })
+            .filter(p => payload.some(dp => dp.PhongID === p.PhongID))
+        );
+        return;
       }
+
+      if (payload && Array.isArray(payload.data)) {
+        setDanhSachPhongDuAn(payload.data);
+        setPhongDaChon(prev =>
+          prev
+            .map(p => {
+              const matched = payload.data.find(dp => dp.PhongID === p.PhongID);
+              return matched
+                ? {
+                    ...p,
+                    TenPhong: matched.TenPhong || p.TenPhong,
+                    GiaTinDang: p.GiaTinDang,
+                    DienTichTinDang: p.DienTichTinDang,
+                    MoTaTinDang: p.MoTaTinDang,
+                    HinhAnhTinDangPreview: p.HinhAnhTinDangPreview || resolveImageUrl(matched.HinhAnhPhong)
+                  }
+                : p;
+            })
+            .filter(p => payload.data.some(dp => dp.PhongID === p.PhongID))
+        );
+        return;
+      }
+
+      setDanhSachPhongDuAn([]);
+      setPhongDaChon(prev =>
+        prev.filter(p => (payload?.data || []).some(dp => dp.PhongID === p.PhongID))
+      );
+  } catch (error) {
+    console.error('❌ Lỗi khi tải danh sách phòng dự án:', error);
+    setDanhSachPhongDuAn([]);
+  }
+};
+
+  const xuLyChonPhong = (phong, isChecked) => {
+    if (isChecked) {
+      setPhongDaChon(prev => {
+        if (prev.some(p => p.PhongID === phong.PhongID)) {
+          return prev;
+        }
+        return [
+          ...prev,
+          {
+            PhongID: phong.PhongID,
+            TenPhong: phong.TenPhong,
+            GiaTinDang: null,
+            DienTichTinDang: null,
+            MoTaTinDang: null,
+            HinhAnhTinDang: null,
+            HinhAnhTinDangFile: null,
+            HinhAnhTinDangPreview: null,
+            ThuTuHienThi: prev.length
+          }
+        ];
+      });
+    } else {
+      setPhongDaChon(prev => prev.filter(p => p.PhongID !== phong.PhongID));
+    }
+  };
+
+  const xuLyOverrideGiaPhong = (phongId, value) => {
+    const formatted = formatGiaTien(value);
+    setPhongDaChon(prev => prev.map(p =>
+      p.PhongID === phongId
+        ? { ...p, GiaTinDang: formatted ? parseGiaTien(formatted) : null }
+        : p
+    ));
+  };
+
+  const xuLyOverrideDienTichPhong = (phongId, value) => {
+    setPhongDaChon(prev => prev.map(p =>
+      p.PhongID === phongId
+        ? { ...p, DienTichTinDang: value ? parseFloat(value) : null }
+        : p
+    ));
+  };
+
+  const xuLyOverrideMoTaPhong = (phongId, value) => {
+    setPhongDaChon(prev => prev.map(p =>
+      p.PhongID === phongId
+        ? { ...p, MoTaTinDang: value || null }
+        : p
+    ));
+  };
+
+  const xuLyOverrideHinhAnhPhong = (phongId, file) => {
+    if (!file || !(file.type || '').startsWith('image/')) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Kích thước ảnh phải nhỏ hơn 5MB');
+      return;
+    }
+    const previewUrl = URL.createObjectURL(file);
+    setPhongDaChon(prev => prev.map(p =>
+      p.PhongID === phongId
+        ? { ...p, HinhAnhTinDangFile: file, HinhAnhTinDangPreview: previewUrl, HinhAnhTinDang: null }
+        : p
+    ));
+  };
+
+  const xoaAnhPhongOverride = (phongId) => {
+    setPhongDaChon(prev => prev.map(p => {
+      if (p.PhongID !== phongId) return p;
+      if (p.HinhAnhTinDangPreview) {
+        try { URL.revokeObjectURL(p.HinhAnhTinDangPreview); } catch (error) { /* ignore */ }
+      }
+      return { ...p, HinhAnhTinDangFile: null, HinhAnhTinDangPreview: null, HinhAnhTinDang: null };
+    }));
+  };
+
+  const resetFormPhongMoi = () => {
+    setFormPhongMoi({
+      TenPhong: '',
+      GiaChuan: '',
+      DienTichChuan: '',
+      MoTaPhong: ''
+    });
+  };
+
+  const xuLyTaoPhongMoi = async () => {
+    if (!formData.DuAnID) {
+      alert('Vui lòng chọn dự án trước khi tạo phòng mới');
+      return;
+    }
+
+    const tenPhong = formPhongMoi.TenPhong.trim();
+    if (!tenPhong) {
+      alert('Vui lòng nhập tên phòng');
+      return;
+    }
+
+    if (!formPhongMoi.GiaChuan) {
+      alert('Vui lòng nhập giá chuẩn của phòng');
+      return;
+    }
+
+    if (!formPhongMoi.DienTichChuan) {
+      alert('Vui lòng nhập diện tích chuẩn của phòng');
+      return;
+    }
+
+    try {
+      setDangTaoPhong(true);
+
+      const token = localStorage.getItem('token') || 'mock-token-for-development';
+      const giaChuanValue = parseInt(parseGiaTien(formPhongMoi.GiaChuan), 10);
+      if (!Number.isFinite(giaChuanValue) || giaChuanValue <= 0) {
+        alert('Giá chuẩn phải lớn hơn 0');
+        setDangTaoPhong(false);
+        return;
+      }
+      const dienTichValue = parseFloat(formPhongMoi.DienTichChuan);
+      if (!Number.isFinite(dienTichValue) || dienTichValue <= 0) {
+        alert('Diện tích chuẩn phải lớn hơn 0');
+        setDangTaoPhong(false);
+        return;
+      }
+
+      const response = await axios.post(
+        `${API_BASE_URL}/api/chu-du-an/du-an/${formData.DuAnID}/phong`,
+        {
+          TenPhong: tenPhong,
+          GiaChuan: giaChuanValue,
+          DienTichChuan: dienTichValue,
+          MoTaPhong: formPhongMoi.MoTaPhong || null
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const newPhongId = response.data?.data?.PhongID;
+
+      await layDanhSachPhongDuAn(formData.DuAnID);
+
+      if (newPhongId) {
+        setPhongDaChon(prev => [
+          ...prev,
+          {
+            PhongID: newPhongId,
+            TenPhong: tenPhong,
+            GiaTinDang: null,
+            DienTichTinDang: null,
+            MoTaTinDang: null,
+            HinhAnhTinDang: null,
+            HinhAnhTinDangPreview: null,
+            HinhAnhTinDangFile: null,
+            ThuTuHienThi: prev.length
+          }
+        ]);
+      }
+
+      alert('Tạo phòng mới thành công!');
+      resetFormPhongMoi();
+      setModalTaoPhongMoi(false);
     } catch (error) {
-      console.error('❌ Lỗi load danh sách phòng:', error);
+      console.error('❌ Lỗi khi tạo phòng mới:', error);
+      const message = error.response?.data?.message || 'Không thể tạo phòng mới. Vui lòng thử lại.';
+      alert(message);
+    } finally {
+      setDangTaoPhong(false);
     }
   };
 
@@ -423,57 +665,6 @@ function ChinhSuaTinDang() {
     });
   };
 
-  // Handler cho phòng
-  const updatePhong = (index, field, value) => {
-    const newPhongs = [...phongs];
-    if (field === 'gia') {
-      newPhongs[index][field] = formatGiaTien(value);
-    } else {
-      newPhongs[index][field] = value;
-    }
-    setPhongs(newPhongs);
-  };
-
-  const themPhong = () => setPhongs([...phongs, { 
-    PhongID: null, // Null = phòng mới
-    tenPhong: '', 
-    gia: '', 
-    dienTich: '', 
-    ghiChu: '', 
-    url: '', 
-    anhFile: null, 
-    anhPreview: '',
-    isExisting: false
-  }]);
-
-  const xoaPhong = (index) => {
-    const phongBiXoa = phongs[index];
-    if (phongBiXoa.PhongID) {
-      // Phòng đã tồn tại → Track để xóa trên server
-      setPhongsDaXoa(prev => [...prev, phongBiXoa.PhongID]);
-    }
-    setPhongs(phongs.filter((_, i) => i !== index));
-  };
-
-  const xuLyChonAnhPhong = (index, e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      alert('Chỉ chấp nhận file ảnh');
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Kích thước ảnh phải nhỏ hơn 5MB');
-      return;
-    }
-
-    const newPhongs = [...phongs];
-    newPhongs[index].anhFile = file;
-    newPhongs[index].anhPreview = URL.createObjectURL(file);
-    setPhongs(newPhongs);
-  };
-
   // ===== VALIDATION =====
   const validate = () => {
     const newErrors = {};
@@ -505,46 +696,35 @@ function ChinhSuaTinDang() {
         newErrors.GiaDichVu = `Giá dịch vụ quá lớn (>${MAX_DICHVU.toLocaleString('vi-VN')} ₫/tháng). Vui lòng kiểm tra lại.`;
       }
     }
-    
-    if (!isNhapNhieu) {
-      if (!formData.Gia || parseFloat(parseGiaTien(formData.Gia)) <= 0) {
-        newErrors.Gia = 'Vui lòng nhập giá hợp lệ';
-      }
-      if (!formData.DienTich || parseFloat(formData.DienTich) <= 0) {
-        newErrors.DienTich = 'Vui lòng nhập diện tích hợp lệ';
-      }
-    } else {
-      const phongKhongHopLe = phongs.some(p => 
-        !p.tenPhong || 
-        !p.gia || parseFloat(parseGiaTien(p.gia)) <= 0 || 
-        !p.dienTich || parseFloat(p.dienTich) <= 0
-      );
-      if (phongKhongHopLe) {
-        newErrors.Phongs = 'Vui lòng điền đầy đủ thông tin cho tất cả các phòng';
-      }
+
+    if (phongDaChon.length === 0) {
+      newErrors.PhongIDs = 'Vui lòng chọn ít nhất một phòng cho tin đăng';
     }
     
     if (anhPreview.length === 0) newErrors.URL = 'Vui lòng tải lên ít nhất 1 hình ảnh';
     if (!selectedPhuong) newErrors.KhuVucID = 'Vui lòng chọn địa chỉ đầy đủ';
     
     setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      console.warn('ChinhSuaTinDang.validate() validation errors:', newErrors);
+    }
     return Object.keys(newErrors).length === 0;
   };
 
   // ===== SUBMIT =====
-  const xuLyLuuNhap = async (e) => {
-    e.preventDefault();
-    await xuLyGui('save_draft');
-  };
-
-  const xuLyGuiDuyet = async (e) => {
-    e.preventDefault();
-    
+  const xuLyLuuNhap = async () => {
     if (!validate()) {
       alert('Vui lòng kiểm tra lại thông tin');
       return;
     }
+    await xuLyGui('save_draft');
+  };
 
+  const xuLyGuiDuyet = async () => {
+    if (!validate()) {
+      alert('Vui lòng kiểm tra lại thông tin');
+      return;
+    }
     await xuLyGui('send_review');
   };
 
@@ -618,35 +798,24 @@ function ChinhSuaTinDang() {
 
       const allUrls = [...anhCu, ...uploadedUrls];
 
-      // 2. Upload ảnh phòng (nếu có)
-      let phongDataClean = null;
-      if (isNhapNhieu) {
-        phongDataClean = await Promise.all(phongs.map(async (p) => {
-          let urlPhong = p.url || null;
-          
-          if (p.anhFile) {
-            const uploadedPhongUrls = await uploadAnh([p.anhFile]);
-            urlPhong = uploadedPhongUrls[0];
+      // 2. Upload ảnh override cho các phòng đã chọn
+      let phongDaChonUploads = phongDaChon;
+      if (phongDaChon.length > 0) {
+        phongDaChonUploads = await Promise.all(phongDaChon.map(async (p) => {
+          let anhUrl = p.HinhAnhTinDang || null;
+          if (p.HinhAnhTinDangFile) {
+            const [uploadedUrl] = await uploadAnh([p.HinhAnhTinDangFile]);
+            anhUrl = uploadedUrl || null;
           }
-
-          return {
-            PhongID: p.PhongID, // Null = phòng mới, có ID = cập nhật
-            tenPhong: p.tenPhong,
-            gia: p.gia ? parseFloat(parseGiaTien(p.gia)) : null,
-            dienTich: p.dienTich ? parseFloat(p.dienTich) : null,
-            ghiChu: p.ghiChu || null,
-            url: urlPhong
-          };
+          return { ...p, HinhAnhTinDang: anhUrl };
         }));
       }
       
       const tinDangData = {
-        DuAnID: parseInt(formData.DuAnID),
+        DuAnID: parseInt(formData.DuAnID, 10),
         TieuDe: formData.TieuDe,
         MoTa: formData.MoTa,
-        Gia: !isNhapNhieu ? parseFloat(parseGiaTien(formData.Gia)) : null,
-        DienTich: !isNhapNhieu ? parseFloat(formData.DienTich) : null,
-        KhuVucID: selectedPhuong ? parseInt(selectedPhuong) : null,
+        KhuVucID: selectedPhuong ? parseInt(selectedPhuong, 10) : null,
         URL: allUrls,
         TienIch: formData.TienIch,
         GiaDien: formData.GiaDien ? parseFloat(parseGiaTien(formData.GiaDien)) : null,
@@ -656,10 +825,15 @@ function ChinhSuaTinDang() {
         DiaChi: diaChi,
         ViDo: viDo ? parseFloat(viDo) : null,
         KinhDo: kinhDo ? parseFloat(kinhDo) : null,
-        // KHÔNG gửi TrangThai - Backend sẽ tự quyết định dựa trên action
-        Phongs: phongDataClean,
-        PhongsDaXoa: phongsDaXoa, // Danh sách PhongID cần xóa
-        action: action // save_draft → Nhap, send_review → ChoDuyet
+        PhongIDs: phongDaChonUploads.map((p, idx) => ({
+          PhongID: p.PhongID,
+          GiaTinDang: p.GiaTinDang ? parseFloat(parseGiaTien(p.GiaTinDang)) : null,
+          DienTichTinDang: p.DienTichTinDang ? parseFloat(p.DienTichTinDang) : null,
+          MoTaTinDang: p.MoTaTinDang || null,
+          HinhAnhTinDang: p.HinhAnhTinDang || null,
+          ThuTuHienThi: p.ThuTuHienThi ?? idx
+        })),
+        action
       };
 
       console.log('📤 Dữ liệu gửi lên backend:', JSON.stringify(tinDangData, null, 2));
@@ -673,12 +847,9 @@ function ChinhSuaTinDang() {
         alert(message);
         
         if (action === 'send_review') {
-          // Navigate và reload để cập nhật data mới
           navigate('/chu-du-an/tin-dang');
-          window.location.reload();
         } else {
-          // Lưu nháp: Reload trang hiện tại để cập nhật trạng thái
-          window.location.reload();
+          await layTinDangDeChinhSua();
         }
       } else {
         alert(`Lỗi: ${response.message}`);
@@ -768,7 +939,7 @@ function ChinhSuaTinDang() {
             Chỉnh sửa tin đăng
           </h1>
           <p style={{ color: '#6b7280', marginTop: '0.5rem' }}>
-            ID: {id} • {isNhapNhieu ? `${phongs.length} phòng` : '1 phòng'}
+            ID: {id} • {phongCount} phòng
           </p>
         </div>
         <button
@@ -785,7 +956,7 @@ function ChinhSuaTinDang() {
       <form>
         {/* Section 1: Thông tin cơ bản */}
         <div className="cda-card" style={{ marginBottom: '1rem' }}>
-          {renderSectionHeader('1. Thông Tin Cơ Bản', 'thongTinCoBan', true, 'Tiêu đề, mô tả, giá và diện tích')}
+          {renderSectionHeader('1. Thông Tin Cơ Bản', 'thongTinCoBan', true, 'Tiêu đề, mô tả và trạng thái tin đăng')}
           
           {sectionsExpanded.thongTinCoBan && (
             <div className="cda-card-body">
@@ -827,24 +998,6 @@ function ChinhSuaTinDang() {
                     disabled={saving}
                   />
                   {errors.TieuDe && <p className="cda-error-message">{errors.TieuDe}</p>}
-                </div>
-
-                {/* Chế độ nhập - READ ONLY */}
-                <div className="cda-form-group">
-                  <label className="cda-label">Chế độ nhập</label>
-                  <select
-                    value={isNhapNhieu ? 'nhieu' : 'mot'}
-                    disabled={true}
-                    className="cda-select"
-                    style={{ opacity: 0.6, cursor: 'not-allowed' }}
-                  >
-                    <option value="mot">Đăng 1 phòng</option>
-                    <option value="nhieu">Đăng nhiều phòng</option>
-                  </select>
-                  <p className="cda-help-text" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <HiOutlineLightBulb style={{ width: '16px', height: '16px', color: '#f59e0b', flexShrink: 0 }} />
-                    Không thể thay đổi chế độ sau khi đã tạo
-                  </p>
                 </div>
 
                 {/* Trạng thái tin đăng - READ-ONLY (chỉ hiển thị) */}
@@ -919,44 +1072,6 @@ function ChinhSuaTinDang() {
                   </p>
                 </div>
 
-                {/* Giá & Diện tích - Chỉ hiện khi 1 phòng */}
-                {!isNhapNhieu && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                    <div className="cda-form-group">
-                      <label className="cda-label cda-label-required">Giá thuê (VNĐ/tháng)</label>
-                      <input
-                        type="text"
-                        name="Gia"
-                        value={formData.Gia}
-                        onChange={xuLyThayDoiGiaTien('Gia')}
-                        className={`cda-input ${errors.Gia ? 'cda-input-error' : ''}`}
-                        placeholder="VD: 2.000.000"
-                        disabled={saving}
-                      />
-                      {errors.Gia && <p className="cda-error-message">{errors.Gia}</p>}
-                      <p className="cda-help-text">
-                        {formData.Gia ? parseInt(parseGiaTien(formData.Gia)).toLocaleString('vi-VN') + ' ₫/tháng' : '0 ₫/tháng'}
-                      </p>
-                    </div>
-
-                    <div className="cda-form-group">
-                      <label className="cda-label cda-label-required">Diện tích (m²)</label>
-                      <input
-                        type="number"
-                        name="DienTich"
-                        value={formData.DienTich}
-                        onChange={xuLyThayDoiInput}
-                        className={`cda-input ${errors.DienTich ? 'cda-input-error' : ''}`}
-                        placeholder="25"
-                        min="1"
-                        step="0.1"
-                        disabled={saving}
-                      />
-                      {errors.DienTich && <p className="cda-error-message">{errors.DienTich}</p>}
-                    </div>
-                  </div>
-                )}
-
                 {/* Mô tả */}
                 <div className="cda-form-group">
                   <label className="cda-label">Mô tả chi tiết</label>
@@ -975,142 +1090,28 @@ function ChinhSuaTinDang() {
           )}
         </div>
 
-        {/* Section 2: Danh sách phòng (chỉ hiện khi nhiều phòng) */}
-        {isNhapNhieu && (
+        {/* Section 2: Chọn phòng */}
+        {formData.DuAnID && (
           <div className="cda-card" style={{ marginBottom: '1rem' }}>
-            {renderSectionHeader('2. Danh Sách Phòng', 'phongs', true, `${phongs.length} phòng • Thêm, sửa, xóa phòng`)}
+            {renderSectionHeader('2. Chọn Phòng', 'chonPhong', true, 'Gắn phòng thuộc dự án vào tin đăng')}
             
-            {sectionsExpanded.phongs && (
+            {sectionsExpanded.chonPhong && (
               <div className="cda-card-body">
-                <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead>
-                      <tr style={{ background: '#f3f4f6' }}>
-                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb' }}>Tên phòng</th>
-                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb' }}>Giá (VNĐ/tháng)</th>
-                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb' }}>Diện tích (m²)</th>
-                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb' }}>Ảnh phòng</th>
-                        <th style={{ padding: '0.75rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb' }}>Ghi chú</th>
-                        <th style={{ padding: '0.75rem', textAlign: 'center', borderBottom: '2px solid #e5e7eb', width: '100px' }}>Hành động</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {phongs.map((phong, index) => (
-                        <tr key={index} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                          <td style={{ padding: '0.75rem' }}>
-                            <input 
-                              value={phong.tenPhong} 
-                              onChange={(e) => updatePhong(index, 'tenPhong', e.target.value)}
-                              className="cda-input"
-                              placeholder="VD: Phòng 101"
-                              style={{ minWidth: '120px' }}
-                            />
-                            {phong.isExisting && (
-                              <span style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.25rem', display: 'block' }}>
-                                ID: {phong.PhongID}
-                              </span>
-                            )}
-                          </td>
-                          <td style={{ padding: '0.75rem' }}>
-                            <input 
-                              type="text" 
-                              value={phong.gia} 
-                              onChange={(e) => updatePhong(index, 'gia', e.target.value)}
-                              className="cda-input"
-                              placeholder="VD: 2.000.000"
-                              style={{ minWidth: '120px' }}
-                            />
-                          </td>
-                          <td style={{ padding: '0.75rem' }}>
-                            <input 
-                              type="number" 
-                              value={phong.dienTich} 
-                              onChange={(e) => updatePhong(index, 'dienTich', e.target.value)}
-                              className="cda-input"
-                              placeholder="25"
-                              min="1"
-                              step="0.1"
-                              style={{ minWidth: '100px' }}
-                            />
-                          </td>
-                          <td style={{ padding: '0.75rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                              <input 
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => xuLyChonAnhPhong(index, e)}
-                                style={{ display: 'none' }}
-                                id={`upload-anh-phong-${index}`}
-                              />
-                              <label 
-                                htmlFor={`upload-anh-phong-${index}`}
-                                className="cda-btn cda-btn-secondary"
-                                style={{ 
-                                  cursor: 'pointer',
-                                  padding: '0.5rem 0.75rem',
-                                  fontSize: '0.875rem',
-                                  margin: 0,
-                                  whiteSpace: 'nowrap'
-                                }}
-                              >
-                                📁 Chọn ảnh
-                              </label>
-                              {phong.anhPreview && (
-                                <img 
-                                  src={phong.anhPreview} 
-                                  alt="Preview" 
-                                  style={{ 
-                                    width: '40px', 
-                                    height: '40px', 
-                                    objectFit: 'cover', 
-                                    borderRadius: '0.25rem',
-                                    border: '1px solid #e5e7eb'
-                                  }} 
-                                />
-                              )}
-                            </div>
-                          </td>
-                          <td style={{ padding: '0.75rem' }}>
-                            <input 
-                              value={phong.ghiChu} 
-                              onChange={(e) => updatePhong(index, 'ghiChu', e.target.value)}
-                              className="cda-input"
-                              placeholder="Tùy chọn"
-                              style={{ minWidth: '150px' }}
-                            />
-                          </td>
-                          <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                            <button 
-                              type="button"
-                              onClick={() => xoaPhong(index)}
-                              className="cda-btn cda-btn-secondary"
-                              style={{ 
-                                padding: '0.5rem', 
-                                fontSize: '0.875rem',
-                                background: '#fee2e2',
-                                color: '#dc2626',
-                                border: 'none'
-                              }}
-                              disabled={phongs.length === 1}
-                            >
-                              <HiOutlineTrash style={{ width: '18px', height: '18px' }} />
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <button 
-                  type="button"
-                  onClick={themPhong}
-                  className="cda-btn cda-btn-primary"
-                  style={{ marginTop: '1rem' }}
-                >
-                  <HiOutlinePlus style={{ width: '18px', height: '18px' }} />
-                  Thêm phòng
-                </button>
-                {errors.Phongs && <p className="cda-error-message" style={{ marginTop: '0.5rem' }}>{errors.Phongs}</p>}
+                <SectionChonPhong
+                  danhSachPhongDuAn={danhSachPhongDuAn}
+                  phongDaChon={phongDaChon}
+                  onChonPhong={xuLyChonPhong}
+                  onOverrideGia={xuLyOverrideGiaPhong}
+                  onOverrideDienTich={xuLyOverrideDienTichPhong}
+                  onOverrideMoTa={xuLyOverrideMoTaPhong}
+                  onOverrideHinhAnh={xuLyOverrideHinhAnhPhong}
+                  onXoaAnhPhong={xoaAnhPhongOverride}
+                  onMoModalTaoPhong={() => setModalTaoPhongMoi(true)}
+                  formatGiaTien={formatGiaTien}
+                />
+                {errors.PhongIDs && (
+                  <p className="cda-error-message" style={{ marginTop: '0.75rem' }}>{errors.PhongIDs}</p>
+                )}
               </div>
             )}
           </div>
@@ -1118,7 +1119,7 @@ function ChinhSuaTinDang() {
 
         {/* Section 3: Địa chỉ */}
         <div className="cda-card" style={{ marginBottom: '1rem' }}>
-          {renderSectionHeader(`${isNhapNhieu ? '3' : '2'}. Địa Chỉ & Vị Trí`, 'diaChi', false, 'Tùy chọn: Cập nhật địa chỉ chi tiết')}
+          {renderSectionHeader('3. Địa Chỉ & Vị Trí', 'diaChi', false, 'Tùy chọn: Cập nhật địa chỉ chi tiết')}
           
           {sectionsExpanded.diaChi && (
             <div className="cda-card-body">
@@ -1156,47 +1157,40 @@ function ChinhSuaTinDang() {
                   </label>
                   <button
                     type="button"
-                    onClick={() => {
-                      // Toggle edit mode cho cascading dropdowns
+                    onClick={(e) => {
                       const tinhSelect = document.getElementById('tinh-select');
                       const quanSelect = document.getElementById('quan-select');
                       const phuongSelect = document.getElementById('phuong-select');
-                      
-                      const isReadOnly = tinhSelect.disabled;
-                      
+
+                      const isReadOnly = tinhSelect?.disabled;
+
                       if (isReadOnly) {
-                        // Đang ở chế độ readonly → Muốn bật edit
                         const xacNhan = window.confirm(
                           '⚠️ CẢNH BÁO QUAN TRỌNG\n\n' +
                           'Thay đổi khu vực sẽ ảnh hưởng đến TẤT CẢ các tin đăng thuộc cùng dự án này.\n\n' +
                           'Bạn có chắc chắn muốn chỉnh sửa khu vực?'
                         );
-                        
+
                         if (!xacNhan) return;
-                        
-                        // Cho phép chỉnh sửa
-                        tinhSelect.disabled = false;
-                        quanSelect.disabled = false;
-                        phuongSelect.disabled = false;
-                        
-                        // Thay đổi text button
-                        event.target.innerHTML = '<svg style="margin-right: 4px">✅</svg> Lưu thay đổi';
+
+                        if (tinhSelect) tinhSelect.disabled = false;
+                        if (quanSelect) quanSelect.disabled = false;
+                        if (phuongSelect) phuongSelect.disabled = false;
+
+                        e.currentTarget.innerHTML = '<svg style="margin-right: 4px">✅</svg> Lưu thay đổi';
                       } else {
-                        // Đang ở chế độ edit → Muốn lưu
                         const xacNhanLuu = window.confirm(
                           '💾 Xác nhận lưu thay đổi khu vực?\n\n' +
                           'Thay đổi này sẽ được áp dụng khi bạn nhấn "Lưu nháp" hoặc "Gửi duyệt".'
                         );
-                        
+
                         if (!xacNhanLuu) return;
-                        
-                        // Khóa lại
-                        tinhSelect.disabled = true;
-                        quanSelect.disabled = true;
-                        phuongSelect.disabled = true;
-                        
-                        // Thay đổi text button
-                        event.target.innerHTML = '<svg style="margin-right: 4px">✏️</svg> Chỉnh sửa khu vực';
+
+                        if (tinhSelect) tinhSelect.disabled = true;
+                        if (quanSelect) quanSelect.disabled = true;
+                        if (phuongSelect) phuongSelect.disabled = true;
+
+                        e.currentTarget.innerHTML = '<svg style="margin-right: 4px">✏️</svg> Chỉnh sửa khu vực';
                       }
                     }}
                     className="cda-btn cda-btn-secondary"
@@ -1338,7 +1332,7 @@ function ChinhSuaTinDang() {
 
         {/* Section 4: Tiện ích & Dịch vụ */}
         <div className="cda-card" style={{ marginBottom: '1rem' }}>
-          {renderSectionHeader(`${isNhapNhieu ? '4' : '3'}. Tiện Ích & Dịch Vụ`, 'tienIch', false, 'Tùy chọn: Tiện ích phòng và giá dịch vụ')}
+          {renderSectionHeader('4. Tiện Ích & Dịch Vụ', 'tienIch', false, 'Tùy chọn: Tiện ích phòng và giá dịch vụ')}
           
           {sectionsExpanded.tienIch && (
             <div className="cda-card-body">
@@ -1451,7 +1445,7 @@ function ChinhSuaTinDang() {
 
         {/* Section 5: Hình ảnh */}
         <div className="cda-card" style={{ marginBottom: '1rem' }}>
-          {renderSectionHeader(`${isNhapNhieu ? '5' : '4'}. Hình Ảnh`, 'hinhAnh', true, `${anhPreview.length} ảnh • Tối thiểu 1 ảnh`)}
+          {renderSectionHeader('5. Hình Ảnh', 'hinhAnh', true, `${anhPreview.length} ảnh • Tối thiểu 1 ảnh`)}
           
           {sectionsExpanded.hinhAnh && (
             <div className="cda-card-body">
@@ -1579,6 +1573,128 @@ function ChinhSuaTinDang() {
         </div>
       </form>
 
+      {/* Modal Tạo Phòng Mới */}
+      {modalTaoPhongMoi && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }}
+          onClick={() => {
+            if (!dangTaoPhong) {
+              setModalTaoPhongMoi(false);
+              resetFormPhongMoi();
+            }
+          }}
+        >
+          <div
+            style={{
+              background: 'white',
+              borderRadius: '1rem',
+              padding: '2rem',
+              width: '90%',
+              maxWidth: '500px',
+              boxShadow: '0 8px 32px rgba(139, 92, 246, 0.2)'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '1.5rem' }}>
+              Tạo Phòng Mới
+            </h2>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="cda-form-group">
+                <label className="cda-label cda-label-required">Tên phòng</label>
+                <input
+                  type="text"
+                  value={formPhongMoi.TenPhong}
+                  onChange={(e) => setFormPhongMoi(prev => ({ ...prev, TenPhong: e.target.value }))}
+                  className="cda-input"
+                  placeholder="VD: 101, A01, P.202..."
+                  disabled={dangTaoPhong}
+                  autoFocus
+                />
+              </div>
+
+              <div className="cda-form-group">
+                <label className="cda-label cda-label-required">Giá chuẩn (VNĐ/tháng)</label>
+                <input
+                  type="text"
+                  value={formPhongMoi.GiaChuan}
+                  onChange={(e) => setFormPhongMoi(prev => ({ ...prev, GiaChuan: formatGiaTien(e.target.value) }))}
+                  className="cda-input"
+                  placeholder="VD: 3.000.000"
+                  disabled={dangTaoPhong}
+                />
+                {formPhongMoi.GiaChuan && (
+                  <p className="cda-help-text">
+                    {parseInt(parseGiaTien(formPhongMoi.GiaChuan), 10).toLocaleString('vi-VN')} ₫/tháng
+                  </p>
+                )}
+              </div>
+
+              <div className="cda-form-group">
+                <label className="cda-label cda-label-required">Diện tích chuẩn (m²)</label>
+                <input
+                  type="number"
+                  value={formPhongMoi.DienTichChuan}
+                  onChange={(e) => setFormPhongMoi(prev => ({ ...prev, DienTichChuan: e.target.value }))}
+                  className="cda-input"
+                  placeholder="VD: 25"
+                  step="0.1"
+                  min="1"
+                  disabled={dangTaoPhong}
+                />
+              </div>
+
+              <div className="cda-form-group">
+                <label className="cda-label">Mô tả phòng</label>
+                <textarea
+                  value={formPhongMoi.MoTaPhong}
+                  onChange={(e) => setFormPhongMoi(prev => ({ ...prev, MoTaPhong: e.target.value }))}
+                  className="cda-textarea"
+                  placeholder="Tầng, hướng, view, nội thất..."
+                  rows="3"
+                  disabled={dangTaoPhong}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!dangTaoPhong) {
+                    setModalTaoPhongMoi(false);
+                    resetFormPhongMoi();
+                  }
+                }}
+                className="cda-btn cda-btn-secondary"
+                disabled={dangTaoPhong}
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={xuLyTaoPhongMoi}
+                className="cda-btn cda-btn-primary"
+                disabled={dangTaoPhong}
+              >
+                {dangTaoPhong ? 'Đang tạo...' : '✓ Tạo phòng'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Modal chỉnh sửa tọa độ */}
       {hienModalChinhSuaToaDo && viDo && kinhDo && (
         <ModalChinhSuaToaDo
@@ -1601,3 +1717,7 @@ function ChinhSuaTinDang() {
 }
 
 export default ChinhSuaTinDang;
+
+
+
+

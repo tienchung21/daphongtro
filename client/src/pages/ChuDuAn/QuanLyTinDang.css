@@ -1,422 +1,804 @@
-/* CSS cho Quản lý Tin đăng - Chủ dự án - Liquid Glass + Mobile-first */
-.trang {
-  /* Token nền & kính (KHÔNG dùng :root) */
-  --mau-chu-dao: #6d28d9; /* Tím cho Chủ dự án */
-  --mau-nen: #0b1220; /* Nền tối sang trọng */
-  --bo-tron: 12px;
-  --gap: 16px;
+/* 
+ * Quản lý Tin đăng - Redesigned
+ * Card-based layout với Figma design principles
+ * Modern, responsive, glassmorphism effect
+ */
 
-  /* Liquid glass */
-  --glass-blur: 16px;
-  --glass-shadow: 0 10px 30px rgba(0,0,0,0.35);
-  --glass-border: 1px solid rgba(255,255,255,0.10);
-  --glass-bg-base: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.04));
-  --glass-bg-tint: linear-gradient(180deg, rgba(109,40,217,.14), rgba(109,40,217,.05));
-
-  min-height: 100vh;
-  padding: 16px;
-  background: radial-gradient(120% 120% at 0% 0%, #0f172a, #0b1220 60%) fixed;
-  color: #f3f4f6;
+/* === CONTAINER === */
+.qtd-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
-/* Biến thể theo vai trò */
-.roleNhanVienDieuHanh { 
-  --mau-chu-dao: #334155; 
-  --glass-bg-tint: linear-gradient(180deg, rgba(51,65,85,.16), rgba(51,65,85,.06)); 
-}
-.roleNhanVienBanHang { 
-  --mau-chu-dao: #059669; 
-  --glass-bg-tint: linear-gradient(180deg, rgba(5,150,105,.16), rgba(5,150,105,.06)); 
-}
-.roleChuDuAn { 
-  --mau-chu-dao: #6d28d9; 
-  --glass-bg-tint: linear-gradient(180deg, rgba(109,40,217,.16), rgba(109,40,217,.06)); 
+/* === HEADER === */
+.qtd-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+  gap: 24px;
 }
 
-.header {
+.qtd-header-content {
+  flex: 1;
+}
+
+.qtd-title {
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 8px 0;
+}
+
+.qtd-subtitle {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* === BUTTONS === */
+.qtd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  border: none;
+  white-space: nowrap;
+}
+
+.qtd-btn-icon-svg,
+.qtd-btn svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+}
+
+.qtd-btn:hover svg {
+  transform: scale(1.1);
+}
+
+.qtd-btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.qtd-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.qtd-btn-secondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.qtd-btn-secondary:hover {
+  background: #f3f4f6;
+}
+
+.qtd-btn-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.qtd-btn-icon svg {
+  width: 20px;
+  height: 20px;
+  color: #6b7280;
+}
+
+.qtd-btn-icon:hover {
+  transform: scale(1.1);
+  background: #f9fafb;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.qtd-btn-icon:hover svg {
+  color: #667eea;
+}
+
+.qtd-btn-icon-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.qtd-btn-icon-primary svg {
+  color: white;
+}
+
+/* === FILTERS === */
+.qtd-filters {
+  display: grid;
+  grid-template-columns: 2fr 1.5fr 1.5fr auto;
+  gap: 16px;
+  padding: 24px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 32px;
+}
+
+.qtd-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qtd-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0;
+}
+
+.qtd-input,
+.qtd-select {
+  padding: 10px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.qtd-input:focus,
+.qtd-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* === NÚT TOGGLE TIN NHÁP === */
+.qtd-btn-draft-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  border: 2px solid #e5e7eb;
+  background: white;
+  color: #6b7280;
+  white-space: nowrap;
+  width: 100%;
+}
+
+.qtd-btn-draft-toggle svg {
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s ease;
+}
+
+.qtd-btn-draft-toggle:hover {
+  border-color: #667eea;
+  background: #f9fafb;
+  color: #667eea;
+  transform: translateY(-1px);
+}
+
+.qtd-btn-draft-toggle:hover svg {
+  transform: scale(1.1);
+}
+
+.qtd-btn-draft-toggle.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #667eea;
+  color: white;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.qtd-btn-draft-toggle.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+}
+
+/* === STATS === */
+.qtd-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.qtd-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.qtd-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.qtd-stat-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: white;
+}
+
+.qtd-stat-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.qtd-stat-content {
+  flex: 1;
+}
+
+.qtd-stat-label {
+  font-size: 0.85rem;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.qtd-stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+/* === GRID === */
+.qtd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 24px;
+}
+
+/* === CARD === */
+.qtd-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.qtd-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+}
+
+.qtd-card-image {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+}
+
+.qtd-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.qtd-card:hover .qtd-card-image img {
+  transform: scale(1.05);
+}
+
+.qtd-card-image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  color: rgba(0, 0, 0, 0.1);
+}
+
+.qtd-card-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 600;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* === CARD CONTENT === */
+.qtd-card-content {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.qtd-card-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qtd-card-desc {
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.qtd-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.qtd-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+.qtd-meta-icon {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  color: #667eea;
+}
+
+.qtd-meta-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.qtd-meta-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.qtd-price {
+  font-weight: 700;
+  color: #10b981;
+}
+
+/* === AMENITIES === */
+.qtd-card-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.qtd-amenity-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.qtd-amenity-more {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  padding: 4px 8px;
+}
+
+/* === FEES === */
+.qtd-card-fees {
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.qtd-fees-title {
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.qtd-fee-item {
+  color: #6b7280;
+  line-height: 1.6;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qtd-fee-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  color: #667eea;
+}
+
+/* === ROOMS - SINGLE (Phòng đơn) === */
+.qtd-card-rooms-single {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--gap);
-  flex-wrap: wrap;
-  margin-bottom: 24px;
-}
-
-.tieuDe {
-  font-size: clamp(24px, 3vw, 32px);
-  font-weight: 700;
-  letter-spacing: 0.1px;
-  background: linear-gradient(135deg, #f3f4f6, var(--mau-chu-dao));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.thanhTacVu {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-/* Nút kiểu liquid glass */
-.nut {
-  position: relative;
-  padding: 10px 16px;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
   border-radius: 10px;
-  border: var(--glass-border);
-  background: var(--glass-bg-base), var(--glass-bg-tint);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.1);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.1);
-  color: #e5e7eb;
-  cursor: pointer;
-  transition: transform .15s ease, border-color .15s ease, box-shadow .2s ease;
-  box-shadow: var(--glass-shadow), inset 0 1px rgba(255,255,255,0.10);
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  font-size: 0.875rem;
 }
 
-.nut::before {
-  content: "";
-  position: absolute; inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(120% 60% at 10% 0%, rgba(255,255,255,.18), transparent 50%);
-  pointer-events: none;
-}
-
-.nut:hover { 
-  transform: translateY(-1px); 
-  border-color: rgba(255,255,255,0.2); 
-}
-
-.nut:active { 
-  transform: translateY(0); 
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35), inset 0 1px rgba(255,255,255,0.06); 
-}
-
-.nutChinh { 
-  background: var(--glass-bg-base), linear-gradient(180deg, color-mix(in srgb, var(--mau-chu-dao) 24%, transparent), transparent 55%); 
-}
-
-.noiDung {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: var(--gap);
-}
-
-/* Cards liquid glass */
-.card {
-  position: relative;
-  border-radius: var(--bo-tron);
-  border: var(--glass-border);
-  background: var(--glass-bg-base), var(--glass-bg-tint);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.1);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.1);
-  padding: 20px;
-  box-shadow: var(--glass-shadow), inset 0 1px rgba(255,255,255,0.10);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: radial-gradient(140% 80% at 0% 0%, rgba(255,255,255,.16), transparent 60%);
-  pointer-events: none;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 40px rgba(0,0,0,0.4), inset 0 1px rgba(255,255,255,0.15);
-}
-
-/* Bộ lọc */
-.boLoc {
-  margin-bottom: 20px;
-}
-
-.boLoc h3 {
-  font-size: 18px;
-  margin-bottom: 16px;
-  color: #f3f4f6;
+.qtd-card-rooms-single .qtd-rooms-label {
   font-weight: 600;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.boLocGrid {
+.qtd-card-rooms-single .qtd-rooms-icon {
+  width: 16px;
+  height: 16px;
+  color: #667eea;
+}
+
+.qtd-card-rooms-single .qtd-rooms-status {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.qtd-card-rooms-single .qtd-rooms-status.available {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}
+
+.qtd-card-rooms-single .qtd-rooms-status.rented {
+  background: rgba(107, 114, 128, 0.15);
+  color: #4b5563;
+}
+
+/* === ROOMS - MULTIPLE (Nhiều phòng) === */
+.qtd-card-rooms-multiple {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+  border: 1px solid rgba(102, 126, 234, 0.15);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.qtd-rooms-header {
+  margin-bottom: 12px;
+}
+
+.qtd-rooms-header .qtd-rooms-label {
+  font-weight: 700;
+  color: #111827;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qtd-rooms-header .qtd-rooms-icon {
+  width: 18px;
+  height: 18px;
+  color: #667eea;
+}
+
+.qtd-rooms-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
-.nhomNhap {
+.qtd-room-stat {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  background: white;
+  transition: all 0.2s ease;
 }
 
-.nhomNhap label {
-  font-size: 14px;
-  color: #d1d5db;
-  font-weight: 500;
+.qtd-room-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.nhomNhap input,
-.nhomNhap select {
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.06);
-  color: #f3f4f6;
-  font-size: 14px;
-  transition: border-color 0.3s ease, background-color 0.3s ease;
+/* Clickable room stats */
+.qtd-room-stat-clickable {
+  cursor: pointer;
 }
 
-.nhomNhap input:focus,
-.nhomNhap select:focus {
-  outline: none;
-  border-color: var(--mau-chu-dao);
-  background: rgba(255,255,255,0.10);
-  box-shadow: 0 0 0 3px rgba(109,40,217,0.1);
+.qtd-room-stat-clickable:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-.nhomNhap input::placeholder {
-  color: #9ca3af;
+.qtd-room-stat-clickable:active {
+  transform: translateY(-1px);
 }
 
-/* Bảng tin đăng */
-.bangTinDang {
+.qtd-room-stat-available {
+  border: 1.5px solid rgba(16, 185, 129, 0.3);
+}
+
+.qtd-room-stat-rented {
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+}
+
+.qtd-room-stat-percent {
+  border: 1.5px solid rgba(59, 130, 246, 0.3);
+}
+
+.qtd-room-stat-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.qtd-room-stat-available .qtd-room-stat-icon {
+  color: #10b981;
+}
+
+.qtd-room-stat-rented .qtd-room-stat-icon {
+  color: #6b7280;
+}
+
+.qtd-room-stat-percent .qtd-room-stat-icon {
+  color: #3b82f6;
+}
+
+.qtd-room-stat-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1;
+}
+
+.qtd-room-stat-label {
+  font-size: 0.7rem;
+  color: #6b7280;
+  font-weight: 600;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.qtd-rooms-progress {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.qtd-rooms-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #10b981, #059669);
+  border-radius: 10px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
   overflow: hidden;
 }
 
-.bangTinDang h3 {
-  font-size: 18px;
-  margin-bottom: 16px;
-  color: #f3f4f6;
-  font-weight: 600;
+.qtd-rooms-progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: qtd-shimmer 2s infinite;
 }
 
-.danhSachTin {
-  display: grid;
-  gap: 12px;
-  max-height: 600px;
-  overflow-y: auto;
-  padding-right: 8px;
+@keyframes qtd-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 
-/* Custom scrollbar */
-.danhSachTin::-webkit-scrollbar {
-  width: 6px;
-}
-
-.danhSachTin::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.05);
-  border-radius: 3px;
-}
-
-.danhSachTin::-webkit-scrollbar-thumb {
-  background: rgba(109,40,217,0.6);
-  border-radius: 3px;
-}
-
-.tinDangItem {
-  position: relative;
-  padding: 16px;
+/* === ROOMS - OLD (Keep for backward compatibility) === */
+.qtd-card-rooms {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08), rgba(118, 75, 162, 0.08));
   border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-  transition: all 0.2s ease;
+  font-size: 0.875rem;
 }
 
-.tinDangItem:hover {
-  border-color: rgba(109,40,217,0.4);
-  background: linear-gradient(180deg, rgba(109,40,217,.10), rgba(109,40,217,.04));
-  transform: translateX(4px);
+.qtd-rooms-total {
+  font-weight: 600;
+  color: #374151;
 }
 
-.tinDangItem h4 {
-  font-size: 16px;
-  color: #f3f4f6;
-  margin-bottom: 8px;
+.qtd-rooms-available {
+  color: #10b981;
   font-weight: 600;
 }
 
-.tinDangThongTin {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 16px;
-  align-items: start;
+/* === FOOTER === */
+.qtd-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 14px;
+  border-top: 1px solid #f3f4f6;
+  margin-top: auto;
 }
 
-.tinDangChiTiet p {
-  font-size: 14px;
+.qtd-card-date {
+  font-size: 0.8rem;
   color: #9ca3af;
-  margin: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.tinDangTacVu {
+.qtd-date-icon {
+  width: 14px;
+  height: 14px;
+  color: #9ca3af;
+}
+
+.qtd-card-actions {
   display: flex;
   gap: 8px;
-  flex-direction: column;
 }
 
-.nutNho {
-  padding: 6px 12px;
-  font-size: 12px;
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.06);
+/* === EMPTY STATE === */
+.qtd-empty {
+  text-align: center;
+  padding: 80px 20px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.qtd-empty-icon {
+  margin: 0 auto 24px;
+  width: 80px;
+  height: 80px;
   color: #d1d5db;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  text-align: center;
+  opacity: 0.5;
 }
 
-.nutNho:hover {
-  background: rgba(109,40,217,0.2);
-  border-color: rgba(109,40,217,0.4);
-  color: #f3f4f6;
+.qtd-empty-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
-.trangThai {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 8px;
+.qtd-empty-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 12px 0;
 }
 
-.trangThai.cho-duyet {
-  background: rgba(251, 191, 36, 0.2);
-  color: #fbbf24;
-  border: 1px solid rgba(251, 191, 36, 0.3);
-}
-
-.trangThai.da-duyet {
-  background: rgba(34, 197, 94, 0.2);
-  color: #22c55e;
-  border: 1px solid rgba(34, 197, 94, 0.3);
-}
-
-.trangThai.tu-choi {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.trangThai.dang-dang {
-  background: rgba(14, 165, 233, 0.2);
-  color: #0ea5e9;
-  border: 1px solid rgba(14, 165, 233, 0.3);
-}
-
-.taiDang {
-  text-align: center;
-  padding: 40px 20px;
+.qtd-empty-desc {
+  font-size: 1rem;
   color: #6b7280;
+  margin: 0 0 32px 0;
 }
 
-.spinner {
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  border: 3px solid rgba(109,40,217,0.3);
+/* === LOADING === */
+.qtd-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 20px;
+}
+
+.qtd-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #f3f4f6;
+  border-top-color: #667eea;
   border-radius: 50%;
-  border-top-color: var(--mau-chu-dao);
-  animation: spin 1s linear infinite;
-  margin-bottom: 16px;
+  animation: qtd-spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.loi {
-  text-align: center;
-  padding: 20px;
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: var(--bo-tron);
-}
-
-.truongRong {
-  text-align: center;
-  padding: 40px 20px;
-  color: #6b7280;
-}
-
-.truongRong .nut {
-  margin-top: 16px;
-}
-
-/* Fallback khi không hỗ trợ blur */
-@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-  .card, .tinDangItem, .nut { 
-    background: rgba(31,41,55,0.85); 
+@keyframes qtd-spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-/* Responsive breakpoints */
-@media (min-width: 480px) {
-  .header {
-    flex-wrap: nowrap;
-  }
-  
-  .tinDangTacVu {
-    flex-direction: row;
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+  .qtd-grid {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   }
 }
 
-@media (min-width: 768px) {
-  .trang {
-    padding: 24px;
+@media (max-width: 768px) {
+  .qtd-container {
+    padding: 16px;
   }
-  
-  .noiDung {
-    grid-template-columns: 300px 1fr;
-    gap: 24px;
+
+  .qtd-header {
+    flex-direction: column;
+    align-items: stretch;
   }
-  
-  .card {
-    padding: 24px;
-  }
-  
-  .boLocGrid {
+
+  .qtd-filters {
     grid-template-columns: 1fr;
   }
-}
 
-@media (min-width: 1024px) {
-  .header {
-    padding: 0 8px;
+  .qtd-stats {
+    grid-template-columns: 1fr;
   }
-  
-  .tinDangThongTin {
-    grid-template-columns: 1fr auto;
-  }
-}
 
-@media (min-width: 1280px) {
-  .trang {
-    padding: 32px;
-    max-width: 1400px;
-    margin: 0 auto;
+  .qtd-grid {
+    grid-template-columns: 1fr;
   }
-}
 
-/* Reduce motion for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .card, .tinDangItem, .nut {
-    transition: none;
-  }
-  
-  .spinner {
-    animation: none;
+  .qtd-title {
+    font-size: 1.5rem;
   }
 }

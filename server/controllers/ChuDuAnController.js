@@ -33,32 +33,20 @@ class ChuDuAnController {
         });
       }
 
-      // Nếu KHÔNG nhập nhiều phòng (Phongs = null), bắt buộc có Gia và DienTich
-      if (!tinDangData.Phongs || tinDangData.Phongs.length === 0) {
-        if (!tinDangData.Gia || !tinDangData.DienTich) {
-          return res.status(400).json({
-            success: false,
-            message: 'Thiếu thông tin bắt buộc: Gia, DienTich (khi không nhập nhiều phòng)'
-          });
-        }
+      // Bắt buộc phải chọn phòng từ danh sách dự án
+      if (!Array.isArray(tinDangData.PhongIDs) || tinDangData.PhongIDs.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tin đăng phải chọn ít nhất một phòng từ dự án'
+        });
+      }
 
-        if (tinDangData.Gia <= 0 || tinDangData.DienTich <= 0) {
-          return res.status(400).json({
-            success: false,
-            message: 'Giá và diện tích phải lớn hơn 0'
-          });
-        }
-      } else {
-        // Nếu nhập nhiều phòng, validate từng phòng
-        for (let i = 0; i < tinDangData.Phongs.length; i++) {
-          const phong = tinDangData.Phongs[i];
-          if (!phong.tenPhong) {
-            return res.status(400).json({
-              success: false,
-              message: `Phòng thứ ${i + 1} thiếu tên phòng`
-            });
-          }
-        }
+      const phongIdKhongHopLe = tinDangData.PhongIDs.some(item => !item || !item.PhongID);
+      if (phongIdKhongHopLe) {
+        return res.status(400).json({
+          success: false,
+          message: 'Danh sách phòng không hợp lệ'
+        });
       }
 
       const tinDangId = await ChuDuAnModel.taoTinDang(chuDuAnId, tinDangData);
@@ -208,21 +196,6 @@ class ChuDuAnController {
         return res.status(400).json({
           success: false,
           message: 'ID tin đăng không hợp lệ'
-        });
-      }
-
-      // Validate dữ liệu cập nhật
-      if (updateData.Gia && updateData.Gia <= 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Giá phải lớn hơn 0'
-        });
-      }
-
-      if (updateData.DienTich && updateData.DienTich <= 0) {
-        return res.status(400).json({
-          success: false,
-          message: 'Diện tích phải lớn hơn 0'
         });
       }
 
@@ -510,6 +483,231 @@ class ChuDuAnController {
     }
   }
 
+  static async capNhatDuAn(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const duAnId = parseInt(req.params.id, 10);
+
+      if (Number.isNaN(duAnId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID dự án không hợp lệ'
+        });
+      }
+
+      const allowedFields = [
+        'TenDuAn',
+        'DiaChi',
+        'ViDo',
+        'KinhDo',
+        'YeuCauPheDuyetChu',
+        'PhuongThucVao',
+        'TrangThai'
+      ];
+
+      const payload = {};
+      allowedFields.forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+          payload[field] = req.body[field];
+        }
+      });
+
+      if (Object.keys(payload).length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không có dữ liệu để cập nhật'
+        });
+      }
+
+      const duAn = await ChuDuAnModel.capNhatDuAn(duAnId, chuDuAnId, payload);
+
+      if (!duAn) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy dự án hoặc bạn không có quyền truy cập'
+        });
+      }
+
+      await NhatKyHeThongService.ghiNhan(
+        chuDuAnId,
+        'cap_nhat_du_an',
+        'DuAn',
+        duAnId,
+        null,
+        payload,
+        req.ip,
+        req.get('User-Agent')
+      );
+
+      res.json({
+        success: true,
+        message: 'Cập nhật dự án thành công',
+        data: duAn
+      });
+    } catch (error) {
+      console.error('Lỗi cập nhật dự án:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  static async luuTruDuAn(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const duAnId = parseInt(req.params.id, 10);
+
+      if (Number.isNaN(duAnId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID dự án không hợp lệ'
+        });
+      }
+
+      const lyDo = req.body?.lyDo || null;
+
+      const duAn = await ChuDuAnModel.luuTruDuAn(duAnId, chuDuAnId);
+
+      if (!duAn) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy dự án hoặc bạn không có quyền truy cập'
+        });
+      }
+
+      await NhatKyHeThongService.ghiNhan(
+        chuDuAnId,
+        'luu_tru_du_an',
+        'DuAn',
+        duAnId,
+        null,
+        { lyDo: lyDo || undefined },
+        req.ip,
+        req.get('User-Agent')
+      );
+
+      res.json({
+        success: true,
+        message: 'Lưu trữ dự án thành công',
+        data: duAn
+      });
+    } catch (error) {
+      console.error('Lỗi lưu trữ dự án:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  static async layChiTietChinhSachCoc(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const chinhSachId = parseInt(req.params.id, 10);
+
+      if (Number.isNaN(chinhSachId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID chính sách không hợp lệ'
+        });
+      }
+
+      const chinhSach = await ChuDuAnModel.layChiTietChinhSachCoc(chuDuAnId, chinhSachId);
+
+      if (!chinhSach) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy chính sách cọc hoặc bạn không có quyền truy cập'
+        });
+      }
+
+      res.json({
+        success: true,
+        message: 'Lấy chi tiết chính sách cọc thành công',
+        data: chinhSach
+      });
+    } catch (error) {
+      console.error('Lỗi lấy chi tiết chính sách cọc:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  static async capNhatChinhSachCoc(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const chinhSachId = parseInt(req.params.id, 10);
+
+      if (Number.isNaN(chinhSachId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID chính sách không hợp lệ'
+        });
+      }
+
+      const allowedFields = [
+        'TenChinhSach',
+        'MoTa',
+        'ChoPhepCocGiuCho',
+        'TTL_CocGiuCho_Gio',
+        'TyLePhat_CocGiuCho',
+        'ChoPhepCocAnNinh',
+        'SoTienCocAnNinhMacDinh',
+        'QuyTacGiaiToa',
+        'HieuLuc'
+      ];
+
+      const payload = {};
+      allowedFields.forEach((field) => {
+        if (Object.prototype.hasOwnProperty.call(req.body, field)) {
+          payload[field] = req.body[field];
+        }
+      });
+
+      if (Object.keys(payload).length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Không có dữ liệu để cập nhật'
+        });
+      }
+
+      const chinhSach = await ChuDuAnModel.capNhatChinhSachCoc(chuDuAnId, chinhSachId, payload);
+
+      if (!chinhSach) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy chính sách cọc hoặc bạn không có quyền truy cập'
+        });
+      }
+
+      await NhatKyHeThongService.ghiNhan(
+        chuDuAnId,
+        'cap_nhat_chinh_sach_coc',
+        'ChinhSachCoc',
+        chinhSachId,
+        null,
+        payload,
+        req.ip,
+        req.get('User-Agent')
+      );
+
+      res.json({
+        success: true,
+        message: 'Cập nhật chính sách cọc thành công',
+        data: chinhSach
+      });
+    } catch (error) {
+      console.error('Lỗi cập nhật chính sách cọc:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
   /**
    * Lưu nháp tin đăng
    * POST /api/chu-du-an/tin-dang/nhap
@@ -679,26 +877,58 @@ class ChuDuAnController {
     try {
       const chuDuAnId = req.user.id;
       
-      // Lấy thống kê nhanh
-      const [tinDangs, cuocHens, duAns] = await Promise.all([
+      // Lấy thống kê nhanh và dữ liệu cần thiết
+      const [tinDangs, cuocHens, duAns, thongKeTong, thongKePhong] = await Promise.all([
         ChuDuAnModel.layDanhSachTinDang(chuDuAnId, { limit: 5 }),
         ChuDuAnModel.layDanhSachCuocHen(chuDuAnId, { limit: 10 }),
-        ChuDuAnModel.layDanhSachDuAn(chuDuAnId)
+        ChuDuAnModel.layDanhSachDuAn(chuDuAnId),
+        ChuDuAnModel.layBaoCaoHieuSuat(chuDuAnId),
+        ChuDuAnModel.layThongKePhong(chuDuAnId)
       ]);
 
-      const baoCao = await ChuDuAnModel.layBaoCaoHieuSuat(chuDuAnId);
+      const cuocHenSapToi = cuocHens.filter(ch => 
+        new Date(ch.ThoiGianHen) > new Date() && 
+        ['ChoXacNhan', 'DaXacNhan'].includes(ch.TrangThai)
+      );
+
+      const tongQuan = thongKeTong?.tongQuan || {};
+      const tuongTac = thongKeTong?.tuongTac || {};
+      const coc = thongKeTong?.coc || {};
+
+      const summary = {
+        tongTinDang: tongQuan.TongTinDang || 0,
+        tinDangDangHoatDong: tongQuan.TinDangDaDang || 0,
+        tinDangChoDuyet: tongQuan.TinDangChoDuyet || 0,
+        tinDangNhap: tongQuan.TinDangNhap || 0,
+        tinDangTamNgung: tongQuan.TinDangTamNgung || 0,
+        tinDangDaDuyet: tongQuan.TinDangDaDuyet || 0,
+        tinDangTuChoi: tongQuan.TinDangTuChoi || 0,
+        giaTrungBinh: tongQuan.GiaTrungBinh || 0,
+        tongDienTich: tongQuan.TongDienTich || 0,
+        tongPhong: thongKePhong.TongPhong || 0,
+        tongPhongTrong: thongKePhong.PhongTrong || 0,
+        tongPhongDaThue: thongKePhong.PhongDaThue || 0,
+        tongPhongGiuCho: thongKePhong.PhongGiuCho || 0,
+        tongPhongDonDep: thongKePhong.PhongDonDep || 0,
+        tongLuotXem: tuongTac.TongLuotXem || 0,
+        tongYeuThich: tuongTac.TongYeuThich || 0,
+        luotXemHomNay: tuongTac.LuotXemHomNay || 0,
+        yeuThichHomNay: tuongTac.YeuThichHomNay || 0,
+        tongGiaoDichCoc: coc.TongGiaoDichCoc || 0,
+        tongTienCoc: coc.TongTienCoc || 0,
+        doanhThuThang: coc.TongTienCocThangNay || 0
+      };
 
       res.json({
         success: true,
         message: 'Lấy dashboard thành công',
         data: {
-          thongKeTong: baoCao,
+          summary,
+          thongKeTong,
+          thongKePhong,
           tinDangGanDay: tinDangs,
-          cuocHenSapToi: cuocHens.filter(ch => 
-            new Date(ch.ThoiGianHen) > new Date() && 
-            ['ChoXacNhan', 'DaXacNhan'].includes(ch.TrangThai)
-          ),
-          duAns: duAns
+          cuocHenSapToi,
+          duAns
         }
       });
     } catch (error) {
@@ -780,6 +1010,27 @@ class ChuDuAnController {
         return res.status(404).json({
           success: false,
           message: 'Không tìm thấy tin đăng hoặc không có quyền truy cập'
+        });
+      }
+
+      if (!Array.isArray(updateData.PhongIDs) || updateData.PhongIDs.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tin đăng phải chọn ít nhất một phòng thuộc dự án'
+        });
+      }
+
+      const phongIdsHopLe = updateData.PhongIDs.every(item => {
+        if (typeof item === 'object') {
+          return item && item.PhongID;
+        }
+        return !!item;
+      });
+
+      if (!phongIdsHopLe) {
+        return res.status(400).json({
+          success: false,
+          message: 'Danh sách phòng không hợp lệ'
         });
       }
 

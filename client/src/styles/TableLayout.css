@@ -29,6 +29,11 @@
   background: linear-gradient(90deg, rgba(139, 92, 246, 0.06) 0%, rgba(59, 130, 246, 0.03) 100%);
 }
 
+/* Visually align first column header with body rows (3px row stripe) */
+.cda-table-fixed-layout thead th:first-child {
+  padding-left: 19px; /* 16px base + 3px stripe */
+}
+
 /* === Table Cells === */
 .cda-table-row {
   position: relative;

@@ -1,0 +1,214 @@
+.modal-duan-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 10000;
+}
+
+.modal-duan-container {
+  width: min(720px, 100%);
+  max-height: 92vh;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 20px;
+  box-shadow: 0 24px 64px rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(139, 92, 246, 0.16);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-duan-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.modal-duan-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.modal-duan-subtitle {
+  margin: 4px 0 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.modal-duan-close {
+  border: none;
+  background: rgba(15, 23, 42, 0.05);
+  color: #64748b;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-duan-close:hover {
+  background: rgba(139, 92, 246, 0.12);
+  color: #7c3aed;
+}
+
+.modal-duan-body {
+  padding: 20px 28px 28px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-duan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.modal-duan-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-duan-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1f2937;
+  letter-spacing: 0.02em;
+}
+
+.modal-duan-field input,
+.modal-duan-field textarea,
+.modal-duan-field select {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  color: #111827;
+  background-color: rgba(255, 255, 255, 0.9);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal-duan-field input:focus,
+.modal-duan-field textarea:focus,
+.modal-duan-field select:focus {
+  border-color: rgba(139, 92, 246, 0.8);
+  box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12);
+  outline: none;
+}
+
+.modal-duan-field textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.modal-duan-field.checkbox {
+  grid-column: 1 / -1;
+  padding: 16px;
+  background: rgba(241, 245, 249, 0.6);
+  border-radius: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.checkbox-label input {
+  width: 18px;
+  height: 18px;
+}
+
+.field-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.label-required {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.modal-duan-error {
+  border-radius: 12px;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  background: rgba(254, 226, 226, 0.6);
+  color: #b91c1c;
+  padding: 12px 16px;
+  font-size: 0.85rem;
+}
+
+.modal-duan-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modal-duan-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.modal-duan-btn.primary {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  color: #ffffff;
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.25);
+}
+
+.modal-duan-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(124, 58, 237, 0.3);
+}
+
+.modal-duan-btn.secondary {
+  background: rgba(148, 163, 184, 0.2);
+  color: #475569;
+}
+
+.modal-duan-btn.secondary:hover {
+  transform: translateY(-1px);
+  background: rgba(148, 163, 184, 0.3);
+}
+
+.modal-duan-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 640px) {
+  .modal-duan-header,
+  .modal-duan-body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .modal-duan-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -4,16 +4,14 @@ import './App.css';
 import TrangChu from './pages/trangchu';
 import Login from './pages/login';
 import Dangky from './pages/dangky';
-import QuanLyTaiKhoan from './pages/quanlytaikhoan';
 
 // Import các components cho Chủ dự án
 import DashboardChuDuAn from './pages/ChuDuAn/Dashboard'; // ✨ Light Glass Morphism với Dashboard mới
-import QuanLyTinDang from './pages/ChuDuAn/QuanLyTinDang';
+import QuanLyTinDang from './pages/ChuDuAn/QuanLyTinDang_new';
 import ChiTietTinDang from './pages/ChuDuAn/ChiTietTinDang'; // ✨ Light Glass Morphism Theme
 import BaoCaoHieuSuat from './pages/ChuDuAn/BaoCaoHieuSuat';
 import TaoTinDang from './pages/ChuDuAn/TaoTinDang';
 import ChinhSuaTinDang from './pages/ChuDuAn/ChinhSuaTinDang';
-import QuanLyDuAn from './pages/ChuDuAn/QuanLyDuAn';
 
 function App() {
 
@@ -25,7 +23,6 @@ function App() {
       {/* <Route path='/about' element={<div>About Page</div>} /> */}
       <Route path='/login' element={<Login />} />
       <Route path='/dangky' element={<Dangky />} />
-      <Route path='/quanlytaikhoan' element={<QuanLyTaiKhoan />} />
       
       {/* Routes cho Chủ dự án */}
       <Route path='/chu-du-an/dashboard' element={<DashboardChuDuAn />} />
@@ -34,7 +31,6 @@ function App() {
       <Route path='/chu-du-an/tao-tin-dang' element={<TaoTinDang />} />
       <Route path='/chu-du-an/chinh-sua-tin-dang/:id' element={<ChinhSuaTinDang />} />
       <Route path='/chu-du-an/bao-cao' element={<BaoCaoHieuSuat />} />
-      <Route path='/chu-du-an/du-an' element={<QuanLyDuAn />} />
     </Routes>
         </div>
  
