@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 const baseUrl = 'https://my.sepay.vn'; // hoặc đổi nếu cần
-const token = 'matoken'; 
+const token = 'token'; 
 
 const client = axios.create({
   baseURL: baseUrl,
