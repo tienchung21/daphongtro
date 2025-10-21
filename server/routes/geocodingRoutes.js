@@ -6,18 +6,18 @@
 const express = require('express');
 const router = express.Router();
 const GeocodingController = require('../controllers/GeocodingController');
-const { authSimple } = require('../middleware/authSimple'); // Simple auth for development
+const auth = require('../middleware/auth'); // Production JWT authentication
 
 /**
  * @route   POST /api/geocode
  * @desc    Forward Geocoding - Chuyển địa chỉ thành tọa độ
- * @access  Private (Requires authentication)
+ * @access  Private (Requires JWT authentication)
  * @body    { address: string }
  * @returns { success: boolean, data: { lat, lng, displayName, address } }
  */
 router.post(
   '/',
-  authSimple, // Simple auth for development (bypass JWT)
+  auth, // Production JWT authentication
   GeocodingController.validateGeocodeRequest,
   GeocodingController.geocodeAddress
 );

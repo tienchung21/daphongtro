@@ -329,15 +329,40 @@
   color: #6b7280;
   font-size: 0.875rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.cda-footer-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(96, 6, 252, 0.05));
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .cda-footer-btn:hover {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(139, 92, 246, 0.12);
   border-color: #8b5cf6;
   color: #8b5cf6;
-  box-shadow: 0 4px 8px rgba(139, 92, 246, 0.15);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+  transform: translateY(-2px);
+}
+
+.cda-footer-btn:hover::before {
+  opacity: 1;
+}
+
+/* Active state for Cài đặt page */
+.cda-footer-btn.active {
+  background: linear-gradient(135deg, #8b5cf6 0%, #6006fc 100%);
+  border-color: #8b5cf6;
+  color: white;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  font-weight: 600;
 }
 
 .cda-footer-btn span:first-child {

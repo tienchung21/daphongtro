@@ -55,9 +55,25 @@ const roleMiddleware = (allowedRoles = []) => {
         });
       }
 
+      // Chuẩn hóa tên vai trò từ database (bỏ dấu và khoảng trắng)
+      const normalizeRoleName = (name) => {
+        return name
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // Bỏ dấu tiếng Việt
+          .replace(/\s+/g, '') // Bỏ khoảng trắng
+          .replace(/[đĐ]/g, match => match === 'đ' ? 'd' : 'D'); // Đổi đ → d
+      };
+
       // Kiểm tra quyền truy cập
       const userRoleNames = userRoles.map(role => role.TenVaiTro);
-      const hasPermission = allowedRoles.some(role => userRoleNames.includes(role));
+      const normalizedUserRoles = userRoleNames.map(normalizeRoleName);
+      
+      console.log('🔐 [ROLE] Raw roles:', userRoleNames);
+      console.log('🔐 [ROLE] Normalized roles:', normalizedUserRoles);
+      console.log('🔐 [ROLE] Allowed roles:', allowedRoles);
+      
+      const hasPermission = allowedRoles.some(role => normalizedUserRoles.includes(role));
+      console.log('🔐 [ROLE] Has permission:', hasPermission);
 
       if (!hasPermission) {
         return res.status(403).json({
@@ -67,7 +83,8 @@ const roleMiddleware = (allowedRoles = []) => {
       }
 
       // Gắn thông tin vai trò vào request
-      req.user.vaiTros = userRoleNames;
+      req.user.vaiTros = normalizedUserRoles; // Tên đã chuẩn hóa
+      req.user.vaiTrosGoc = userRoleNames; // Tên gốc để hiển thị
       req.user.coQuyenTruyCap = true;
 
       next();

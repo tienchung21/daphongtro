@@ -195,7 +195,197 @@ daphongtro/
 
 ---
 
-## 5. Checklist Bắt buộc cho Pull Request
+## 5. Quy trình Commit và Documentation
+
+### 5.1. 📝 Sau mỗi lần chỉnh sửa hoàn thành
+**BẮT BUỘC thực hiện theo thứ tự:**
+
+1. **Cập nhật tài liệu liên quan:**
+   - Nếu thay đổi API → Cập nhật `docs/chu-du-an-routes-implementation.md` hoặc file tương ứng
+   - Nếu thay đổi database → Tạo migration file trong `migrations/`
+   - Nếu thay đổi UI → Cập nhật design docs trong `client/src/pages/[Module]/README.md`
+   - Nếu fix bug → Cập nhật `FIXED_ISSUES.md` hoặc changelog
+
+2. **Viết commit message chuẩn:**
+   ```
+   <type>(<scope>): <short description>
+   
+   <body - optional: detailed explanation>
+   
+   <footer - optional: breaking changes, refs>
+   ```
+   
+   **Types:**
+   - `feat`: Tính năng mới
+   - `fix`: Sửa bug
+   - `docs`: Chỉ thay đổi documentation
+   - `style`: Format code (không ảnh hưởng logic)
+   - `refactor`: Refactor code (không thêm feature, không fix bug)
+   - `perf`: Cải thiện performance
+   - `test`: Thêm hoặc sửa tests
+   - `chore`: Thay đổi build process, dependencies, etc.
+   
+   **Scope examples:**
+   - `auth`: Authentication/authorization
+   - `chu-du-an`: Module Chủ dự án
+   - `api`: Backend APIs
+   - `ui`: Frontend UI
+   - `db`: Database
+   - `config`: Configuration
+   
+   **Examples:**
+   ```bash
+   # Feature mới
+   feat(auth): add JWT token authentication
+   
+   # Fix bug
+   fix(chu-du-an): correct VaiTroID mapping for register
+   
+   # Refactor
+   refactor(api): extract JWT generation to helper function
+   
+   # Documentation
+   docs(readme): update auth flow documentation
+   
+   # Multiple changes
+   feat(auth): implement complete login/register flow
+   
+   Frontend:
+   - Add token storage in localStorage
+   - Auto-redirect based on role
+   
+   Backend:
+   - Generate JWT on login/register
+   - Add token to response
+   
+   Refs: #file:copilot-instructions.md
+   ```
+
+3. **Stage và commit:**
+   ```bash
+   git add <files>
+   git commit -m "type(scope): description"
+   ```
+
+4. **Push changes:**
+   ```bash
+   git push upstream Hop  # Push to upstream repo
+   ```
+
+### 5.2. 📊 Sau khi hoàn thành toàn bộ tính năng
+
+**BẮT BUỘC tạo summary document:**
+
+1. **Tạo hoặc cập nhật file docs:**
+   - Tên file: `docs/[FEATURE_NAME]_IMPLEMENTATION.md`
+   - Hoặc cập nhật existing docs nếu đã có
+
+2. **Nội dung bắt buộc trong summary:**
+   ```markdown
+   # [Feature Name] Implementation Summary
+   
+   ## 📋 Overview
+   - Brief description
+   - Date completed
+   - Related tickets/issues
+   
+   ## ✅ Changes Made
+   
+   ### Frontend
+   - List of files modified
+   - Key changes
+   - UI/UX updates
+   
+   ### Backend
+   - API endpoints added/modified
+   - Database changes
+   - Business logic updates
+   
+   ### Database
+   - Tables modified
+   - New migrations
+   - Schema changes
+   
+   ## 🔧 Technical Details
+   - Architecture decisions
+   - Libraries/packages added
+   - Configuration changes
+   
+   ## 🧪 Testing
+   - Test scenarios
+   - Edge cases covered
+   - Manual testing checklist
+   
+   ## 📝 Usage
+   - How to use the feature
+   - API examples
+   - Screenshots (if UI)
+   
+   ## ⚠️ Known Issues
+   - Limitations
+   - TODOs
+   - Future improvements
+   
+   ## 📚 References
+   - Related docs
+   - External resources
+   ```
+
+3. **Commit summary document:**
+   ```bash
+   git add docs/[FEATURE_NAME]_IMPLEMENTATION.md
+   git commit -m "docs: add implementation summary for [feature]"
+   git push upstream Hop
+   ```
+
+### 5.3. 🎯 Ví dụ thực tế
+
+**Scenario:** Hoàn thành tính năng JWT Authentication
+
+**Step 1 - Cập nhật docs:**
+```bash
+# Tạo hoặc cập nhật
+docs/AUTH_JWT_IMPLEMENTATION.md
+```
+
+**Step 2 - Commit messages:**
+```bash
+# Commit 1: Backend changes
+git commit -m "feat(auth): implement JWT token generation
+
+- Add jsonwebtoken dependency
+- Create generateToken helper
+- Return token in login/register responses
+- Update authController to use JWT
+
+Refs: docs/AUTH_JWT_IMPLEMENTATION.md"
+
+# Commit 2: Frontend changes  
+git commit -m "feat(auth): integrate JWT token storage
+
+- Store token in localStorage
+- Add Authorization header to API requests
+- Auto-logout on 401 errors
+- Redirect based on user role
+
+Refs: docs/AUTH_JWT_IMPLEMENTATION.md"
+
+# Commit 3: Documentation
+git commit -m "docs(auth): add JWT implementation summary
+
+- Document auth flow
+- API examples
+- Frontend integration guide
+
+Refs: #185"
+```
+
+**Step 3 - Push all:**
+```bash
+git push upstream Hop
+```
+
+## 6. Checklist Bắt buộc cho Pull Request
 
 - [ ] Lint + test pass CI?  
 - [ ] Coverage ≥ 80 % (backend & frontend).  
@@ -205,6 +395,9 @@ daphongtro/
 - [ ] Nếu thêm endpoint thay đổi dữ liệu → viết test idempotency.  
 - [ ] Nếu liên quan nghiệp vụ cọc → cập nhật TTL job (nếu cần).  
 - [ ] UI PR: đính kèm screenshot desktop/mobile & Lighthouse ≥ 90.
+- [ ] **Documentation đã được cập nhật?**
+- [ ] **Commit messages theo chuẩn?**
+- [ ] **Summary document đã được tạo (nếu feature lớn)?**
 
 ---
 

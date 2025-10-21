@@ -19,6 +19,9 @@ export { default as BaoCaoHieuSuat } from './BaoCaoHieuSuat';
 // UC-PROJ-01/Utilities: Quản lý Dự án
 export { default as QuanLyDuAn } from './QuanLyDuAn';
 
+// Settings: Cài đặt tài khoản
+export { default as CaiDat } from './CaiDat';
+
 // TODO: Các components khác sẽ được bổ sung
 // UC-PROJ-02: Quản lý cuộc hẹn
 // UC-PROJ-04: Báo cáo hợp đồng cho thuê

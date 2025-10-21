@@ -29,14 +29,16 @@ function Login() {
 
       console.log('Kết quả đăng nhập:', res.data);
 
-      // 🟢 Nếu đăng nhập đúng, lưu thông tin user vào localStorage
-      localStorage.setItem('user', JSON.stringify(res.data));
+      // 🟢 Lưu token và thông tin user vào localStorage
+      const { token, user } = res.data;
+      localStorage.setItem('user', JSON.stringify({
+        token,
+        ...user
+      }));
 
       alert('Đăng nhập thành công!');
       
       // 🟢 Redirect theo vai trò (VaiTroID theo DB: 1=Khách hàng, 3=Chủ dự án)
-      const userData = res.data;
-      const user = userData?.user || userData;
       const vaiTroId = user?.VaiTroHoatDongID || user?.VaiTroID || user?.roleId;
       const tenVaiTro = user?.TenVaiTro || user?.VaiTro || user?.role;
       

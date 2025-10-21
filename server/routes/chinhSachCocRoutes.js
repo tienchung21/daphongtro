@@ -8,12 +8,10 @@
 const express = require('express');
 const router = express.Router();
 const ChinhSachCocController = require('../controllers/ChinhSachCocController');
-// const { auth } = require('../middleware/auth');
-// const { requireRoles } = require('../middleware/role');
 
-// === DEV MODE: Sử dụng authSimple và roleSimple cho mock user ===
-const { authSimple } = require('../middleware/authSimple');
-const { roleSimple } = require('../middleware/roleSimple');
+// === PRODUCTION AUTH: JWT-based authentication ===
+const auth = require('../middleware/auth');
+const { requireRole } = require('../middleware/role');
 
 /**
  * GET /api/chu-du-an/chinh-sach-coc
@@ -25,8 +23,8 @@ const { roleSimple } = require('../middleware/roleSimple');
  */
 router.get(
   '/',
-  authSimple,
-  roleSimple(['ChuDuAn']),
+  auth,
+  requireRole('ChuDuAn'),
   ChinhSachCocController.layDanhSach
 );
 
@@ -38,8 +36,8 @@ router.get(
  */
 router.get(
   '/:id',
-  authSimple,
-  roleSimple(['ChuDuAn']),
+  auth,
+  requireRole('ChuDuAn'),
   ChinhSachCocController.layChiTiet
 );
 
@@ -62,8 +60,8 @@ router.get(
  */
 router.post(
   '/',
-  authSimple,
-  roleSimple(['ChuDuAn']),
+  auth,
+  requireRole('ChuDuAn'),
   ChinhSachCocController.taoMoi
 );
 
@@ -79,8 +77,8 @@ router.post(
  */
 router.put(
   '/:id',
-  authSimple,
-  roleSimple(['ChuDuAn']),
+  auth,
+  requireRole('ChuDuAn'),
   ChinhSachCocController.capNhat
 );
 
@@ -93,8 +91,8 @@ router.put(
  */
 router.delete(
   '/:id',
-  authSimple,
-  roleSimple(['ChuDuAn']),
+  auth,
+  requireRole('ChuDuAn'),
   ChinhSachCocController.voHieuHoa
 );
 

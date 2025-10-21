@@ -6,12 +6,10 @@
 const express = require('express');
 const router = express.Router();
 const OperatorController = require('../controllers/OperatorController');
-// const { auth } = require('../middleware/auth');
-// const { requireRole } = require('../middleware/role');
 
-// === DEV MODE: Sử dụng authSimple và roleSimple cho mock user ===
-const { authSimple } = require('../middleware/authSimple');
-const { roleSimple } = require('../middleware/roleSimple');
+// === PRODUCTION AUTH: JWT-based authentication ===
+const auth = require('../middleware/auth');
+const { requireRoles } = require('../middleware/role');
 
 /**
  * UC-OPR-01: Banned dự án (ngưng hoạt động do vi phạm)
@@ -34,8 +32,8 @@ const { roleSimple } = require('../middleware/roleSimple');
  */
 router.put(
   '/du-an/:id/banned',
-  authSimple,
-  roleSimple(['Operator', 'Admin']),
+  auth,
+  requireRoles(['Operator', 'Admin']),
   OperatorController.bannedDuAn
 );
 
@@ -61,8 +59,8 @@ router.put(
  */
 router.put(
   '/du-an/:id/xu-ly-yeu-cau',
-  authSimple,
-  roleSimple(['Operator', 'Admin']),
+  auth,
+  requireRoles(['Operator', 'Admin']),
   OperatorController.xuLyYeuCauMoLai
 );
 

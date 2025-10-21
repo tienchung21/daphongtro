@@ -59,13 +59,24 @@ const authMiddleware = async (req, res, next) => {
       [user.VaiTroHoatDongID]
     );
 
+    // Chuẩn hóa tên vai trò (bỏ dấu cách và ký tự đặc biệt)
+    const rawRoleName = roleRows[0]?.TenVaiTro || 'Unknown';
+    const normalizedRoleName = rawRoleName
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Bỏ dấu tiếng Việt
+      .replace(/\s+/g, '') // Bỏ khoảng trắng
+      .replace(/[đĐ]/g, match => match === 'đ' ? 'd' : 'D'); // Đổi đ → d
+
+    console.log('🔐 [AUTH] Raw role:', rawRoleName, '→ Normalized:', normalizedRoleName);
+
     // Gắn thông tin user vào request
     req.user = {
       id: user.NguoiDungID,
       tenDayDu: user.TenDayDu,
       email: user.Email,
       vaiTroId: user.VaiTroHoatDongID,
-      vaiTro: roleRows[0]?.TenVaiTro || 'Unknown'
+      vaiTro: normalizedRoleName, // "Chủ dự án" → "ChuDuAn"
+      vaiTroGoc: rawRoleName // Giữ tên gốc để hiển thị
     };
 
     next();

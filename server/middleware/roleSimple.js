@@ -1,14 +1,14 @@
 /**
  * Role middleware đơn giản cho development
+ * CHỈ SỬ DỤNG TRONG DEVELOPMENT
+ * 
+ * Mục đích: Bỏ qua role checking để tăng tốc development
+ * Production: Sử dụng role.js (database-based RBAC)
  */
 
 const roleSimple = (allowedRoles = []) => {
   return (req, res, next) => {
-    // Bypass role checking cho development
-    // Log để debug
-    console.log(`🔓 [roleSimple] Allowing access for roles: ${allowedRoles.join(', ')}`);
-    
-    // Assume user có tất cả quyền trong dev mode
+    // Bypass role checking - cho phép tất cả requests
     if (req.user) {
       req.user.coQuyenTruyCap = true;
     }

@@ -1,22 +1,24 @@
 /**
  * Middleware xác thực đơn giản cho development
+ * CHỈ SỬ DỤNG TRONG DEVELOPMENT
+ * 
+ * Mục đích: Bỏ qua JWT authentication để tăng tốc development
+ * Production: Sử dụng auth.js (JWT-based authentication)
  */
 
 const authSimple = (req, res, next) => {
-  // Bypass authentication cho development
-  // Mock user data
+  // Bypass authentication - tạo mock user
   req.user = {
-    NguoiDungID: parseInt(process.env.MOCK_USER_ID) || 1,  // Tương thích với controller
-    id: parseInt(process.env.MOCK_USER_ID) || 1,           // Legacy support
+    NguoiDungID: parseInt(process.env.MOCK_USER_ID) || 1,
+    id: parseInt(process.env.MOCK_USER_ID) || 1,
     userId: parseInt(process.env.MOCK_USER_ID) || 1,
     username: 'test_user',
-    vaiTro: process.env.MOCK_ROLE_NAME || 'ChuDuAn',       // Single role
-    roles: [process.env.MOCK_ROLE_NAME || 'ChuDuAn'],      // Array of roles
+    vaiTro: process.env.MOCK_ROLE_NAME || 'ChuDuAn',
+    roles: [process.env.MOCK_ROLE_NAME || 'ChuDuAn'],
     currentRole: process.env.MOCK_ROLE_NAME || 'ChuDuAn',
-    isMockUser: true  // Flag để middleware khác biết đây là mock user
+    isMockUser: true
   };
   
-  console.log('🔓 [authSimple] Mock user:', req.user.username, '| Role:', req.user.vaiTro);
   next();
 };
 

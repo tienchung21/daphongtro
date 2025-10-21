@@ -12,6 +12,7 @@ import BaoCaoHieuSuat from './pages/ChuDuAn/BaoCaoHieuSuat';
 import TaoTinDang from './pages/ChuDuAn/TaoTinDang';
 import ChinhSuaTinDang from './pages/ChuDuAn/ChinhSuaTinDang';
 import QuanLyDuAn from './pages/ChuDuAn/QuanLyDuAn'; // ✨ Quản lý dự án (UC-PROJ-01 utilities)
+import CaiDat from './pages/ChuDuAn/CaiDat'; // ✨ Cài đặt tài khoản Chủ dự án
 
 // Import từ upstream
 import QuanLyTaiKhoan from './pages/quanlytaikhoan';
@@ -40,6 +41,7 @@ function App() {
       <Route path='/chu-du-an/tao-tin-dang' element={<TaoTinDang />} />
       <Route path='/chu-du-an/chinh-sua-tin-dang/:id' element={<ChinhSuaTinDang />} />
       <Route path='/chu-du-an/bao-cao' element={<BaoCaoHieuSuat />} />
+      <Route path='/cai-dat' element={<CaiDat />} /> {/* ✨ Cài đặt tài khoản Chủ dự án */}
       
       {/* Routes từ upstream */}
       <Route path='/searchkhuvuc' element={<SearchKhuVuc />} />

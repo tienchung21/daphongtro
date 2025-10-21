@@ -1,6 +1,16 @@
 const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 const db = require('../config/db'); // nếu cần dùng trực tiếp
+
+// Helper: Tạo JWT token
+const generateToken = (userId, vaiTroId) => {
+  return jwt.sign(
+    { userId, vaiTroId },
+    process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+    { expiresIn: '7d' } // Token hết hạn sau 7 ngày
+  );
+};
 
 // POST /api/login
 exports.login = async (req, res) => {
@@ -23,9 +33,17 @@ exports.login = async (req, res) => {
     // NOTE: hiện project chưa có hashing (bcrypt). Đây là so sánh đơn giản — đổi sang bcrypt trong production.
     if (user.MatKhauHash !== password) return res.status(401).json({ error: 'Thông tin đăng nhập không đúng' });
 
+    // Tạo JWT token
+    const token = generateToken(user.NguoiDungID, user.VaiTroHoatDongID);
+
     // loại bỏ trường mật khẩu khi trả về
     const { MatKhauHash, ...safeUser } = user;
-    res.json({ user: safeUser });
+    
+    res.json({ 
+      success: true,
+      token,
+      user: safeUser 
+    });
   } catch (err) {
     console.error('Login error:', err);
     res.status(500).json({ error: err.message });
@@ -43,12 +61,20 @@ exports.register = async (req, res) => {
     const matKhauHash = crypto.createHash('md5').update(String(password)).digest('hex');
     const [result] = await User.createNguoiDung(name, email, phone, matKhauHash, roleId);
 
+    // Tạo JWT token cho user mới
+    const token = generateToken(result.insertId, roleId);
+
     res.status(201).json({
-      id: result.insertId,
-      TenDayDu: name,
-      Email: email,
-      SoDienThoai: phone,
-      VaiTroID: roleId
+      success: true,
+      token,
+      user: {
+        id: result.insertId,
+        TenDayDu: name,
+        Email: email,
+        SoDienThoai: phone,
+        VaiTroHoatDongID: roleId,
+        TenVaiTro: roleId === 3 ? 'Chủ dự án' : 'Khách hàng'
+      }
     });
   } catch (err) {
     console.error('Register error:', err);

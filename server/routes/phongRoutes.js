@@ -5,14 +5,12 @@
 const express = require('express');
 const router = express.Router();
 const PhongController = require('../controllers/PhongController');
-// const auth = require('../middleware/auth');
-// const role = require('../middleware/role');
 
-// === DEV MODE: Sử dụng authSimple và roleSimple cho mock user ===
-const { authSimple: auth } = require('../middleware/authSimple');
-const roleSimple = require('../middleware/roleSimple');
+// === PRODUCTION AUTH: JWT-based authentication ===
+const auth = require('../middleware/auth');
+const { requireRole } = require('../middleware/role');
 const role = {
-  requireRole: (roleName) => roleSimple.roleSimple([roleName])
+  requireRole: (roleName) => requireRole(roleName)
 };
 
 // ============================================================================

@@ -129,10 +129,26 @@ function NavigationChuDuAn() {
       {/* User Profile */}
       {!isCollapsed && (
         <div className="cda-user-profile">
-          <div className="cda-user-avatar">👤</div>
+          <div className="cda-user-avatar">
+            {(() => {
+              const user = JSON.parse(localStorage.getItem('user') || '{}');
+              const name = user.TenDayDu || user.tenDayDu || 'User';
+              return name.charAt(0).toUpperCase();
+            })()}
+          </div>
           <div className="cda-user-info">
-            <div className="cda-user-name">Nguyễn Văn A</div>
-            <div className="cda-user-role">Chủ dự án</div>
+            <div className="cda-user-name">
+              {(() => {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                return user.TenDayDu || user.tenDayDu || 'Chủ dự án';
+              })()}
+            </div>
+            <div className="cda-user-role">
+              {(() => {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                return user.TenVaiTro || user.vaiTro || 'Chủ dự án';
+              })()}
+            </div>
           </div>
         </div>
       )}
@@ -207,7 +223,7 @@ function NavigationChuDuAn() {
           {!isCollapsed && <span>Trang chủ</span>}
         </button>
         <button 
-          className="cda-footer-btn"
+          className={`cda-footer-btn ${location.pathname === '/cai-dat' ? 'active' : ''}`}
           onClick={() => navigate('/cai-dat')}
           title="Cài đặt"
         >
