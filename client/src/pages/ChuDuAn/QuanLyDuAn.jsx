@@ -1,16 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
 import '../../styles/ChuDuAnDesignSystem.css';
-import '../../styles/TableLayout.css';
 import './QuanLyDuAn.css';
 import { DuAnService, Utils } from '../../services/ChuDuAnService';
+import ChinhSachCocService from '../../services/ChinhSachCocService';
 import ModalTaoNhanhDuAn from '../../components/ChuDuAn/ModalTaoNhanhDuAn';
-import ModalCapNhatDuAn from '../../components/ChuDuAn/ModalCapNhatDuAn';
-import ModalChinhSachCoc from '../../components/ChuDuAn/ModalChinhSachCoc';
-import ModalThongTinCoc from '../../components/ChuDuAn/ModalThongTinCoc';
-import ModalDanhSachPhong from '../../components/ChuDuAn/ModalDanhSachPhong';
-import ModalPhuongThucVao from '../../components/ChuDuAn/ModalPhuongThucVao';
+import ModalChinhSuaDuAn from '../../components/ChuDuAn/ModalChinhSuaDuAn';
+import ModalQuanLyChinhSachCoc from '../../components/ChuDuAn/ModalQuanLyChinhSachCoc';
+import ModalYeuCauMoLaiDuAn from '../../components/ChuDuAn/ModalYeuCauMoLaiDuAn';
 
 import {
   HiOutlinePlus,
@@ -18,75 +16,139 @@ import {
   HiOutlinePencilSquare,
   HiOutlineArchiveBox,
   HiOutlineArrowUturnLeft,
-  HiOutlineEye
+  HiOutlineEye,
+  HiOutlineFunnel,
+  HiOutlineArrowsUpDown,
+  HiOutlineMagnifyingGlass,
+  HiOutlineXMark,
+  HiOutlineCheckCircle,
+  HiOutlineExclamationTriangle,
+  HiOutlineInformationCircle,
+  HiOutlineChevronDown,
+  HiOutlineChevronUp,
+  HiOutlineDocumentArrowDown
 } from 'react-icons/hi2';
 
-const PAGE_SIZE_OPTIONS = [5, 10, 20];
+/**
+ * QuanLyDuAn - Quản lý Dự án cho Chủ dự án
+ * Features:
+ * - Compact table layout + expandable rows
+ * - Quick filters (tabs)
+ * - Bulk operations
+ * - Advanced search & sorting
+ * - State persistence
+ * - Banned workflow + Chính sách Cọc
+ * 
+ * Tham chiếu: docs/QUANLYDUAN_UX_ANALYSIS_AND_REDESIGN.md
+ */
+
+// ===== CONSTANTS =====
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+
+const TRANG_THAI_ENUM = {
+  HoatDong: 'HoatDong',
+  NgungHoatDong: 'NgungHoatDong',
+  LuuTru: 'LuuTru'
+};
 
 const TRANG_THAI_LABELS = {
-  HoatDong: 'Hoạt động',
-  NgungHoatDong: 'Ngưng hoạt động',
-  TamNgung: 'Tạm ngưng',
-  LuuTru: 'Lưu trữ'
+  [TRANG_THAI_ENUM.HoatDong]: 'Hoạt động',
+  [TRANG_THAI_ENUM.NgungHoatDong]: 'Ngưng hoạt động',
+  [TRANG_THAI_ENUM.LuuTru]: 'Lưu trữ'
 };
 
-const TRANG_THAI_NOTES = {
-  HoatDong: 'Đang mở tin đăng và cuộc hẹn',
-  NgungHoatDong: 'Liên hệ CSKH để kích hoạt lại',
-  TamNgung: 'Tạm dừng nhận cuộc hẹn',
-  LuuTru: 'Dự án đã lưu trữ'
+const PHONG_TRANG_THAI = {
+  Trong: { label: 'Trống', icon: '✅', color: 'success' },
+  GiuCho: { label: 'Giữ chỗ', icon: '🔒', color: 'warning' },
+  DaThue: { label: 'Đã thuê', icon: '🏠', color: 'info' },
+  DonDep: { label: 'Dọn dẹp', icon: '🧹', color: 'secondary' }
 };
 
-const mergeProjectInfo = (original, incoming = {}) => ({
-  ...original,
-  TenDuAn: incoming.TenDuAn ?? original.TenDuAn,
-  DiaChi: incoming.DiaChi ?? original.DiaChi,
-  ViDo: incoming.ViDo !== undefined ? incoming.ViDo : original.ViDo,
-  KinhDo: incoming.KinhDo !== undefined ? incoming.KinhDo : original.KinhDo,
-  YeuCauPheDuyetChu:
-    incoming.YeuCauPheDuyetChu !== undefined ? incoming.YeuCauPheDuyetChu : original.YeuCauPheDuyetChu,
-  PhuongThucVao: Object.prototype.hasOwnProperty.call(incoming, 'PhuongThucVao')
-    ? incoming.PhuongThucVao
-    : original.PhuongThucVao,
-  TrangThai: incoming.TrangThai ?? original.TrangThai,
-  CapNhatLuc: incoming.CapNhatLuc ?? original.CapNhatLuc
-});
+const QUICK_FILTERS = {
+  all: { label: 'Tất cả', icon: '📊' },
+  active: { label: 'Hoạt động', icon: '●', color: 'success' },
+  hasEmptyRooms: { label: 'Có phòng trống', icon: '🏠' },
+  hasDeposits: { label: 'Có cọc', icon: '💰' },
+  archived: { label: 'Lưu trữ', icon: '📦', color: 'secondary' }
+};
 
+const SORT_OPTIONS = {
+  TenDuAn_asc: { field: 'TenDuAn', order: 'asc', label: 'Tên A-Z' },
+  TenDuAn_desc: { field: 'TenDuAn', order: 'desc', label: 'Tên Z-A' },
+  CapNhatLuc_desc: { field: 'CapNhatLuc', order: 'desc', label: 'Mới cập nhật' },
+  CapNhatLuc_asc: { field: 'CapNhatLuc', order: 'asc', label: 'Cũ nhất' },
+  PhongTrong_desc: { field: 'PhongTrong', order: 'desc', label: 'Nhiều phòng trống' },
+  TinDangHoatDong_desc: { field: 'TinDangHoatDong', order: 'desc', label: 'Nhiều tin đăng' }
+};
+
+const STORAGE_KEY = 'quanlyduan_preferences';
+
+// ===== HELPER FUNCTIONS =====
+const toNumber = (value) => {
+  if (value === null || value === undefined) return 0;
+  const parsed = Number(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+};
+
+const saveToStorage = (preferences) => {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
+  } catch (error) {
+    console.warn('Failed to save preferences:', error);
+  }
+};
+
+const loadFromStorage = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch (error) {
+    console.warn('Failed to load preferences:', error);
+    return null;
+  }
+};
+
+// ===== MAIN COMPONENT =====
 function QuanLyDuAn() {
   const navigate = useNavigate();
+
+  // Core data
   const [duAns, setDuAns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  // Filters & Search
   const [search, setSearch] = useState('');
-  const [onlyHasCoords, setOnlyHasCoords] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('CapNhatLuc_desc');
 
-  const [showModalTaoDuAn, setShowModalTaoDuAn] = useState(false);
+  // Pagination
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[1]);
-  const [pageInput, setPageInput] = useState('1');
-  const [selectedDuAn, setSelectedDuAn] = useState(null);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [expandedRows, setExpandedRows] = useState(new Set());
+
+  // Modals
+  const [showModalTaoDuAn, setShowModalTaoDuAn] = useState(false);
   const [showModalChinhSua, setShowModalChinhSua] = useState(false);
+  const [selectedDuAn, setSelectedDuAn] = useState(null);
+  const [showModalChinhSachCoc, setShowModalChinhSachCoc] = useState(false);
+  const [chinhSachCocMode, setChinhSachCocMode] = useState('create'); // 'create' | 'edit'
+  const [selectedChinhSachCoc, setSelectedChinhSachCoc] = useState(null);
+  const [showModalYeuCauMoLai, setShowModalYeuCauMoLai] = useState(false);
+  const [chinhSachCocList, setChinhSachCocList] = useState([]); // Danh sách chính sách cọc
+  const [tooltipDuAnId, setTooltipDuAnId] = useState(null); // For banned reason tooltip
+
+  // Action states
+  const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [actionLoading, setActionLoading] = useState(false);
-  const [pendingDuAnId, setPendingDuAnId] = useState(null);
-  const [policyModalInfo, setPolicyModalInfo] = useState(null);
-  const [showPolicyModal, setShowPolicyModal] = useState(false);
-  const [cocModalProject, setCocModalProject] = useState(null);
-  const [showCocModal, setShowCocModal] = useState(false);
-  const [phongModalProject, setPhongModalProject] = useState(null);
-  const [showPhongModal, setShowPhongModal] = useState(false);
-  const [phuongThucModalProject, setPhuongThucModalProject] = useState(null);
-  const [showPhuongThucModal, setShowPhuongThucModal] = useState(false);
+  const [pendingIds, setPendingIds] = useState(new Set());
 
-  const toNumber = (value) => {
-    if (value === null || value === undefined) return 0;
-    const parsed = Number(value);
-    return Number.isNaN(parsed) ? 0 : parsed;
-  };
-
-  const loadData = async () => {
+  // ===== LOAD DATA =====
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       setError('');
@@ -98,46 +160,122 @@ function QuanLyDuAn() {
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadData();
   }, []);
 
   useEffect(() => {
-    if (!successMessage) return undefined;
+    loadData();
+    loadChinhSachCoc(); // Load chính sách cọc
+  }, [loadData]);
+
+  // ===== LOAD PREFERENCES =====
+  useEffect(() => {
+    const prefs = loadFromStorage();
+    if (prefs) {
+      if (prefs.pageSize) setPageSize(prefs.pageSize);
+      if (prefs.sortBy) setSortBy(prefs.sortBy);
+      if (prefs.activeFilter) setActiveFilter(prefs.activeFilter);
+    }
+  }, []);
+
+  // ===== SAVE PREFERENCES =====
+  useEffect(() => {
+    saveToStorage({ pageSize, sortBy, activeFilter });
+  }, [pageSize, sortBy, activeFilter]);
+
+  // ===== AUTO-HIDE MESSAGES =====
+  useEffect(() => {
+    if (!successMessage) return;
     const timer = setTimeout(() => setSuccessMessage(''), 4000);
     return () => clearTimeout(timer);
   }, [successMessage]);
 
   useEffect(() => {
-    if (!actionError) return undefined;
+    if (!actionError) return;
     const timer = setTimeout(() => setActionError(''), 5000);
     return () => clearTimeout(timer);
   }, [actionError]);
 
+  // ===== FILTER & SORT LOGIC =====
   const filtered = useMemo(() => {
-    const s = (search || '').trim().toLowerCase();
-    return (duAns || [])
-      .filter((d) => {
-        if (onlyHasCoords && (!d.ViDo || !d.KinhDo)) return false;
-        if (!s) return true;
+    let result = [...duAns];
+
+    // Apply quick filter
+    switch (activeFilter) {
+      case 'active':
+        result = result.filter(d => d.TrangThai === TRANG_THAI_ENUM.HoatDong);
+        break;
+      case 'hasEmptyRooms':
+        result = result.filter(d => toNumber(d.PhongTrong) > 0);
+        break;
+      case 'hasDeposits':
+        result = result.filter(d => toNumber(d.CocStats?.CocDangHieuLuc) > 0);
+        break;
+      case 'archived':
+        result = result.filter(d => d.TrangThai === TRANG_THAI_ENUM.LuuTru);
+        break;
+      default:
+        // 'all' - no filter
+        break;
+    }
+
+    // Apply search
+    if (search.trim()) {
+      const s = search.trim().toLowerCase();
+      result = result.filter(d => {
         const inName = (d.TenDuAn || '').toLowerCase().includes(s);
         const inAddr = (d.DiaChi || '').toLowerCase().includes(s);
         return inName || inAddr;
       });
-  }, [duAns, search, onlyHasCoords]);
+    }
 
+    // Apply sorting
+    const sortConfig = SORT_OPTIONS[sortBy];
+    if (sortConfig) {
+      result.sort((a, b) => {
+        let aVal = a[sortConfig.field];
+        let bVal = b[sortConfig.field];
+
+        // Handle numeric fields
+        if (['PhongTrong', 'TinDangHoatDong'].includes(sortConfig.field)) {
+          aVal = toNumber(aVal);
+          bVal = toNumber(bVal);
+        }
+
+        // Handle date fields
+        if (sortConfig.field === 'CapNhatLuc') {
+          aVal = new Date(aVal || 0).getTime();
+          bVal = new Date(bVal || 0).getTime();
+        }
+
+        // Handle string fields
+        if (typeof aVal === 'string') {
+          aVal = aVal.toLowerCase();
+          bVal = (bVal || '').toLowerCase();
+        }
+
+        if (sortConfig.order === 'asc') {
+          return aVal > bVal ? 1 : aVal < bVal ? -1 : 0;
+        } else {
+          return aVal < bVal ? 1 : aVal > bVal ? -1 : 0;
+        }
+      });
+    }
+
+    return result;
+  }, [duAns, activeFilter, search, sortBy]);
+
+  // ===== PAGINATION LOGIC =====
   const totalItems = filtered.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize) || 1);
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
   const currentPage = Math.min(page, totalPages);
 
   useEffect(() => {
     setPage(1);
-  }, [search, onlyHasCoords, pageSize]);
+    setSelectedIds(new Set()); // Clear selection when filter changes
+  }, [search, activeFilter, pageSize]);
 
   useEffect(() => {
-    if (page > totalPages) {
+    if (page > totalPages && totalPages > 0) {
       setPage(totalPages);
     }
   }, [page, totalPages]);
@@ -150,24 +288,148 @@ function QuanLyDuAn() {
   const startItem = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const endItem = totalItems === 0 ? 0 : Math.min(totalItems, startItem + pageSize - 1);
 
-  useEffect(() => {
-    setPageInput(String(currentPage));
-  }, [currentPage]);
+  // ===== QUICK FILTER COUNTS =====
+  const filterCounts = useMemo(() => {
+    return {
+      all: duAns.length,
+      active: duAns.filter(d => d.TrangThai === TRANG_THAI_ENUM.HoatDong).length,
+      hasEmptyRooms: duAns.filter(d => toNumber(d.PhongTrong) > 0).length,
+      hasDeposits: duAns.filter(d => toNumber(d.CocStats?.CocDangHieuLuc) > 0).length,
+      archived: duAns.filter(d => d.TrangThai === TRANG_THAI_ENUM.LuuTru).length
+    };
+  }, [duAns]);
 
-  const handlePageSizeChange = (value) => {
-    setPageSize(value);
+  // ===== BULK SELECTION =====
+  const toggleSelectAll = () => {
+    if (selectedIds.size === pagedData.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(pagedData.map(d => d.DuAnID)));
+    }
   };
 
-  const goToPage = (nextPage) => {
-    const target = Math.max(1, Math.min(totalPages, nextPage));
-    setPage(target);
+  const toggleSelectOne = (id) => {
+    const newSet = new Set(selectedIds);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setSelectedIds(newSet);
   };
 
-  const handleJumpSubmit = (event) => {
-    event.preventDefault();
-    const value = parseInt(pageInput, 10);
-    if (!Number.isNaN(value)) {
-      goToPage(value);
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  // ===== EXPANDABLE ROWS =====
+  const toggleExpand = (id) => {
+    const newSet = new Set(expandedRows);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setExpandedRows(newSet);
+  };
+
+  // ===== ACTION HANDLERS =====
+  const handleArchive = async (duAn) => {
+    if (actionLoading) return;
+    const confirmArchive = window.confirm(
+      `Bạn có chắc chắn muốn lưu trữ dự án "${duAn.TenDuAn}"?`
+    );
+    if (!confirmArchive) return;
+
+    try {
+      setActionError('');
+      setSuccessMessage('');
+      setActionLoading(true);
+      setPendingIds(new Set([duAn.DuAnID]));
+      
+      await DuAnService.luuTru(duAn.DuAnID);
+      
+      setDuAns(prev =>
+        prev.map(item =>
+          item.DuAnID === duAn.DuAnID
+            ? { ...item, TrangThai: TRANG_THAI_ENUM.LuuTru }
+            : item
+        )
+      );
+      setSuccessMessage('Đã lưu trữ dự án thành công');
+    } catch (err) {
+      setActionError(err?.message || 'Không thể lưu trữ dự án');
+    } finally {
+      setActionLoading(false);
+      setPendingIds(new Set());
+    }
+  };
+
+  const handleRestore = async (duAn) => {
+    if (actionLoading) return;
+    const confirmRestore = window.confirm(
+      `Khôi phục dự án "${duAn.TenDuAn}" về trạng thái hoạt động?`
+    );
+    if (!confirmRestore) return;
+
+    try {
+      setActionError('');
+      setSuccessMessage('');
+      setActionLoading(true);
+      setPendingIds(new Set([duAn.DuAnID]));
+      
+      await DuAnService.capNhat(duAn.DuAnID, { TrangThai: TRANG_THAI_ENUM.HoatDong });
+      
+      setDuAns(prev =>
+        prev.map(item =>
+          item.DuAnID === duAn.DuAnID
+            ? { ...item, TrangThai: TRANG_THAI_ENUM.HoatDong }
+            : item
+        )
+      );
+      setSuccessMessage('Đã khôi phục dự án thành công');
+    } catch (err) {
+      setActionError(err?.message || 'Không thể khôi phục dự án');
+    } finally {
+      setActionLoading(false);
+      setPendingIds(new Set());
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (selectedIds.size === 0 || actionLoading) return;
+    
+    const count = selectedIds.size;
+    const confirmBulk = window.confirm(
+      `Bạn có chắc chắn muốn lưu trữ ${count} dự án đã chọn?`
+    );
+    if (!confirmBulk) return;
+
+    try {
+      setActionError('');
+      setSuccessMessage('');
+      setActionLoading(true);
+      setPendingIds(new Set(selectedIds));
+      
+      // Archive in parallel
+      await Promise.all(
+        Array.from(selectedIds).map(id => DuAnService.luuTru(id))
+      );
+      
+      setDuAns(prev =>
+        prev.map(item =>
+          selectedIds.has(item.DuAnID)
+            ? { ...item, TrangThai: TRANG_THAI_ENUM.LuuTru }
+            : item
+        )
+      );
+      setSuccessMessage(`Đã lưu trữ ${count} dự án thành công`);
+      setSelectedIds(new Set());
+    } catch (err) {
+      setActionError(err?.message || 'Không thể lưu trữ các dự án đã chọn');
+    } finally {
+      setActionLoading(false);
+      setPendingIds(new Set());
     }
   };
 
@@ -184,601 +446,839 @@ function QuanLyDuAn() {
 
   const handleEditSaved = (updated) => {
     if (!updated) return;
-    setDuAns((prev) =>
-      prev.map((item) => (item.DuAnID === updated.DuAnID ? mergeProjectInfo(item, updated) : item))
-    );
-    setSelectedDuAn((current) =>
-      current && current.DuAnID === updated.DuAnID ? mergeProjectInfo(current, updated) : current
-    );
-    setSuccessMessage('Cập nhật dự án thành công');
-    setActionError('');
-  };
-
-  const handleArchive = async (duAn) => {
-    if (actionLoading) return;
-    const confirmArchive = window.confirm(
-      `Bạn có chắc chắn muốn lưu trữ dự án "${duAn.TenDuAn}"? Mọi tin đăng đang hoạt động cần được đóng trước.`
-    );
-    if (!confirmArchive) return;
-
-    try {
-      setActionError('');
-      setSuccessMessage('');
-      setActionLoading(true);
-      setPendingDuAnId(duAn.DuAnID);
-      const result = await DuAnService.luuTru(duAn.DuAnID);
-      const updated = result?.data || result?.duAn || { TrangThai: 'LuuTru' };
-      setDuAns((prev) =>
-        prev.map((item) =>
-          item.DuAnID === duAn.DuAnID ? mergeProjectInfo(item, { ...updated, TrangThai: 'LuuTru' }) : item
-        )
-      );
-      setSelectedDuAn((current) =>
-        current && current.DuAnID === duAn.DuAnID
-          ? mergeProjectInfo(current, { ...updated, TrangThai: 'LuuTru' })
-          : current
-      );
-      setSuccessMessage('Đã lưu trữ dự án');
-    } catch (err) {
-      setActionError(err?.message || 'Không thể lưu trữ dự án');
-    } finally {
-      setActionLoading(false);
-      setPendingDuAnId(null);
-    }
-  };
-
-  const handleRestore = async (duAn) => {
-    if (actionLoading) return;
-    const confirmRestore = window.confirm(`Khôi phục dự án "${duAn.TenDuAn}" về trạng thái hoạt động?`);
-    if (!confirmRestore) return;
-
-    try {
-      setActionError('');
-      setSuccessMessage('');
-      setActionLoading(true);
-      setPendingDuAnId(duAn.DuAnID);
-      const result = await DuAnService.capNhat(duAn.DuAnID, { TrangThai: 'HoatDong' });
-      const updated = result?.data || result?.duAn || { TrangThai: 'HoatDong' };
-      setDuAns((prev) =>
-        prev.map((item) =>
-          item.DuAnID === duAn.DuAnID ? mergeProjectInfo(item, { ...updated, TrangThai: 'HoatDong' }) : item
-        )
-      );
-      setSelectedDuAn((current) =>
-        current && current.DuAnID === duAn.DuAnID
-          ? mergeProjectInfo(current, { ...updated, TrangThai: 'HoatDong' })
-          : current
-      );
-      setSuccessMessage('Đã khôi phục dự án');
-    } catch (err) {
-      setActionError(err?.message || 'Không thể khôi phục dự án');
-    } finally {
-      setActionLoading(false);
-      setPendingDuAnId(null);
-    }
-  };
-
-  const openPolicyModal = (project, policyItem) => {
-    if (!policyItem?.ChinhSachCocID) {
-      setActionError('Chính sách mặc định của hệ thống không thể chỉnh sửa trực tiếp.');
-      return;
-    }
-    setPolicyModalInfo({ project, policy: policyItem });
-    setShowPolicyModal(true);
-  };
-
-  const closePolicyModal = () => {
-    setShowPolicyModal(false);
-    setPolicyModalInfo(null);
-  };
-
-  const handlePolicySaved = (updatedPolicy) => {
-    if (!updatedPolicy || !policyModalInfo) return;
-    const normalized = {
-      ChinhSachCocID: updatedPolicy.ChinhSachCocID ?? policyModalInfo.policy.ChinhSachCocID,
-      TenChinhSach: updatedPolicy.TenChinhSach,
-      MoTa: updatedPolicy.MoTa,
-      ChoPhepCocGiuCho: updatedPolicy.ChoPhepCocGiuCho ?? null,
-      TTL_CocGiuCho_Gio: updatedPolicy.TTL_CocGiuCho_Gio ?? null,
-      TyLePhat_CocGiuCho: updatedPolicy.TyLePhat_CocGiuCho ?? null,
-      ChoPhepCocAnNinh: updatedPolicy.ChoPhepCocAnNinh ?? null,
-      SoTienCocAnNinhMacDinh: updatedPolicy.SoTienCocAnNinhMacDinh ?? null,
-      QuyTacGiaiToa: updatedPolicy.QuyTacGiaiToa ?? null,
-      HieuLuc: updatedPolicy.HieuLuc ?? policyModalInfo.policy.HieuLuc,
-      CapNhatLuc: updatedPolicy.CapNhatLuc
-    };
-
-    setDuAns((prev) =>
-      prev.map((item) => {
-        if (item.DuAnID !== policyModalInfo.project.DuAnID) return item;
-        const updatedPolicies = (item.ChinhSachCoc || []).map((policyItem) =>
-          policyItem.ChinhSachCocID === normalized.ChinhSachCocID
-            ? { ...policyItem, ...normalized }
-            : policyItem
-        );
-        return { ...item, ChinhSachCoc: updatedPolicies };
-      })
-    );
-
-    setSuccessMessage('Cập nhật chính sách cọc thành công');
-    setShowPolicyModal(false);
-    setPolicyModalInfo(null);
-  };
-
-  const openCocModal = (project) => {
-    setCocModalProject(project);
-    setShowCocModal(true);
-  };
-
-  const closeCocModal = () => {
-    setShowCocModal(false);
-    setCocModalProject(null);
-  };
-
-  const openPhongModal = (project) => {
-    setPhongModalProject(project);
-    setShowPhongModal(true);
-  };
-
-  const closePhongModal = () => {
-    setShowPhongModal(false);
-    setPhongModalProject(null);
-  };
-
-  const openPhuongThucModal = (project) => {
-    setPhuongThucModalProject(project);
-    setShowPhuongThucModal(true);
-  };
-
-  const handlePhuongThucSaved = (updated) => {
-    if (!updated || !phuongThucModalProject) return;
-    const result = updated?.data || updated;
-    const yeuCau =
-      result && Object.prototype.hasOwnProperty.call(result, 'YeuCauPheDuyetChu')
-        ? result.YeuCauPheDuyetChu
-        : undefined;
-    const phuongThuc =
-      result && Object.prototype.hasOwnProperty.call(result, 'PhuongThucVao')
-        ? result.PhuongThucVao
-        : undefined;
-
-    setDuAns((prev) =>
-      prev.map((item) =>
-        item.DuAnID === phuongThucModalProject.DuAnID
-          ? {
-              ...item,
-              YeuCauPheDuyetChu: yeuCau !== undefined ? yeuCau : item.YeuCauPheDuyetChu,
-              PhuongThucVao: phuongThuc !== undefined ? phuongThuc : item.PhuongThucVao
-            }
-          : item
+    setDuAns(prev =>
+      prev.map(item =>
+        item.DuAnID === updated.DuAnID ? { ...item, ...updated } : item
       )
     );
-    setSuccessMessage('Cập nhật phương thức vào dự án thành công');
-    setShowPhuongThucModal(false);
-    setPhuongThucModalProject(null);
+    setSuccessMessage('Cập nhật dự án thành công');
+    closeEditModal();
   };
 
+  // ===== CHÍNH SÁCH CỌC HANDLERS =====
+  const loadChinhSachCoc = async () => {
+    try {
+      const response = await ChinhSachCocService.layDanhSach({ chiLayHieuLuc: true });
+      if (response.success) {
+        setChinhSachCocList(response.data || []);
+      }
+    } catch (error) {
+      console.error('Lỗi load chính sách cọc:', error);
+    }
+  };
+
+  const openChinhSachCocModal = (mode = 'create', chinhSachCoc = null) => {
+    setChinhSachCocMode(mode);
+    setSelectedChinhSachCoc(chinhSachCoc);
+    setShowModalChinhSachCoc(true);
+  };
+
+  const closeChinhSachCocModal = () => {
+    setShowModalChinhSachCoc(false);
+    setSelectedChinhSachCoc(null);
+  };
+
+  const handleChinhSachCocSuccess = () => {
+    setSuccessMessage(
+      chinhSachCocMode === 'create' 
+        ? 'Tạo chính sách cọc thành công' 
+        : 'Cập nhật chính sách cọc thành công'
+    );
+    loadChinhSachCoc(); // Reload danh sách
+  };
+
+  // ===== YÊU CẦU MỞ LẠI HANDLERS =====
+  const openYeuCauMoLaiModal = (duAn) => {
+    setSelectedDuAn(duAn);
+    setShowModalYeuCauMoLai(true);
+  };
+
+  const closeYeuCauMoLaiModal = () => {
+    setShowModalYeuCauMoLai(false);
+    setSelectedDuAn(null);
+  };
+
+  const handleGuiYeuCauMoLai = async (duAnId, noiDungGiaiTrinh) => {
+    try {
+      const response = await DuAnService.guiYeuCauMoLai(duAnId, noiDungGiaiTrinh);
+      if (response.success) {
+        // Update local state
+        setDuAns(prev =>
+          prev.map(item =>
+            item.DuAnID === duAnId
+              ? { ...item, YeuCauMoLai: 'DangXuLy', NoiDungGiaiTrinh: noiDungGiaiTrinh }
+              : item
+          )
+        );
+        setSuccessMessage('Đã gửi yêu cầu mở lại dự án. Operator sẽ xử lý trong 3-5 ngày làm việc.');
+      }
+    } catch (error) {
+      console.error('Lỗi gửi yêu cầu:', error);
+      throw error; // Modal sẽ xử lý error
+    }
+  };
+
+  // ===== RENDER HELPERS =====
+  const getTrangThaiClass = (trangThai) => {
+    switch (trangThai) {
+      case TRANG_THAI_ENUM.HoatDong:
+        return 'status-active';
+      case TRANG_THAI_ENUM.NgungHoatDong:
+        return 'status-inactive';
+      case TRANG_THAI_ENUM.LuuTru:
+        return 'status-archived';
+      default:
+        return '';
+    }
+  };
+
+  const renderPhongStats = (duAn) => {
+    const tong = toNumber(duAn.TongPhong);
+    const trong = toNumber(duAn.PhongTrong);
+    const giuCho = toNumber(duAn.PhongGiuCho);
+    const daThue = toNumber(duAn.PhongDaThue);
+
+    if (tong === 0) {
+      return <span className="text-muted">—</span>;
+    }
+
+    const tyLeTrong = tong > 0 ? Math.round((trong / tong) * 100) : 0;
+
+    return (
+      <div className="stats-compact">
+        <div className="stats-value">
+          {trong}/{tong}
+        </div>
+        <div className="stats-bar">
+          <div
+            className="stats-bar-fill stats-bar-success"
+            style={{ width: `${tyLeTrong}%` }}
+          />
+        </div>
+        <div className="stats-label">
+          {tyLeTrong}% trống • {giuCho} giữ • {daThue} thuê
+        </div>
+      </div>
+    );
+  };
+
+  const renderTinDangStats = (duAn) => {
+    const hoatDong = toNumber(duAn.TinDangHoatDong);
+    const tong = toNumber(duAn.SoTinDang);
+
+    if (tong === 0) {
+      return <span className="text-muted">—</span>;
+    }
+
+    return (
+      <div className="stats-compact">
+        <div className="stats-value">{hoatDong}/{tong}</div>
+        <div className="stats-label">tin đăng</div>
+      </div>
+    );
+  };
+
+  const renderCocStats = (duAn) => {
+    const cocStats = duAn.CocStats || {};
+    const dangHieuLuc = toNumber(cocStats.CocDangHieuLuc);
+    const tongTien = toNumber(cocStats.TongTienCocDangHieuLuc);
+
+    if (dangHieuLuc === 0) {
+      return <span className="text-muted">—</span>;
+    }
+
+    return (
+      <div className="stats-compact">
+        <div className="stats-value">{dangHieuLuc}</div>
+        <div className="stats-label">{Utils.formatCurrency(tongTien)}</div>
+      </div>
+    );
+  };
+
+  // ===== RENDER =====
   return (
     <ChuDuAnLayout>
-      <div className="cda-card" role="region" aria-label="Quản lý dự án">
-        <div className="cda-card-header">
-          <div className="duan-page-header">
-            <div>
-              <div className="duan-title">🏢 Dự án của tôi</div>
-              <div className="duan-subtitle">
-                Theo đặc tả UC-PROJ-01: quản lý danh sách dự án, trạng thái và tọa độ.
-              </div>
+      <div className="qlda-container">
+        {/* Header */}
+        <div className="qlda-header">
+          <div className="qlda-header-left">
+            <h1 className="qlda-title">
+              <span className="qlda-title-icon">🏢</span>
+              Quản lý Dự án
+            </h1>
+            <p className="qlda-subtitle">
+              Quản lý toàn bộ dự án, phòng, tin đăng và chính sách cọc
+            </p>
+          </div>
+          <div className="qlda-header-actions">
+            <button
+              type="button"
+              className="cda-btn cda-btn-primary"
+              onClick={() => setShowModalTaoDuAn(true)}
+            >
+              <HiOutlinePlus className="btn-icon" />
+              Tạo dự án mới
+            </button>
+          </div>
+        </div>
+
+        {/* Messages */}
+        {actionError && (
+          <div className="qlda-alert qlda-alert-error">
+            <HiOutlineExclamationTriangle className="alert-icon" />
+            <span>{actionError}</span>
+            <button
+              type="button"
+              className="alert-close"
+              onClick={() => setActionError('')}
+            >
+              <HiOutlineXMark />
+            </button>
+          </div>
+        )}
+        {successMessage && (
+          <div className="qlda-alert qlda-alert-success">
+            <HiOutlineCheckCircle className="alert-icon" />
+            <span>{successMessage}</span>
+            <button
+              type="button"
+              className="alert-close"
+              onClick={() => setSuccessMessage('')}
+            >
+              <HiOutlineXMark />
+            </button>
+          </div>
+        )}
+
+        {/* Quick Filters */}
+        <div className="qlda-quick-filters">
+          {Object.entries(QUICK_FILTERS).map(([key, config]) => {
+            const count = filterCounts[key];
+            const isActive = activeFilter === key;
+            return (
+              <button
+                key={key}
+                type="button"
+                className={`quick-filter ${isActive ? 'active' : ''} ${config.color || ''}`}
+                onClick={() => setActiveFilter(key)}
+              >
+                <span className="filter-icon">{config.icon}</span>
+                <span className="filter-label">{config.label}</span>
+                <span className="filter-count">{count}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Toolbar */}
+        <div className="qlda-toolbar">
+          <div className="toolbar-left">
+            {/* Search */}
+            <div className="search-box">
+              <HiOutlineMagnifyingGlass className="search-icon" />
+              <input
+                type="text"
+                className="search-input"
+                placeholder="Tìm theo tên hoặc địa chỉ..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              {search && (
+                <button
+                  type="button"
+                  className="search-clear"
+                  onClick={() => setSearch('')}
+                  title="Xóa tìm kiếm"
+                >
+                  <HiOutlineXMark />
+                </button>
+              )}
             </div>
-            <div className="duan-actions">
+
+            {/* Search results count */}
+            {search && (
+              <div className="search-results-info">
+                <HiOutlineInformationCircle className="info-icon" />
+                Tìm thấy <strong>{filtered.length}</strong> kết quả
+              </div>
+            )}
+          </div>
+
+          <div className="toolbar-right">
+            {/* Sort */}
+            <div className="sort-box">
+              <HiOutlineArrowsUpDown className="sort-icon" />
+              <select
+                className="sort-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                {Object.entries(SORT_OPTIONS).map(([key, config]) => (
+                  <option key={key} value={key}>
+                    {config.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Page size */}
+            <div className="pagesize-box">
+              <span className="pagesize-label">Hiển thị</span>
+              <select
+                className="pagesize-select"
+                value={pageSize}
+                onChange={(e) => setPageSize(Number(e.target.value))}
+              >
+                {PAGE_SIZE_OPTIONS.map((size) => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+              <span className="pagesize-label">dự án</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Bulk Actions Bar */}
+        {selectedIds.size > 0 && (
+          <div className="qlda-bulk-actions">
+            <div className="bulk-info">
+              <input
+                type="checkbox"
+                checked={selectedIds.size === pagedData.length}
+                onChange={toggleSelectAll}
+                title="Chọn/Bỏ chọn tất cả"
+              />
+              <span className="bulk-count">
+                <strong>{selectedIds.size}</strong> dự án đã chọn
+              </span>
+            </div>
+            <div className="bulk-buttons">
+              <button
+                type="button"
+                className="cda-btn cda-btn-secondary cda-btn-sm"
+                onClick={handleBulkArchive}
+                disabled={actionLoading}
+              >
+                <HiOutlineArchiveBox className="btn-icon" />
+                Lưu trữ ({selectedIds.size})
+              </button>
+              <button
+                type="button"
+                className="cda-btn cda-btn-secondary cda-btn-sm"
+                onClick={clearSelection}
+              >
+                <HiOutlineXMark className="btn-icon" />
+                Bỏ chọn
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Table */}
+        {loading ? (
+          <div className="qlda-loading">
+            <div className="loading-spinner"></div>
+            <p>Đang tải dữ liệu...</p>
+          </div>
+        ) : error ? (
+          <div className="qlda-empty">
+            <HiOutlineExclamationTriangle className="empty-icon" />
+            <p className="empty-title">Lỗi tải dữ liệu</p>
+            <p className="empty-text">{error}</p>
+            <button
+              type="button"
+              className="cda-btn cda-btn-primary"
+              onClick={loadData}
+            >
+              Thử lại
+            </button>
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="qlda-empty">
+            <HiOutlineInformationCircle className="empty-icon" />
+            <p className="empty-title">
+              {search || activeFilter !== 'all'
+                ? 'Không tìm thấy dự án'
+                : 'Chưa có dự án nào'}
+            </p>
+            <p className="empty-text">
+              {search || activeFilter !== 'all'
+                ? 'Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm'
+                : 'Tạo dự án đầu tiên để bắt đầu'}
+            </p>
+            {!search && activeFilter === 'all' && (
               <button
                 type="button"
                 className="cda-btn cda-btn-primary"
                 onClick={() => setShowModalTaoDuAn(true)}
               >
-                <HiOutlinePlus style={{ marginRight: 6 }} /> Tạo dự án
+                <HiOutlinePlus className="btn-icon" />
+                Tạo dự án đầu tiên
               </button>
-            </div>
+            )}
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="qlda-table-container">
+              <table className="qlda-table">
+                <thead>
+                  <tr>
+                    <th className="col-select">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.size === pagedData.length && pagedData.length > 0}
+                        onChange={toggleSelectAll}
+                        title="Chọn/Bỏ chọn tất cả"
+                      />
+                    </th>
+                    <th className="col-project">Dự án</th>
+                    <th className="col-stats">Phòng</th>
+                    <th className="col-stats">Tin đăng</th>
+                    <th className="col-stats">Cọc</th>
+                    <th className="col-status">Trạng thái</th>
+                    <th className="col-actions">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pagedData.map((duAn) => {
+                    const isSelected = selectedIds.has(duAn.DuAnID);
+                    const isExpanded = expandedRows.has(duAn.DuAnID);
+                    const isPending = pendingIds.has(duAn.DuAnID);
+                    const isArchived = duAn.TrangThai === TRANG_THAI_ENUM.LuuTru;
 
-        <div className="cda-card-body">
-          {actionError && <div className="duan-alert duan-alert-error">{actionError}</div>}
-          {successMessage && <div className="duan-alert duan-alert-success">{successMessage}</div>}
-
-          <div className="duan-toolbar">
-            <div className="duan-toolbar-left">
-              <input
-                className="cda-input duan-search"
-                placeholder="Tìm theo tên hoặc địa chỉ..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <label className="duan-checkbox">
-                <input
-                  type="checkbox"
-                  checked={onlyHasCoords}
-                  onChange={(e) => setOnlyHasCoords(e.target.checked)}
-                />
-                <span>Chỉ dự án có tọa độ</span>
-              </label>
-            </div>
-            <div className="duan-toolbar-right">
-              <div className="duan-summary">
-                Tổng {duAns?.length || 0} dự án • Hiển thị {startItem}-{endItem} / {totalItems}
-              </div>
-              <label className="duan-page-size">
-                <span>Số dòng / trang</span>
-                <select
-                  className="cda-select"
-                  value={pageSize}
-                  onChange={(e) => handlePageSizeChange(parseInt(e.target.value, 10))}
-                >
-                  {PAGE_SIZE_OPTIONS.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="duan-empty">Đang tải...</div>
-          ) : error ? (
-            <div className="duan-empty">❌ {error}</div>
-          ) : filtered.length === 0 ? (
-            <div className="duan-empty">Chưa có dự án nào</div>
-          ) : (
-            <>
-              <div className="duan-table-wrapper" role="region" aria-label="Danh sách dự án">
-                <div className="duan-table-grid" role="table" aria-label="Danh sách dự án">
-                  <div className="duan-table-grid-header" role="row">
-                    <div className="duan-table-header-cell align-left" role="columnheader">Dự án</div>
-                    <div className="duan-table-header-cell align-center" role="columnheader">Trạng thái</div>
-                    <div className="duan-table-header-cell align-center" role="columnheader">Tin đăng</div>
-                    <div className="duan-table-header-cell align-right" role="columnheader">Cập nhật</div>
-                  </div>
-                  <div className="duan-table-grid-body" role="rowgroup">
-                    {pagedData.map((d) => {
-                      const isChuDuyet = Number(d.YeuCauPheDuyetChu) === 1;
-                      const yeuCauLabel = isChuDuyet ? 'Chủ dự án duyệt cuộc hẹn' : 'Cuộc hẹn tự động duyệt';
-                      const yeuCauClass = isChuDuyet ? 'chu-duyet' : 'auto-duyet';
-                      const trangThaiLabel = TRANG_THAI_LABELS[d.TrangThai] || d.TrangThai || '—';
-                      const trangThaiNote = TRANG_THAI_NOTES[d.TrangThai] || '';
-                      const trangThaiClass = d.TrangThai === 'HoatDong' ? '' : (d.TrangThai === 'LuuTru' ? 'archived' : 'inactive');
-                      const isArchived = d.TrangThai === 'LuuTru';
-                      const isPending = pendingDuAnId === d.DuAnID;
-
-                      const policies = Array.isArray(d.ChinhSachCoc) ? d.ChinhSachCoc : [];
-                      const cocStats = d.CocStats || {};
-
-                      const activeTinDang = toNumber(d.TinDangHoatDong ?? d.SoTinDang);
-                      const totalTinDang = toNumber(d.SoTinDang);
-                      const draftTinDang = toNumber(d.TinDangNhap);
-
-                      const depositActive = toNumber(cocStats.CocDangHieuLuc);
-                      const depositHold = toNumber(cocStats.CocDangHieuLucGiuCho);
-                      const depositSecurity = toNumber(cocStats.CocDangHieuLucAnNinh);
-                      const depositExpired = toNumber(cocStats.CocHetHan);
-                      const depositReleased = toNumber(cocStats.CocDaGiaiToa);
-                      const depositOffset = toNumber(cocStats.CocDaDoiTru);
-                      const depositAmount = toNumber(cocStats.TongTienCocDangHieuLuc);
-                      const depositAmountLabel = Utils.formatCurrency(depositAmount);
-                      const hasCompletedDeposits = depositExpired + depositReleased + depositOffset > 0;
-
-                      const phongTong = toNumber(d.TongPhong);
-                      const phongTrong = toNumber(d.PhongTrong);
-                      const phongGiuCho = toNumber(d.PhongGiuCho);
-                      const phongDaThue = toNumber(d.PhongDaThue);
-                      const phongDonDep = toNumber(d.PhongDonDep);
-
-                      return (
-                        <div key={d.DuAnID} className="duan-table-grid-row cda-table-row" role="row">
-                          <div className="duan-table-cell cda-table-cell-content duan-cell-project" role="cell">
-                            <div className="duan-project-header">
-                              <div className="duan-project-heading">
-                                <div className="cda-table-title">{d.TenDuAn}</div>
-                                <div className="cda-table-desc">{d.DiaChi || '—'}</div>
-                              </div>
-                              <div className="duan-action-buttons duan-head-actions">
-                                <button
-                                  type="button"
-                                  className="duan-action-btn neutral"
-                                  onClick={() => openEditModal(d)}
-                                  disabled={actionLoading}
-                                >
-                                  <HiOutlinePencilSquare />
-                                  <span>Chỉnh sửa</span>
-                                </button>
-                                {isArchived ? (
-                                  <button
-                                    type="button"
-                                    className="duan-action-btn primary"
-                                    onClick={() => handleRestore(d)}
-                                    disabled={actionLoading}
-                                  >
-                                    <HiOutlineArrowUturnLeft />
-                                    <span>Khôi phục</span>
-                                  </button>
+                    return (
+                      <React.Fragment key={duAn.DuAnID}>
+                        <tr className={`table-row ${isPending ? 'row-pending' : ''}`}>
+                          <td className="col-select">
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => toggleSelectOne(duAn.DuAnID)}
+                              disabled={isPending}
+                            />
+                          </td>
+                          <td className="col-project">
+                            <div className="project-info">
+                              <div className="project-name">{duAn.TenDuAn}</div>
+                              <div className="project-address">
+                                {duAn.ViDo && duAn.KinhDo ? (
+                                  <>
+                                    <HiOutlineMapPin className="addr-icon" />
+                                    {duAn.DiaChi || '—'}
+                                  </>
                                 ) : (
-                                  <button
-                                    type="button"
-                                    className="duan-action-btn danger"
-                                    onClick={() => handleArchive(d)}
-                                    disabled={actionLoading}
-                                  >
-                                    <HiOutlineArchiveBox />
-                                    <span>Lưu trữ</span>
-                                  </button>
+                                  <span className="text-muted">{duAn.DiaChi || 'Chưa có địa chỉ'}</span>
                                 )}
                               </div>
                             </div>
-                            <div className="duan-project-meta">
-                              {d.ViDo && d.KinhDo ? (
-                                <span className="duan-coords" title="Tọa độ dự án">
-                                  <HiOutlineMapPin />
-                                  <span>
-                                    {Number(d.ViDo).toFixed(6)}, {Number(d.KinhDo).toFixed(6)}
-                                  </span>
+                          </td>
+                          <td className="col-stats">{renderPhongStats(duAn)}</td>
+                          <td className="col-stats">{renderTinDangStats(duAn)}</td>
+                          <td className="col-stats">{renderCocStats(duAn)}</td>
+                          <td className="col-status">
+                            {duAn.TrangThai === 'NgungHoatDong' ? (
+                              <div
+                                className="status-badge-container"
+                                onMouseEnter={() => setTooltipDuAnId(duAn.DuAnID)}
+                                onMouseLeave={() => setTooltipDuAnId(null)}
+                              >
+                                <span className={`status-badge ${getTrangThaiClass(duAn.TrangThai)}`}>
+                                  <HiOutlineExclamationTriangle className="badge-icon" />
+                                  {TRANG_THAI_LABELS[duAn.TrangThai]}
                                 </span>
-                              ) : (
-                                <span className="cda-badge-sm" title="Chưa có tọa độ">
-                                  Chưa định vị
-                                </span>
-                              )}
-                              <span className={`duan-meta-badge ${yeuCauClass}`}>
-                                {yeuCauLabel}
-                              </span>
-                            </div>
-
-                            {isPending && actionLoading && (
-                              <div className="duan-inline-status" role="status">
-                                Đang xử lý yêu cầu...
+                                {tooltipDuAnId === duAn.DuAnID && duAn.LyDoNgungHoatDong && (
+                                  <div className="tooltip banned-tooltip">
+                                    <div className="tooltip-header">
+                                      <HiOutlineExclamationTriangle className="icon" />
+                                      <strong>Lý do ngưng hoạt động:</strong>
+                                    </div>
+                                    <div className="tooltip-body">{duAn.LyDoNgungHoatDong}</div>
+                                  </div>
+                                )}
                               </div>
+                            ) : (
+                              <span className={`status-badge ${getTrangThaiClass(duAn.TrangThai)}`}>
+                                {TRANG_THAI_LABELS[duAn.TrangThai] || duAn.TrangThai}
+                              </span>
                             )}
+                          </td>
+                          <td className="col-actions">
+                            <div className="action-buttons">
+                              <button
+                                type="button"
+                                className="action-btn"
+                                onClick={() => openEditModal(duAn)}
+                                disabled={isPending}
+                                title="Chỉnh sửa"
+                              >
+                                <HiOutlinePencilSquare />
+                              </button>
+                              {isArchived ? (
+                                <button
+                                  type="button"
+                                  className="action-btn action-restore"
+                                  onClick={() => handleRestore(duAn)}
+                                  disabled={isPending}
+                                  title="Khôi phục"
+                                >
+                                  <HiOutlineArrowUturnLeft />
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="action-btn action-archive"
+                                  onClick={() => handleArchive(duAn)}
+                                  disabled={isPending}
+                                  title="Lưu trữ"
+                                >
+                                  <HiOutlineArchiveBox />
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                className="action-btn action-expand"
+                                onClick={() => toggleExpand(duAn.DuAnID)}
+                                title={isExpanded ? 'Thu gọn' : 'Xem chi tiết'}
+                              >
+                                {isExpanded ? <HiOutlineChevronUp /> : <HiOutlineChevronDown />}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr className="table-row-expanded">
+                            <td colSpan="7">
+                              <div className="expanded-content">
+                                {/* === TASK 14: BANNED INFO SECTION === */}
+                                {duAn.TrangThai === 'NgungHoatDong' && (
+                                  <div className="detail-section banned-info-section">
+                                    <div className="detail-header">
+                                      <HiOutlineExclamationTriangle className="detail-icon text-danger" />
+                                      <span className="detail-title">⚠️ Thông tin Ngưng hoạt động</span>
+                                    </div>
+                                    <div className="banned-info-content">
+                                      {/* Lý do */}
+                                      <div className="banned-reason">
+                                        <strong>Lý do:</strong>
+                                        <p className="reason-text">{duAn.LyDoNgungHoatDong || 'Không có thông tin'}</p>
+                                      </div>
+                                      
+                                      {/* Người xử lý & Thời gian */}
+                                      <div className="banned-meta">
+                                        {duAn.NguoiNgungHoatDong_TenDayDu && (
+                                          <div className="meta-item">
+                                            <span className="meta-label">Người xử lý:</span>
+                                            <span className="meta-value">{duAn.NguoiNgungHoatDong_TenDayDu}</span>
+                                          </div>
+                                        )}
+                                        {duAn.NgungHoatDongLuc && (
+                                          <div className="meta-item">
+                                            <span className="meta-label">Thời gian:</span>
+                                            <span className="meta-value">{Utils.formatDateTime(duAn.NgungHoatDongLuc)}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                      
+                                      {/* Trạng thái yêu cầu mở lại */}
+                                      <div className="request-status-row">
+                                        <div className="status-label">
+                                          <strong>Yêu cầu mở lại:</strong>
+                                        </div>
+                                        <div className="status-badges">
+                                          {duAn.YeuCauMoLai === 'ChuaGui' && (
+                                            <>
+                                              <span className="request-status-badge badge-secondary">
+                                                Chưa gửi
+                                              </span>
+                                              <button
+                                                type="button"
+                                                className="cda-btn cda-btn-primary cda-btn-sm btn-request-reopen"
+                                                onClick={() => openYeuCauMoLaiModal(duAn)}
+                                              >
+                                                Gửi yêu cầu mở lại
+                                              </button>
+                                            </>
+                                          )}
+                                          {duAn.YeuCauMoLai === 'DangXuLy' && (
+                                            <>
+                                              <span className="request-status-badge badge-warning">
+                                                ⏳ Đang xử lý
+                                              </span>
+                                              {duAn.NoiDungGiaiTrinh && (
+                                                <div className="giaitrinh-box">
+                                                  <strong>Nội dung giải trình:</strong>
+                                                  <p>{duAn.NoiDungGiaiTrinh}</p>
+                                                </div>
+                                              )}
+                                            </>
+                                          )}
+                                          {duAn.YeuCauMoLai === 'ChapNhan' && (
+                                            <span className="request-status-badge badge-success">
+                                              ✅ Đã chấp nhận
+                                            </span>
+                                          )}
+                                          {duAn.YeuCauMoLai === 'TuChoi' && (
+                                            <>
+                                              <span className="request-status-badge badge-danger">
+                                                ❌ Đã từ chối
+                                              </span>
+                                              {duAn.LyDoTuChoiMoLai && (
+                                                <div className="giaitrinh-box">
+                                                  <strong>Lý do từ chối:</strong>
+                                                  <p className="text-danger">{duAn.LyDoTuChoiMoLai}</p>
+                                                </div>
+                                              )}
+                                              <button
+                                                type="button"
+                                                className="cda-btn cda-btn-primary cda-btn-sm btn-request-reopen"
+                                                onClick={() => openYeuCauMoLaiModal(duAn)}
+                                              >
+                                                Gửi yêu cầu mới
+                                              </button>
+                                            </>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
 
-                            <div className="duan-project-details" role="group" aria-label="Thông tin mở rộng dự án">
-                              <div className="duan-detail-block">
-                                <div className="duan-detail-label">Chính sách cọc</div>
-                                {policies.length > 0 ? (
-                                  <div className="duan-policy-group">
-                                    {policies.map((policy) => {
-                                      const policyName = policy.TenChinhSach || 'Mặc định hệ thống';
-                                      const policyKey = `policy-${d.DuAnID}-${policy.ChinhSachCocID ?? 'default'}`;
-                                      const policyClasses = ['duan-policy-badge'];
-                                      if (policy.ChinhSachCocID === null) {
-                                        policyClasses.push('default-policy');
-                                      }
-                                      if (policy.HieuLuc === false) {
-                                        policyClasses.push('inactive');
-                                      }
-                                      const tooltipParts = [
-                                        policyName,
-                                        `Áp dụng: ${policy.SoTinDangApDung} tin`
-                                      ];
-                                      if (policy.ChoPhepCocGiuCho !== null) {
-                                        tooltipParts.push(`Giữ chỗ: ${policy.ChoPhepCocGiuCho ? 'cho phép' : 'không'}`);
-                                      }
-                                      if (policy.ChoPhepCocAnNinh !== null) {
-                                        tooltipParts.push(`Cọc an ninh: ${policy.ChoPhepCocAnNinh ? 'có' : 'không'}`);
-                                      }
-                                      if (policy.TTL_CocGiuCho_Gio !== null) {
-                                        tooltipParts.push(`TTL giữ chỗ: ${policy.TTL_CocGiuCho_Gio} giờ`);
-                                      }
-                                      if (policy.TyLePhat_CocGiuCho !== null) {
-                                        tooltipParts.push(`Phạt: ${policy.TyLePhat_CocGiuCho}%`);
-                                      }
+                                {/* === TASK 11: CHÍNH SÁCH CỌC SECTION === */}
+                                <div className="detail-section">
+                                  <div className="detail-header">
+                                    <span className="detail-icon">💎</span>
+                                    <span className="detail-title">Chính sách Cọc</span>
+                                    <button
+                                      type="button"
+                                      className="cda-btn cda-btn-secondary cda-btn-sm"
+                                      onClick={() => openChinhSachCocModal('create')}
+                                      style={{ marginLeft: 'auto' }}
+                                    >
+                                      <HiOutlinePlus className="icon" />
+                                      Thêm chính sách cọc
+                                    </button>
+                                  </div>
+                                  <div className="detail-policies">
+                                    {chinhSachCocList.length === 0 ? (
+                                      <p className="text-muted">Chưa có chính sách cọc nào</p>
+                                    ) : (
+                                      <div className="policy-cards">
+                                        {chinhSachCocList.map((policy) => (
+                                          <div key={policy.ChinhSachCocID} className="policy-card">
+                                            <div className="policy-info">
+                                              <div className="policy-name">{policy.TenChinhSach}</div>
+                                              <div className="policy-details">
+                                                {policy.ChoPhepCocGiuCho === 1 && (
+                                                  <>
+                                                    <span className="policy-tag">TTL: {policy.TTL_CocGiuCho_Gio}h</span>
+                                                    <span className="policy-tag">Phạt: {policy.TyLePhat_CocGiuCho}%</span>
+                                                  </>
+                                                )}
+                                                <span className="policy-tag">
+                                                  Giải tỏa: {policy.QuyTacGiaiToa === 'BanGiao' ? 'Bàn giao' : policy.QuyTacGiaiToa === 'TheoNgay' ? 'Theo ngày' : 'Khác'}
+                                                </span>
+                                                {policy.SoTinDangSuDung > 0 && (
+                                                  <span className="policy-usage">
+                                                    {policy.SoTinDangSuDung} tin đăng
+                                                  </span>
+                                                )}
+                                              </div>
+                                            </div>
+                                            {policy.ChuDuAnID && ( // Chỉ edit được chính sách của mình
+                                              <button
+                                                type="button"
+                                                className="policy-edit-btn"
+                                                onClick={() => openChinhSachCocModal('edit', policy)}
+                                                title="Chỉnh sửa"
+                                              >
+                                                <HiOutlinePencilSquare />
+                                              </button>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Phòng details */}
+                                <div className="detail-section">
+                                  <div className="detail-header">
+                                    <span className="detail-icon">🏠</span>
+                                    <span className="detail-title">Tình trạng phòng</span>
+                                  </div>
+                                  <div className="detail-stats">
+                                    {Object.entries(PHONG_TRANG_THAI).map(([key, config]) => {
+                                      const value = toNumber(duAn[`Phong${key.charAt(0).toUpperCase() + key.slice(1)}`]);
                                       return (
-                                        <button
-                                          type="button"
-                                          key={policyKey}
-                                          className={policyClasses.join(' ')}
-                                          title={tooltipParts.join(' • ')}
-                                          onClick={() => openPolicyModal(d, policy)}
-                                        >
-                                          {policyName} • {policy.SoTinDangApDung}
-                                        </button>
+                                        <div key={key} className="stat-item">
+                                          <span className="stat-icon">{config.icon}</span>
+                                          <span className="stat-label">{config.label}:</span>
+                                          <span className={`stat-value text-${config.color}`}>{value}</span>
+                                        </div>
                                       );
                                     })}
                                   </div>
-                                ) : (
-                                  <div className="duan-detail-text muted">Chưa áp dụng chính sách cọc</div>
-                                )}
-                              </div>
+                                </div>
 
-                              <div className="duan-detail-block">
-                                <div className="duan-detail-label">Cọc đang hiệu lực</div>
-                                <div className="duan-detail-value">
-                                  {depositActive} đơn • {depositAmountLabel}
-                                </div>
-                                <div className="duan-detail-sub">
-                                  Giữ chỗ {depositHold} • An ninh {depositSecurity}
-                                </div>
-                                {hasCompletedDeposits && (
-                                  <div className="duan-detail-sub muted">
-                                    Hết hạn {depositExpired} • Giải tỏa {depositReleased} • Đối trừ {depositOffset}
+                                {/* Cọc details */}
+                                {duAn.CocStats && toNumber(duAn.CocStats.CocDangHieuLuc) > 0 && (
+                                  <div className="detail-section">
+                                    <div className="detail-header">
+                                      <span className="detail-icon">💰</span>
+                                      <span className="detail-title">Thống kê cọc</span>
+                                    </div>
+                                    <div className="detail-stats">
+                                      <div className="stat-item">
+                                        <span className="stat-label">Giữ chỗ:</span>
+                                        <span className="stat-value">{toNumber(duAn.CocStats.CocDangHieuLucGiuCho)}</span>
+                                      </div>
+                                      <div className="stat-item">
+                                        <span className="stat-label">An ninh:</span>
+                                        <span className="stat-value">{toNumber(duAn.CocStats.CocDangHieuLucAnNinh)}</span>
+                                      </div>
+                                      <div className="stat-item">
+                                        <span className="stat-label">Hết hạn:</span>
+                                        <span className="stat-value text-warning">{toNumber(duAn.CocStats.CocHetHan)}</span>
+                                      </div>
+                                      <div className="stat-item">
+                                        <span className="stat-label">Đã giải tỏa:</span>
+                                        <span className="stat-value text-secondary">{toNumber(duAn.CocStats.CocDaGiaiToa)}</span>
+                                      </div>
+                                    </div>
                                   </div>
                                 )}
-                                <button
-                                  type="button"
-                                  className="duan-detail-link"
-                                  onClick={() => openCocModal(d)}
-                                >
-                                  <HiOutlineEye /> Xem chi tiết
-                                </button>
-                              </div>
 
-                              <div className="duan-detail-block">
-                                <div className="duan-detail-label">Tình trạng phòng</div>
-                                <div className="duan-detail-value">{phongTong} phòng</div>
-                                <div className="duan-detail-sub">
-                                  Trống {phongTrong} • Giữ chỗ {phongGiuCho} • Đang thuê {phongDaThue}
+                                {/* Metadata */}
+                                <div className="detail-section">
+                                  <div className="detail-header">
+                                    <span className="detail-icon">ℹ️</span>
+                                    <span className="detail-title">Thông tin khác</span>
+                                  </div>
+                                  <div className="detail-metadata">
+                                    {duAn.ViDo && duAn.KinhDo && (
+                                      <div className="meta-item">
+                                        <span className="meta-label">Tọa độ:</span>
+                                        <span className="meta-value">
+                                          {Number(duAn.ViDo).toFixed(6)}, {Number(duAn.KinhDo).toFixed(6)}
+                                        </span>
+                                      </div>
+                                    )}
+                                    <div className="meta-item">
+                                      <span className="meta-label">Phê duyệt cuộc hẹn:</span>
+                                      <span className="meta-value">
+                                        {Number(duAn.YeuCauPheDuyetChu) === 1
+                                          ? '✅ Chủ dự án duyệt'
+                                          : '⚡ Tự động duyệt'}
+                                      </span>
+                                    </div>
+                                    {duAn.PhuongThucVao && (
+                                      <div className="meta-item">
+                                        <span className="meta-label">Phương thức vào:</span>
+                                        <span className="meta-value">{duAn.PhuongThucVao}</span>
+                                      </div>
+                                    )}
+                                    {duAn.CapNhatLuc && (
+                                      <div className="meta-item">
+                                        <span className="meta-label">Cập nhật lần cuối:</span>
+                                        <span className="meta-value">{Utils.formatDateTime(duAn.CapNhatLuc)}</span>
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                                {phongDonDep > 0 && (
-                                  <div className="duan-detail-sub muted">Dọn dẹp {phongDonDep}</div>
-                                )}
-                                <button
-                                  type="button"
-                                  className="duan-detail-link"
-                                  onClick={() => openPhongModal(d)}
-                                >
-                                  <HiOutlineEye /> Danh sách phòng
-                                </button>
                               </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
 
-                              <div className="duan-detail-block">
-                                <div className="duan-detail-label">Phương thức vào</div>
-                                <div className={`duan-detail-text ${d.PhuongThucVao ? '' : 'muted'}`}>
-                                  {d.PhuongThucVao ? d.PhuongThucVao : 'Chưa cập nhật'}
-                                </div>
-                                <button
-                                  type="button"
-                                  className="duan-detail-link"
-                                  onClick={() => openPhuongThucModal(d)}
-                                >
-                                  <HiOutlinePencilSquare /> Chỉnh sửa nhanh
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                          <div className="duan-table-cell cda-table-cell-status duan-cell-status" role="cell">
-                            <span className={`duan-status-badge ${trangThaiClass}`}>
-                              {trangThaiLabel}
-                            </span>
-                            {trangThaiNote && (
-                              <div className="duan-status-note">{trangThaiNote}</div>
-                            )}
-                          </div>
-                          <div className="duan-table-cell cda-table-cell-text duan-cell-listings" role="cell">
-                            <div className="duan-listing-count">{activeTinDang}</div>
-                            <div className="duan-listing-label">Tin đăng đang hoạt động</div>
-                            <div className="duan-listing-sub">
-                              Tổng {totalTinDang} • Nháp {draftTinDang}
-                            </div>
-                            <button
-                              type="button"
-                              className="cda-btn cda-btn-secondary cda-btn-sm duan-listing-btn"
-                              onClick={() => navigate('/chu-du-an/tao-tin-dang')}
-                              title="Tạo tin đăng từ dự án này"
-                            >
-                              + Tạo tin đăng
-                            </button>
-                          </div>
-                          <div className="duan-table-cell cda-table-cell-date duan-cell-updated align-right" role="cell">
-                            <div className="duan-date-main">
-                              {d.CapNhatLuc ? Utils.formatDateTime(d.CapNhatLuc) : '—'}
-                            </div>
-                            <div className="duan-date-note">Cập nhật lần cuối</div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+            {/* Pagination */}
+            <div className="qlda-pagination">
+              <div className="pagination-info">
+                Hiển thị {startItem}-{endItem} trong tổng số {totalItems} dự án
               </div>
-
-              <div className="duan-pagination" aria-label="Phân trang dự án">
-                <div className="duan-pagination-info">
+              <div className="pagination-buttons">
+                <button
+                  type="button"
+                  className="cda-btn cda-btn-secondary cda-btn-sm"
+                  onClick={() => setPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  « Đầu
+                </button>
+                <button
+                  type="button"
+                  className="cda-btn cda-btn-secondary cda-btn-sm"
+                  onClick={() => setPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  ‹ Trước
+                </button>
+                <span className="pagination-current">
                   Trang {currentPage} / {totalPages}
-                </div>
-                <div className="duan-pagination-buttons">
-                  <button
-                    type="button"
-                    className="cda-btn cda-btn-secondary cda-btn-sm"
-                    onClick={() => goToPage(1)}
-                    disabled={currentPage === 1}
-                  >
-                    « Đầu
-                  </button>
-                  <button
-                    type="button"
-                    className="cda-btn cda-btn-secondary cda-btn-sm"
-                    onClick={() => goToPage(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    ‹ Trước
-                  </button>
-                  <button
-                    type="button"
-                    className="cda-btn cda-btn-secondary cda-btn-sm"
-                    onClick={() => goToPage(currentPage + 1)}
-                    disabled={currentPage === totalPages || totalItems === 0}
-                  >
-                    Sau ›
-                  </button>
-                  <button
-                    type="button"
-                    className="cda-btn cda-btn-secondary cda-btn-sm"
-                    onClick={() => goToPage(totalPages)}
-                    disabled={currentPage === totalPages || totalItems === 0}
-                  >
-                    Cuối »
-                  </button>
-                </div>
-                <form className="duan-pagination-jump" onSubmit={handleJumpSubmit}>
-                  <span>Đi tới trang</span>
-                  <input
-                    className="duan-pagination-input"
-                    type="number"
-                    min={1}
-                    max={totalPages}
-                    value={pageInput}
-                    onChange={(e) => setPageInput(e.target.value)}
-                  />
-                  <button type="submit" className="cda-btn cda-btn-primary cda-btn-sm">
-                    Đi
-                  </button>
-                </form>
+                </span>
+                <button
+                  type="button"
+                  className="cda-btn cda-btn-secondary cda-btn-sm"
+                  onClick={() => setPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  Sau ›
+                </button>
+                <button
+                  type="button"
+                  className="cda-btn cda-btn-secondary cda-btn-sm"
+                  onClick={() => setPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  Cuối »
+                </button>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Modal tạo dự án */}
+      {/* Modals */}
       <ModalTaoNhanhDuAn
         isOpen={showModalTaoDuAn}
         onClose={() => setShowModalTaoDuAn(false)}
         onSuccess={() => {
           setShowModalTaoDuAn(false);
-          setActionError('');
           setSuccessMessage('Tạo dự án thành công');
           loadData();
         }}
       />
-      <ModalCapNhatDuAn
+
+      <ModalChinhSuaDuAn
         isOpen={showModalChinhSua}
         duAn={selectedDuAn}
         onClose={closeEditModal}
         onSaved={handleEditSaved}
       />
-      <ModalChinhSachCoc
-        isOpen={showPolicyModal}
-        projectName={policyModalInfo?.project?.TenDuAn}
-        policy={policyModalInfo?.policy}
-        onClose={closePolicyModal}
-        onSaved={handlePolicySaved}
+
+      {/* === TASK 10: MODAL CHÍNH SÁCH CỌC === */}
+      <ModalQuanLyChinhSachCoc
+        isOpen={showModalChinhSachCoc}
+        onClose={closeChinhSachCocModal}
+        onSuccess={handleChinhSachCocSuccess}
+        chinhSachCoc={selectedChinhSachCoc}
+        mode={chinhSachCocMode}
       />
-      <ModalThongTinCoc
-        isOpen={showCocModal}
-        projectName={cocModalProject?.TenDuAn}
-        stats={cocModalProject?.CocStats}
-        onClose={closeCocModal}
-      />
-      <ModalDanhSachPhong
-        isOpen={showPhongModal}
-        project={phongModalProject}
-        onClose={closePhongModal}
-      />
-      <ModalPhuongThucVao
-        isOpen={showPhuongThucModal}
-        project={phuongThucModalProject}
-        onClose={() => {
-          setShowPhuongThucModal(false);
-          setPhuongThucModalProject(null);
-        }}
-        onSaved={handlePhuongThucSaved}
+
+      {/* === TASK 12: MODAL YÊU CẦU MỞ LẠI === */}
+      <ModalYeuCauMoLaiDuAn
+        isOpen={showModalYeuCauMoLai}
+        onClose={closeYeuCauMoLaiModal}
+        onSubmit={handleGuiYeuCauMoLai}
+        duAn={selectedDuAn}
       />
     </ChuDuAnLayout>
   );
