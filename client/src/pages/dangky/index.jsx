@@ -20,8 +20,9 @@ function Register() {
     setIsSubmitting(true);
 
     try {
-      // Map role sang roleId (chỉnh theo backend nếu cần)
-      const roleId = role === 'chuduan' ? 2 : 1;
+      // Map role sang VaiTroID (theo bảng vaitro trong DB)
+      // VaiTroID: 1=Khách hàng, 2=Nhân viên Bán hàng, 3=Chủ dự án, 4=Điều hành, 5=Admin
+      const roleId = role === 'chuduan' ? 3 : 1;
 
       const payload = {
         name: fullname,

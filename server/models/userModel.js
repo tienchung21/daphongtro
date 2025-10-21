@@ -9,13 +9,21 @@ exports.getAll = () => {
 
 // Thêm user
 
-exports.createNguoiDung = (tenDayDu, email, soDienThoai, matKhauHash, vaiTroID) => {
+exports.createNguoiDung = async (tenDayDu, email, soDienThoai, matKhauHash, vaiTroID) => {
+  // Insert vào bảng nguoidung (VaiTroHoatDongID là vai trò chính)
   const sql = `
     INSERT INTO nguoidung
-      (TenDayDu, Email, SoDienThoai, MatKhauHash, VaiTroID, TaoLuc, CapNhatLuc, TrangThai)
-    VALUES (?, ?, ?, ?, ?, NOW(), NOW(), NULL)
+      (TenDayDu, Email, SoDienThoai, MatKhauHash, VaiTroHoatDongID, TaoLuc, CapNhatLuc)
+    VALUES (?, ?, ?, ?, ?, NOW(), NOW())
   `;
-  return db.query(sql, [tenDayDu, email, soDienThoai, matKhauHash, vaiTroID]);
+  const [result] = await db.query(sql, [tenDayDu, email, soDienThoai, matKhauHash, vaiTroID]);
+  
+  // Insert vào bảng trung gian nguoidung_vaitro
+  const nguoiDungId = result.insertId;
+  const sqlVaiTro = `INSERT INTO nguoidung_vaitro (NguoiDungID, VaiTroID) VALUES (?, ?)`;
+  await db.query(sqlVaiTro, [nguoiDungId, vaiTroID]);
+  
+  return [result];
 };
 
 exports.getById = (id) => {

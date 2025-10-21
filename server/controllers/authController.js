@@ -8,7 +8,14 @@ exports.login = async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Email và mật khẩu là bắt buộc' });
 
   try {
-    const [rows] = await db.query('SELECT * FROM nguoidung WHERE Email = ?', [email]);
+    // Query user với thông tin vai trò (JOIN với bảng vaitro)
+    const sql = `
+      SELECT n.*, v.TenVaiTro, v.VaiTroID
+      FROM nguoidung n
+      LEFT JOIN vaitro v ON n.VaiTroHoatDongID = v.VaiTroID
+      WHERE n.Email = ?
+    `;
+    const [rows] = await db.query(sql, [email]);
     if (rows.length === 0) return res.status(401).json({ error: 'Thông tin đăng nhập không đúng' });
 
     const user = rows[0];

@@ -7,65 +7,6 @@
     align-items: center;
     box-sizing: border-box;
 }
-
-/* Bypass Container */
-.bypass-container {
-    width: 100%;
-    padding: 15px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    position: sticky;
-    top: 60px;
-    z-index: 100;
-    margin-bottom: 10px;
-}
-
-.btn-bypass-chu-du-an {
-    background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-    user-select: none;
-}
-
-.btn-bypass-chu-du-an:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    background: linear-gradient(135deg, #ff5252 0%, #26c6da 100%);
-}
-
-.btn-bypass-chu-du-an:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-}
-
-/* Responsive cho mobile */
-@media (max-width: 768px) {
-    .bypass-container {
-        padding: 10px 15px;
-        position: relative;
-        top: 0;
-    }
-    
-    .btn-bypass-chu-du-an {
-        font-size: 14px;
-        padding: 10px 20px;
-        border-radius: 20px;
-    }
-}
 .content{
     margin-top: 20px;
     width: 60vw;
