@@ -47,7 +47,13 @@ client/src/
 ├── components/
 │   ├── ChuDuAn/
 │   │   ├── NavigationChuDuAn.jsx/.css # Sidebar navigation collapsible
-│   │   └── ModalTaoNhanhDuAn.jsx      # Modal tạo dự án nhanh
+│   │   ├── ModalTaoNhanhDuAn.jsx      # Modal tạo dự án nhanh
+│   │   ├── ModalCapNhatDuAn.jsx/.css  # Modal chỉnh sửa dự án (V2 - với geocoding)
+│   │   ├── ModalQuanLyChinhSachCoc.jsx/.css # Modal quản lý chính sách cọc
+│   │   ├── ModalYeuCauMoLaiDuAn.jsx/.css # Modal yêu cầu mở lại dự án banned
+│   │   ├── ModalChinhSuaToaDo.jsx     # Modal điều chỉnh tọa độ GPS
+│   │   ├── AddressAutocompleteInput.jsx/.css # Input tự động suggest địa chỉ
+│   │   └── README.md                  # Documentation cấu trúc components
 │   ├── Layout/               # Layout components tái sử dụng
 │   ├── header.jsx/.css       # Header chung
 │   └── footer.jsx/.css       # Footer chung
