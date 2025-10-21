@@ -5,8 +5,15 @@
 const express = require('express');
 const router = express.Router();
 const PhongController = require('../controllers/PhongController');
-const auth = require('../middleware/auth');
-const role = require('../middleware/role');
+// const auth = require('../middleware/auth');
+// const role = require('../middleware/role');
+
+// === DEV MODE: Sử dụng authSimple và roleSimple cho mock user ===
+const { authSimple: auth } = require('../middleware/authSimple');
+const roleSimple = require('../middleware/roleSimple');
+const role = {
+  requireRole: (roleName) => roleSimple.roleSimple([roleName])
+};
 
 // ============================================================================
 // ROUTES QUẢN LÝ PHÒNG (Phòng Master của Dự án)

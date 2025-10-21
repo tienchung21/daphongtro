@@ -1164,6 +1164,154 @@ class ChuDuAnController {
       });
     }
   }
+
+  /**
+   * UC-PROJ-BANNED: Gửi yêu cầu mở lại dự án bị banned
+   * POST /api/chu-du-an/du-an/:id/yeu-cau-mo-lai
+   * 
+   * @param {Object} req.params.id - DuAnID
+   * @param {Object} req.body.NoiDungGiaiTrinh - Nội dung giải trình (required, min 50 chars)
+   * @param {Object} req.user - Thông tin Chủ dự án từ JWT
+   * @returns {Object} 200 - Success
+   * @returns {Object} 400 - Validation errors
+   * @returns {Object} 403 - Không có quyền (không phải chủ dự án)
+   * @returns {Object} 404 - Dự án không tồn tại
+   * @returns {Object} 409 - Dự án chưa bị banned hoặc yêu cầu đang xử lý
+   */
+  static async guiYeuCauMoLaiDuAn(req, res) {
+    const db = require('../config/db');
+    const connection = await db.getConnection();
+    
+    try {
+      const duAnId = parseInt(req.params.id);
+      const { NoiDungGiaiTrinh } = req.body;
+      const chuDuAnId = req.user.NguoiDungID;
+
+      // Validation
+      if (!NoiDungGiaiTrinh || NoiDungGiaiTrinh.trim().length < 50) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nội dung giải trình phải có ít nhất 50 ký tự để giải thích rõ lý do',
+        });
+      }
+
+      if (NoiDungGiaiTrinh.length > 2000) {
+        return res.status(400).json({
+          success: false,
+          message: 'Nội dung giải trình không được vượt quá 2000 ký tự',
+        });
+      }
+
+      await connection.beginTransaction();
+
+      // Kiểm tra dự án và quyền sở hữu
+      const [duAnRows] = await connection.execute(
+        `SELECT DuAnID, TenDuAn, ChuDuAnID, TrangThai, YeuCauMoLai, LyDoNgungHoatDong
+         FROM duan 
+         WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      if (!duAnRows.length) {
+        await connection.rollback();
+        return res.status(404).json({
+          success: false,
+          message: 'Dự án không tồn tại',
+        });
+      }
+
+      const duAn = duAnRows[0];
+
+      // Kiểm tra quyền sở hữu
+      if (duAn.ChuDuAnID !== chuDuAnId) {
+        await connection.rollback();
+        return res.status(403).json({
+          success: false,
+          message: 'Bạn không có quyền gửi yêu cầu cho dự án này',
+        });
+      }
+
+      // Validate trạng thái dự án
+      if (duAn.TrangThai !== 'NgungHoatDong') {
+        await connection.rollback();
+        return res.status(409).json({
+          success: false,
+          message: 'Dự án chưa bị ngưng hoạt động, không thể gửi yêu cầu mở lại',
+        });
+      }
+
+      // Validate trạng thái yêu cầu
+      if (duAn.YeuCauMoLai === 'DangXuLy') {
+        await connection.rollback();
+        return res.status(409).json({
+          success: false,
+          message: 'Yêu cầu mở lại đang được xử lý, vui lòng chờ kết quả',
+        });
+      }
+
+      if (duAn.YeuCauMoLai === 'ChapNhan') {
+        await connection.rollback();
+        return res.status(409).json({
+          success: false,
+          message: 'Dự án đã được mở lại trước đó',
+        });
+      }
+
+      // Update yêu cầu mở lại
+      await connection.execute(
+        `UPDATE duan 
+         SET YeuCauMoLai = 'DangXuLy',
+             NoiDungGiaiTrinh = ?,
+             ThoiGianGuiYeuCau = NOW(),
+             CapNhatLuc = NOW()
+         WHERE DuAnID = ?`,
+        [NoiDungGiaiTrinh.trim(), duAnId]
+      );
+
+      // Ghi audit log
+      await NhatKyHeThongService.ghiNhan({
+        TacNhan: 'ChuDuAn',
+        NguoiDungID: chuDuAnId,
+        HanhDong: 'GUI_YEU_CAU_MO_LAI_DU_AN',
+        DoiTuong: 'DuAn',
+        DoiTuongID: duAnId,
+        ChiTiet: JSON.stringify({
+          TenDuAn: duAn.TenDuAn,
+          LyDoNgungHoatDong: duAn.LyDoNgungHoatDong,
+          NoiDungGiaiTrinh: NoiDungGiaiTrinh.trim(),
+        }),
+      });
+
+      await connection.commit();
+
+      // Lấy thông tin sau khi update
+      const [updatedRows] = await connection.execute(
+        `SELECT 
+          DuAnID, TenDuAn, TrangThai, YeuCauMoLai,
+          NoiDungGiaiTrinh, ThoiGianGuiYeuCau,
+          LyDoNgungHoatDong, NgungHoatDongLuc
+         FROM duan 
+         WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: 'Đã gửi yêu cầu mở lại dự án. Operator sẽ xử lý trong vòng 3-5 ngày làm việc.',
+        data: updatedRows[0],
+      });
+    } catch (error) {
+      await connection.rollback();
+      console.error('Lỗi khi gửi yêu cầu mở lại:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi server khi xử lý yêu cầu',
+        error: error.message,
+      });
+    } finally {
+      connection.release();
+    }
+  }
 }
 
 module.exports = ChuDuAnController;

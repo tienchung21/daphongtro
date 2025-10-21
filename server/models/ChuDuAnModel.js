@@ -646,6 +646,17 @@ class ChuDuAnModel {
           da.KinhDo,
           da.TaoLuc,
           da.CapNhatLuc,
+          da.LyDoNgungHoatDong,
+          da.NguoiNgungHoatDongID,
+          da.NgungHoatDongLuc,
+          da.YeuCauMoLai,
+          da.NoiDungGiaiTrinh,
+          da.ThoiGianGuiYeuCau,
+          da.NguoiXuLyYeuCauID,
+          da.ThoiGianXuLyYeuCau,
+          da.LyDoTuChoiMoLai,
+          nd_banned.TenDayDu AS NguoiNgungHoatDong_TenDayDu,
+          nd_xulyban.TenDayDu AS NguoiXuLyYeuCau_TenDayDu,
           (SELECT COUNT(*) FROM tindang td WHERE td.DuAnID = da.DuAnID AND td.TrangThai != 'LuuTru') as SoTinDang,
           (SELECT COUNT(*) FROM tindang td WHERE td.DuAnID = da.DuAnID AND td.TrangThai IN ('DaDang','DaDuyet','ChoDuyet')) as TinDangHoatDong,
           (SELECT COUNT(*) FROM tindang td WHERE td.DuAnID = da.DuAnID AND td.TrangThai = 'Nhap') as TinDangNhap,
@@ -655,6 +666,8 @@ class ChuDuAnModel {
           (SELECT COUNT(*) FROM phong p WHERE p.DuAnID = da.DuAnID AND p.TrangThai = 'DaThue') as PhongDaThue,
           (SELECT COUNT(*) FROM phong p WHERE p.DuAnID = da.DuAnID AND p.TrangThai = 'DonDep') as PhongDonDep
         FROM duan da
+        LEFT JOIN nguoidung nd_banned ON da.NguoiNgungHoatDongID = nd_banned.NguoiDungID
+        LEFT JOIN nguoidung nd_xulyban ON da.NguoiXuLyYeuCauID = nd_xulyban.NguoiDungID
         WHERE da.ChuDuAnID = ?
         ORDER BY da.TrangThai DESC, da.CapNhatLuc DESC
       `, [chuDuAnId]);

@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const GeocodingController = require('../controllers/GeocodingController');
-const authSimple = require('../middleware/authSimple'); // Simple auth for development
+const { authSimple } = require('../middleware/authSimple'); // Simple auth for development
 
 /**
  * @route   POST /api/geocode

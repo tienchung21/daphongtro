@@ -1,8 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const ChuDuAnController = require('../controllers/ChuDuAnController');
-const authMiddleware = require('../middleware/auth');
-const { roleMiddleware } = require('../middleware/role');
+// const authMiddleware = require('../middleware/auth');
+// const { roleMiddleware } = require('../middleware/role');
+
+// === DEV MODE: Sử dụng authSimple và roleSimple cho mock user ===
+const { authSimple: authMiddleware } = require('../middleware/authSimple');
+const { roleSimple: roleMiddleware } = require('../middleware/roleSimple');
 
 // Import thêm các routes con
 const uploadRoutes = require('../api/ChuDuAn/uploadRoutes');
@@ -28,6 +32,7 @@ router.post('/du-an', authMiddleware, roleMiddleware(['ChuDuAn']), ChuDuAnContro
 router.post('/du-an/tao-nhanh', authMiddleware, roleMiddleware(['ChuDuAn']), ChuDuAnController.taoNhanhDuAn);
 router.put('/du-an/:id', authMiddleware, roleMiddleware(['ChuDuAn']), ChuDuAnController.capNhatDuAn);
 router.delete('/du-an/:id', authMiddleware, roleMiddleware(['ChuDuAn']), ChuDuAnController.luuTruDuAn);
+router.post('/du-an/:id/yeu-cau-mo-lai', authMiddleware, roleMiddleware(['ChuDuAn']), ChuDuAnController.guiYeuCauMoLaiDuAn); // 🆕 UC-PROJ-BANNED
 router.get('/chinh-sach-coc/:id', authMiddleware, roleMiddleware(['ChuDuAn']), ChuDuAnController.layChiTietChinhSachCoc);
 router.put('/chinh-sach-coc/:id', authMiddleware, roleMiddleware(['ChuDuAn']), ChuDuAnController.capNhatChinhSachCoc);
 router.post('/hop-dong/bao-cao', authMiddleware, roleMiddleware(['ChuDuAn']), ChuDuAnController.baoCaoHopDongChoThue);

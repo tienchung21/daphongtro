@@ -4,6 +4,8 @@ const path = require('path');
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 const chuDuAnRoutes = require('./routes/chuDuAnRoutes'); // API chính cho Chủ dự án
+const chinhSachCocRoutes = require('./routes/chinhSachCocRoutes'); // API Chính sách Cọc
+const operatorRoutes = require('./routes/operatorRoutes'); // API Operator/Admin (Banned dự án)
 const geocodingRoutes = require('./routes/geocodingRoutes'); // Geocoding API
 
 const app = express();
@@ -24,6 +26,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/api/users', userRoutes);
 app.use('/api', authRoutes);
 app.use('/api/chu-du-an', chuDuAnRoutes); // API nghiệp vụ chủ dự án theo đặc tả
+app.use('/api/chu-du-an/chinh-sach-coc', chinhSachCocRoutes); // API Chính sách Cọc
+app.use('/api/operator', operatorRoutes); // API Operator/Admin (UC-OPR-01, UC-OPR-02)
 app.use('/api/geocode', geocodingRoutes); // Geocoding API (Nominatim)
 
 app.get('/', (req, res) => {
