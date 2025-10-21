@@ -45,7 +45,7 @@ const roleMiddleware = (allowedRoles = []) => {
         SELECT vt.TenVaiTro, nvt.VaiTroID
         FROM nguoidung_vaitro nvt
         INNER JOIN vaitro vt ON nvt.VaiTroID = vt.VaiTroID
-        WHERE nvt.NguoiDungID = ? AND nvt.TrangThai = 'HoatDong'
+        WHERE nvt.NguoiDungID = ?
       `, [req.user.id]);
 
       if (userRoles.length === 0) {
@@ -72,7 +72,11 @@ const roleMiddleware = (allowedRoles = []) => {
       console.log('🔐 [ROLE] Normalized roles:', normalizedUserRoles);
       console.log('🔐 [ROLE] Allowed roles:', allowedRoles);
       
-      const hasPermission = allowedRoles.some(role => normalizedUserRoles.includes(role));
+      // Case-insensitive comparison
+      const normalizedAllowedRoles = allowedRoles.map(r => normalizeRoleName(r).toLowerCase());
+      const normalizedUserRolesLower = normalizedUserRoles.map(r => r.toLowerCase());
+      
+      const hasPermission = normalizedAllowedRoles.some(role => normalizedUserRolesLower.includes(role));
       console.log('🔐 [ROLE] Has permission:', hasPermission);
 
       if (!hasPermission) {

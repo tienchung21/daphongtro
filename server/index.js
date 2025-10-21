@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load .env file FIRST
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -67,7 +69,8 @@ app.get('/', (req, res) => {
 
 app.listen(5000, () => {
   console.log('✅ Server chạy tại http://localhost:5000');
-  console.log('📁 Static files: http://localhost:5000/uploads');
+  console.log('� JWT_SECRET:', process.env.JWT_SECRET ? '✅ Loaded from .env' : '⚠️ Using fallback key');
+  console.log('�📁 Static files: http://localhost:5000/uploads');
   console.log('🔗 API endpoints cho Chủ dự án (theo đặc tả use cases):');
   console.log('   📊 Dashboard: GET /api/chu-du-an/dashboard');
   console.log('   📝 Tin đăng:');
