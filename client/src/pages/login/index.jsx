@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './login.css';
+import './login.scss';
 import deerImg from '../../assets/images/hinhdauhuou.png';
 import authApi from '../../api/authApi';
 import CryptoJS from 'crypto-js'; // 🟢 THÊM: dùng để mã hóa MD5

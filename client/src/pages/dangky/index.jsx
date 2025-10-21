@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './login.css';
+import './dangky.scss';
 import deerImg from '../../assets/images/hinhdauhuou.png';
 import authApi from '../../api/authApi';
 

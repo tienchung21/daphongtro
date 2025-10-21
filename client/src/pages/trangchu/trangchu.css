@@ -169,13 +169,15 @@
     display: flex;
     position: relative;
 }
-.thongtinduan .thoigian>a{
-    text-decoration: none;
+.thongtinduan .thoigian>button{
+   text-decoration: none;
     color: red;
     position: absolute;
-    right: 10px;
+    right: -23px;
     font-size: 20px;
-    top: -10px;
+    top: -20px;
+    background: none;
+    border: none;
 }
 /* khuvuc */
 .khuvuc ul{

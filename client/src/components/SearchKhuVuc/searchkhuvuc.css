@@ -1,0 +1,39 @@
+.search-khuvuc { width: 60vw; box-sizing: border-box; margin: auto; justify-content: center; display: flex; margin-top: 10px;}
+.sk-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+  max-width: 640px;
+  margin: 0;
+}
+.sk-select {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 13px;
+  min-width: 140px;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sk-select:focus { outline: 2px solid #cce4ff; }
+.sk-btn {
+  padding: 6px 10px;
+  background: #1976d2;
+  color: #fff;
+  border: 1px solid #1976d2;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sk-loading { font-size: 13px; color: #666; }
+
+/* responsive: nếu header chật, selects sẽ scroll horizontally */
+@media (max-width: 520px) {
+  .sk-row { overflow-x: auto; padding-bottom: 6px; }
+  .sk-select { min-width: 120px; }
+  .sk-btn { flex: 0 0 auto; }
+}

@@ -1,3 +1,4 @@
+@charset "UTF-8";
 .login-page {
   min-height: 100vh;
   display: flex;
@@ -41,7 +42,7 @@
 
 .form-group input {
   padding: 8px 12px;
-  border: 1px solid #bbb5b5;
+  border: 1px solid #b64040;
   border-radius: 6px;
   font-size: 15px;
   outline: none;
@@ -53,7 +54,7 @@
   border: 1.5px solid #1976d2;
 }
 
-button[type="submit"] {
+button[type=submit] {
   background: #1976d2;
   color: #fff;
   border: none;
@@ -64,7 +65,7 @@ button[type="submit"] {
   transition: background 0.2s;
 }
 
-button[type="submit"]:hover {
+button[type=submit]:hover {
   background: #1565c0;
 }
 
@@ -101,6 +102,7 @@ button[type="submit"]:hover {
   background: #1976d2;
   color: #fff;
 }
+
 /* CSS NÚT HỦY DIỆT */
 .toggle-switch {
   display: flex;
@@ -124,10 +126,13 @@ button[type="submit"]:hover {
 .slider {
   position: absolute;
   cursor: pointer;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background-color: #ccc;
   border-radius: 22px;
-  transition: .4s;
+  transition: 0.4s;
 }
 
 .slider:before {
@@ -139,7 +144,7 @@ button[type="submit"]:hover {
   bottom: 3px;
   background-color: white;
   border-radius: 50%;
-  transition: .4s;
+  transition: 0.4s;
 }
 
 .switch input:checked + .slider {
@@ -149,35 +154,62 @@ button[type="submit"]:hover {
 .switch input:checked + .slider:before {
   transform: translateX(18px);
 }
+
 @keyframes scale-form {
-  0%   { transform: scale(1); }
-  25%  { transform: scale(1.05); }
-  50%  { transform: scale(0.95); }
-  75%  { transform: scale(1.08); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.05);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  75% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 @keyframes rainbow-bg {
-  0%   { background: #1976d2; }
-  25%  { background: #e53935; }
-  50%  { background: #8e24aa; }
-  75%  { background: #fbc02d; }
-  100% { background: #43a047; }
+  0% {
+    background: #1976d2;
+  }
+  25% {
+    background: #e53935;
+  }
+  50% {
+    background: #8e24aa;
+  }
+  75% {
+    background: #fbc02d;
+  }
+  100% {
+    background: #43a047;
+  }
 }
 @keyframes rotate-deer {
-  0%   { transform: rotate(0deg) translateY(0) translateX(0); }
-  100% { transform: rotate(360deg) translateY(0) translateX(0); }
+  0% {
+    transform: rotate(0deg) translateY(0) translateX(0);
+  }
+  100% {
+    transform: rotate(360deg) translateY(0) translateX(0);
+  }
 }
-
 .login-page.rainbow {
   animation: rainbow-bg 0.2s linear infinite;
 }
+
 .login-page.rainbow .login-form {
   animation: scale-form 1s linear infinite;
 }
+
 .login-page.rainbow .deer-bg {
   transform-origin: left bottom;
   animation: rotate-deer 0.2s linear infinite;
 }
+
 /* con huuowu */
 .deer-bg {
   position: absolute;
@@ -188,7 +220,6 @@ button[type="submit"]:hover {
   opacity: 0.85;
   pointer-events: none;
   display: flex;
-
 }
 
 .login-form {
@@ -196,6 +227,7 @@ button[type="submit"]:hover {
   position: relative;
   z-index: 2;
 }
+
 .form-group select {
   padding: 8px 12px;
   border: 1px solid #bbb5b5;
@@ -209,4 +241,4 @@ button[type="submit"]:hover {
 
 .form-group select:focus {
   border: 1.5px solid #1976d2;
-}
+}/*# sourceMappingURL=dangky.css.map */
