@@ -916,18 +916,17 @@ class ChuDuAnController {
         yeuThichHomNay: tuongTac.YeuThichHomNay || 0,
         tongGiaoDichCoc: coc.TongGiaoDichCoc || 0,
         tongTienCoc: coc.TongTienCoc || 0,
-        doanhThuThang: coc.TongTienCocThangNay || 0
+        doanhThuThang: coc.TongTienCocThangNay || 0,
+        cuocHenSapToi: cuocHenSapToi.length // Số lượng cuộc hẹn sắp tới
       };
 
       res.json({
         success: true,
         message: 'Lấy dashboard thành công',
         data: {
-          summary,
-          thongKeTong,
-          thongKePhong,
+          ...summary, // Spread summary vào data level để frontend access dễ hơn
           tinDangGanDay: tinDangs,
-          cuocHenSapToi,
+          cuocHenSapToiList: cuocHenSapToi, // Array cuộc hẹn chi tiết
           duAns
         }
       });
