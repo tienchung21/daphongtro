@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
-import { DashboardService } from '../../services/ChuDuAnService';
+import { useDashboardData } from '../../hooks/useDashboardData';
 import './Dashboard.css';
 
 // React Icons
@@ -19,28 +19,11 @@ import {
 /**
  * UC-PROJ-03: Dashboard tổng quan cho Chủ dự án
  * Redesigned với clean layout, focus vào metrics quan trọng
+ * Updated: Sử dụng React Query cho data fetching
  */
 function DashboardChuDuAn() {
-  const [dashboardData, setDashboardData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    layDuLieuDashboard();
-  }, []);
-
-  const layDuLieuDashboard = async () => {
-    try {
-      setLoading(true);
-      const response = await DashboardService.layDashboard();
-      setDashboardData(response.data);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // React Query hook - tự động handle loading, error, caching
+  const { data: dashboardData, isLoading: loading, error, refetch } = useDashboardData();
 
   const formatNumber = (value = 0) => {
     return Number(value || 0).toLocaleString('vi-VN');
@@ -70,8 +53,8 @@ function DashboardChuDuAn() {
           <div className="cda-empty-state">
             <div className="cda-empty-icon">⚠️</div>
             <h3 className="cda-empty-title">Có lỗi xảy ra</h3>
-            <p className="cda-empty-description">{error}</p>
-            <button onClick={layDuLieuDashboard} className="cda-btn cda-btn-primary">
+            <p className="cda-empty-description">{error?.message || 'Không thể tải dữ liệu dashboard'}</p>
+            <button onClick={() => refetch()} className="cda-btn cda-btn-primary">
               Thử lại
             </button>
           </div>
@@ -178,7 +161,7 @@ function DashboardChuDuAn() {
           </div>
           <div className="metric-card-content">
             <div className="cda-metric-label">Cuộc hẹn sắp tới</div>
-            <div className="cda-metric-value">{formatNumber(dashboardData?.cuocHenSapToi?.length || 0)}</div>
+            <div className="cda-metric-value">{formatNumber(dashboardData?.cuocHenSapToi || 0)}</div>
             <div className="cda-metric-change">
               <HiOutlineArrowTrendingUp style={{ width: '16px', height: '16px' }} />
               <span>trong 7 ngày tới</span>
@@ -427,7 +410,7 @@ function DashboardChuDuAn() {
             </Link>
           </div>
           <div className="cda-card-body">
-            {dashboardData?.tinDangGanDay?.length > 0 ? (
+            {Array.isArray(dashboardData?.tinDangGanDay) && dashboardData.tinDangGanDay.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                 {dashboardData.tinDangGanDay.slice(0, 5).map((tin) => (
                   <div key={tin.TinDangID} style={{ 
@@ -481,9 +464,9 @@ function DashboardChuDuAn() {
             </Link>
           </div>
           <div className="cda-card-body">
-            {dashboardData?.cuocHenSapToi?.length > 0 ? (
+            {Array.isArray(dashboardData?.cuocHenSapToiList) && dashboardData.cuocHenSapToiList.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {dashboardData.cuocHenSapToi.slice(0, 5).map((cuocHen) => (
+                {dashboardData.cuocHenSapToiList.slice(0, 5).map((cuocHen) => (
                   <div key={cuocHen.CuocHenID} style={{ 
                     padding: '0.75rem', 
                     borderRadius: '0.5rem', 
