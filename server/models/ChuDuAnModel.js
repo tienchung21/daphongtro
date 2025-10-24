@@ -1280,6 +1280,212 @@ class ChuDuAnModel {
     const PhongModel = require('./PhongModel');
     return await PhongModel.layPhongCuaTinDang(tinDangId);
   }
+
+  /**
+   * ============================================================================
+   * METHODS MỚI CHO DASHBOARD & BÁO CÁO CHI TIẾT (2025-10-24)
+   * ============================================================================
+   */
+
+  /**
+   * Lấy doanh thu theo tháng (6 tháng gần nhất)
+   * Sử dụng cho: Biểu đồ Line Chart trong Báo cáo
+   * @param {number} chuDuAnId ID của chủ dự án
+   * @returns {Promise<Array>} Array of {Thang, TongTien, SoGiaoDich, SoPhong}
+   */
+  static async layDoanhThuTheoThang(chuDuAnId) {
+    try {
+      const [rows] = await db.execute(`
+        SELECT 
+          DATE_FORMAT(c.TaoLuc, '%Y-%m') as Thang,
+          SUM(c.SoTien) as TongTien,
+          COUNT(DISTINCT c.CocID) as SoGiaoDich,
+          COUNT(DISTINCT c.PhongID) as SoPhong
+        FROM coc c
+        INNER JOIN phong p ON c.PhongID = p.PhongID
+        INNER JOIN duan d ON p.DuAnID = d.DuAnID
+        WHERE d.ChuDuAnID = ?
+          AND c.TrangThai = 'DaThanhToan'
+          AND c.TaoLuc >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
+        GROUP BY DATE_FORMAT(c.TaoLuc, '%Y-%m')
+        ORDER BY Thang ASC
+      `, [chuDuAnId]);
+
+      return rows;
+    } catch (error) {
+      throw new Error(`Lỗi lấy doanh thu theo tháng: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy Top 5 tin đăng hiệu quả nhất (theo lượt xem)
+   * Sử dụng cho: Bar Chart trong Báo cáo
+   * @param {number} chuDuAnId 
+   * @param {Object} filters {tuNgay, denNgay}
+   * @returns {Promise<Array>}
+   */
+  static async layTopTinDang(chuDuAnId, filters = {}) {
+    try {
+      const { tuNgay, denNgay } = filters;
+      let dateFilter = '';
+      const params = [chuDuAnId];
+
+      if (tuNgay && denNgay) {
+        dateFilter = 'AND tk.Ky BETWEEN ? AND ?';
+        params.push(tuNgay, denNgay);
+      }
+
+      const [rows] = await db.execute(`
+        SELECT 
+          td.TinDangID,
+          td.TieuDe,
+          SUM(tk.SoLuotXem) as LuotXem,
+          SUM(tk.SoYeuThich) as LuotYeuThich,
+          COUNT(DISTINCT ch.CuocHenID) as SoCuocHen
+        FROM tindang td
+        INNER JOIN duan d ON td.DuAnID = d.DuAnID
+        LEFT JOIN thongketindang tk ON td.TinDangID = tk.TinDangID ${dateFilter ? dateFilter.replace('AND', 'AND') : ''}
+        LEFT JOIN phong_tindang pt ON td.TinDangID = pt.TinDangID
+        LEFT JOIN cuochen ch ON pt.PhongID = ch.PhongID ${dateFilter ? 'AND ch.TaoLuc BETWEEN ? AND ?' : ''}
+        WHERE d.ChuDuAnID = ?
+          AND td.TrangThai IN ('DaDang', 'DaDuyet')
+        GROUP BY td.TinDangID, td.TieuDe
+        ORDER BY LuotXem DESC
+        LIMIT 5
+      `, dateFilter ? [...params, tuNgay, denNgay, chuDuAnId] : params);
+
+      return rows;
+    } catch (error) {
+      throw new Error(`Lỗi lấy top tin đăng: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy Conversion Rate (Tỷ lệ chuyển đổi từ cuộc hẹn → hoàn thành)
+   * @param {number} chuDuAnId 
+   * @param {Object} filters {tuNgay, denNgay}
+   * @returns {Promise<Object>}
+   */
+  static async layConversionRate(chuDuAnId, filters = {}) {
+    try {
+      const { tuNgay, denNgay } = filters;
+      let dateFilter = '';
+      const params = [chuDuAnId];
+
+      if (tuNgay && denNgay) {
+        dateFilter = 'AND ch.TaoLuc BETWEEN ? AND ?';
+        params.push(tuNgay, denNgay);
+      }
+
+      const [rows] = await db.execute(`
+        SELECT 
+          COUNT(DISTINCT ch.CuocHenID) as TongCuocHen,
+          COUNT(DISTINCT CASE WHEN ch.TrangThai = 'HoanThanh' THEN ch.CuocHenID END) as CuocHenThanhCong,
+          ROUND(
+            COUNT(DISTINCT CASE WHEN ch.TrangThai = 'HoanThanh' THEN ch.CuocHenID END) * 100.0 
+            / NULLIF(COUNT(DISTINCT ch.CuocHenID), 0), 
+            2
+          ) as ConversionRate
+        FROM cuochen ch
+        INNER JOIN phong p ON ch.PhongID = p.PhongID
+        INNER JOIN duan d ON p.DuAnID = d.DuAnID
+        WHERE d.ChuDuAnID = ? ${dateFilter}
+      `, params);
+
+      return rows[0] || { TongCuocHen: 0, CuocHenThanhCong: 0, ConversionRate: 0 };
+    } catch (error) {
+      throw new Error(`Lỗi lấy conversion rate: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy lượt xem theo giờ (Heatmap data)
+   * @param {number} chuDuAnId 
+   * @param {Object} filters {tuNgay, denNgay}
+   * @returns {Promise<Array>}
+   */
+  static async layLuotXemTheoGio(chuDuAnId, filters = {}) {
+    try {
+      const { tuNgay, denNgay } = filters;
+      let dateFilter = '';
+      const params = [chuDuAnId];
+
+      if (tuNgay && denNgay) {
+        dateFilter = 'AND tk.Ky BETWEEN ? AND ?';
+        params.push(tuNgay, denNgay);
+      }
+
+      const [rows] = await db.execute(`
+        SELECT 
+          HOUR(tk.Ky) as Gio,
+          SUM(tk.SoLuotXem) as LuotXem
+        FROM thongketindang tk
+        INNER JOIN tindang td ON tk.TinDangID = td.TinDangID
+        INNER JOIN duan d ON td.DuAnID = d.DuAnID
+        WHERE d.ChuDuAnID = ? ${dateFilter}
+        GROUP BY HOUR(tk.Ky)
+        ORDER BY Gio ASC
+      `, params);
+
+      return rows;
+    } catch (error) {
+      throw new Error(`Lỗi lấy lượt xem theo giờ: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy báo cáo hiệu suất ENHANCED với tất cả metrics cần thiết
+   * Kết hợp các method trên để trả về đầy đủ data cho Báo cáo page
+   * @param {number} chuDuAnId 
+   * @param {Object} filters {tuNgay, denNgay}
+   * @returns {Promise<Object>}
+   */
+  static async layBaoCaoHieuSuatChiTiet(chuDuAnId, filters = {}) {
+    try {
+      // Gọi song song tất cả queries để tối ưu performance
+      const [
+        tongQuan,
+        doanhThuTheoThang,
+        topTinDang,
+        conversionRate,
+        luotXemTheoGio,
+        thongKePhong
+      ] = await Promise.all([
+        this.layBaoCaoHieuSuat(chuDuAnId, filters), // Method cũ cho tổng quan
+        this.layDoanhThuTheoThang(chuDuAnId),
+        this.layTopTinDang(chuDuAnId, filters),
+        this.layConversionRate(chuDuAnId, filters),
+        this.layLuotXemTheoGio(chuDuAnId, filters),
+        this.layThongKePhong(chuDuAnId)
+      ]);
+
+      return {
+        // Tổng quan (từ method cũ)
+        tongQuan: tongQuan.tongQuan,
+        cuocHen: tongQuan.cuocHen,
+        coc: tongQuan.coc,
+        tuongTac: tongQuan.tuongTac,
+        
+        // Thống kê phòng
+        thongKePhong,
+        
+        // Advanced analytics (methods mới)
+        doanhThuTheoThang,
+        topTinDang,
+        conversionRate,
+        luotXemTheoGio,
+        
+        // Metadata
+        thoiGianBaoCao: {
+          tuNgay: filters.tuNgay || null,
+          denNgay: filters.denNgay || null,
+          taoLuc: new Date()
+        }
+      };
+    } catch (error) {
+      throw new Error(`Lỗi lấy báo cáo chi tiết: ${error.message}`);
+    }
+  }
 }
 
 module.exports = ChuDuAnModel;
