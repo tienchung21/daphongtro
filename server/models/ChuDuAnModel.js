@@ -17,6 +17,9 @@ const db = require('../config/db');
  * @property {string} CapNhatLuc
  */
 
+
+
+
 /**
  * @typedef {Object} CuocHen
  * @property {number} CuocHenID

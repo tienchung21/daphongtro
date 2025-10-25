@@ -24,9 +24,10 @@ function TrangChu() {
     try {
       // Thử gửi params lên backend (nếu backend hỗ trợ)
       const res = await tinDangApi.getAll(params);
-      console.log('[TrangChu] tinDangApi.getAll.res:', res?.data);
+      console.log('[TrangChu] tinDangApi.getAll.res:', res?.data);  
+      console.log( 'ádadas  http://localhost:5000/api/chu-du-an/tin-dang');
       const raw = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : []);
-
+  
       // Nếu backend không lọc theo KhuVucID, ta lọc tạm trên client
       let data = raw;
       if (params?.KhuVucID) {
