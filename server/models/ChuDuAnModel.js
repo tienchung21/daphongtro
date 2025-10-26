@@ -58,7 +58,7 @@ class ChuDuAnModel {
           ) as DienTich,
           td.TrangThai,
           td.LyDoTuChoi, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,
-          da.TenDuAn, kv.TenKhuVuc,
+          da.TenDuAn, da.DiaChi AS DiaChi, kv.TenKhuVuc,
           (SELECT COUNT(*) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID) as TongSoPhong,
           (SELECT COUNT(*) FROM phong_tindang pt 
            JOIN phong p ON pt.PhongID = p.PhongID 
