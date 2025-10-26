@@ -23,7 +23,14 @@ router.get('/tin-dang/:id/chinh-sua', authMiddleware, requireRole('ChuDuAn'), Ch
 router.post('/tin-dang/:id/gui-duyet', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.guiTinDangDeDuyet);
 router.get('/cuoc-hen', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.layDanhSachCuocHen);
 router.put('/cuoc-hen/:id/xac-nhan', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.xacNhanCuocHen);
-router.get('/bao-cao-hieu-suat', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.layBaoCaoHieuSuat);
+
+// === BÁO CÁO & ANALYTICS ===
+router.get('/bao-cao-hieu-suat', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.layBaoCaoHieuSuat); // Tổng quan (Dashboard)
+router.get('/bao-cao-chi-tiet', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.layBaoCaoHieuSuatChiTiet); // Chi tiết (Báo cáo page) 🆕
+router.get('/bao-cao/doanh-thu-theo-thang', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.layDoanhThuTheoThang); // 🆕
+router.get('/bao-cao/top-tin-dang', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.layTopTinDang); // 🆕
+router.get('/bao-cao/conversion-rate', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.layConversionRate); // 🆕
+
 router.get('/du-an', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.layDanhSachDuAn);
 router.get('/du-an/:id', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.layChiTietDuAn);
 router.post('/du-an', authMiddleware, requireRole('ChuDuAn'), ChuDuAnController.taoDuAn);

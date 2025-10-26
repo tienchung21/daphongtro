@@ -916,18 +916,17 @@ class ChuDuAnController {
         yeuThichHomNay: tuongTac.YeuThichHomNay || 0,
         tongGiaoDichCoc: coc.TongGiaoDichCoc || 0,
         tongTienCoc: coc.TongTienCoc || 0,
-        doanhThuThang: coc.TongTienCocThangNay || 0
+        doanhThuThang: coc.TongTienCocThangNay || 0,
+        cuocHenSapToi: cuocHenSapToi.length // Số lượng cuộc hẹn sắp tới
       };
 
       res.json({
         success: true,
         message: 'Lấy dashboard thành công',
         data: {
-          summary,
-          thongKeTong,
-          thongKePhong,
+          ...summary, // Spread summary vào data level để frontend access dễ hơn
           tinDangGanDay: tinDangs,
-          cuocHenSapToi,
+          cuocHenSapToiList: cuocHenSapToi, // Array cuộc hẹn chi tiết
           duAns
         }
       });
@@ -1310,6 +1309,131 @@ class ChuDuAnController {
       });
     } finally {
       connection.release();
+    }
+  }
+
+  /**
+   * ============================================================================
+   * NEW ENDPOINTS CHO BÁO CÁO CHI TIẾT (2025-10-24)
+   * ============================================================================
+   */
+
+  /**
+   * Lấy doanh thu theo tháng (6 tháng gần nhất)
+   * GET /api/chu-du-an/bao-cao/doanh-thu-theo-thang
+   */
+  static async layDoanhThuTheoThang(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const data = await ChuDuAnModel.layDoanhThuTheoThang(chuDuAnId);
+
+      res.json({
+        success: true,
+        message: 'Lấy doanh thu theo tháng thành công',
+        data
+      });
+    } catch (error) {
+      console.error('Lỗi lấy doanh thu theo tháng:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Lấy Top 5 tin đăng hiệu quả nhất
+   * GET /api/chu-du-an/bao-cao/top-tin-dang?tuNgay=YYYY-MM-DD&denNgay=YYYY-MM-DD
+   */
+  static async layTopTinDang(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const filters = {
+        tuNgay: req.query.tuNgay,
+        denNgay: req.query.denNgay
+      };
+
+      const data = await ChuDuAnModel.layTopTinDang(chuDuAnId, filters);
+
+      res.json({
+        success: true,
+        message: 'Lấy top tin đăng thành công',
+        data
+      });
+    } catch (error) {
+      console.error('Lỗi lấy top tin đăng:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Lấy Conversion Rate
+   * GET /api/chu-du-an/bao-cao/conversion-rate?tuNgay=YYYY-MM-DD&denNgay=YYYY-MM-DD
+   */
+  static async layConversionRate(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const filters = {
+        tuNgay: req.query.tuNgay,
+        denNgay: req.query.denNgay
+      };
+
+      const data = await ChuDuAnModel.layConversionRate(chuDuAnId, filters);
+
+      res.json({
+        success: true,
+        message: 'Lấy conversion rate thành công',
+        data
+      });
+    } catch (error) {
+      console.error('Lỗi lấy conversion rate:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Lấy báo cáo chi tiết (Enhanced version với tất cả metrics)
+   * GET /api/chu-du-an/bao-cao-chi-tiet?tuNgay=YYYY-MM-DD&denNgay=YYYY-MM-DD
+   */
+  static async layBaoCaoHieuSuatChiTiet(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const filters = {
+        tuNgay: req.query.tuNgay,
+        denNgay: req.query.denNgay
+      };
+
+      const data = await ChuDuAnModel.layBaoCaoHieuSuatChiTiet(chuDuAnId, filters);
+
+      // Ghi audit log
+      await NhatKyHeThongService.ghiNhan(
+        chuDuAnId,
+        'chu_du_an_xem_bao_cao_chi_tiet',
+        'BaoCao',
+        null,
+        null,
+        { loaiBaoCao: 'ChiTiet', ...filters },
+        req.ip,
+        req.get('User-Agent')
+      );
+
+      res.json({
+        success: true,
+        message: 'Lấy báo cáo chi tiết thành công',
+        data
+      });
+    } catch (error) {
+      console.error('Lỗi lấy báo cáo chi tiết:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
     }
   }
 }

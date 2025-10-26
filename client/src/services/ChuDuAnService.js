@@ -355,7 +355,7 @@ export const CuocHenService = {
  */
 export const BaoCaoService = {
   /**
-   * Lấy báo cáo hiệu suất
+   * Lấy báo cáo hiệu suất tổng quan (Dashboard)
    */
   async layBaoCaoHieuSuat(filters = {}) {
     try {
@@ -375,6 +375,101 @@ export const BaoCaoService = {
       return await handleResponse(response);
     } catch (error) {
       console.error('Lỗi khi lấy báo cáo hiệu suất:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy báo cáo chi tiết (Báo cáo page) - 🆕
+   */
+  async layBaoCaoChiTiet(filters = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) queryParams.append(key, value);
+      });
+
+      const response = await fetch(
+        `${API_BASE_URL}${API_PREFIX}/bao-cao-chi-tiet?${queryParams}`, 
+        {
+          method: 'GET',
+          headers: getAuthHeaders()
+        }
+      );
+      
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi khi lấy báo cáo chi tiết:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy doanh thu theo tháng (6 tháng gần nhất) - 🆕
+   */
+  async layDoanhThuTheoThang() {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}${API_PREFIX}/bao-cao/doanh-thu-theo-thang`, 
+        {
+          method: 'GET',
+          headers: getAuthHeaders()
+        }
+      );
+      
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi khi lấy doanh thu theo tháng:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy Top 5 tin đăng hiệu quả nhất - 🆕
+   */
+  async layTopTinDang(filters = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) queryParams.append(key, value);
+      });
+
+      const response = await fetch(
+        `${API_BASE_URL}${API_PREFIX}/bao-cao/top-tin-dang?${queryParams}`, 
+        {
+          method: 'GET',
+          headers: getAuthHeaders()
+        }
+      );
+      
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi khi lấy top tin đăng:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Lấy Conversion Rate - 🆕
+   */
+  async layConversionRate(filters = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) queryParams.append(key, value);
+      });
+
+      const response = await fetch(
+        `${API_BASE_URL}${API_PREFIX}/bao-cao/conversion-rate?${queryParams}`, 
+        {
+          method: 'GET',
+          headers: getAuthHeaders()
+        }
+      );
+      
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi khi lấy conversion rate:', error);
       throw error;
     }
   }

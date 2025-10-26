@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 21, 2025 at 07:50 AM
+-- Generation Time: Oct 24, 2025 at 07:19 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -3222,7 +3222,8 @@ INSERT INTO `nguoidung` (`NguoiDungID`, `TenDayDu`, `Email`, `VaiTroHoatDongID`,
 (2, 'Trần Thị Khách Hàng', 'khachhangtest@example.com', NULL, '0901234568', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:47'),
 (3, 'Lê Văn Bán Hàng', 'banhangtest@example.com', NULL, '0901234569', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:53'),
 (4, 'Phạm Thị Điều Hành', 'dieuhanhtest@example.com', NULL, '0901234570', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:58'),
-(5, 'Hoàng Văn Admin', 'admintest@example.com', NULL, '0901234571', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:34:02');
+(5, 'Hoàng Văn Admin', 'admintest@example.com', NULL, '0901234571', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:34:02'),
+(6, 'Võ Nguyễn Hoành Hợp', 'hopboy553@gmail.com', 3, '0911576456', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-10-21 13:14:40', '2025-10-21 13:14:40');
 
 -- --------------------------------------------------------
 
@@ -3234,6 +3235,13 @@ CREATE TABLE `nguoidung_vaitro` (
   `NguoiDungID` int(11) NOT NULL,
   `VaiTroID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `nguoidung_vaitro`
+--
+
+INSERT INTO `nguoidung_vaitro` (`NguoiDungID`, `VaiTroID`) VALUES
+(6, 3);
 
 -- --------------------------------------------------------
 
@@ -3500,7 +3508,26 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (237, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-16\",\"denNgay\":\"2025-10-16\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-16 16:47:32.853', NULL),
 (238, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-16\",\"denNgay\":\"2025-10-16\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-16 16:50:19.294', NULL),
 (239, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-16\",\"denNgay\":\"2025-10-16\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-16 16:50:28.434', NULL),
-(240, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '3', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-16 16:55:01.965', NULL);
+(240, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '3', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-16 16:55:01.965', NULL),
+(241, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 13:14:49.039', NULL),
+(242, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 13:34:53.559', NULL),
+(243, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 13:35:48.094', NULL),
+(244, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 13:37:09.455', NULL),
+(245, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:13:37.310', NULL),
+(246, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:13:47.681', NULL),
+(247, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:13:57.678', NULL),
+(248, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:15:33.888', NULL),
+(249, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:17:11.052', NULL),
+(250, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:17:17.019', NULL),
+(251, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:17:19.763', NULL),
+(252, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:17:42.358', NULL),
+(253, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:19:43.419', NULL),
+(254, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:24:00.286', NULL),
+(255, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:24:04.320', NULL),
+(256, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:24:28.672', NULL),
+(257, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:26:57.581', NULL),
+(258, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:27:11.183', NULL),
+(259, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-23\",\"denNgay\":\"2025-10-23\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-23 21:51:29.229', NULL);
 
 -- --------------------------------------------------------
 
@@ -3920,7 +3947,11 @@ ALTER TABLE `coc`
   ADD KEY `idx_coc_tindang` (`TinDangID`),
   ADD KEY `idx_coc_hethan` (`HetHanLuc`),
   ADD KEY `fk_coc_giaodich` (`GiaoDichID`),
-  ADD KEY `fk_coc_bbbg` (`BienBanBanGiaoID`);
+  ADD KEY `fk_coc_bbbg` (`BienBanBanGiaoID`),
+  ADD KEY `idx_coc_phong_trangthai` (`PhongID`,`TrangThai`),
+  ADD KEY `idx_coc_loai_trangthai` (`Loai`,`TrangThai`),
+  ADD KEY `idx_coc_taoluc_trangthai` (`TaoLuc`,`TrangThai`),
+  ADD KEY `idx_coc_taoluc_sotien` (`TaoLuc`,`SoTien`);
 
 --
 -- Indexes for table `cuochen`
@@ -3934,7 +3965,9 @@ ALTER TABLE `cuochen`
   ADD KEY `idx_cuochen_thoigian` (`ThoiGianHen`),
   ADD KEY `idx_cuochen_pheduyet` (`PheDuyetChuDuAn`),
   ADD KEY `idx_cuochen_thoigianpheduyet` (`ThoiGianPheDuyet`),
-  ADD KEY `cuochen_ibfk_phong` (`PhongID`);
+  ADD KEY `idx_cuochen_phong_trangthai` (`PhongID`,`TrangThai`),
+  ADD KEY `idx_cuochen_thoigianhen_trangthai` (`ThoiGianHen`,`TrangThai`),
+  ADD KEY `idx_cuochen_taoluc` (`TaoLuc`);
 
 --
 -- Indexes for table `cuochoithoai`
@@ -3950,7 +3983,8 @@ ALTER TABLE `duan`
   ADD KEY `ChuDuAnID` (`ChuDuAnID`),
   ADD KEY `idx_nguoi_ngung_hoat_dong` (`NguoiNgungHoatDongID`),
   ADD KEY `idx_nguoi_xu_ly_yeu_cau` (`NguoiXuLyYeuCauID`),
-  ADD KEY `idx_yeu_cau_mo_lai_status` (`YeuCauMoLai`);
+  ADD KEY `idx_yeu_cau_mo_lai_status` (`YeuCauMoLai`),
+  ADD KEY `idx_duan_chuduan_trangthai` (`ChuDuAnID`,`TrangThai`);
 
 --
 -- Indexes for table `giaodich`
@@ -4084,7 +4118,9 @@ ALTER TABLE `thongbao`
 --
 ALTER TABLE `thongketindang`
   ADD PRIMARY KEY (`ThongKeID`),
-  ADD KEY `TinDangID` (`TinDangID`);
+  ADD KEY `TinDangID` (`TinDangID`),
+  ADD KEY `idx_thongketindang_tindang_ky` (`TinDangID`,`Ky`),
+  ADD KEY `idx_thongketindang_ky` (`Ky`);
 
 --
 -- Indexes for table `tindang`
@@ -4094,7 +4130,10 @@ ALTER TABLE `tindang`
   ADD KEY `DuAnID` (`DuAnID`),
   ADD KEY `KhuVucID` (`KhuVucID`),
   ADD KEY `DuyetBoiNhanVienID` (`DuyetBoiNhanVienID`),
-  ADD KEY `fk_tindang_chinhsachcoc` (`ChinhSachCocID`);
+  ADD KEY `fk_tindang_chinhsachcoc` (`ChinhSachCocID`),
+  ADD KEY `idx_tindang_duan_trangthai` (`DuAnID`,`TrangThai`),
+  ADD KEY `idx_tindang_taoluc` (`TaoLuc`),
+  ADD KEY `idx_tindang_duan_trangthai_taoluc` (`DuAnID`,`TrangThai`,`TaoLuc`);
 
 --
 -- Indexes for table `tinnhan`
@@ -4217,13 +4256,13 @@ ALTER TABLE `mauhopdong`
 -- AUTO_INCREMENT for table `nguoidung`
 --
 ALTER TABLE `nguoidung`
-  MODIFY `NguoiDungID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `NguoiDungID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
-  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=241;
+  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=260;
 
 --
 -- AUTO_INCREMENT for table `noidunghethong`
