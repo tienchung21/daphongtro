@@ -100,8 +100,8 @@ const QuanLyTinDang = () => {
   const getTrangThaiInfo = (trangThai) => {
     const map = {
       'Nhap': { label: 'Nháp', badge: 'gray', color: '#6b7280' },
-      'ChoDuyet': { label: 'Chờ duyệt', badge: 'warning', color: '#f59e0b' },
-      'DaDuyet': { label: 'Đã duyệt', badge: 'info', color: '#3b82f6' },
+      'ChoDuyet': { label: 'Chờ duyệt', badge: 'warning', color: '#D4AF37' },
+      'DaDuyet': { label: 'Đã duyệt', badge: 'info', color: '#0F766E' },
       'DaDang': { label: 'Đang đăng', badge: 'success', color: '#10b981' },
       'TuChoi': { label: 'Từ chối', badge: 'danger', color: '#ef4444' }
     };

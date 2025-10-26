@@ -122,9 +122,9 @@ function DashboardChuDuAn() {
         </div>
       </div>
 
-      {/* Metrics Grid - Enhanced */}
+      {/* Metrics Grid - Enhanced (EMERALD NOIR THEME) */}
       <div className="cda-metrics-grid enhanced">
-        <div className="cda-metric-card violet enhanced">
+        <div className="cda-metric-card emerald enhanced">
           <div className="metric-card-background"></div>
           <div className="cda-metric-icon pulse">
             <HiOutlineChartBar />
@@ -139,7 +139,7 @@ function DashboardChuDuAn() {
           </div>
         </div>
 
-        <div className="cda-metric-card blue enhanced">
+        <div className="cda-metric-card teal enhanced">
           <div className="metric-card-background"></div>
           <div className="cda-metric-icon pulse">
             <HiOutlineArrowTrendingUp />
@@ -169,7 +169,7 @@ function DashboardChuDuAn() {
           </div>
         </div>
 
-        <div className="cda-metric-card orange enhanced">
+        <div className="cda-metric-card gold enhanced">
           <div className="metric-card-background"></div>
           <div className="cda-metric-icon pulse">
             <HiOutlineCurrencyDollar />
@@ -242,7 +242,7 @@ function DashboardChuDuAn() {
                   cy="100" 
                   r="90" 
                   fill="none" 
-                  stroke="#8b5cf6" 
+                  stroke="#14532D" 
                   strokeWidth="20"
                   strokeDasharray={`${((dashboardData?.tongPhong - dashboardData?.tongPhongTrong) / dashboardData?.tongPhong * 565) || 0} 565`}
                   strokeLinecap="round"
@@ -258,7 +258,7 @@ function DashboardChuDuAn() {
               </svg>
               <div className="occupancy-stats">
                 <div className="occupancy-stat-item">
-                  <div className="occupancy-stat-dot" style={{ background: '#8b5cf6' }}></div>
+                  <div className="occupancy-stat-dot" style={{ background: '#14532D' }}></div>
                   <span>Đã thuê: {formatNumber((dashboardData?.tongPhong - dashboardData?.tongPhongTrong) || 0)}</span>
                 </div>
                 <div className="occupancy-stat-item">
@@ -302,7 +302,7 @@ function DashboardChuDuAn() {
 
               <div className="status-bar-item">
                 <div className="status-bar-label">
-                  <span className="status-dot" style={{ background: '#f59e0b' }}></span>
+                  <span className="status-dot" style={{ background: '#D4AF37' }}></span>
                   <span>Chờ duyệt</span>
                 </div>
                 <div className="status-bar-value">{formatNumber(dashboardData?.tinDangChoDuyet || 0)}</div>
@@ -311,7 +311,7 @@ function DashboardChuDuAn() {
                     className="status-bar-fill" 
                     style={{ 
                       width: `${((dashboardData?.tinDangChoDuyet / dashboardData?.tongTinDang) * 100) || 0}%`,
-                      background: 'linear-gradient(90deg, #f59e0b, #d97706)'
+                      background: 'linear-gradient(90deg, #D4AF37, #B68C3A)'
                     }}
                   ></div>
                 </div>
@@ -373,7 +373,7 @@ function DashboardChuDuAn() {
                   <div className="interaction-stat-label">Tổng lượt xem</div>
                   <div className="interaction-stat-change positive">
                     <HiOutlineArrowTrendingUp />
-                    <span>+12% tuần này</span>
+                    <span>{formatNumber(dashboardData?.luotXemHomNay || 0)} lượt hôm nay</span>
                   </div>
                 </div>
               </div>
@@ -387,7 +387,7 @@ function DashboardChuDuAn() {
                   <div className="interaction-stat-label">Lượt yêu thích</div>
                   <div className="interaction-stat-change positive">
                     <HiOutlineArrowTrendingUp />
-                    <span>+8% tuần này</span>
+                    <span>{formatNumber(dashboardData?.yeuThichHomNay || 0)} lượt hôm nay</span>
                   </div>
                 </div>
               </div>

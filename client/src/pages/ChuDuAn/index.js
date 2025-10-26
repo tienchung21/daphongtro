@@ -22,7 +22,9 @@ export { default as QuanLyDuAn } from './QuanLyDuAn';
 // Settings: Cài đặt tài khoản
 export { default as CaiDat } from './CaiDat';
 
-// TODO: Các components khác sẽ được bổ sung
 // UC-PROJ-02: Quản lý cuộc hẹn
+export { default as QuanLyCuocHen } from './QuanLyCuocHen';
+
+// TODO: Các components khác sẽ được bổ sung
 // UC-PROJ-04: Báo cáo hợp đồng cho thuê
 // UC-PROJ-05: Nhắn tin

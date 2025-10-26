@@ -1,12 +1,12 @@
-/* CSS cho Dashboard Chủ dự án - Enhanced Light Theme */
+/* CSS cho Dashboard Chủ dự án - Emerald Noir Theme */
 
-/* === HERO SECTION === */
+/* === HERO SECTION - EMERALD NOIR === */
 .dashboard-hero {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6006fc 100%);
+  background: linear-gradient(135deg, #14532D 0%, #0F766E 100%);
   border-radius: 24px;
   padding: 40px;
   margin-bottom: 32px;
-  box-shadow: 0 20px 50px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 20px 50px rgba(20, 83, 45, 0.3);
   position: relative;
   overflow: hidden;
 }
@@ -18,7 +18,7 @@
   right: -20%;
   width: 500px;
   height: 500px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(212, 175, 55, 0.15) 0%, transparent 70%);
   border-radius: 50%;
   animation: float 20s ease-in-out infinite;
 }
@@ -86,7 +86,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(135deg, transparent 0%, rgba(139, 92, 246, 0.05) 100%);
+  background: linear-gradient(135deg, transparent 0%, rgba(212, 175, 55, 0.08) 100%);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -94,7 +94,7 @@
 .quick-action-btn:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
-  border-color: rgba(139, 92, 246, 0.3);
+  border-color: rgba(212, 175, 55, 0.3);
 }
 
 .quick-action-btn:hover::before {
@@ -134,18 +134,18 @@
 }
 
 .quick-action-btn.secondary .quick-action-icon {
-  background: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
+  background: rgba(15, 118, 110, 0.12);
+  color: #0F766E;
 }
 
 .quick-action-btn.tertiary .quick-action-icon {
-  background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
+  background: rgba(212, 175, 55, 0.12);
+  color: #D4AF37;
 }
 
 .quick-action-btn.quaternary .quick-action-icon {
-  background: rgba(139, 92, 246, 0.12);
-  color: #8b5cf6;
+  background: rgba(20, 83, 45, 0.12);
+  color: #14532D;
 }
 
 .quick-action-btn:hover .quick-action-icon {
@@ -187,7 +187,7 @@
   margin-bottom: 32px;
 }
 
-/* Base Metric Card Styles */
+/* Base Metric Card Styles - EMERALD NOIR THEME */
 .cda-metric-card {
   position: relative;
   display: flex;
@@ -195,30 +195,43 @@
   padding: 24px;
   border-radius: 20px;
   background: white;
-  border: 1px solid rgba(139, 92, 246, 0.1);
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(20, 83, 45, 0.1);
+  box-shadow: 0 8px 24px rgba(20, 83, 45, 0.08);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 }
 
-/* Color Variants */
-.cda-metric-card.violet {
-  border-top: 4px solid #8b5cf6;
+/* Color Variants - EMERALD NOIR */
+.cda-metric-card.emerald {
+  border-top: 4px solid #14532D; /* Deep Emerald */
 }
 
-.cda-metric-card.blue {
-  border-top: 4px solid #3b82f6;
+.cda-metric-card.teal {
+  border-top: 4px solid #0F766E; /* Teal */
 }
 
 .cda-metric-card.green {
-  border-top: 4px solid #10b981;
+  border-top: 4px solid #10b981; /* Success Green */
+}
+
+.cda-metric-card.gold {
+  border-top: 4px solid #D4AF37; /* Gold */
+}
+
+/* Legacy support (for old class names) */
+.cda-metric-card.violet {
+  border-top: 4px solid #14532D;
+}
+
+.cda-metric-card.blue {
+  border-top: 4px solid #0F766E;
 }
 
 .cda-metric-card.orange {
-  border-top: 4px solid #f59e0b;
+  border-top: 4px solid #D4AF37;
 }
 
-/* Metric Icon */
+/* Metric Icon - EMERALD NOIR COLORS */
 .cda-metric-icon {
   width: 56px;
   height: 56px;
@@ -230,24 +243,40 @@
   transition: transform 0.3s ease;
 }
 
-.cda-metric-card.violet .cda-metric-icon {
-  background: rgba(139, 92, 246, 0.12);
-  color: #8b5cf6;
+.cda-metric-card.emerald .cda-metric-icon {
+  background: rgba(20, 83, 45, 0.12);
+  color: #14532D; /* Deep Emerald */
 }
 
-.cda-metric-card.blue .cda-metric-icon {
-  background: rgba(59, 130, 246, 0.12);
-  color: #3b82f6;
+.cda-metric-card.teal .cda-metric-icon {
+  background: rgba(15, 118, 110, 0.12);
+  color: #0F766E; /* Teal */
 }
 
 .cda-metric-card.green .cda-metric-icon {
   background: rgba(16, 185, 129, 0.12);
-  color: #10b981;
+  color: #10b981; /* Success Green */
+}
+
+.cda-metric-card.gold .cda-metric-icon {
+  background: rgba(212, 175, 55, 0.12);
+  color: #B68C3A; /* Antique Gold - darker for contrast */
+}
+
+/* Legacy support */
+.cda-metric-card.violet .cda-metric-icon {
+  background: rgba(20, 83, 45, 0.12);
+  color: #14532D;
+}
+
+.cda-metric-card.blue .cda-metric-icon {
+  background: rgba(15, 118, 110, 0.12);
+  color: #0F766E;
 }
 
 .cda-metric-card.orange .cda-metric-icon {
-  background: rgba(245, 158, 11, 0.12);
-  color: #f59e0b;
+  background: rgba(212, 175, 55, 0.12);
+  color: #B68C3A;
 }
 
 .cda-metric-icon svg {
@@ -308,26 +337,39 @@
   transition: all 0.4s ease;
 }
 
-.cda-metric-card.violet.enhanced .metric-card-background {
-  background: radial-gradient(circle, #8b5cf6 0%, transparent 70%);
+.cda-metric-card.emerald.enhanced .metric-card-background {
+  background: radial-gradient(circle, #14532D 0%, transparent 70%);
 }
 
-.cda-metric-card.blue.enhanced .metric-card-background {
-  background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+.cda-metric-card.teal.enhanced .metric-card-background {
+  background: radial-gradient(circle, #0F766E 0%, transparent 70%);
 }
 
 .cda-metric-card.green.enhanced .metric-card-background {
   background: radial-gradient(circle, #10b981 0%, transparent 70%);
 }
 
+.cda-metric-card.gold.enhanced .metric-card-background {
+  background: radial-gradient(circle, #D4AF37 0%, transparent 70%);
+}
+
+/* Legacy support */
+.cda-metric-card.violet.enhanced .metric-card-background {
+  background: radial-gradient(circle, #14532D 0%, transparent 70%);
+}
+
+.cda-metric-card.blue.enhanced .metric-card-background {
+  background: radial-gradient(circle, #0F766E 0%, transparent 70%);
+}
+
 .cda-metric-card.orange.enhanced .metric-card-background {
-  background: radial-gradient(circle, #f59e0b 0%, transparent 70%);
+  background: radial-gradient(circle, #D4AF37 0%, transparent 70%);
 }
 
 .cda-metric-card.enhanced:hover {
   transform: translateY(-8px);
-  box-shadow: 0 16px 40px rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.3);
+  box-shadow: 0 16px 40px rgba(20, 83, 45, 0.15);
+  border-color: rgba(20, 83, 45, 0.3);
 }
 
 .cda-metric-card.enhanced:hover .metric-card-background {
@@ -530,7 +572,7 @@
   left: 0;
   right: 0;
   height: 100%;
-  background: linear-gradient(180deg, #8b5cf6 0%, #6006fc 100%);
+  background: linear-gradient(180deg, #14532D 0%, #0F766E 100%);
   border-radius: 8px 8px 0 0;
   animation: growUp 0.8s ease-out;
 }
@@ -549,7 +591,7 @@
 }
 
 .chart-revenue-bar:hover .chart-revenue-bar-fill {
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 8px 24px rgba(20, 83, 45, 0.4);
 }
 
 .chart-revenue-tooltip {
@@ -588,7 +630,7 @@
 .chart-revenue-tooltip strong {
   display: block;
   margin-bottom: 4px;
-  color: #8b5cf6;
+  color: #14532D;
 }
 
 .chart-revenue-label {
@@ -990,7 +1032,7 @@
 }
 
 .btn-retry {
-  background: #3b82f6;
+  background: #0F766E;
   color: white;
   border: none;
   padding: 12px 24px;
@@ -1000,7 +1042,7 @@
 }
 
 .btn-retry:hover {
-  background: #2563eb;
+  background: #0d5e57;
 }
 
 /* ======================= Dashboard Liquid Glass V2 ======================= */
@@ -1824,14 +1866,14 @@
 }
 
 .btn-view-all {
-  color: #3b82f6;
+  color: #0F766E;
   text-decoration: none;
   font-weight: 600;
   font-size: 0.875rem;
 }
 
 .btn-view-all:hover {
-  color: #2563eb;
+  color: #0d5e57;
   text-decoration: underline;
 }
 
@@ -1962,7 +2004,7 @@
 
 .status.choduyet {
   background: #fef3c7;
-  color: #d97706;
+  color: #B68C3A;
 }
 
 .status.daduyet,
@@ -1983,7 +2025,7 @@
 
 .status.choxacnhan {
   background: #fef3c7;
-  color: #d97706;
+  color: #B68C3A;
 }
 
 .status.daxacnhan {
@@ -1993,7 +2035,7 @@
 
 .status.hoanthanh {
   background: #dbeafe;
-  color: #3b82f6;
+  color: #0F766E;
 }
 
 /* Empty state */
@@ -2004,7 +2046,7 @@
 }
 
 .empty-state .btn-primary {
-  background: #3b82f6;
+  background: #0F766E;
   color: white;
   padding: 12px 24px;
   border-radius: 8px;

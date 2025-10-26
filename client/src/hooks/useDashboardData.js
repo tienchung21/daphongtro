@@ -10,15 +10,20 @@ import { DashboardService, BaoCaoService } from '../services/ChuDuAnService';
  * Hook lấy dữ liệu Dashboard (Quick metrics)
  * Sử dụng trong: Dashboard.jsx
  * Cache: 5 phút
+ * 
+ * Sử dụng DashboardService.layDashboard() → endpoint /dashboard
+ * Trả về flat structure phù hợp với Dashboard UI
  */
 export const useDashboardData = () => {
   return useQuery({
     queryKey: ['dashboard'],
     queryFn: async () => {
       const response = await DashboardService.layDashboard();
+      console.log('📊 Dashboard Response:', response);
       if (!response.success) {
         throw new Error(response.message || 'Không thể tải dữ liệu dashboard');
       }
+      console.log('✅ Dashboard Data:', response.data);
       return response.data;
     },
     staleTime: 5 * 60 * 1000, // Cache 5 phút

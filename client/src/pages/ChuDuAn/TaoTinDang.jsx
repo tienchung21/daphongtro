@@ -969,11 +969,11 @@ function TaoTinDang() {
                         style={{
                           marginTop: '0.5rem',
                           padding: '0.75rem',
-                          backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                          border: '1px solid rgba(245, 158, 11, 0.3)',
+                          backgroundColor: 'rgba(212, 175, 55, 0.1)',
+                          border: '1px solid rgba(212, 175, 55, 0.3)',
                           borderRadius: '6px',
                           fontSize: '0.875rem',
-                          color: '#f59e0b',
+                          color: '#D4AF37',
                           display: 'flex',
                           alignItems: 'center',
                           gap: '0.5rem'
@@ -1020,11 +1020,11 @@ function TaoTinDang() {
                         style={{
                           padding: '0.625rem 1rem',
                           borderRadius: '8px',
-                          border: '1px solid rgba(139, 92, 246, 0.3)',
+                          border: '1px solid rgba(20, 83, 45, 0.3)',
                           background: viDo && kinhDo 
-                            ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)'
+                            ? 'linear-gradient(135deg, rgba(20, 83, 45, 0.1) 0%, rgba(15, 118, 110, 0.1) 100%)'
                             : 'rgba(107, 114, 128, 0.1)',
-                          color: viDo && kinhDo ? '#8b5cf6' : '#6b7280',
+                          color: viDo && kinhDo ? '#14532D' : '#6b7280',
                           cursor: viDo && kinhDo ? 'pointer' : 'not-allowed',
                           fontSize: '0.875rem',
                           fontWeight: 500,
@@ -1037,14 +1037,14 @@ function TaoTinDang() {
                         }}
                         onMouseEnter={(e) => {
                           if (viDo && kinhDo) {
-                            e.currentTarget.style.backgroundColor = 'rgba(139, 92, 246, 0.2)';
-                            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.5)';
+                            e.currentTarget.style.backgroundColor = 'rgba(20, 83, 45, 0.2)';
+                            e.currentTarget.style.borderColor = 'rgba(20, 83, 45, 0.5)';
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (viDo && kinhDo) {
-                            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(124, 58, 237, 0.1) 100%)';
-                            e.currentTarget.style.borderColor = 'rgba(139, 92, 246, 0.3)';
+                            e.currentTarget.style.background = 'linear-gradient(135deg, rgba(20, 83, 45, 0.1) 0%, rgba(15, 118, 110, 0.1) 100%)';
+                            e.currentTarget.style.borderColor = 'rgba(20, 83, 45, 0.3)';
                           }
                         }}
                       >

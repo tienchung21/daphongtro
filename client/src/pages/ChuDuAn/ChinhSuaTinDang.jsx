@@ -980,7 +980,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
                     ))}
                   </select>
                   <p className="cda-help-text" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <HiOutlineLightBulb style={{ width: '16px', height: '16px', color: '#f59e0b', flexShrink: 0 }} />
+                    <HiOutlineLightBulb style={{ width: '16px', height: '16px', color: '#D4AF37', flexShrink: 0 }} />
                     Không thể thay đổi dự án sau khi đã tạo tin đăng
                   </p>
                 </div>
@@ -1043,9 +1043,9 @@ const layDanhSachPhongDuAn = async (duAnId) => {
                       color: (() => {
                         switch(formData.TrangThai) {
                           case 'Nhap': return '#6b7280';
-                          case 'ChoDuyet': return '#f59e0b';
+                          case 'ChoDuyet': return '#D4AF37';
                           case 'DaDuyet': return '#22c55e';
-                          case 'DaDang': return '#3b82f6';
+                          case 'DaDang': return '#0F766E';
                           case 'TuChoi': return '#ef4444';
                           case 'DaXoa': return '#6b7280';
                           default: return '#6b7280';
@@ -1067,7 +1067,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
                   </div>
                   
                   <p className="cda-help-text" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '0.5rem' }}>
-                    <HiOutlineLightBulb style={{ width: '16px', height: '16px', color: '#f59e0b', flexShrink: 0 }} />
+                    <HiOutlineLightBulb style={{ width: '16px', height: '16px', color: '#D4AF37', flexShrink: 0 }} />
                     Trạng thái sẽ tự động thay đổi khi bạn nhấn <strong>"Lưu nháp"</strong> hoặc <strong>"Gửi duyệt"</strong>
                   </p>
                 </div>
@@ -1137,7 +1137,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
                 <HiOutlineExclamationCircle style={{ 
                   width: '24px', 
                   height: '24px', 
-                  color: '#f59e0b',
+                  color: '#D4AF37',
                   flexShrink: 0,
                   marginTop: '2px'
                 }} />
@@ -1145,7 +1145,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
                   <strong style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9375rem' }}>
                     ⚠️ Lưu ý quan trọng
                   </strong>
-                  Thay đổi <strong>Khu vực</strong> hoặc <strong>Tọa độ</strong> sẽ ảnh hưởng đến <strong style={{ color: '#d97706' }}>TẤT CẢ các tin đăng</strong> thuộc cùng dự án này.
+                  Thay đổi <strong>Khu vực</strong> hoặc <strong>Tọa độ</strong> sẽ ảnh hưởng đến <strong style={{ color: '#B68C3A' }}>TẤT CẢ các tin đăng</strong> thuộc cùng dự án này.
                 </div>
               </div>
 
@@ -1270,7 +1270,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
                 />
                 {diaChi && (
                   <p className="cda-help-text" style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '0.5rem' }}>
-                    <HiOutlineLightBulb style={{ width: '16px', height: '16px', color: '#f59e0b', flexShrink: 0 }} />
+                    <HiOutlineLightBulb style={{ width: '16px', height: '16px', color: '#D4AF37', flexShrink: 0 }} />
                     Hiện tại: <strong>{diaChi}</strong>
                   </p>
                 )}
@@ -1553,9 +1553,9 @@ const layDanhSachPhongDuAn = async (duAnId) => {
               onClick={xuLyLuuNhap}
               className="cda-btn"
               style={{
-                background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+                background: 'linear-gradient(135deg, #D4AF37 0%, #B68C3A 100%)',
                 color: 'white',
-                boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)'
+                boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)'
               }}
               disabled={saving}
             >

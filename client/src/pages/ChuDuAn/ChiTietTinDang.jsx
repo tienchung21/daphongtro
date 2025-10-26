@@ -30,10 +30,10 @@ import './ChiTietTinDang.css';
  * Component: Chi tiết Tin Đăng
  * Route: /chu-du-an/tin-dang/:id
  * 
- * Design: Light Glass Morphism Theme
+ * Design: Emerald Noir Theme (Light Glass Morphism)
  * - Nền trắng/gradient nhạt (#f9fafb → #e5e7eb)
  * - Glass morphism với backdrop-blur
- * - High contrast: Purple (#8b5cf6) + vibrant shadows
+ * - High contrast: Emerald (#14532D) + gold accents
  * - Mobile-first responsive (480px, 768px, 1024px, 1280px)
  * 
  * Features:
@@ -315,7 +315,7 @@ const ChiTietTinDang = () => {
       'ChoXuLy': { 
         label: 'Chờ duyệt', 
         icon: <HiOutlineClock />, 
-        color: '#f59e0b' 
+        color: '#D4AF37' 
       },
       'TuChoi': { 
         label: 'Từ chối', 
