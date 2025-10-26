@@ -4,7 +4,7 @@ const pool = mysql.createPool({
   host: 'localhost',
   user: 'root',
   password: '',
-  database: 'thue_tro'
+  database: 'thue_tro_1'
 });
 
 // Dùng .promise() để query bằng async/await
