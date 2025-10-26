@@ -511,6 +511,139 @@ class ChuDuAnModel {
   }
 
   /**
+   * Lấy metrics/thống kê cuộc hẹn
+   * @param {number} chuDuAnId ID của chủ dự án
+   * @returns {Promise<Object>}
+   */
+  static async layMetricsCuocHen(chuDuAnId) {
+    try {
+      const [rows] = await db.execute(`
+        SELECT 
+          COUNT(CASE WHEN ch.PheDuyetChuDuAn = 'ChoPheDuyet' THEN 1 END) as choDuyet,
+          COUNT(CASE WHEN ch.TrangThai = 'DaXacNhan' THEN 1 END) as daXacNhan,
+          COUNT(CASE WHEN ch.TrangThai = 'ChoXacNhan' 
+                   AND ch.ThoiGianHen BETWEEN NOW() AND DATE_ADD(NOW(), INTERVAL 7 DAY) THEN 1 END) as sapDienRa,
+          COUNT(CASE WHEN ch.TrangThai IN ('HuyBoiKhach', 'KhachKhongDen') THEN 1 END) as daHuy,
+          COUNT(CASE WHEN ch.TrangThai = 'HoanThanh' THEN 1 END) as hoanThanh
+        FROM cuochen ch
+        INNER JOIN phong p ON ch.PhongID = p.PhongID
+        INNER JOIN phong_tindang pt ON p.PhongID = pt.PhongID
+        INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
+        INNER JOIN duan da ON td.DuAnID = da.DuAnID
+        WHERE da.ChuDuAnID = ?
+      `, [chuDuAnId]);
+
+      return rows[0] || {
+        choDuyet: 0,
+        daXacNhan: 0,
+        sapDienRa: 0,
+        daHuy: 0,
+        hoanThanh: 0
+      };
+    } catch (error) {
+      throw new Error(`Lỗi khi lấy metrics cuộc hẹn: ${error.message}`);
+    }
+  }
+
+  /**
+   * Phê duyệt cuộc hẹn
+   * @param {number} cuocHenId ID cuộc hẹn
+   * @param {number} chuDuAnId ID chủ dự án
+   * @param {string} phuongThucVao Phương thức vào (bắt buộc)
+   * @param {string} ghiChu Ghi chú thêm
+   * @returns {Promise<boolean>}
+   */
+  static async pheDuyetCuocHen(cuocHenId, chuDuAnId, phuongThucVao, ghiChu = '') {
+    try {
+      // Kiểm tra quyền sở hữu và trạng thái
+      const [rows] = await db.execute(`
+        SELECT ch.PheDuyetChuDuAn, ch.TrangThai 
+        FROM cuochen ch
+        INNER JOIN phong p ON ch.PhongID = p.PhongID
+        INNER JOIN phong_tindang pt ON p.PhongID = pt.PhongID
+        INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
+        INNER JOIN duan da ON td.DuAnID = da.DuAnID
+        WHERE ch.CuocHenID = ? AND da.ChuDuAnID = ?
+      `, [cuocHenId, chuDuAnId]);
+      
+      if (rows.length === 0) {
+        throw new Error('Không tìm thấy cuộc hẹn hoặc không có quyền phê duyệt');
+      }
+
+      if (rows[0].PheDuyetChuDuAn !== 'ChoPheDuyet') {
+        throw new Error('Chỉ có thể phê duyệt cuộc hẹn ở trạng thái Chờ phê duyệt');
+      }
+
+      // Cập nhật phê duyệt và lưu phương thức vào
+      await db.execute(`
+        UPDATE cuochen 
+        SET PheDuyetChuDuAn = 'DaPheDuyet',
+            ThoiGianPheDuyet = NOW(),
+            PhuongThucVao = ?,
+            GhiChuKetQua = CONCAT(
+              IFNULL(GhiChuKetQua, ""), 
+              ?, 
+              "\n[Phê duyệt bởi chủ dự án lúc ", NOW(), "]"
+            )
+        WHERE CuocHenID = ?
+      `, [phuongThucVao, ghiChu, cuocHenId]);
+      
+      return true;
+    } catch (error) {
+      throw new Error(`Lỗi khi phê duyệt cuộc hẹn: ${error.message}`);
+    }
+  }
+
+  /**
+   * Từ chối cuộc hẹn
+   * @param {number} cuocHenId ID cuộc hẹn
+   * @param {number} chuDuAnId ID chủ dự án
+   * @param {string} lyDoTuChoi Lý do từ chối (bắt buộc)
+   * @returns {Promise<boolean>}
+   */
+  static async tuChoiCuocHen(cuocHenId, chuDuAnId, lyDoTuChoi) {
+    try {
+      // Kiểm tra quyền sở hữu và trạng thái
+      const [rows] = await db.execute(`
+        SELECT ch.PheDuyetChuDuAn, ch.TrangThai 
+        FROM cuochen ch
+        INNER JOIN phong p ON ch.PhongID = p.PhongID
+        INNER JOIN phong_tindang pt ON p.PhongID = pt.PhongID
+        INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
+        INNER JOIN duan da ON td.DuAnID = da.DuAnID
+        WHERE ch.CuocHenID = ? AND da.ChuDuAnID = ?
+      `, [cuocHenId, chuDuAnId]);
+      
+      if (rows.length === 0) {
+        throw new Error('Không tìm thấy cuộc hẹn hoặc không có quyền từ chối');
+      }
+
+      if (rows[0].PheDuyetChuDuAn !== 'ChoPheDuyet') {
+        throw new Error('Chỉ có thể từ chối cuộc hẹn ở trạng thái Chờ phê duyệt');
+      }
+
+      // Cập nhật từ chối
+      await db.execute(`
+        UPDATE cuochen 
+        SET PheDuyetChuDuAn = 'TuChoi',
+            TrangThai = 'DaTuChoi',
+            LyDoTuChoi = ?,
+            ThoiGianPheDuyet = NOW(),
+            GhiChuKetQua = CONCAT(
+              IFNULL(GhiChuKetQua, ""), 
+              "\n[Từ chối bởi chủ dự án lúc ", NOW(), "]",
+              "\nLý do: ", ?
+            )
+        WHERE CuocHenID = ?
+      `, [lyDoTuChoi, lyDoTuChoi, cuocHenId]);
+      
+      return true;
+    } catch (error) {
+      throw new Error(`Lỗi khi từ chối cuộc hẹn: ${error.message}`);
+    }
+  }
+
+  /**
    * Lấy báo cáo hiệu suất tin đăng
    * @param {number} chuDuAnId ID của chủ dự án
    * @param {Object} filters Bộ lọc thời gian
@@ -1327,32 +1460,42 @@ class ChuDuAnModel {
   static async layTopTinDang(chuDuAnId, filters = {}) {
     try {
       const { tuNgay, denNgay } = filters;
-      let dateFilter = '';
-      const params = [chuDuAnId];
+      const params = [];
+      let tkDateFilter = '';
+      let chDateFilter = '';
 
+      // Build WHERE clause cho thongketindang
       if (tuNgay && denNgay) {
-        dateFilter = 'AND tk.Ky BETWEEN ? AND ?';
-        params.push(tuNgay, denNgay);
+        tkDateFilter = 'AND tk.Ky BETWEEN ? AND ?';
+        chDateFilter = 'AND ch.TaoLuc BETWEEN ? AND ?';
       }
+
+      // Build params array theo đúng thứ tự trong query
+      if (tuNgay && denNgay) {
+        params.push(tuNgay, denNgay, tuNgay, denNgay);
+      }
+      params.push(chuDuAnId);
 
       const [rows] = await db.execute(`
         SELECT 
           td.TinDangID,
           td.TieuDe,
-          SUM(tk.SoLuotXem) as LuotXem,
-          SUM(tk.SoYeuThich) as LuotYeuThich,
+          COALESCE(MIN(p.GiaChuan), 0) as Gia,
+          COALESCE(SUM(tk.SoLuotXem), 0) as LuotXem,
+          COALESCE(SUM(tk.SoYeuThich), 0) as LuotYeuThich,
           COUNT(DISTINCT ch.CuocHenID) as SoCuocHen
         FROM tindang td
         INNER JOIN duan d ON td.DuAnID = d.DuAnID
-        LEFT JOIN thongketindang tk ON td.TinDangID = tk.TinDangID ${dateFilter ? dateFilter.replace('AND', 'AND') : ''}
+        LEFT JOIN thongketindang tk ON td.TinDangID = tk.TinDangID ${tkDateFilter}
         LEFT JOIN phong_tindang pt ON td.TinDangID = pt.TinDangID
-        LEFT JOIN cuochen ch ON pt.PhongID = ch.PhongID ${dateFilter ? 'AND ch.TaoLuc BETWEEN ? AND ?' : ''}
+        LEFT JOIN phong p ON pt.PhongID = p.PhongID
+        LEFT JOIN cuochen ch ON p.PhongID = ch.PhongID ${chDateFilter}
         WHERE d.ChuDuAnID = ?
           AND td.TrangThai IN ('DaDang', 'DaDuyet')
         GROUP BY td.TinDangID, td.TieuDe
         ORDER BY LuotXem DESC
         LIMIT 5
-      `, dateFilter ? [...params, tuNgay, denNgay, chuDuAnId] : params);
+      `, params);
 
       return rows;
     } catch (error) {
@@ -1369,30 +1512,36 @@ class ChuDuAnModel {
   static async layConversionRate(chuDuAnId, filters = {}) {
     try {
       const { tuNgay, denNgay } = filters;
+      const params = [];
       let dateFilter = '';
-      const params = [chuDuAnId];
 
       if (tuNgay && denNgay) {
         dateFilter = 'AND ch.TaoLuc BETWEEN ? AND ?';
-        params.push(tuNgay, denNgay);
+        params.push(chuDuAnId, tuNgay, denNgay);
+      } else {
+        params.push(chuDuAnId);
       }
 
       const [rows] = await db.execute(`
         SELECT 
-          COUNT(DISTINCT ch.CuocHenID) as TongCuocHen,
-          COUNT(DISTINCT CASE WHEN ch.TrangThai = 'HoanThanh' THEN ch.CuocHenID END) as CuocHenThanhCong,
+          COUNT(DISTINCT ch.CuocHenID) as tongCuocHen,
+          COUNT(DISTINCT CASE WHEN ch.TrangThai = 'HoanThanh' THEN ch.CuocHenID END) as cuocHenHoanThanh,
+          COALESCE(SUM(tk.SoLuotXem), 0) as tongLuotXem,
           ROUND(
             COUNT(DISTINCT CASE WHEN ch.TrangThai = 'HoanThanh' THEN ch.CuocHenID END) * 100.0 
             / NULLIF(COUNT(DISTINCT ch.CuocHenID), 0), 
             2
-          ) as ConversionRate
-        FROM cuochen ch
-        INNER JOIN phong p ON ch.PhongID = p.PhongID
-        INNER JOIN duan d ON p.DuAnID = d.DuAnID
-        WHERE d.ChuDuAnID = ? ${dateFilter}
+          ) as tyLeChuyenDoi
+        FROM duan d
+        LEFT JOIN phong p ON d.DuAnID = p.DuAnID
+        LEFT JOIN cuochen ch ON p.PhongID = ch.PhongID ${dateFilter}
+        LEFT JOIN phong_tindang pt ON p.PhongID = pt.PhongID
+        LEFT JOIN tindang td ON pt.TinDangID = td.TinDangID
+        LEFT JOIN thongketindang tk ON td.TinDangID = tk.TinDangID
+        WHERE d.ChuDuAnID = ?
       `, params);
 
-      return rows[0] || { TongCuocHen: 0, CuocHenThanhCong: 0, ConversionRate: 0 };
+      return rows[0] || { tongCuocHen: 0, cuocHenHoanThanh: 0, tongLuotXem: 0, tyLeChuyenDoi: 0 };
     } catch (error) {
       throw new Error(`Lỗi lấy conversion rate: ${error.message}`);
     }

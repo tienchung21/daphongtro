@@ -422,21 +422,60 @@ git push upstream Hop
 
 ## 7. Module Chủ Dự Án - Thiết kế & Triển khai
 
-### 7.1. 🎨 Design System - Light Glass Morphism Theme
-**Tham chiếu:** `client/src/styles/ChuDuAnDesignSystem.css`, `client/src/pages/ChuDuAn/Dashboard.css`
+### 7.1. 🎨 Design System - Actor-specific Color Palettes
+**Tham chiếu chính:** `docs/DESIGN_SYSTEM_COLOR_PALETTES.md` (5 actors color schemes)  
+**Implementation:** `client/src/styles/ChuDuAnDesignSystem.css` (temporary Purple theme)
 
-#### Color Palette:
+#### 📋 Color Palettes Summary:
+
+**1. Khách hàng (Customer) - Soft Tech Theme:**
+```css
+--customer-primary: #334155;    /* Slate 700 - Neutral */
+--customer-secondary: #6366F1;  /* Indigo 500 - Trust */
+--customer-accent: #06B6D4;     /* Cyan 500 - Fresh */
+```
+
+**2. Chủ dự án (Project Owner) - Emerald Noir Theme:**
+```css
+--chuduan-primary: #14532D;     /* Deep Emerald - Wealth */
+--chuduan-secondary: #0F766E;   /* Teal 700 - Growth */
+--chuduan-accent: #D4AF37;      /* Gold - Premium */
+```
+⚠️ **Current:** Using **Purple temporary** (#8b5cf6) - sẽ migrate sang Emerald Noir phase 2
+
+**3. Nhân viên Bán hàng (Sales) - Corporate Blue Theme:**
+```css
+--sales-primary: #1D4ED8;       /* Blue 600 - Authority */
+--sales-secondary: #0EA5E9;     /* Sky 500 - Communication */
+--sales-accent: #F59E0B;        /* Amber 500 - Urgency */
+```
+
+**4. Nhân viên Điều hành (Operator) - Editorial Warm Theme:**
+```css
+--operator-primary: #7A3E2E;    /* Terracotta - Earthy */
+--operator-secondary: #5B5A57;  /* Warm Gray - Neutral */
+--operator-accent: #C9A227;     /* Ochre - Editorial */
+```
+
+**5. Quản trị viên (Admin) - Forest & Stone Theme:**
+```css
+--admin-primary: #1B4332;       /* Forest - Authority */
+--admin-secondary: #2D6A4F;     /* Moss - System health */
+--admin-accent: #B68C3A;        /* Brass - Key metrics */
+```
+
+#### Current Implementation (Chủ dự án - Temporary):
 ```css
 /* Background - Light Theme */
 --color-white: #ffffff;
 --color-gray-50: #f9fafb;
 --color-gray-100: #f3f4f6;
 
-/* Brand Colors */
+/* Brand Colors - TEMPORARY Purple (sẽ đổi sang Emerald Noir) */
 --color-primary: #8b5cf6;          /* Vibrant Purple */
 --color-primary-dark: #6006fc;     /* Deep Purple */
 --color-primary-light: #a78bfa;    /* Light Purple */
---color-primary-bg: rgba(139, 92, 246, 0.08);  /* Purple background tint */
+--color-primary-bg: rgba(139, 92, 246, 0.08);
 
 /* Secondary Colors */
 --color-secondary: #f59e0b;        /* Warm Gold */
@@ -451,8 +490,8 @@ git push upstream Hop
 --color-glass-shadow: rgba(139, 92, 246, 0.1);
 
 /* Text Colors - Light Theme */
---color-text-primary: #111827;     /* Dark text on light background */
---color-text-secondary: #6b7280;   /* Gray text */
+--color-text-primary: #111827;
+--color-text-secondary: #6b7280;
 ```
 
 #### Design Principles:
@@ -691,7 +730,8 @@ import { HiOutlineHome, HiOutlineCurrencyDollar } from 'react-icons/hi2';
 ---
 
 ## 8. Tài liệu tham khảo
-- **`docs/use-cases-v1.2.md`** – Nguồn nghiệp vụ duy nhất và tối cao
+- **`docs/use-cases-v1.2.md`** – Nguồn nghiệp vụ duy nhất và tối cao (5 actors defined)
+- **`docs/DESIGN_SYSTEM_COLOR_PALETTES.md`** – 🎨 Bộ màu chuyên biệt cho 5 actors (Soft Tech, Emerald Noir, Corporate Blue, Editorial Warm, Forest & Stone)
 - **`docs/chu-du-an-routes-implementation.md`** – API routes & architecture cho Chủ dự án
 - **`client/src/pages/ChuDuAn/README_REDESIGN.md`** – Design system & UI principles
 - **`client/src/pages/ChuDuAn/ROOM_DISPLAY_LOGIC.md`** – Logic hiển thị phòng thông minh

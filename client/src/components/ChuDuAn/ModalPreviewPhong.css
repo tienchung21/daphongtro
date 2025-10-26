@@ -245,7 +245,7 @@
 .phong-info-icon {
   width: 18px;
   height: 18px;
-  color: #8b5cf6;
+  color: #14532D;
   flex-shrink: 0;
 }
 
@@ -336,13 +336,13 @@
 }
 
 .modal-btn-primary {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: linear-gradient(135deg, #14532D, #0F766E);
   color: #ffffff;
   border: 1px solid rgba(139, 92, 246, 0.3);
 }
 
 .modal-btn-primary:hover {
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  background: linear-gradient(135deg, #0F766E, #6d28d9);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
   transform: translateY(-1px);
 }
@@ -379,3 +379,4 @@
     padding: 16px 20px;
   }
 }
+

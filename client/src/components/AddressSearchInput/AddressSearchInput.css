@@ -26,7 +26,7 @@
 .address-search-label svg {
   width: 20px;
   height: 20px;
-  color: #8b5cf6;
+  color: #14532D;
 }
 
 .address-search-input-group {
@@ -52,7 +52,7 @@
 
 .address-search-input:focus {
   outline: none;
-  border-color: #8b5cf6;
+  border-color: #14532D;
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
@@ -67,7 +67,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #14532D 0%, #0F766E 100%);
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -259,3 +259,4 @@
     font-size: 11px;
   }
 }
+

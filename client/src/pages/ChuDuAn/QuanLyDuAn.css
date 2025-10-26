@@ -111,11 +111,15 @@
   gap: 12px;
   margin-bottom: 20px;
   flex-wrap: wrap;
+  position: relative; /* ✅ Establish positioning context */
+  z-index: 1; /* ✅ Ensure proper stacking */
+  isolation: isolate; /* ✅ Create new stacking context */
 }
 
 .quick-filter {
   display: flex;
   align-items: center;
+  justify-content: flex-start; /* ✅ Align items to start */
   gap: 8px;
   padding: 10px 16px;
   border-radius: 12px;
@@ -127,6 +131,8 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(139, 92, 246, 0.05);
+  position: relative; /* ✅ Establish positioning context */
+  overflow: visible; /* ✅ Allow content to show */
 }
 
 .quick-filter:hover {
@@ -136,10 +142,10 @@
 }
 
 .quick-filter.active {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6006fc 100%);
+  background: linear-gradient(135deg, #14532D 0%, #0F766E 100%);
   color: white;
   border-color: transparent;
-  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 16px rgba(20, 83, 45, 0.3);
 }
 
 .quick-filter.success.active {
@@ -152,6 +158,32 @@
 
 .filter-icon {
   font-size: 1.125rem;
+  display: inline-flex !important; /* ✅ Force override */
+  align-items: center;
+  justify-content: center;
+  position: relative !important; /* ✅ Force normal flow */
+  flex-shrink: 0;
+  width: 24px; /* ✅ Fixed width for emoji */
+  height: 24px; /* ✅ Fixed height for emoji */
+  line-height: 1;
+  text-align: center;
+  transform: none !important; /* ✅ Reset any transforms */
+  top: auto !important; /* ✅ Reset positioning */
+  left: auto !important;
+  bottom: auto !important;
+  right: auto !important;
+}
+
+/* ✅ Force emoji to stay inline */
+.filter-icon::before,
+.filter-icon::after {
+  content: none;
+}
+
+.filter-label {
+  display: inline-block;
+  position: relative; /* ✅ Ensure normal flow */
+  flex-shrink: 0;
 }
 
 .filter-count {
@@ -162,6 +194,12 @@
   font-weight: 600;
   min-width: 24px;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative; /* ✅ Normal flow */
+  flex-shrink: 0;
+  margin-left: auto; /* ✅ Push to right edge */
 }
 
 .quick-filter.active .filter-count {
@@ -345,9 +383,32 @@
 .qlda-table-container {
   background: var(--color-white);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   margin-bottom: 20px;
+  -webkit-overflow-scrolling: touch; /* Smooth scroll trên iOS */
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #cbd5e1 #f1f5f9; /* Firefox */
+}
+
+/* Custom scrollbar cho Webkit browsers */
+.qlda-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.qlda-table-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+.qlda-table-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.qlda-table-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .qlda-table {
@@ -544,6 +605,7 @@
   justify-content: center;
   width: 36px;
   height: 36px;
+  min-width: 36px; /* Prevent shrink */
   padding: 0;
   border: 1px solid #e5e7eb;
   border-radius: 8px;
@@ -551,6 +613,7 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0; /* Prevent icon compression */
 }
 
 .action-btn:hover:not(:disabled) {
@@ -568,6 +631,8 @@
 .action-btn svg {
   width: 18px;
   height: 18px;
+  flex-shrink: 0; /* Prevent icon distortion */
+  display: block; /* Remove inline spacing issues */
 }
 
 .action-btn.action-restore:hover:not(:disabled) {
@@ -695,11 +760,11 @@
 }
 
 .text-warning {
-  color: #f59e0b !important;
+  color: #D4AF37 !important;
 }
 
 .text-info {
-  color: #3b82f6 !important;
+  color: #0F766E !important;
 }
 
 .text-secondary {
@@ -834,24 +899,59 @@
 }
 
 @media (max-width: 768px) {
+  /* Container padding */
+  .qlda-container {
+    padding: 16px 12px;
+  }
+
   .qlda-header {
     flex-direction: column;
     align-items: stretch;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .qlda-header-left {
+    min-width: 100%;
+  }
+
+  .qlda-title {
+    font-size: 1.5rem;
+  }
+
+  .qlda-header-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .qlda-header-actions button {
+    flex: 1;
   }
 
   .qlda-toolbar {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .toolbar-left,
   .toolbar-right {
+    width: 100%;
+  }
+
+  .toolbar-left {
     flex-direction: column;
-    align-items: stretch;
+    gap: 12px;
   }
 
   .search-box {
     min-width: 100%;
+    width: 100%;
+  }
+
+  .toolbar-right {
+    justify-content: flex-start;
+    gap: 8px;
   }
 
   .qlda-bulk-actions {
@@ -861,48 +961,143 @@
   }
 
   .bulk-buttons {
-    justify-content: stretch;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .bulk-buttons button {
-    flex: 1;
+    flex: 1 1 calc(50% - 4px);
+    min-width: 140px;
   }
 
-  /* Hide less important columns on mobile */
+  /* Hide less important columns on tablet/mobile */
   .qlda-table th.col-stats:nth-child(4),
-  .qlda-table td.col-stats:nth-child(4),
-  .qlda-table th.col-stats:nth-child(5),
-  .qlda-table td.col-stats:nth-child(5) {
-    display: none;
+  .qlda-table td.col-stats:nth-child(4) {
+    display: none; /* Hide 4th stats column */
+  }
+
+  /* Table adjustments */
+  .qlda-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-row td {
+    white-space: nowrap;
+  }
+
+  .col-name {
+    min-width: 180px;
+    white-space: normal;
+  }
+
+  /* Action buttons stay horizontal */
+  .action-buttons {
+    gap: 6px;
+    flex-wrap: nowrap;
+  }
+
+  .action-btn {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
   }
 
   .qlda-pagination {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
   }
 
   .pagination-buttons {
     justify-content: center;
     flex-wrap: wrap;
   }
+
+  /* Expanded content */
+  .expanded-content {
+    padding: 16px;
+  }
+
+  .detail-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
 }
 
 @media (max-width: 480px) {
+  /* Container extra compact */
+  .qlda-container {
+    padding: 12px 8px;
+  }
+
   .qlda-title {
     font-size: 1.25rem;
   }
 
+  .qlda-subtitle {
+    font-size: 0.875rem;
+  }
+
+  /* Touch-friendly quick filters */
   .quick-filter {
     flex: 1 1 calc(50% - 8px);
     justify-content: center;
+    font-size: 0.875rem;
+    padding: 12px 10px; /* Tăng padding cho touch */
+    min-height: 44px; /* iOS touch target minimum */
   }
 
+  .filter-icon {
+    font-size: 1rem;
+  }
+
+  .filter-count {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+  }
+
+  /* FIX: Action buttons trên mobile - giữ nguyên horizontal layout */
   .action-buttons {
-    flex-direction: column;
+    flex-direction: row; /* Giữ ngang, không đổi sang dọc */
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: nowrap; /* Không wrap */
   }
 
   .action-btn {
-    width: 100%;
+    width: 36px; /* Fixed width, không full width */
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px; /* Touch-friendly */
+    flex-shrink: 0;
+  }
+
+  .action-btn svg {
+    width: 16px; /* Smaller icons trên mobile */
+    height: 16px;
+  }
+
+  /* Table improvements */
+  .qlda-table {
+    font-size: 0.875rem;
+  }
+
+  .table-row td {
+    padding: 10px 8px;
+  }
+
+  .col-name {
+    min-width: 140px;
+  }
+
+  /* Touch-friendly checkboxes */
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    min-width: 18px;
+    min-height: 18px;
   }
 
   .detail-stats,
@@ -915,6 +1110,27 @@
     min-width: 100%;
     flex-direction: column;
     gap: 4px;
+  }
+
+  /* Expanded content padding */
+  .expanded-content {
+    padding: 16px 12px;
+  }
+
+  .detail-header {
+    font-size: 0.9rem;
+  }
+
+  /* Pagination touch-friendly */
+  .pagination-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Bulk actions buttons */
+  .bulk-buttons button {
+    min-height: 44px;
+    font-size: 0.875rem;
   }
 }
 
@@ -1174,8 +1390,8 @@
 }
 
 .policy-card:hover {
-  border-color: #8b5cf6;
-  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.15);
+  border-color: #14532D;
+  box-shadow: 0 2px 8px rgba(20, 83, 45, 0.15);
 }
 
 .policy-info {
@@ -1207,10 +1423,10 @@
 }
 
 .policy-usage {
-  color: #8b5cf6;
+  color: #14532D;
   font-size: 12px;
   font-weight: 600;
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(20, 83, 45, 0.1);
   padding: 3px 10px;
   border-radius: 6px;
 }
@@ -1218,7 +1434,7 @@
 .policy-edit-btn {
   background: none;
   border: none;
-  color: #8b5cf6;
+  color: #14532D;
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
@@ -1229,7 +1445,7 @@
 }
 
 .policy-edit-btn:hover {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(20, 83, 45, 0.1);
   transform: scale(1.1);
 }
 

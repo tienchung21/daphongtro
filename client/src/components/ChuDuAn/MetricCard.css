@@ -177,7 +177,7 @@
 }
 
 .metric-card__icon--primary {
-  color: #8b5cf6;
+  color: #14532D;
 }
 
 .metric-card__icon--success {
@@ -341,7 +341,7 @@
 
 /* Accessibility - Focus styles */
 .metric-card:focus-visible {
-  outline: 2px solid #8b5cf6;
+  outline: 2px solid #14532D;
   outline-offset: 2px;
 }
 
@@ -355,3 +355,4 @@
     transition: none !important;
   }
 }
+

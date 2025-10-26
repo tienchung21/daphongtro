@@ -355,6 +355,154 @@ class ChuDuAnController {
   }
 
   /**
+   * Lấy metrics/thống kê cuộc hẹn
+   * GET /api/chu-du-an/cuoc-hen/metrics
+   */
+  static async layMetricsCuocHen(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const metrics = await ChuDuAnModel.layMetricsCuocHen(chuDuAnId);
+
+      res.json({
+        success: true,
+        message: 'Lấy metrics cuộc hẹn thành công',
+        data: metrics
+      });
+    } catch (error) {
+      console.error('Lỗi lấy metrics cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Phê duyệt cuộc hẹn
+   * POST /api/chu-du-an/cuoc-hen/:id/phe-duyet
+   */
+  static async pheDuyetCuocHen(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const cuocHenId = parseInt(req.params.id);
+      const { phuongThucVao, ghiChu } = req.body;
+
+      // Validation
+      if (!cuocHenId) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID cuộc hẹn không hợp lệ'
+        });
+      }
+
+      if (!phuongThucVao || phuongThucVao.trim() === '') {
+        return res.status(400).json({
+          success: false,
+          message: 'Phương thức vào là bắt buộc'
+        });
+      }
+
+      const ketQua = await ChuDuAnModel.pheDuyetCuocHen(
+        cuocHenId, 
+        chuDuAnId, 
+        phuongThucVao, 
+        ghiChu
+      );
+
+      if (ketQua) {
+        // Ghi audit log
+        await NhatKyHeThongService.ghiNhan(
+          chuDuAnId,
+          'phe_duyet_cuoc_hen',
+          'CuocHen',
+          cuocHenId,
+          { pheDuyetChuDuAn: 'ChoPheDuyet' },
+          { 
+            pheDuyetChuDuAn: 'DaPheDuyet', 
+            phuongThucVao,
+            ghiChu 
+          },
+          req.ip,
+          req.get('User-Agent')
+        );
+
+        res.json({
+          success: true,
+          message: 'Phê duyệt cuộc hẹn thành công'
+        });
+      }
+    } catch (error) {
+      console.error('Lỗi phê duyệt cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Từ chối cuộc hẹn
+   * POST /api/chu-du-an/cuoc-hen/:id/tu-choi
+   */
+  static async tuChoiCuocHen(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const cuocHenId = parseInt(req.params.id);
+      const { lyDoTuChoi } = req.body;
+
+      // Validation
+      if (!cuocHenId) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID cuộc hẹn không hợp lệ'
+        });
+      }
+
+      if (!lyDoTuChoi || lyDoTuChoi.trim() === '') {
+        return res.status(400).json({
+          success: false,
+          message: 'Lý do từ chối là bắt buộc'
+        });
+      }
+
+      const ketQua = await ChuDuAnModel.tuChoiCuocHen(
+        cuocHenId, 
+        chuDuAnId, 
+        lyDoTuChoi
+      );
+
+      if (ketQua) {
+        // Ghi audit log
+        await NhatKyHeThongService.ghiNhan(
+          chuDuAnId,
+          'tu_choi_cuoc_hen',
+          'CuocHen',
+          cuocHenId,
+          { pheDuyetChuDuAn: 'ChoPheDuyet' },
+          { 
+            pheDuyetChuDuAn: 'TuChoi',
+            trangThai: 'DaTuChoi',
+            lyDoTuChoi 
+          },
+          req.ip,
+          req.get('User-Agent')
+        );
+
+        res.json({
+          success: true,
+          message: 'Từ chối cuộc hẹn thành công'
+        });
+      }
+    } catch (error) {
+      console.error('Lỗi từ chối cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
    * UC-PROJ-03: Xem báo cáo hiệu suất
    * GET /api/chu-du-an/bao-cao
    */

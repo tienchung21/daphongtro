@@ -329,6 +329,26 @@ export const CuocHenService = {
   },
 
   /**
+   * Lấy metrics/thống kê cuộc hẹn
+   */
+  async layMetrics() {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}${API_PREFIX}/cuoc-hen/metrics`, 
+        {
+          method: 'GET',
+          headers: getAuthHeaders()
+        }
+      );
+      
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi khi lấy metrics cuộc hẹn:', error);
+      throw error;
+    }
+  },
+
+  /**
    * Xác nhận cuộc hẹn
    */
   async xacNhan(cuocHenId, ghiChu = '') {
@@ -345,6 +365,48 @@ export const CuocHenService = {
       return await handleResponse(response);
     } catch (error) {
       console.error('Lỗi khi xác nhận cuộc hẹn:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Phê duyệt cuộc hẹn
+   */
+  async pheDuyet(cuocHenId, phuongThucVao, ghiChu = '') {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}${API_PREFIX}/cuoc-hen/${cuocHenId}/phe-duyet`, 
+        {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ phuongThucVao, ghiChu })
+        }
+      );
+      
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi khi phê duyệt cuộc hẹn:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Từ chối cuộc hẹn
+   */
+  async tuChoi(cuocHenId, lyDoTuChoi) {
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}${API_PREFIX}/cuoc-hen/${cuocHenId}/tu-choi`, 
+        {
+          method: 'POST',
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ lyDoTuChoi })
+        }
+      );
+      
+      return await handleResponse(response);
+    } catch (error) {
+      console.error('Lỗi khi từ chối cuộc hẹn:', error);
       throw error;
     }
   }
