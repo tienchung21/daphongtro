@@ -10,14 +10,26 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.5",
     "axios": "^1.12.2",
     "crypto-js": "^4.2.0",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.22",
+    "jspdf": "^3.0.3",
+    "leaflet": "^1.9.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
-    "react-router-dom": "^7.9.1"
+    "react-icons": "^5.5.0",
+    "react-is": "^19.2.0",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.9.1",
+    "react-to-print": "^3.2.0",
+    "recharts": "^3.3.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
+    "@tanstack/react-query-devtools": "^5.90.2",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^5.0.2",
@@ -27,8 +39,8 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
     "postcss": "^8.5.6",
-    "sass-embedded": "^1.93.2",
-    "tailwindcss": "^4.1.14",
-    "vite": "^7.1.2"
+    "sass": "^1.93.2",
+    "tailwindcss": "^4.1.13",
+    "vite": "^4.0.0"
   }
 }

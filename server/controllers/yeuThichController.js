@@ -29,15 +29,17 @@ exports.listByUser = async (req, res) => {
       NguoiDungID: r.NguoiDungID,
       TinDangID: r.TinDangID,
       TieuDe: r.TieuDe || null,
-      Gia: r.Gia || null,
-      diachi: r.diachi || null
+      Gia: r.Gia != null ? r.Gia : null,
+      // model trả DiaChi (chú ý chữ hoa), map về diachi để frontend dùng
+      diachi: r.DiaChi || r.diachi || null,
+      // trả đường dẫn ảnh đầy đủ nếu model đã thêm HinhAnhFull, fallback sang các cột khác
+      Img: r.HinhAnhFull || r.HinhAnhPhong || r.Img || null
     })));
   } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 };
 
-// Thêm: list with tin details including image
 exports.listWithTinDetails = async (req, res) => {
   const userId = req.params.userId;
   try {
@@ -46,9 +48,9 @@ exports.listWithTinDetails = async (req, res) => {
       NguoiDungID: r.NguoiDungID,
       TinDangID: r.TinDangID,
       TieuDe: r.TieuDe || null,
-      Img: r.Img || null,        // URL trường ảnh từ bảng tindang
-      Gia: r.Gia || null,
-      diachi: r.diachi || null
+      Img: r.HinhAnhFull || r.HinhAnhPhong || r.Img || null,
+      Gia: r.Gia != null ? r.Gia : null,
+      diachi: r.DiaChi || r.diachi || null
     })));
   } catch (err) {
     return res.status(500).json({ error: err.message });

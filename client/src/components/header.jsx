@@ -1,3 +1,4 @@
+
 import './header.css';
 import logo from '../assets/images/logo-hinh-mai-nha_.jpg'
 import React, { useState, useEffect } from 'react';
@@ -117,9 +118,9 @@ function Header() {
 
                 // ưu tiên trường Img từ backend, nếu không có thử URL, nếu không có dùng placeholder
                 const imgSrc = tin?.Img
-                  ? (typeof tin.Img === 'string' && tin.Img.startsWith('http') ? tin.Img : `/uploads/${tin.Img}`)
+                  ? (typeof tin.Img === 'string' && tin.Img.startsWith('http') ? tin.Img : `http://localhost:5000${tin.Img}`)
                   : (tin?.URL
-                    ? (typeof tin.URL === 'string' && tin.URL.startsWith('http') ? tin.URL : `/uploads/${tin.URL}`)
+                    ? (typeof tin.URL === 'string' && tin.URL.startsWith('http') ? tin.URL : `http://localhost:5000${tin.URL}`)
                     : 'https://via.placeholder.com/80x60?text=No+Img');
 
                 // debug: in ra console để kiểm tra URL / dữ liệu gốc

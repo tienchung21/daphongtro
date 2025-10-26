@@ -20,8 +20,9 @@ function Register() {
     setIsSubmitting(true);
 
     try {
-      // Map role sang roleId (chỉnh theo backend nếu cần)
-      const roleId = role === 'chuduan' ? 2 : 1;
+      // Map role sang VaiTroID (theo bảng vaitro trong DB)
+      // VaiTroID: 1=Khách hàng, 2=Nhân viên Bán hàng, 3=Chủ dự án, 4=Điều hành, 5=Admin
+      const roleId = role === 'chuduan' ? 3 : 1;
 
       const payload = {
         name: fullname,
@@ -33,8 +34,29 @@ function Register() {
 
       const res = await authApi.register(payload); // [`authApi.register`](src/api/authApi.js)
       console.log('register res', res.data);
-      alert('Đăng ký thành công!');
-      navigate('/login');
+      
+      // Backend giờ trả về token, tự động login sau đăng ký
+      const { token, user } = res.data;
+      if (token) {
+        // Lưu token và user info
+        localStorage.setItem('user', JSON.stringify({
+          token,
+          ...user
+        }));
+        
+        alert('Đăng ký thành công!');
+        
+        // Redirect theo vai trò
+        if (role === 'chuduan') {
+          navigate('/chu-du-an/dashboard');
+        } else {
+          navigate('/');
+        }
+      } else {
+        // Fallback nếu backend chưa cập nhật
+        alert('Đăng ký thành công! Vui lòng đăng nhập.');
+        navigate('/login');
+      }
     } catch (err) {
       console.error('Lỗi đăng ký:', err?.response?.data || err.message);
       alert(err?.response?.data?.message || 'Đăng ký thất bại');

@@ -29,11 +29,27 @@ function Login() {
 
       console.log('Kết quả đăng nhập:', res.data);
 
-      // 🟢 Nếu đăng nhập đúng, lưu thông tin user vào localStorage
-      localStorage.setItem('user', JSON.stringify(res.data));
+      // 🟢 Lưu token và thông tin user vào localStorage
+      const { token, user } = res.data;
+      localStorage.setItem('user', JSON.stringify({
+        token,
+        ...user
+      }));
 
       alert('Đăng nhập thành công!');
-      navigate('/'); // quay về trang chủ
+      
+      // 🟢 Redirect theo vai trò (VaiTroID theo DB: 1=Khách hàng, 3=Chủ dự án)
+      const vaiTroId = user?.VaiTroHoatDongID || user?.VaiTroID || user?.roleId;
+      const tenVaiTro = user?.TenVaiTro || user?.VaiTro || user?.role;
+      
+      // Check cả VaiTroID (3) và TenVaiTro ("Chủ dự án")
+      if (vaiTroId === 3 || tenVaiTro === 'Chủ dự án' || tenVaiTro === 'chuduan') {
+        // Chủ dự án → Dashboard
+        navigate('/chu-du-an/dashboard');
+      } else {
+        // Khách hàng hoặc vai trò khác → Trang chủ
+        navigate('/');
+      }
     } catch (err) {
       console.error('Lỗi đăng nhập:', err);
       setError('Sai email hoặc mật khẩu!');
