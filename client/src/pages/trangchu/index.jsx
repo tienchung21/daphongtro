@@ -182,13 +182,13 @@ function TrangChu() {
               return (
                 <div className="duan" key={key}>
                   <div className="anhduan">
-                   <Link to={`/chu-du-an/tin-dang/${key}`}>
+                   <Link to={`/tin-dang/${key}`}>
                    <img src={imgSrc} alt={t.TieuDe} />
                   </Link>
                   </div>
                   <div className="thongtinduan">
                      <div className="tieude">
-                     <Link to={`/chu-du-an/tin-dang/${key}`}>{t.TieuDe}</Link>
+                     <Link to={`/tin-dang/${key}`}>{t.TieuDe}</Link>
                       </div>
                     <div className="diachi">Địa chỉ: {t.DiaChi ?? '-'}</div>
                     <div className="gia">{formatPrice(t.Gia)}</div>
