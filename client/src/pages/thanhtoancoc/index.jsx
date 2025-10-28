@@ -1,33 +1,99 @@
-import React from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import axios from 'axios';
 import './thanhtoancoc.css';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
 }
 
+// Tạo chuỗi số ngẫu nhiên 5 chữ số
+function randomDigits(n = 5) {
+  return Math.floor(Math.random() * Math.pow(10, n))
+    .toString()
+    .padStart(n, '0');
+}
+
 export default function ThanhToanCoc() {
   const q = useQuery();
   const navigate = useNavigate();
 
-  // allow override via query params, otherwise use sensible defa   ults
   const acc = q.get('acc') ?? '80349195777';
   const bank = q.get('bank') ?? 'TPBank';
   const amount = q.get('amount') ?? '2000';
-  const des = q.get('des') ?? 'donhang666666';
-  const order = q.get('order') ?? '';
+  const order = q.get('order') ?? '10';
 
-  const qrUrl = `https://qr.sepay.vn/img?acc=${encodeURIComponent(acc)}&bank=${encodeURIComponent(bank)}&amount=${encodeURIComponent(amount)}&des=${encodeURIComponent(des)}`;
+  // des gốc (VD: DK10)
+  const baseDes = q.get('des') ?? `DK${order}`;
+  // thêm 5 số random nhưng KHÔNG có dấu "_"
+  const [des] = useState(`${baseDes}${randomDigits(5)}`);
+
+  // API poll
+  const pollUrl = 'https://tienchung9atm.id.vn/get_logs.php';
+  const pollIntervalMs = 3000;
+
+  // Tạo URL QR thanh toán
+  const qrUrl = `https://qr.sepay.vn/img?acc=${encodeURIComponent(acc)}&bank=${encodeURIComponent(
+    bank
+  )}&amount=${encodeURIComponent(amount)}&des=${encodeURIComponent(des)}`;
+
+  const [paid, setPaid] = useState(false);
+  const [status, setStatus] = useState('⏳ Đang chờ người dùng thanh toán...');
+  const intervalRef = useRef(null);
 
   const handlePaid = () => {
     if (!window.confirm('Xác nhận bạn đã chuyển tiền đặt cọc?')) return;
-    // temporary client-side confirmation. If you have API to notify, call it here.
-    console.log('[ThanhToanCoc] user confirmed payment', { order, acc, bank, amount, des });
-    alert('Ghi nhận: bạn đã xác nhận đã thanh toán đặt cọc.');
-    navigate('/thanhtoan'); // redirect to history page (adjust if needed)
+    alert('Đã ghi nhận xác nhận thủ công của bạn.');
+    navigate('/thanhtoan');
   };
+
+  useEffect(() => {
+    const normalize = (str) =>
+      (str || '').toLowerCase().replace(/\s+/g, '');
+
+    const expected = normalize(des);
+
+    const checkPayment = async () => {
+      try {
+        const res = await axios.get(pollUrl);
+        const data = res.data;
+
+        if (!data?.items) return;
+
+        const found = data.items.some((item) => {
+          const content = normalize(
+            item.payload?.transaction_content ||
+            item.payload?.content
+          );
+          return content.includes(expected); // kiểu LIKE %expected%
+        });
+
+        console.log('[Poll check]', { found, expected });
+
+        if (found) {
+          setPaid(true);
+          setStatus('✅ Thanh toán thành công!');
+          clearInterval(intervalRef.current);
+          alert(`Thanh toán ${des} thành công!`);
+          navigate('/thanhtoan');
+        } else {
+          setStatus('⏳ Đang chờ người dùng thanh toán...');
+        }
+      } catch (err) {
+        console.error('Lỗi khi poll API:', err);
+        setStatus('⚠️ Lỗi kết nối máy chủ.');
+      }
+    };
+
+    checkPayment();
+    intervalRef.current = setInterval(checkPayment, pollIntervalMs);
+
+    return () => {
+      clearInterval(intervalRef.current);
+    };
+  }, [des, pollUrl, navigate]);
 
   return (
     <div className="thanhtoancoc-page">
@@ -37,11 +103,11 @@ export default function ThanhToanCoc() {
         <h3>Thanh toán đặt cọc</h3>
 
         <div className="ttc-info">
-          <div>Đơn hàng: <strong>{order || '—'}</strong></div>
+          <div>Đơn hàng: <strong>{order}</strong></div>
           <div>Ngân hàng: <strong>{bank}</strong></div>
           <div>Số tài khoản: <strong>{acc}</strong></div>
           <div>Số tiền: <strong>{Number(amount).toLocaleString('vi-VN')} đ</strong></div>
-          <div>Nội dung: <strong>{decodeURIComponent(des)}</strong></div>
+          <div>Nội dung chuyển khoản: <strong>{des}</strong></div>
         </div>
 
         <div className="ttc-qr-wrap">
@@ -49,11 +115,17 @@ export default function ThanhToanCoc() {
         </div>
 
         <div className="ttc-actions">
-          <button className="btn btn-primary" onClick={handlePaid}>Tôi đã thanh toán</button>
-          <button className="btn" onClick={() => navigate(-1)}>Quay lại</button>
+          <button className="btn btn-primary" onClick={handlePaid} disabled={paid}>
+            Tôi đã thanh toán
+          </button>
+          <button className="btn" onClick={() => navigate(-1)}>
+            Quay lại
+          </button>
         </div>
 
-       
+        <div style={{ marginTop: 12, textAlign: 'center', color: paid ? 'green' : '#666' }}>
+          {status}
+        </div>
       </main>
 
       <Footer />

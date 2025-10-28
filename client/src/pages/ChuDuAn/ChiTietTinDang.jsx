@@ -787,6 +787,20 @@ const ChiTietTinDang = () => {
                   <HiOutlineEnvelope />
                   <span>Gửi tin nhắn</span>
                 </button>
+                 <button
+                  className="ctd-btn-secondary ctd-btn-deposit"
+                  onClick={() => {
+                    const acc = tinDang?.BankAccountNumber ?? '80349195777';
+                    const bank = tinDang?.BankName ?? 'TPBank';
+                    const amount = tinDang?.Gia ?? tinDang?.TienCoc ?? '100000';
+                    const des = `dk${tinDang?.TinDangID ?? tinDang?.id ?? ''}`;
+                    navigate(`/thanhtoancoc?acc=${encodeURIComponent(acc)}&bank=${encodeURIComponent(bank)}&amount=${encodeURIComponent(amount)}&des=${encodeURIComponent(des)}&order=${encodeURIComponent(tinDang?.TinDangID ?? '')}`);
+                  }}
+                  title="Đặt cọc"
+                >
+                  <HiOutlineCurrencyDollar style={{ width: 18, height: 18, marginRight: 8 }} />
+                  <span>Đặt cọc</span>
+                </button>
               </div>
 
               {/* Thông tin dự án */}

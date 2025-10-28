@@ -18,6 +18,7 @@ const khuVucRoutes = require('./routes/khuVucRoutes');
 const yeuThichRoutes = require('./routes/yeuThichRoutes');
 const sepayRoutes = require('./routes/sepayRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
+const sepayCallbackRoutes = require('./routes/sepayCallbackRoutes');
 
 const sepaySync = require('./services/sepaySyncService');
 const app = express();
@@ -49,7 +50,8 @@ app.use('/api/tindangs', tinDangRoutes);
 app.use('/api/khuvucs', khuVucRoutes);
 app.use('/api/yeuthich', yeuThichRoutes);
 app.use('/api/sepay', sepayRoutes);
-app.use('/api/transactions', transactionRoutes); 
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/sepay', sepayCallbackRoutes);
 
 app.get('/', (req, res) => {
   res.send('API server đang chạy - Module Chủ dự án + Upstream APIs');
