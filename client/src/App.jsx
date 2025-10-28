@@ -15,6 +15,9 @@ import QuanLyDuAn from './pages/ChuDuAn/QuanLyDuAn'; // ✨ Quản lý dự án 
 import QuanLyCuocHen from './pages/ChuDuAn/QuanLyCuocHen'; // ✨ UC-PROJ-02: Quản lý cuộc hẹn
 import CaiDat from './pages/ChuDuAn/CaiDat'; // ✨ Cài đặt tài khoản Chủ dự án
 
+// Import trang Chi Tiết Tin Đăng cho Khách hàng
+import ChiTietTinDangKhachHang from './pages/chitiettindang'; // 🎯 Soft Tech Theme - Dành cho khách hàng
+
 // Import từ upstream
 import QuanLyTaiKhoan from './pages/quanlytaikhoan';
 import SearchKhuVuc from './components/SearchKhuVuc';
@@ -33,6 +36,9 @@ function App() {
       {/* <Route path='/about' element={<div>About Page</div>} /> */}
       <Route path='/login' element={<Login />} />
       <Route path='/dangky' element={<Dangky />} />
+      
+      {/* 🎯 Route cho Khách hàng - Chi tiết tin đăng công khai (Soft Tech Theme) */}
+      <Route path='/tin-dang/:id' element={<ChiTietTinDangKhachHang />} />
       
       {/* Routes cho Chủ dự án */}
       <Route path='/chu-du-an/dashboard' element={<DashboardChuDuAn />} />
