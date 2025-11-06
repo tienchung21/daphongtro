@@ -88,7 +88,7 @@ function Login() {
         </div>
 
         {/* Password */}
-        <div className="form-group">
+        <div className="form-group ">
           <label htmlFor="password">Mật khẩu:</label>
           <input
             type="password"

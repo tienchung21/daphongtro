@@ -3,7 +3,7 @@ const Transaction = require('../models/transactionModel');
 
 const mapSepayToTx = (item) => {
   // debug: in raw item để kiểm tra chính xác payload
-  console.log('[sepaySync] RAW ITEM:', item);
+ 
 
   return {
     sepay_id: item.id || item.sepay_id || null,
@@ -35,10 +35,10 @@ const safeGetItems = (data) => {
 exports.syncOnce = async (opts = {}) => {
   const stats = { total: 0, inserted: 0, skipped: 0, errors: 0 };
   try {
-    console.log('[sepaySync] start syncOnce', new Date().toISOString(), 'opts=', opts);
+    
     const data = await Sepay.listTransactions(opts);
     const items = safeGetItems(data);
-    console.log('[sepaySync] received items count =', items.length);
+    
 
     for (const it of items) {
       stats.total++;
@@ -61,23 +61,23 @@ exports.syncOnce = async (opts = {}) => {
 
         if (exists) {
           stats.skipped++;
-          console.log('[sepaySync] skip existing tx:', tx.reference_number || `${tx.account_number}|${tx.amount_in}|${tx.transaction_date}`);
+          
           continue;
         }
 
         await Transaction.insertTransaction(tx);
         stats.inserted++;
-        console.log('[sepaySync] inserted tx:', tx.reference_number || tx.transaction_date);
+        
       } catch (err) {
         stats.errors++;
-        console.error('[sepaySync] error processing item', tx.reference_number || tx.transaction_date, err.message || err);
+        
       }
     }
   } catch (err) {
-    console.error('[sepaySync] fatal error', err.response?.data || err.message || err);
+    
     throw err;
   }
-  console.log('[sepaySync] finished', stats);
+  
   return stats;
 };
 
