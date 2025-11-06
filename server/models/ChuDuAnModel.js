@@ -40,6 +40,8 @@ class ChuDuAnModel {
    */
   static async layDanhSachTinDang(chuDuAnId, filters = {}) {
     try {
+      console.log('🗄️ [MODEL] layDanhSachTinDang called with:', { chuDuAnId, filters });
+
       let query = `
         SELECT 
           td.TinDangID, td.DuAnID, td.KhuVucID, td.ChinhSachCocID,
@@ -72,6 +74,8 @@ class ChuDuAnModel {
       
       const params = [chuDuAnId];
       
+      console.log('🗄️ [MODEL] Query params:', params);
+      
       // Áp dụng bộ lọc
       if (filters.trangThai) {
         query += ' AND td.TrangThai = ?';
@@ -95,7 +99,16 @@ class ChuDuAnModel {
         params.push(parseInt(filters.limit));
       }
       
+      console.log('🗄️ [MODEL] Final query:', query.replace(/\s+/g, ' '));
+      console.log('🗄️ [MODEL] Final params:', params);
+
       const [rows] = await db.execute(query, params);
+
+      console.log('🗄️ [MODEL] Query returned:', rows.length, 'rows');
+      if (rows.length > 0) {
+        console.log('🗄️ [MODEL] Sample record:', JSON.stringify(rows[0]));
+      }
+
       return rows;
     } catch (error) {
       throw new Error(`Lỗi khi lấy danh sách tin đăng: ${error.message}`);

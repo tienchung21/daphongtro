@@ -91,7 +91,12 @@ class ChuDuAnController {
         limit: req.query.limit || 20
       };
 
+      console.log('📝 [TIN ĐĂNG] Fetching list for user:', chuDuAnId);
+      console.log('📝 [TIN ĐĂNG] Filters:', JSON.stringify(filters));
+
       const danhSach = await ChuDuAnModel.layDanhSachTinDang(chuDuAnId, filters);
+
+      console.log('📝 [TIN ĐĂNG] Found:', danhSach.length, 'records');
 
       res.json({
         success: true,
