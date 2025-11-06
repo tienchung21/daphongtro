@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
 import './QuanLyCuocHen.css';
 
@@ -40,6 +40,9 @@ import { CuocHenService } from '../../services/ChuDuAnService';
  * - Export báo cáo
  */
 function QuanLyCuocHen() {
+  // Hooks
+  const navigate = useNavigate();
+  
   // State management
   const [loading, setLoading] = useState(true);
   const [cuocHenList, setCuocHenList] = useState([]);
@@ -109,6 +112,37 @@ function QuanLyCuocHen() {
 
   const handleXemChiTiet = (cuocHen) => {
     setModalChiTiet({ open: true, cuocHen });
+  };
+
+  /**
+   * Mở cuộc trò chuyện với khách hàng
+   */
+  const handleOpenChat = async (cuocHen) => {
+    try {
+      // Tạo hoặc lấy cuộc hội thoại với context CuocHen
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/chat/conversations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          NguCanhID: cuocHen.CuocHenID,
+          NguCanhLoai: 'CuocHen',
+          ThanhVienIDs: [cuocHen.KhachHangID],
+          TieuDe: `Cuộc hẹn #${cuocHen.CuocHenID} - ${cuocHen.TenPhong || cuocHen.TenTinDang}`
+        })
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        navigate(`/chu-du-an/tin-nhan/${result.data.CuocHoiThoaiID}`);
+      }
+    } catch (error) {
+      console.error('Error opening chat:', error);
+      alert('Không thể mở tin nhắn. Vui lòng thử lại.');
+    }
   };
 
   const handlePheDuyetSuccess = () => {
@@ -599,6 +633,7 @@ function QuanLyCuocHen() {
                           <button
                             className="action-btn secondary"
                             title="Nhắn tin"
+                            onClick={() => handleOpenChat(cuocHen)}
                           >
                             <HiOutlineChatBubbleLeftRight />
                           </button>

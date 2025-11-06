@@ -31,6 +31,11 @@ function Login() {
 
       // 🟢 Lưu token và thông tin user vào localStorage
       const { token, user } = res.data;
+      
+      // ✅ FIX CRITICAL: Lưu token riêng để API services dùng
+      localStorage.setItem('token', token);
+      
+      // Lưu thông tin user
       localStorage.setItem('user', JSON.stringify({
         token,
         ...user

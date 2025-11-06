@@ -588,11 +588,191 @@
   border: 1px solid rgba(107, 114, 128, 0.3);
 }
 
-/* Action Buttons */
+/* Action Dropdown - Compact & Clean */
 .col-actions {
   text-align: center;
 }
 
+.action-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.action-dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: var(--color-white);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-dropdown-trigger:hover:not(:disabled) {
+  background: var(--color-gray-50);
+  border-color: var(--color-primary-light);
+  color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(var(--color-primary-rgb), 0.1);
+}
+
+.action-dropdown-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-dropdown-trigger svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Dropdown Menu */
+.action-dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  min-width: 220px;
+  background: var(--color-white);
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  padding: 6px;
+  z-index: 1000;
+  animation: dropdownFadeIn 0.2s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dropdown-item:hover {
+  background: var(--color-gray-50);
+  color: var(--color-primary);
+}
+
+.dropdown-item .item-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-text-secondary);
+  flex-shrink: 0;
+  transition: color 0.15s;
+}
+
+.dropdown-item:hover .item-icon {
+  color: var(--color-primary);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 6px 0;
+}
+
+/* Dropdown Section (for Chính sách cọc) */
+.dropdown-item-section {
+  padding: 8px 12px;
+  border-top: 1px solid #f3f4f6;
+  margin-top: 4px;
+}
+
+/* Dropdown Item Clickable (for Chính sách cọc button) */
+.dropdown-item-clickable {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 12px;
+}
+
+.item-content-full {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.item-header-full {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.item-title {
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.item-subtitle {
+  padding-left: 28px;
+  font-size: 0.8125rem;
+}
+
+.text-primary {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  color: var(--color-text-primary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.section-header .item-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-primary);
+}
+
+.section-title {
+  flex: 1;
+}
+
+.section-content {
+  padding-left: 24px;
+  font-size: 13px;
+}
+
+.text-muted {
+  color: var(--color-text-secondary);
+}
+
+.text-sm {
+  font-size: 12px;
+}
+
+/* Legacy action-buttons class for compatibility */
 .action-buttons {
   display: flex;
   justify-content: center;
@@ -1077,6 +1257,30 @@
   .action-btn svg {
     width: 16px; /* Smaller icons trên mobile */
     height: 16px;
+  }
+
+  /* Dropdown menu responsive */
+  .action-dropdown-trigger {
+    width: 36px;
+    height: 36px;
+    min-height: 44px; /* Touch-friendly */
+  }
+
+  .action-dropdown-menu {
+    right: 0;
+    min-width: 200px;
+    max-width: calc(100vw - 32px); /* Fit màn hình mobile */
+  }
+
+  .dropdown-item {
+    padding: 12px 14px; /* Larger tap target */
+    font-size: 15px;
+    min-height: 44px;
+  }
+
+  .dropdown-item .item-icon {
+    width: 20px;
+    height: 20px;
   }
 
   /* Table improvements */

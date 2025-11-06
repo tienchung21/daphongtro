@@ -55,6 +55,9 @@ const authFlexible = (req, res, next) => {
   
   const token = authHeader.substring(7); // Bỏ "Bearer "
   
+  console.log('🔑 [AUTH DEBUG] Token preview:', token.substring(0, 50) + '...');
+  console.log('🔑 [AUTH DEBUG] JWT_SECRET exists:', !!process.env.JWT_SECRET);
+  
   try {
     // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);

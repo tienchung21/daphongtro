@@ -11,6 +11,7 @@ const { requireRole, requireRoles } = require('../middleware/role');
 // Import thêm các routes con
 const uploadRoutes = require('../api/ChuDuAn/uploadRoutes');
 const phongRoutes = require('./phongRoutes');
+const hopDongRoutes = require('./hopDongRoutes');
 
 // API routes chính
 router.get('/dashboard', authFlexible, requireRole('ChuDuAn'), ChuDuAnController.layDashboard);
@@ -45,7 +46,7 @@ router.delete('/du-an/:id', authFlexible, requireRole('ChuDuAn'), ChuDuAnControl
 router.post('/du-an/:id/yeu-cau-mo-lai', authFlexible, requireRole('ChuDuAn'), ChuDuAnController.guiYeuCauMoLaiDuAn);
 router.get('/chinh-sach-coc/:id', authFlexible, requireRole('ChuDuAn'), ChuDuAnController.layChiTietChinhSachCoc);
 router.put('/chinh-sach-coc/:id', authFlexible, requireRole('ChuDuAn'), ChuDuAnController.capNhatChinhSachCoc);
-router.post('/hop-dong/bao-cao', authFlexible, requireRole('ChuDuAn'), ChuDuAnController.baoCaoHopDongChoThue);
+// NOTE: Hợp đồng routes đã chuyển sang hopDongRoutes.js (UC-PROJ-04 implementation)
 
 // Khu vực: map trực tiếp
 router.get('/khu-vuc', authFlexible, requireRole('ChuDuAn'), ChuDuAnController.layDanhSachKhuVuc);
@@ -53,5 +54,6 @@ router.get('/khu-vuc', authFlexible, requireRole('ChuDuAn'), ChuDuAnController.l
 // Mount sub-routes
 router.use(uploadRoutes);
 router.use(phongRoutes); // Routes quản lý phòng (Redesign 09/10/2025)
+router.use(hopDongRoutes); // Routes quản lý hợp đồng (UC-PROJ-04)
 
 module.exports = router;

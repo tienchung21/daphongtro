@@ -118,21 +118,21 @@ const ModalPreviewPhong = ({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-preview-phong__overlay" onClick={onClose}>
       <div className="modal-preview-phong" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="modal-header">
-          <div className="modal-header-content">
-            <h2 className="modal-title">{getTieuDeModal()}</h2>
-            <p className="modal-subtitle">{tinDang.TieuDe}</p>
+        <div className="modal-preview-phong__header">
+          <div className="modal-preview-phong__header-content">
+            <h2 className="modal-preview-phong__title">{getTieuDeModal()}</h2>
+            <p className="modal-preview-phong__subtitle">{tinDang.TieuDe}</p>
           </div>
-          <button className="modal-close-btn" onClick={onClose}>
+          <button className="modal-preview-phong__close-btn" onClick={onClose}>
             <HiOutlineXMark />
           </button>
         </div>
 
         {/* Body */}
-        <div className="modal-body">
+        <div className="modal-preview-phong__body">
           {phongHienThi.length > 0 ? (
             <div className="phong-grid">
               {phongHienThi.map((phong) => {
@@ -212,8 +212,8 @@ const ModalPreviewPhong = ({
         </div>
 
         {/* Footer */}
-        <div className="modal-footer">
-          <button className="modal-btn modal-btn-secondary" onClick={onClose}>
+        <div className="modal-preview-phong__footer">
+          <button className="modal-preview-phong__btn modal-preview-phong__btn--secondary" onClick={onClose}>
             Đóng
           </button>
         </div>

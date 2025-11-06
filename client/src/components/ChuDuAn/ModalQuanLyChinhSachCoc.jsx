@@ -4,7 +4,15 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { HiOutlineXMark, HiOutlineCheckCircle, HiOutlineExclamationCircle } from 'react-icons/hi2';
+import {
+  HiOutlineXMark,
+  HiOutlineCheckCircle,
+  HiOutlineExclamationCircle,
+  HiOutlineClock,
+  HiOutlineShieldCheck,
+  HiOutlineDocumentCheck,
+  HiOutlineCalendarDays
+} from 'react-icons/hi2';
 import ChinhSachCocService from '../../services/ChinhSachCocService';
 import './ModalQuanLyChinhSachCoc.css';
 
@@ -19,6 +27,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
     ChoPhepCocAnNinh: false,
     SoTienCocAnNinhMacDinh: 0,
     QuyTacGiaiToa: 'BanGiao',
+    SoNgayGiaiToa: null, // Số ngày giải tỏa (chỉ dùng khi QuyTacGiaiToa='TheoNgay')
   });
 
   const [errors, setErrors] = useState({});
@@ -37,6 +46,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
         ChoPhepCocAnNinh: chinhSachCoc.ChoPhepCocAnNinh === 1,
         SoTienCocAnNinhMacDinh: chinhSachCoc.SoTienCocAnNinhMacDinh || 0,
         QuyTacGiaiToa: chinhSachCoc.QuyTacGiaiToa || 'BanGiao',
+        SoNgayGiaiToa: chinhSachCoc.SoNgayGiaiToa || null,
       });
     }
   }, [mode, chinhSachCoc]);
@@ -87,6 +97,13 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
       newErrors.QuyTacGiaiToa = 'Quy tắc giải tỏa không hợp lệ';
     }
 
+    if (formData.QuyTacGiaiToa === 'TheoNgay') {
+      const soNgay = parseInt(formData.SoNgayGiaiToa);
+      if (!formData.SoNgayGiaiToa || isNaN(soNgay) || soNgay < 1 || soNgay > 365) {
+        newErrors.SoNgayGiaiToa = 'Số ngày giải tỏa phải từ 1-365 ngày';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -113,6 +130,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
         ChoPhepCocAnNinh: formData.ChoPhepCocAnNinh,
         SoTienCocAnNinhMacDinh: parseFloat(formData.SoTienCocAnNinhMacDinh),
         QuyTacGiaiToa: formData.QuyTacGiaiToa,
+        SoNgayGiaiToa: formData.QuyTacGiaiToa === 'TheoNgay' ? parseInt(formData.SoNgayGiaiToa) : null,
       };
 
       let response;
@@ -196,104 +214,143 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
             </div>
 
             {/* Cọc giữ chỗ */}
-            <div className="form-group">
-              <div className="checkbox-group">
-                <input
-                  type="checkbox"
-                  id="ChoPhepCocGiuCho"
-                  name="ChoPhepCocGiuCho"
-                  checked={formData.ChoPhepCocGiuCho}
-                  onChange={handleChange}
-                />
-                <label htmlFor="ChoPhepCocGiuCho" className="checkbox-label">
-                  Cho phép cọc giữ chỗ
-                </label>
+            <div className="form-section">
+              <div className="section-header-form">
+                <HiOutlineClock className="section-icon-form" />
+                <h3 className="section-title-form">Cọc giữ chỗ</h3>
               </div>
+              <div className="form-group">
+                <div className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="ChoPhepCocGiuCho"
+                    name="ChoPhepCocGiuCho"
+                    checked={formData.ChoPhepCocGiuCho}
+                    onChange={handleChange}
+                  />
+                  <label htmlFor="ChoPhepCocGiuCho" className="checkbox-label">
+                    Cho phép cọc giữ chỗ
+                  </label>
+                </div>
+              </div>
+
+              {formData.ChoPhepCocGiuCho && (
+                <>
+                  {/* TTL cọc giữ chỗ */}
+                  <div className="form-group">
+                    <label className="form-label required">TTL cọc giữ chỗ (giờ)</label>
+                    <input
+                      type="number"
+                      name="TTL_CocGiuCho_Gio"
+                      className={`form-input ${errors.TTL_CocGiuCho_Gio ? 'error' : ''}`}
+                      value={formData.TTL_CocGiuCho_Gio}
+                      onChange={handleChange}
+                      min="1"
+                      max="168"
+                    />
+                    <span className="form-hint">1-168 giờ (tối đa 7 ngày)</span>
+                    {errors.TTL_CocGiuCho_Gio && <span className="error-text">{errors.TTL_CocGiuCho_Gio}</span>}
+                  </div>
+
+                  {/* Tỷ lệ phạt */}
+                  <div className="form-group">
+                    <label className="form-label required">Tỷ lệ phạt (%)</label>
+                    <input
+                      type="number"
+                      name="TyLePhat_CocGiuCho"
+                      className={`form-input ${errors.TyLePhat_CocGiuCho ? 'error' : ''}`}
+                      value={formData.TyLePhat_CocGiuCho}
+                      onChange={handleChange}
+                      min="0"
+                      max="100"
+                      step="1"
+                    />
+                    <span className="form-hint">0-100% (số nguyên)</span>
+                    {errors.TyLePhat_CocGiuCho && <span className="error-text">{errors.TyLePhat_CocGiuCho}</span>}
+                  </div>
+                </>
+              )}
             </div>
-
-            {formData.ChoPhepCocGiuCho && (
-              <>
-                {/* TTL cọc giữ chỗ */}
-                <div className="form-group form-group-inline">
-                  <label className="form-label required">TTL cọc giữ chỗ (giờ)</label>
-                  <input
-                    type="number"
-                    name="TTL_CocGiuCho_Gio"
-                    className={`form-input input-small ${errors.TTL_CocGiuCho_Gio ? 'error' : ''}`}
-                    value={formData.TTL_CocGiuCho_Gio}
-                    onChange={handleChange}
-                    min="1"
-                    max="168"
-                  />
-                  <span className="form-hint">1-168 giờ (tối đa 7 ngày)</span>
-                  {errors.TTL_CocGiuCho_Gio && <span className="error-text">{errors.TTL_CocGiuCho_Gio}</span>}
-                </div>
-
-                {/* Tỷ lệ phạt */}
-                <div className="form-group form-group-inline">
-                  <label className="form-label required">Tỷ lệ phạt (%)</label>
-                  <input
-                    type="number"
-                    name="TyLePhat_CocGiuCho"
-                    className={`form-input input-small ${errors.TyLePhat_CocGiuCho ? 'error' : ''}`}
-                    value={formData.TyLePhat_CocGiuCho}
-                    onChange={handleChange}
-                    min="0"
-                    max="100"
-                    step="0.01"
-                  />
-                  <span className="form-hint">0-100%</span>
-                  {errors.TyLePhat_CocGiuCho && <span className="error-text">{errors.TyLePhat_CocGiuCho}</span>}
-                </div>
-              </>
-            )}
 
             {/* Cọc an ninh */}
-            <div className="form-group">
-              <div className="checkbox-group">
-                <input
-                  type="checkbox"
-                  id="ChoPhepCocAnNinh"
-                  name="ChoPhepCocAnNinh"
-                  checked={formData.ChoPhepCocAnNinh}
-                  onChange={handleChange}
-                />
-                <label htmlFor="ChoPhepCocAnNinh" className="checkbox-label">
-                  Cho phép cọc an ninh
-                </label>
+            <div className="form-section">
+              <div className="section-header-form">
+                <HiOutlineShieldCheck className="section-icon-form" />
+                <h3 className="section-title-form">Cọc an ninh</h3>
               </div>
+              <div className="form-group">
+                <div className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="ChoPhepCocAnNinh"
+                    name="ChoPhepCocAnNinh"
+                    checked={formData.ChoPhepCocAnNinh}
+                    onChange={handleChange}
+                  />
+                  <label htmlFor="ChoPhepCocAnNinh" className="checkbox-label">
+                    Cho phép cọc an ninh
+                  </label>
+                </div>
+              </div>
+
+              {formData.ChoPhepCocAnNinh && (
+                <div className="form-group">
+                  <label className="form-label">Số tiền cọc an ninh mặc định (VNĐ)</label>
+                  <input
+                    type="number"
+                    name="SoTienCocAnNinhMacDinh"
+                    className={`form-input ${errors.SoTienCocAnNinhMacDinh ? 'error' : ''}`}
+                    value={formData.SoTienCocAnNinhMacDinh}
+                    onChange={handleChange}
+                    min="0"
+                    step="100000"
+                    placeholder="Ví dụ: 2000000"
+                  />
+                  {errors.SoTienCocAnNinhMacDinh && <span className="error-text">{errors.SoTienCocAnNinhMacDinh}</span>}
+                </div>
+              )}
             </div>
 
-            {formData.ChoPhepCocAnNinh && (
-              <div className="form-group">
-                <label className="form-label">Số tiền cọc an ninh mặc định (VNĐ)</label>
-                <input
-                  type="number"
-                  name="SoTienCocAnNinhMacDinh"
-                  className={`form-input ${errors.SoTienCocAnNinhMacDinh ? 'error' : ''}`}
-                  value={formData.SoTienCocAnNinhMacDinh}
-                  onChange={handleChange}
-                  min="0"
-                  step="100000"
-                />
-                {errors.SoTienCocAnNinhMacDinh && <span className="error-text">{errors.SoTienCocAnNinhMacDinh}</span>}
-              </div>
-            )}
-
             {/* Quy tắc giải tỏa */}
-            <div className="form-group">
-              <label className="form-label required">Quy tắc giải tỏa</label>
-              <select
-                name="QuyTacGiaiToa"
-                className={`form-select ${errors.QuyTacGiaiToa ? 'error' : ''}`}
-                value={formData.QuyTacGiaiToa}
-                onChange={handleChange}
-              >
-                <option value="BanGiao">Bàn giao phòng</option>
-                <option value="TheoNgay">Theo ngày</option>
-                <option value="Khac">Khác</option>
-              </select>
-              {errors.QuyTacGiaiToa && <span className="error-text">{errors.QuyTacGiaiToa}</span>}
+            {/* Quy tắc giải tỏa */}
+            <div className="form-section">
+              <div className="section-header-form">
+                <HiOutlineDocumentCheck className="section-icon-form" />
+                <h3 className="section-title-form">Quy tắc giải tỏa</h3>
+              </div>
+              <div className="form-group">
+                <label className="form-label required">Quy tắc áp dụng</label>
+                <select
+                  name="QuyTacGiaiToa"
+                  className={`form-select ${errors.QuyTacGiaiToa ? 'error' : ''}`}
+                  value={formData.QuyTacGiaiToa}
+                  onChange={handleChange}
+                >
+                  <option value="BanGiao">Bàn giao phòng</option>
+                  <option value="TheoNgay">Theo ngày</option>
+                  <option value="Khac">Khác</option>
+                </select>
+                {errors.QuyTacGiaiToa && <span className="error-text">{errors.QuyTacGiaiToa}</span>}
+              </div>
+
+              {/* Số ngày giải tỏa (chỉ hiện khi QuyTacGiaiToa = 'TheoNgay') */}
+              {formData.QuyTacGiaiToa === 'TheoNgay' && (
+                <div className="form-group">
+                  <label className="form-label required">Số ngày giải tỏa</label>
+                  <input
+                    type="number"
+                    name="SoNgayGiaiToa"
+                    className={`form-input ${errors.SoNgayGiaiToa ? 'error' : ''}`}
+                    value={formData.SoNgayGiaiToa || ''}
+                    onChange={handleChange}
+                    placeholder="Ví dụ: 30 ngày"
+                    min="1"
+                    max="365"
+                  />
+                  <span className="form-hint">Số ngày tính từ khi kết thúc thuê (1-365 ngày)</span>
+                  {errors.SoNgayGiaiToa && <span className="error-text">{errors.SoNgayGiaiToa}</span>}
+                </div>
+              )}
             </div>
 
             {/* Footer */}

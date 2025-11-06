@@ -650,7 +650,8 @@ class ChuDuAnController {
         'KinhDo',
         'YeuCauPheDuyetChu',
         'PhuongThucVao',
-        'TrangThai'
+        'TrangThai',
+        'ChinhSachCocID'
       ];
 
       const payload = {};

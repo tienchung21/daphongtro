@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 24, 2025 at 07:19 AM
+-- Generation Time: Oct 30, 2025 at 12:21 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -137,23 +137,6 @@ CREATE TABLE `buttoansocai` (
 -- Triggers `buttoansocai`
 --
 DELIMITER $$
-CREATE TRIGGER `trg_buttoan_balance_check` AFTER INSERT ON `buttoansocai` FOR EACH ROW BEGIN
-  DECLARE tong_no DECIMAL(18,2);
-  DECLARE tong_co DECIMAL(18,2);
-  SELECT IFNULL(SUM(CASE WHEN LoaiButToan='ghi_no' THEN SoTien ELSE 0 END),0),
-         IFNULL(SUM(CASE WHEN LoaiButToan='ghi_co' THEN SoTien ELSE 0 END),0)
-    INTO tong_no, tong_co
-    FROM buttoansocai
-   WHERE GiaoDichID = NEW.GiaoDichID;
-
-  IF (tong_no <> tong_co) THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Ledger not balanced for this transaction';
-  END IF;
-END
-$$
-DELIMITER ;
-DELIMITER $$
 CREATE TRIGGER `trg_buttoan_no_delete` BEFORE DELETE ON `buttoansocai` FOR EACH ROW BEGIN
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'buttoansocai is append-only';
 END
@@ -179,21 +162,42 @@ CREATE TABLE `chinhsachcoc` (
   `MoTa` text DEFAULT NULL,
   `ChoPhepCocGiuCho` tinyint(1) NOT NULL DEFAULT 1,
   `TTL_CocGiuCho_Gio` int(11) NOT NULL DEFAULT 48,
-  `TyLePhat_CocGiuCho` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `TyLePhat_CocGiuCho` tinyint(3) UNSIGNED DEFAULT NULL,
   `ChoPhepCocAnNinh` tinyint(1) NOT NULL DEFAULT 1,
   `SoTienCocAnNinhMacDinh` decimal(15,2) DEFAULT NULL,
   `QuyTacGiaiToa` enum('BanGiao','TheoNgay','Khac') NOT NULL DEFAULT 'BanGiao',
+  `SoNgayGiaiToa` int(11) DEFAULT NULL,
   `HieuLuc` tinyint(1) NOT NULL DEFAULT 1,
   `TaoLuc` datetime DEFAULT current_timestamp(),
   `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
 
 --
 -- Dumping data for table `chinhsachcoc`
 --
 
-INSERT INTO `chinhsachcoc` (`ChinhSachCocID`, `ChuDuAnID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `SoTienCocAnNinhMacDinh`, `QuyTacGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, NULL, 'Mặc định', 'Policy mặc định hệ thống', 1, 48, 0.00, 1, NULL, 'BanGiao', 1, '2025-09-27 14:59:04', '2025-09-27 14:59:04');
+INSERT INTO `chinhsachcoc` (`ChinhSachCocID`, `ChuDuAnID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `SoTienCocAnNinhMacDinh`, `QuyTacGiaiToa`, `SoNgayGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, NULL, 'Mặc định', 'Policy mặc định hệ thống', 1, 48, 0, 1, NULL, 'BanGiao', NULL, 1, '2025-09-27 14:59:04', '2025-09-27 14:59:04');
+
+--
+-- Triggers `chinhsachcoc`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_chk_tyle_policy_ins` BEFORE INSERT ON `chinhsachcoc` FOR EACH ROW BEGIN
+  IF NEW.TyLePhat_CocGiuCho IS NOT NULL AND (NEW.TyLePhat_CocGiuCho < 0 OR NEW.TyLePhat_CocGiuCho > 100) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='TyLePhat_CocGiuCho must be integer 0..100';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_chk_tyle_policy_upd` BEFORE UPDATE ON `chinhsachcoc` FOR EACH ROW BEGIN
+  IF NEW.TyLePhat_CocGiuCho IS NOT NULL AND (NEW.TyLePhat_CocGiuCho < 0 OR NEW.TyLePhat_CocGiuCho > 100) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='TyLePhat_CocGiuCho must be integer 0..100';
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -214,8 +218,58 @@ CREATE TABLE `coc` (
   `BienBanBanGiaoID` bigint(20) DEFAULT NULL,
   `GhiChu` text DEFAULT NULL,
   `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `ChinhSachCocID` int(11) DEFAULT NULL,
+  `QuyTacGiaiToaSnapshot` enum('BanGiao','TheoNgay','Khac') DEFAULT NULL,
+  `TyLePhatCocGiuChoSnapshot` tinyint(3) UNSIGNED DEFAULT NULL,
+  `SoNgayGiaiToaSnapshot` int(11) DEFAULT NULL,
+  `HopDongID` int(11) DEFAULT NULL,
+  `LyDoGiaiToa` text DEFAULT NULL,
+  `LyDoKhauTru` text DEFAULT NULL
+) ;
+
+--
+-- Triggers `coc`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_chk_tyle_snapshot_ins` BEFORE INSERT ON `coc` FOR EACH ROW BEGIN
+  IF NEW.TyLePhatCocGiuChoSnapshot IS NOT NULL AND (NEW.TyLePhatCocGiuChoSnapshot < 0 OR NEW.TyLePhatCocGiuChoSnapshot > 100) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='TyLePhatCocGiuChoSnapshot must be integer 0..100';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_chk_tyle_snapshot_upd` BEFORE UPDATE ON `coc` FOR EACH ROW BEGIN
+  IF NEW.TyLePhatCocGiuChoSnapshot IS NOT NULL AND (NEW.TyLePhatCocGiuChoSnapshot < 0 OR NEW.TyLePhatCocGiuChoSnapshot > 100) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='TyLePhatCocGiuChoSnapshot must be integer 0..100';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_coc_one_active_per_room_ins` BEFORE INSERT ON `coc` FOR EACH ROW BEGIN
+  IF NEW.TrangThai = 'HieuLuc' THEN
+    IF EXISTS (SELECT 1 FROM coc WHERE PhongID = NEW.PhongID AND TrangThai = 'HieuLuc') THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Phong da co coc hieu luc', MYSQL_ERRNO = 1644;
+    END IF;
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_coc_one_active_per_room_upd` BEFORE UPDATE ON `coc` FOR EACH ROW BEGIN
+  IF NEW.TrangThai = 'HieuLuc' THEN
+    IF EXISTS (SELECT 1 FROM coc
+               WHERE PhongID = NEW.PhongID
+                 AND TrangThai = 'HieuLuc'
+                 AND CocID <> OLD.CocID) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Phong da co coc hieu luc', MYSQL_ERRNO = 1644;
+    END IF;
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -270,6 +324,7 @@ CREATE TABLE `duan` (
   `ViDo` decimal(10,7) DEFAULT NULL COMMENT 'Vĩ độ (Latitude) - Geocoded từ địa chỉ',
   `KinhDo` decimal(10,7) DEFAULT NULL COMMENT 'Kinh độ (Longitude) - Geocoded từ địa chỉ',
   `ChuDuAnID` int(11) DEFAULT NULL,
+  `ChinhSachCocID` int(11) DEFAULT NULL COMMENT 'ID chính sách cọc áp dụng cho dự án (NULL = dùng mặc định hệ thống)',
   `YeuCauPheDuyetChu` tinyint(1) DEFAULT 0,
   `PhuongThucVao` text DEFAULT NULL COMMENT 'Phương thức vào dự án khi không cần phê duyệt (mật khẩu cửa, vị trí lấy chìa khóa, v.v.)',
   `TrangThai` enum('HoatDong','NgungHoatDong','LuuTru') DEFAULT 'HoatDong',
@@ -290,23 +345,23 @@ CREATE TABLE `duan` (
 -- Dumping data for table `duan`
 --
 
-INSERT INTO `duan` (`DuAnID`, `TenDuAn`, `DiaChi`, `ViDo`, `KinhDo`, `ChuDuAnID`, `YeuCauPheDuyetChu`, `PhuongThucVao`, `TrangThai`, `LyDoNgungHoatDong`, `NguoiNgungHoatDongID`, `NgungHoatDongLuc`, `YeuCauMoLai`, `NoiDungGiaiTrinh`, `ThoiGianGuiYeuCau`, `NguoiXuLyYeuCauID`, `ThoiGianXuLyYeuCau`, `LyDoTuChoiMoLai`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, 'Dự án Test - Chung cư ABC', '123 Đường Test, Phường 1, Quận 1, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:35:49'),
-(2, 'Dự án Test - Nhà trọ XYZ', '456 Đường Test 2, Phường 2, Quận 2, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:35:56'),
-(3, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:03'),
-(4, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:11'),
-(5, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:17'),
-(6, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:22'),
-(7, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:27'),
-(8, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:32'),
-(9, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'LuuTru', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:39'),
-(10, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách đăng tin: Đăng tin giả mạo, thông tin sai lệch về dự án. Đã nhận 3 báo cáo từ khách hàng.', 4, '2025-09-27 14:36:46', NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-10-16 17:30:19'),
-(11, 'Dream House 1', '147 Đường số 59, Phường 15, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách thanh toán: Chủ dự án có hành vi lừa đảo, không hoàn tiền cọc cho khách hàng đúng hạn.', 5, '2025-09-27 14:36:52', 'DangXuLy', 'Tôi đã hoàn trả đầy đủ tiền cọc cho khách hàng. Xin cung cấp bằng chứng chuyển khoản đính kèm. Cam kết tuân thủ chính sách từ nay.', '2025-10-01 10:30:00', NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-10-16 17:30:19'),
-(12, 'Dream House 1', '147 Đường số 59, Phường Tân Tạo A, Quận Bình Tân, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'NgungHoatDong', 'Vi phạm quy định an toàn: Dự án không đảm bảo PCCC, có nguy cơ an toàn cao sau kiểm tra của cơ quan chức năng.', 5, '2025-09-27 14:36:58', 'TuChoi', 'Dự án đã khắc phục toàn bộ vấn đề PCCC, có giấy phép từ Cảnh sát PCCC.', '2025-10-05 09:00:00', 5, '2025-10-08 14:30:00', 'Giấy phép PCCC chưa đủ điều kiện theo quy định. Cần có chứng nhận từ UBND quận/huyện.', '2025-09-24 11:38:43', '2025-10-16 17:30:19'),
-(14, 'Nhà trọ Minh Tâm', '40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8379251, 106.6581163, 1, 0, 'mật khẩu cổng là 1234', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-01 16:17:33', '2025-10-04 03:50:52'),
-(15, 'Nhà Trọ Cheap Avocado', '27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng', 16.0626020, 108.1760841, 1, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-03 21:00:41', '2025-10-04 03:48:09'),
-(16, 'Nhà trọ Hải Hương', '15 Hà Huy Tập, Thị trấn Chợ Lầu, Huyện Bắc Bình, Bình Thuận', 11.2239833, 108.5011375, 1, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-04 03:02:48', '2025-10-04 03:02:48'),
-(17, 'Nhà Trọ Hoành Hợp', '350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8385462, 106.6744701, 1, 0, 'Mật khẩu cổng là 6824', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-05 17:05:39', '2025-10-05 17:05:39');
+INSERT INTO `duan` (`DuAnID`, `TenDuAn`, `DiaChi`, `ViDo`, `KinhDo`, `ChuDuAnID`, `ChinhSachCocID`, `YeuCauPheDuyetChu`, `PhuongThucVao`, `TrangThai`, `LyDoNgungHoatDong`, `NguoiNgungHoatDongID`, `NgungHoatDongLuc`, `YeuCauMoLai`, `NoiDungGiaiTrinh`, `ThoiGianGuiYeuCau`, `NguoiXuLyYeuCauID`, `ThoiGianXuLyYeuCau`, `LyDoTuChoiMoLai`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, 'Dự án Test - Chung cư ABC', '123 Đường Test, Phường 1, Quận 1, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:35:49'),
+(2, 'Dự án Test - Nhà trọ XYZ', '456 Đường Test 2, Phường 2, Quận 2, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:35:56'),
+(3, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:03'),
+(4, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:11'),
+(5, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:17'),
+(6, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:22'),
+(7, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:27'),
+(8, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:32'),
+(9, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'LuuTru', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:39'),
+(10, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách đăng tin: Đăng tin giả mạo, thông tin sai lệch về dự án. Đã nhận 3 báo cáo từ khách hàng.', 4, '2025-09-27 14:36:46', NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-10-16 17:30:19'),
+(11, 'Dream House 1', '147 Đường số 59, Phường 15, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách thanh toán: Chủ dự án có hành vi lừa đảo, không hoàn tiền cọc cho khách hàng đúng hạn.', 5, '2025-09-27 14:36:52', 'DangXuLy', 'Tôi đã hoàn trả đầy đủ tiền cọc cho khách hàng. Xin cung cấp bằng chứng chuyển khoản đính kèm. Cam kết tuân thủ chính sách từ nay.', '2025-10-01 10:30:00', NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-10-16 17:30:19'),
+(12, 'Dream House 1', '147 Đường số 59, Phường Tân Tạo A, Quận Bình Tân, TP. Hồ Chí Minh', NULL, NULL, 1, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm quy định an toàn: Dự án không đảm bảo PCCC, có nguy cơ an toàn cao sau kiểm tra của cơ quan chức năng.', 5, '2025-09-27 14:36:58', 'TuChoi', 'Dự án đã khắc phục toàn bộ vấn đề PCCC, có giấy phép từ Cảnh sát PCCC.', '2025-10-05 09:00:00', 5, '2025-10-08 14:30:00', 'Giấy phép PCCC chưa đủ điều kiện theo quy định. Cần có chứng nhận từ UBND quận/huyện.', '2025-09-24 11:38:43', '2025-10-16 17:30:19'),
+(14, 'Nhà trọ Minh Tâm', '40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8379251, 106.6581163, 1, NULL, 0, 'mật khẩu cổng là 1234', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-01 16:17:33', '2025-10-04 03:50:52'),
+(15, 'Nhà Trọ Cheap Avocado', '27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng', 16.0626020, 108.1760841, 1, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-03 21:00:41', '2025-10-04 03:48:09'),
+(16, 'Nhà trọ Hải Hương', '15 Hà Huy Tập, Thị trấn Chợ Lầu, Huyện Bắc Bình, Bình Thuận', 11.2239833, 108.5011375, 1, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-04 03:02:48', '2025-10-04 03:02:48'),
+(17, 'Nhà Trọ Hoành Hợp', '350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8385462, 106.6744701, 1, NULL, 0, 'Mật khẩu cổng là 6824', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-05 17:05:39', '2025-10-05 17:05:39');
 
 -- --------------------------------------------------------
 
@@ -318,13 +373,44 @@ CREATE TABLE `giaodich` (
   `GiaoDichID` int(11) NOT NULL,
   `ViID` int(11) DEFAULT NULL,
   `SoTien` decimal(15,2) DEFAULT NULL,
-  `Loai` enum('NAP_TIEN','COC_GIU_CHO','COC_AN_ ninh','THANH_TOAN_KY_DAU','PHI_NEN_TANG','HOAN_COC_GIU_CHO','HOAN_COC_AN_ ninh','GIAI_TOA_COC_AN_ ninh','RUT_TIEN') NOT NULL,
+  `Loai` enum('NAP_TIEN','COC_GIU_CHO','COC_AN_NINH','THANH_TOAN_KY_DAU','PHI_NEN_TANG','HOAN_COC_GIU_CHO','HOAN_COC_AN_NINH','GIAI_TOA_COC_AN_NINH','RUT_TIEN') NOT NULL,
   `TrangThai` enum('KhoiTao','DaUyQuyen','DaGhiNhan','DaThanhToan','DaHoanTien','DaDaoNguoc') DEFAULT NULL,
   `KhoaDinhDanh` char(36) NOT NULL,
   `TinDangLienQuanID` int(11) DEFAULT NULL,
   `GiaoDichThamChieuID` int(11) DEFAULT NULL,
-  `ThoiGian` datetime DEFAULT current_timestamp()
+  `ThoiGian` datetime DEFAULT current_timestamp(),
+  `KenhThanhToan` enum('CHUYEN_KHOAN','VI_DIEN_TU','TIEN_MAT') DEFAULT NULL,
+  `MaGiaoDichNCC` varchar(128) DEFAULT NULL,
+  `ChungTuDinhKemURL` text DEFAULT NULL,
+  `HoaDonDT_ID` varchar(64) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Triggers `giaodich`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_validate_ledger_on_giaodich` AFTER UPDATE ON `giaodich` FOR EACH ROW BEGIN
+  -- Khai báo biến phải ở đầu BEGIN...END
+  DECLARE tong_no DECIMAL(18,2) DEFAULT 0.00;
+  DECLARE tong_co DECIMAL(18,2) DEFAULT 0.00;
+
+  -- Chỉ kiểm tra khi trạng thái vừa chuyển sang 'DaGhiNhan'
+  IF NEW.TrangThai = 'DaGhiNhan' AND COALESCE(OLD.TrangThai,'') <> 'DaGhiNhan' THEN
+    SELECT COALESCE(SUM(CASE WHEN LoaiButToan='ghi_no' THEN SoTien ELSE 0 END),0),
+           COALESCE(SUM(CASE WHEN LoaiButToan='ghi_co' THEN SoTien ELSE 0 END),0)
+      INTO tong_no, tong_co
+      FROM buttoansocai
+     WHERE GiaoDichID = NEW.GiaoDichID;
+
+    IF tong_no <> tong_co THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Ledger not balanced for this transaction',
+            MYSQL_ERRNO  = 1644;
+    END IF;
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -3527,7 +3613,35 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (256, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:24:28.672', NULL),
 (257, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:26:57.581', NULL),
 (258, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:27:11.183', NULL),
-(259, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-23\",\"denNgay\":\"2025-10-23\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-23 21:51:29.229', NULL);
+(259, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-23\",\"denNgay\":\"2025-10-23\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-23 21:51:29.229', NULL),
+(260, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 12:50:21.727', NULL),
+(261, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 13:07:58.719', NULL),
+(262, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 13:28:08.595', NULL),
+(263, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 13:29:15.264', NULL),
+(264, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 14:04:13.200', NULL),
+(265, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 14:06:31.586', NULL),
+(266, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 14:22:25.705', NULL),
+(267, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:49:15.838', NULL),
+(268, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:50:34.524', NULL),
+(269, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:50:49.973', NULL),
+(270, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:51:12.254', NULL),
+(271, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:54:30.138', NULL),
+(272, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:54:32.389', NULL),
+(273, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:54:48.442', NULL),
+(274, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:55:03.026', NULL),
+(275, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:55:19.412', NULL),
+(276, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:55:32.905', NULL),
+(277, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:55:46.924', NULL),
+(278, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:56:19.505', NULL),
+(279, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:59:36.071', NULL),
+(280, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 19:14:34.552', NULL),
+(281, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 19:17:52.308', NULL),
+(282, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 19:18:06.535', NULL),
+(283, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36 Edg/141.0.0.0', '2025-10-24 19:28:35.501', NULL),
+(284, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-26\",\"denNgay\":\"2025-10-26\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-26 12:29:18.293', NULL),
+(285, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-28\",\"denNgay\":\"2025-10-28\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-28 17:30:50.005', NULL),
+(286, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-28\",\"denNgay\":\"2025-10-28\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-28 17:35:14.938', NULL),
+(287, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-28\",\"denNgay\":\"2025-10-28\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-28 22:44:07.911', NULL);
 
 -- --------------------------------------------------------
 
@@ -3824,7 +3938,9 @@ CREATE TABLE `transactions` (
 
 INSERT INTO `transactions` (`id`, `user_id`, `bank_name`, `account_number`, `amount_in`, `transaction_content`, `transaction_date`, `reference_number`, `sepay_id`, `bank_brand_name`, `amount_out`, `accumulated`, `code`, `sub_account`, `bank_account_id`) VALUES
 (1, NULL, 'TPBank', '80349195777', 2000.00, '104104028174 0349195610 donhang666666', '2025-10-15 16:30:20', '668ITC1252891160', '26445532', 'TPBank', 0.00, 12000.00, NULL, NULL, '29190'),
-(2, NULL, 'TPBank', '80349195777', 10000.00, 'anh yeu em', '2025-10-15 08:47:11', '666V501252880750', '26392545', 'TPBank', 0.00, 10000.00, NULL, NULL, '29190');
+(2, NULL, 'TPBank', '80349195777', 10000.00, 'anh yeu em', '2025-10-15 08:47:11', '666V501252880750', '26392545', 'TPBank', 0.00, 10000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 2000.00, 'DK8', '2025-10-27 15:46:40', '668ITC125300APWW', '27962446', 'TPBank', 0.00, 16000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 2000.00, 'DK8', '2025-10-27 15:34:41', '668ITC125300APSM', '27961100', 'TPBank', 0.00, 14000.00, NULL, NULL, '29190');
 
 -- --------------------------------------------------------
 
@@ -3901,6 +4017,13 @@ CREATE TABLE `yeuthich` (
   `TinDangID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `yeuthich`
+--
+
+INSERT INTO `yeuthich` (`NguoiDungID`, `TinDangID`) VALUES
+(6, 5);
+
 -- --------------------------------------------------------
 
 --
@@ -3946,12 +4069,13 @@ ALTER TABLE `coc`
   ADD KEY `idx_coc_phong` (`PhongID`),
   ADD KEY `idx_coc_tindang` (`TinDangID`),
   ADD KEY `idx_coc_hethan` (`HetHanLuc`),
-  ADD KEY `fk_coc_giaodich` (`GiaoDichID`),
   ADD KEY `fk_coc_bbbg` (`BienBanBanGiaoID`),
   ADD KEY `idx_coc_phong_trangthai` (`PhongID`,`TrangThai`),
   ADD KEY `idx_coc_loai_trangthai` (`Loai`,`TrangThai`),
   ADD KEY `idx_coc_taoluc_trangthai` (`TaoLuc`,`TrangThai`),
-  ADD KEY `idx_coc_taoluc_sotien` (`TaoLuc`,`SoTien`);
+  ADD KEY `idx_coc_taoluc_sotien` (`TaoLuc`,`SoTien`),
+  ADD KEY `idx_coc_giaodich` (`GiaoDichID`),
+  ADD KEY `idx_coc_hopdong` (`HopDongID`);
 
 --
 -- Indexes for table `cuochen`
@@ -3984,7 +4108,8 @@ ALTER TABLE `duan`
   ADD KEY `idx_nguoi_ngung_hoat_dong` (`NguoiNgungHoatDongID`),
   ADD KEY `idx_nguoi_xu_ly_yeu_cau` (`NguoiXuLyYeuCauID`),
   ADD KEY `idx_yeu_cau_mo_lai_status` (`YeuCauMoLai`),
-  ADD KEY `idx_duan_chuduan_trangthai` (`ChuDuAnID`,`TrangThai`);
+  ADD KEY `idx_duan_chuduan_trangthai` (`ChuDuAnID`,`TrangThai`),
+  ADD KEY `idx_duan_chinhsachcoc` (`ChinhSachCocID`);
 
 --
 -- Indexes for table `giaodich`
@@ -4190,7 +4315,7 @@ ALTER TABLE `buttoansocai`
 -- AUTO_INCREMENT for table `chinhsachcoc`
 --
 ALTER TABLE `chinhsachcoc`
-  MODIFY `ChinhSachCocID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `ChinhSachCocID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `coc`
@@ -4262,7 +4387,7 @@ ALTER TABLE `nguoidung`
 -- AUTO_INCREMENT for table `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
-  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=260;
+  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=288;
 
 --
 -- AUTO_INCREMENT for table `noidunghethong`
@@ -4362,7 +4487,6 @@ ALTER TABLE `coc`
   ADD CONSTRAINT `coc_ibfk_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`),
   ADD CONSTRAINT `fk_coc_bbbg` FOREIGN KEY (`BienBanBanGiaoID`) REFERENCES `bienbanbangiao` (`BienBanBanGiaoID`),
   ADD CONSTRAINT `fk_coc_giaodich` FOREIGN KEY (`GiaoDichID`) REFERENCES `giaodich` (`GiaoDichID`),
-  ADD CONSTRAINT `fk_coc_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong_old` (`PhongID`),
   ADD CONSTRAINT `fk_coc_tindang` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
 
 --
@@ -4378,6 +4502,7 @@ ALTER TABLE `cuochen`
 --
 ALTER TABLE `duan`
   ADD CONSTRAINT `duan_ibfk_1` FOREIGN KEY (`ChuDuAnID`) REFERENCES `nguoidung` (`NguoiDungID`),
+  ADD CONSTRAINT `fk_duan_chinhsachcoc` FOREIGN KEY (`ChinhSachCocID`) REFERENCES `chinhsachcoc` (`ChinhSachCocID`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_duan_nguoi_ngung_hoat_dong` FOREIGN KEY (`NguoiNgungHoatDongID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_duan_nguoi_xu_ly_yeu_cau` FOREIGN KEY (`NguoiXuLyYeuCauID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE SET NULL ON UPDATE CASCADE;
 

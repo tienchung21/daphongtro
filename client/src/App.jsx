@@ -13,6 +13,9 @@ import TaoTinDang from './pages/ChuDuAn/TaoTinDang';
 import ChinhSuaTinDang from './pages/ChuDuAn/ChinhSuaTinDang';
 import QuanLyDuAn from './pages/ChuDuAn/QuanLyDuAn'; // ✨ Quản lý dự án (UC-PROJ-01 utilities)
 import QuanLyCuocHen from './pages/ChuDuAn/QuanLyCuocHen'; // ✨ UC-PROJ-02: Quản lý cuộc hẹn
+import QuanLyHopDong from './pages/ChuDuAn/QuanLyHopDong'; // ✨ UC-PROJ-04: Quản lý hợp đồng
+import TinNhan from './pages/ChuDuAn/TinNhan'; // ✨ UC-PROJ-05: Tin nhắn Chủ dự án
+import ChiTietTinNhan from './pages/ChuDuAn/ChiTietTinNhan'; // ✨ Chi tiết cuộc hội thoại
 import CaiDat from './pages/ChuDuAn/CaiDat'; // ✨ Cài đặt tài khoản Chủ dự án
 
 // Import trang Chi Tiết Tin Đăng cho Khách hàng
@@ -49,6 +52,9 @@ function App() {
       <Route path='/chu-du-an/chinh-sua-tin-dang/:id' element={<ChinhSuaTinDang />} />
       <Route path='/chu-du-an/bao-cao' element={<BaoCaoHieuSuat />} />
       <Route path='/chu-du-an/cuoc-hen' element={<QuanLyCuocHen />} /> {/* ✨ UC-PROJ-02: Quản lý cuộc hẹn */}
+      <Route path='/chu-du-an/hop-dong' element={<QuanLyHopDong />} /> {/* ✨ UC-PROJ-04: Quản lý hợp đồng */}
+      <Route path='/chu-du-an/tin-nhan' element={<TinNhan />} /> {/* ✨ UC-PROJ-05: Tin nhắn */}
+      <Route path='/chu-du-an/tin-nhan/:id' element={<ChiTietTinNhan />} /> {/* ✨ Chi tiết cuộc hội thoại */}
       <Route path='/cai-dat' element={<CaiDat />} /> {/* ✨ Cài đặt tài khoản Chủ dự án */}
       
       {/* Routes từ upstream */}

@@ -780,6 +780,7 @@ class ChuDuAnModel {
           da.PhuongThucVao,
           da.ViDo,
           da.KinhDo,
+          da.ChinhSachCocID,
           da.TaoLuc,
           da.CapNhatLuc,
           da.LyDoNgungHoatDong,

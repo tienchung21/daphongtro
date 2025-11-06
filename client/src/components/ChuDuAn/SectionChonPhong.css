@@ -1,5 +1,6 @@
 /**
  * SectionChonPhong.css - Light Glass Morphism Theme
+ * BEM Naming Convention
  */
 
 .section-chon-phong {
@@ -7,7 +8,7 @@
 }
 
 /* Empty State */
-.empty-phong {
+.section-chon-phong__empty {
   text-align: center;
   padding: 60px 20px;
   background: rgba(139, 92, 246, 0.05);
@@ -15,20 +16,20 @@
   border-radius: 16px;
 }
 
-.empty-phong .empty-icon {
+.section-chon-phong__empty-icon {
   width: 64px;
   height: 64px;
   color: #d1d5db;
   margin-bottom: 16px;
 }
 
-.empty-phong p {
+.section-chon-phong__empty-text {
   font-size: 16px;
   color: #6b7280;
   margin-bottom: 24px;
 }
 
-.btn-tao-phong-dau-tien {
+.section-chon-phong__btn-tao-phong-dau-tien {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -44,18 +45,18 @@
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
 }
 
-.btn-tao-phong-dau-tien:hover {
+.section-chon-phong__btn-tao-phong-dau-tien:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(139, 92, 246, 0.35);
 }
 
-.btn-tao-phong-dau-tien svg {
+.section-chon-phong__btn-tao-phong-dau-tien svg {
   width: 20px;
   height: 20px;
 }
 
 /* Danh sách phòng */
-.danh-sach-phong {
+.section-chon-phong__danh-sach {
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -63,7 +64,7 @@
 }
 
 /* Header cột cho danh sách phòng */
-.phong-header {
+.section-chon-phong__header {
   display: grid;
   grid-template-columns: 1.2fr 1fr 0.8fr 1fr 0.8fr;
   gap: 12px;
@@ -74,11 +75,11 @@
   font-size: 13px;
 }
 
-.phong-header .col {
+.section-chon-phong__header-col {
   white-space: nowrap;
 }
 
-.phong-item {
+.section-chon-phong__item {
   border: 2px solid rgba(139, 92, 246, 0.2);
   border-radius: 12px;
   padding: 16px;
@@ -87,18 +88,18 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.phong-item:hover {
+.section-chon-phong__item:hover {
   border-color: rgba(139, 92, 246, 0.4);
   transform: translateX(4px);
 }
 
-.phong-item-checked {
+.section-chon-phong__item--checked {
   border-color: #8b5cf6;
   background: rgba(139, 92, 246, 0.05);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
 }
 
-.phong-checkbox {
+.section-chon-phong__checkbox {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -106,19 +107,19 @@
   width: 100%;
 }
 
-.phong-checkbox input[type="checkbox"] {
+.section-chon-phong__checkbox input[type="checkbox"] {
   width: 20px;
   height: 20px;
   cursor: pointer;
   flex-shrink: 0;
 }
 
-.phong-checkbox input[type="checkbox"]:disabled {
+.section-chon-phong__checkbox input[type="checkbox"]:disabled {
   cursor: not-allowed;
   opacity: 0.5;
 }
 
-.phong-info-grid {
+.section-chon-phong__info-grid {
   display: grid;
   grid-template-columns: 1.2fr 1fr 0.8fr 1fr 0.8fr;
   gap: 12px;
@@ -126,66 +127,66 @@
   align-items: center;
 }
 
-.phong-ten {
+.section-chon-phong__ten {
   font-weight: 700;
   font-size: 16px;
   color: #111827;
   min-width: 60px;
 }
 
-.phong-gia {
+.section-chon-phong__gia {
   color: #8b5cf6;
   font-weight: 600;
   font-size: 15px;
 }
 
-.phong-dientich {
+.section-chon-phong__dientich {
   color: #6b7280;
   font-size: 14px;
 }
 
-.phong-trangthai {
+.section-chon-phong__trangthai {
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 13px;
   font-weight: 600;
 }
 
-.trangthai-trong {
+.section-chon-phong__trangthai--trong {
   background: rgba(16, 185, 129, 0.1);
   color: #10b981;
 }
 
-.trangthai-giucho {
+.section-chon-phong__trangthai--giucho {
   background: rgba(245, 158, 11, 0.1);
   color: #f59e0b;
 }
 
-.trangthai-dathue {
+.section-chon-phong__trangthai--dathue {
   background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
 }
 
-.trangthai-dondep {
+.section-chon-phong__trangthai--dondep {
   background: rgba(59, 130, 246, 0.1);
   color: #3b82f6;
 }
 
-.phong-usage {
+.section-chon-phong__usage {
   font-size: 13px;
   color: #6b7280;
   font-style: italic;
 }
 
 /* Override section */
-.phong-override {
+.section-chon-phong__override {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid rgba(139, 92, 246, 0.2);
-  animation: slideDown 0.3s ease-out;
+  animation: section-chon-phong-slide-down 0.3s ease-out;
 }
 
-@keyframes slideDown {
+@keyframes section-chon-phong-slide-down {
   from {
     opacity: 0;
     max-height: 0;
@@ -196,14 +197,14 @@
   }
 }
 
-.override-row {
+.section-chon-phong__override-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   margin-bottom: 12px;
 }
 
-.override-label {
+.section-chon-phong__override-label {
   display: block;
   font-size: 13px;
   font-weight: 600;
@@ -211,7 +212,7 @@
   margin-bottom: 6px;
 }
 
-.override-input {
+.section-chon-phong__override-input {
   width: 100%;
   padding: 10px 12px;
   border: 1px solid rgba(139, 92, 246, 0.3);
@@ -222,25 +223,25 @@
   transition: all 0.3s;
 }
 
-.override-input:focus {
+.section-chon-phong__override-input:focus {
   outline: none;
   border-color: #8b5cf6;
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
-.override-input::placeholder {
+.section-chon-phong__override-input::placeholder {
   color: #9ca3af;
   font-size: 13px;
 }
 
 /* Ảnh override cho phòng */
-.phong-anh-uploader {
+.section-chon-phong__anh-uploader {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.phong-anh-preview {
+.section-chon-phong__anh-preview {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -250,7 +251,7 @@
   background: #ffffff;
 }
 
-.phong-anh-preview img {
+.section-chon-phong__anh-preview img {
   width: 56px;
   height: 56px;
   object-fit: cover;
@@ -258,7 +259,7 @@
   border: 1px solid #e5e7eb;
 }
 
-.phong-anh-placeholder {
+.section-chon-phong__anh-placeholder {
   width: 56px;
   height: 56px;
   display: flex;
@@ -274,7 +275,7 @@
   line-height: 1.2;
 }
 
-.btn-xoa-anh {
+.section-chon-phong__btn-xoa-anh {
   border: none;
   background: #fee2e2;
   color: #b91c1c;
@@ -284,17 +285,17 @@
   cursor: pointer;
 }
 
-.btn-xoa-anh:hover {
+.section-chon-phong__btn-xoa-anh:hover {
   background: #fecaca;
 }
 
-.ghi-chu-anh {
+.section-chon-phong__ghi-chu-anh {
   font-size: 12px;
   color: #6b7280;
 }
 
 /* Button tạo phòng mới */
-.btn-tao-phong-moi {
+.section-chon-phong__btn-tao-phong-moi {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -309,32 +310,34 @@
   transition: all 0.3s;
 }
 
-.btn-tao-phong-moi:hover {
+.section-chon-phong__btn-tao-phong-moi:hover {
   background: #8b5cf6;
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
 }
 
-.btn-tao-phong-moi svg {
+.section-chon-phong__btn-tao-phong-moi svg {
   width: 18px;
   height: 18px;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .phong-header { display: none; }
-  .phong-info-grid {
+  .section-chon-phong__header {
+    display: none;
+  }
+  .section-chon-phong__info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     row-gap: 6px;
   }
 
-  .override-row {
+  .section-chon-phong__override-row {
     grid-template-columns: 1fr;
   }
 
-  .phong-checkbox {
+  .section-chon-phong__checkbox {
     align-items: flex-start;
   }
 }

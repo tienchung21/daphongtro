@@ -16,9 +16,9 @@ function ChuDuAnLayout({ children }) {
       const topbar = document.querySelector('.cda-topbar');
       if (!topbar) return;
       if (current > lastY && current > 64) {
-        topbar.classList.add('hide');
+        topbar.classList.add('cda-topbar--hide');
       } else {
-        topbar.classList.remove('hide');
+        topbar.classList.remove('cda-topbar--hide');
       }
       lastY = current;
     };

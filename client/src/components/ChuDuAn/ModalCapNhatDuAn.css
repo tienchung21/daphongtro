@@ -1,4 +1,10 @@
-.modal-duan-overlay {
+/* ============================================
+   BEM NAMING CONVENTION
+   Block: modal-cap-nhat-du-an
+   ============================================ */
+
+/* Overlay */
+.modal-cap-nhat-du-an__overlay {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.55);
@@ -9,9 +15,11 @@
   z-index: 10000;
 }
 
-.modal-duan-container {
+/* Container */
+.modal-cap-nhat-du-an {
   width: min(720px, 100%);
   max-height: 92vh;
+  max-width: 90vw;
   background: rgba(255, 255, 255, 0.96);
   border-radius: 20px;
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.35);
@@ -20,7 +28,8 @@
   flex-direction: column;
 }
 
-.modal-duan-header {
+/* Header */
+.modal-cap-nhat-du-an__header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -28,20 +37,20 @@
   border-bottom: 1px solid rgba(148, 163, 184, 0.25);
 }
 
-.modal-duan-title {
+.modal-cap-nhat-du-an__title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 700;
   color: #111827;
 }
 
-.modal-duan-subtitle {
+.modal-cap-nhat-du-an__subtitle {
   margin: 4px 0 0;
   font-size: 0.875rem;
   color: #6b7280;
 }
 
-.modal-duan-close {
+.modal-cap-nhat-du-an__close-btn {
   border: none;
   background: rgba(15, 23, 42, 0.05);
   color: #64748b;
@@ -55,41 +64,77 @@
   transition: all 0.2s;
 }
 
-.modal-duan-close:hover {
+.modal-cap-nhat-du-an__close-btn:hover {
   background: rgba(139, 92, 246, 0.12);
   color: #0F766E;
 }
 
-.modal-duan-body {
+/* Body */
+.modal-cap-nhat-du-an__body {
   padding: 20px 28px 28px;
+  max-height: calc(92vh - 200px);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.modal-duan-grid {
+/* Grid Layout */
+.modal-cap-nhat-du-an__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
 }
 
-.modal-duan-field {
+.modal-cap-nhat-du-an__grid--col-2 {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+/* Field */
+.modal-cap-nhat-du-an__field {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.modal-duan-field label {
+.modal-cap-nhat-du-an__field--checkbox {
+  grid-column: 1 / -1;
+  padding: 16px;
+  background: rgba(241, 245, 249, 0.6);
+  border-radius: 14px;
+  border: 1px dashed rgba(148, 163, 184, 0.45);
+}
+
+.modal-cap-nhat-du-an__label {
   font-size: 0.85rem;
   font-weight: 600;
   color: #1f2937;
   letter-spacing: 0.02em;
 }
 
-.modal-duan-field input,
-.modal-duan-field textarea,
-.modal-duan-field select {
+.modal-cap-nhat-du-an__label--required {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.modal-cap-nhat-du-an__label--checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.modal-cap-nhat-du-an__label--checkbox input {
+  width: 18px;
+  height: 18px;
+}
+
+/* Input Elements */
+.modal-cap-nhat-du-an__input,
+.modal-cap-nhat-du-an__textarea,
+.modal-cap-nhat-du-an__select {
   width: 100%;
   border-radius: 12px;
   border: 1px solid rgba(148, 163, 184, 0.45);
@@ -100,52 +145,45 @@
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-.modal-duan-field input:focus,
-.modal-duan-field textarea:focus,
-.modal-duan-field select:focus {
+.modal-cap-nhat-du-an__input:focus,
+.modal-cap-nhat-du-an__textarea:focus,
+.modal-cap-nhat-du-an__select:focus {
   border-color: rgba(139, 92, 246, 0.8);
   box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12);
   outline: none;
 }
 
-.modal-duan-field textarea {
+.modal-cap-nhat-du-an__input:disabled,
+.modal-cap-nhat-du-an__textarea:disabled,
+.modal-cap-nhat-du-an__select:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.modal-cap-nhat-du-an__textarea {
   resize: vertical;
   min-height: 90px;
 }
 
-.modal-duan-field.checkbox {
-  grid-column: 1 / -1;
-  padding: 16px;
-  background: rgba(241, 245, 249, 0.6);
-  border-radius: 14px;
-  border: 1px dashed rgba(148, 163, 184, 0.45);
+.modal-cap-nhat-du-an__select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
 }
 
-.checkbox-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  color: #1f2937;
-}
-
-.checkbox-label input {
-  width: 18px;
-  height: 18px;
-}
-
-.field-hint {
+/* Field Hint */
+.modal-cap-nhat-du-an__hint {
   margin: 0;
   font-size: 0.75rem;
   color: #6b7280;
 }
 
-.label-required {
-  color: #ef4444;
-  font-weight: 600;
-}
-
-.modal-duan-error {
+/* Error State */
+.modal-cap-nhat-du-an__error {
   border-radius: 12px;
   border: 1px solid rgba(239, 68, 68, 0.25);
   background: rgba(254, 226, 226, 0.6);
@@ -154,13 +192,15 @@
   font-size: 0.85rem;
 }
 
-.modal-duan-footer {
+/* Footer */
+.modal-cap-nhat-du-an__footer {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
 }
 
-.modal-duan-btn {
+/* Buttons */
+.modal-cap-nhat-du-an__btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -173,40 +213,40 @@
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.modal-duan-btn.primary {
+.modal-cap-nhat-du-an__btn--primary {
   background: linear-gradient(135deg, #14532D 0%, #0F766E 100%);
   color: #ffffff;
   box-shadow: 0 8px 18px rgba(124, 58, 237, 0.25);
 }
 
-.modal-duan-btn.primary:hover {
+.modal-cap-nhat-du-an__btn--primary:hover {
   transform: translateY(-1px);
   box-shadow: 0 10px 24px rgba(124, 58, 237, 0.3);
 }
 
-.modal-duan-btn.secondary {
+.modal-cap-nhat-du-an__btn--secondary {
   background: rgba(148, 163, 184, 0.2);
   color: #475569;
 }
 
-.modal-duan-btn.secondary:hover {
+.modal-cap-nhat-du-an__btn--secondary:hover {
   transform: translateY(-1px);
   background: rgba(148, 163, 184, 0.3);
 }
 
-.modal-duan-btn:disabled {
+.modal-cap-nhat-du-an__btn--disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-/* Map Toggle Button */
-.map-toggle-container {
+/* Map Toggle */
+.modal-cap-nhat-du-an__map-toggle {
   margin-top: 8px;
 }
 
-.map-toggle-btn {
+.modal-cap-nhat-du-an__map-toggle-btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -221,23 +261,23 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.map-toggle-btn:hover {
+.modal-cap-nhat-du-an__map-toggle-btn:hover {
   background: rgba(139, 92, 246, 0.15);
   border-color: rgba(139, 92, 246, 0.5);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
 }
 
-.map-toggle-btn:active {
+.modal-cap-nhat-du-an__map-toggle-btn:active {
   transform: translateY(0);
 }
 
-/* Map Picker Container */
-.map-picker-container {
+/* Map Picker */
+.modal-cap-nhat-du-an__map-picker {
   margin-top: 16px;
 }
 
-.map-picker-wrapper {
+.modal-cap-nhat-du-an__map-wrapper {
   width: 100%;
   height: 400px;
   border-radius: 8px;
@@ -246,8 +286,8 @@
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
 }
 
-/* Status Description Box */
-.status-description {
+/* Status Box */
+.modal-cap-nhat-du-an__status {
   margin-top: 12px;
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.8);
@@ -260,19 +300,19 @@
   transition: all 0.3s ease;
 }
 
-.status-description:hover {
+.modal-cap-nhat-du-an__status:hover {
   background: rgba(255, 255, 255, 1);
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
 }
 
-.status-icon {
+.modal-cap-nhat-du-an__status-icon {
   font-size: 1.25rem;
   line-height: 1;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
-.status-text {
+.modal-cap-nhat-du-an__status-text {
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -282,43 +322,18 @@
   flex: 1;
 }
 
-.status-text svg {
+.modal-cap-nhat-du-an__status-text svg {
   flex-shrink: 0;
   margin-top: 2px;
   color: #64748b;
 }
 
-.status-text span {
+.modal-cap-nhat-du-an__status-text span {
   flex: 1;
 }
 
-@media (max-width: 640px) {
-  .modal-duan-header,
-  .modal-duan-body {
-    padding-left: 20px;
-    padding-right: 20px;
-  }
-
-  .modal-duan-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .map-picker-wrapper {
-    height: 300px;
-  }
-
-  .status-description {
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .status-icon {
-    font-size: 1.1rem;
-  }
-}
-
 /* Spinner Animation */
-@keyframes spin {
+@keyframes modal-cap-nhat-du-an-spin {
   from {
     transform: rotate(0deg);
   }
@@ -327,61 +342,48 @@
   }
 }
 
-.spinner {
+.modal-cap-nhat-du-an__spinner {
   display: inline-block;
-  animation: spin 0.6s linear infinite;
+  animation: modal-cap-nhat-du-an-spin 0.6s linear infinite;
 }
 
-/* Leaflet Map Container Override */
-.leaflet-container {
+/* Leaflet Map Override */
+.modal-cap-nhat-du-an .leaflet-container {
   font-family: inherit;
 }
 
-/* Modal Grid for Cascade Address */
-.modal-duan-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 
 @media (max-width: 768px) {
-  .modal-duan-grid {
+  .modal-cap-nhat-du-an__grid--col-2 {
     grid-template-columns: 1fr;
   }
 }
 
-/* Fix for select dropdown in grid */
-.modal-duan-field select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3E%3C/svg%3E");
-  background-position: right 0.5rem center;
-  background-repeat: no-repeat;
-  background-size: 1.5em 1.5em;
-  padding-right: 2.5rem;
-}
+@media (max-width: 640px) {
+  .modal-cap-nhat-du-an__header,
+  .modal-cap-nhat-du-an__body {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
 
-.modal-duan-field select:disabled {
-  background-color: #f3f4f6;
-  color: #9ca3af;
-  cursor: not-allowed;
-}
+  .modal-cap-nhat-du-an__grid {
+    grid-template-columns: 1fr;
+  }
 
-/* Input disabled state */
-.modal-duan-field input:disabled,
-.modal-duan-field textarea:disabled {
-  background-color: #f3f4f6;
-  color: #9ca3af;
-  cursor: not-allowed;
-}
+  .modal-cap-nhat-du-an__map-wrapper {
+    height: 300px;
+  }
 
-/* Ensure modal doesn't overflow */
-.modal-duan-container {
-  max-width: 90vw;
-  width: 720px;
-}
+  .modal-cap-nhat-du-an__status {
+    flex-direction: column;
+    gap: 8px;
+  }
 
-.modal-duan-body {
-  max-height: calc(92vh - 200px);
-  overflow-y: auto;
+  .modal-cap-nhat-du-an__status-icon {
+    font-size: 1.1rem;
+  }
 }
 

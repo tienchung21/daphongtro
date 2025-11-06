@@ -36,7 +36,7 @@
 }
 
 /* Header trang */
-.header {
+.bao-cao-hieu-suat__header {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
@@ -72,7 +72,7 @@
   padding: 0 1rem 2rem;
 }
 
-.card {
+.bao-cao-hieu-suat__card {
   background: var(--gradient-card);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
@@ -391,11 +391,11 @@
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-top: 3px solid var(--mau-accent);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: bao-cao-hieu-suat-spin 1s linear infinite;
   margin: 0 auto 1rem;
 }
 
-@keyframes spin {
+@keyframes bao-cao-hieu-suat-spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
@@ -442,7 +442,7 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .header {
+  .bao-cao-hieu-suat__header {
     margin: 0.5rem;
     padding: 1rem;
     flex-direction: column;
@@ -462,7 +462,7 @@
     grid-template-columns: 1fr;
   }
   
-  .card {
+  .bao-cao-hieu-suat__card {
     margin: 0.5rem;
     padding: 1.5rem;
     border-radius: 16px;
@@ -483,7 +483,7 @@
     padding: 0 0.5rem 1rem;
   }
   
-  .card {
+  .bao-cao-hieu-suat__card {
     padding: 1rem;
   }
   

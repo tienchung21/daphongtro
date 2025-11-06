@@ -1,8 +1,12 @@
 require('dotenv').config(); // Load .env file FIRST
 
 const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 const cors = require('cors');
 const path = require('path');
+const socketAuth = require('./middleware/socketAuth');
+const setupChatHandlers = require('./socket/chatHandlers');
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 
@@ -11,6 +15,7 @@ const chuDuAnRoutes = require('./routes/chuDuAnRoutes'); // API chính cho Chủ
 const chinhSachCocRoutes = require('./routes/chinhSachCocRoutes'); // API Chính sách Cọc
 const operatorRoutes = require('./routes/operatorRoutes'); // API Operator/Admin (Banned dự án)
 const geocodingRoutes = require('./routes/geocodingRoutes'); // Geocoding API
+const chatRoutes = require('./routes/chatRoutes'); // API Chat/Messaging (UC-PROJ-05)
 
 // Routes từ upstream
 const tinDangRoutes = require('./routes/tinDangRoutes');
@@ -21,7 +26,28 @@ const transactionRoutes = require('./routes/transactionRoutes');
 const sepayCallbackRoutes = require('./routes/sepayCallbackRoutes');
 
 const sepaySync = require('./services/sepaySyncService');
+
+// Create Express app and HTTP server
 const app = express();
+const server = http.createServer(app);
+
+// Setup Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    methods: ['GET', 'POST'],
+    credentials: true
+  },
+  pingTimeout: 60000,
+  pingInterval: 25000
+});
+
+// Socket.IO Authentication & Event Handlers
+io.use(socketAuth);
+io.on('connection', (socket) => {
+  setupChatHandlers(socket, io);
+});
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,6 +70,7 @@ app.use('/api/chu-du-an', chuDuAnRoutes); // API nghiệp vụ chủ dự án th
 app.use('/api/chu-du-an/chinh-sach-coc', chinhSachCocRoutes); // API Chính sách Cọc
 app.use('/api/operator', operatorRoutes); // API Operator/Admin (UC-OPR-01, UC-OPR-02)
 app.use('/api/geocode', geocodingRoutes); // Geocoding API (Nominatim)
+app.use('/api/chat', chatRoutes); // API Chat/Messaging (UC-PROJ-05)
 
 // API từ upstream
 app.use('/api/tindangs', tinDangRoutes); 
@@ -69,8 +96,11 @@ app.get('/', (req, res) => {
 
 
 
-app.listen(5000, () => {
-  console.log('✅ Server chạy tại http://localhost:5000');
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () => {
+  console.log('✅ Server chạy tại http://localhost:' + PORT);
+  console.log('🔌 Socket.IO chạy tại ws://localhost:' + PORT);
   console.log('� JWT_SECRET:', process.env.JWT_SECRET ? '✅ Loaded from .env' : '⚠️ Using fallback key');
   console.log('�📁 Static files: http://localhost:5000/uploads');
   console.log('🔗 API endpoints cho Chủ dự án (theo đặc tả use cases):');
@@ -87,10 +117,16 @@ app.listen(5000, () => {
   console.log('   📈 Báo cáo: GET /api/chu-du-an/bao-cao-hieu-suat');
   console.log('   🏢 Dự án: GET /api/chu-du-an/du-an');
   console.log('   📋 Hợp đồng: POST /api/chu-du-an/hop-dong/bao-cao');
+  console.log('   💬 Chat: GET/POST /api/chat/conversations (Real-time với Socket.IO)');
   console.log('   🗺️ Geocoding: POST /api/geocode (Địa chỉ → Tọa độ)');
   console.log('🔗 API endpoints từ upstream:');
   console.log('   📝 /api/tindangs, /api/khuvucs, /api/yeuthich');
   console.log('   💰 /api/sepay, /api/transactions');
+  console.log('');
+  console.log('📡 Socket.IO Events:');
+  console.log('   - join_conversation, leave_conversation');
+  console.log('   - send_message, typing_start, typing_stop');
+  console.log('   - mark_as_read');
   
   // Khởi động job đồng bộ Sepay (sau 1 giây để server ổn định)
   setTimeout(() => {
