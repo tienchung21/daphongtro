@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate , Link } from 'react-router-dom';
 import './login.scss';
 import deerImg from '../../assets/images/hinhdauhuou.png';
 import authApi from '../../api/authApi';
 import CryptoJS from 'crypto-js'; // 🟢 THÊM: dùng để mã hóa MD5
+
 
 function Login() {
   const [email, setEmail] = useState('');
@@ -110,7 +111,7 @@ function Login() {
 
         <div className="login-links">
           <a href="#">Quên mật khẩu?</a>
-          <a href="#">Đăng ký tài khoản mới</a>
+          <Link to="/dangky">Đăng ký tài khoản mới</Link>
         </div>
 
         {/* Chế độ cầu vồng */}

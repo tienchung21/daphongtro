@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate , Link} from 'react-router-dom';
 import './dangky.scss';
 import deerImg from '../../assets/images/hinhdauhuou.png';
 import authApi from '../../api/authApi';
@@ -22,7 +22,20 @@ function Register() {
     try {
       // Map role sang VaiTroID (theo bảng vaitro trong DB)
       // VaiTroID: 1=Khách hàng, 2=Nhân viên Bán hàng, 3=Chủ dự án, 4=Điều hành, 5=Admin
-      const roleId = role === 'chuduan' ? 3 : 1;
+      let roleId;
+switch (role) {
+  case 'chuduan':
+    roleId = 3;
+    break;
+  case 'nhanvienbanhang': // Thêm trường hợp này
+    roleId = 2;
+    break;
+    case 'nhanviendieuhanh': // Thêm trường hợp này
+    roleId = 4;
+    break;
+  default: // Mặc định là 'khachhang'
+    roleId = 1;
+}
 
       const payload = {
         name: fullname,
@@ -130,6 +143,8 @@ function Register() {
           >
             <option value="chuduan">Chủ dự án</option>
             <option value="khachhang">Khách hàng</option>
+            <option value="nhanvienbanhang">Nhân viên bán hàng</option>
+             <option value="nhanviendieuhanh">Nhân viên bán hàng</option>
           </select>
         </div>
 
@@ -145,7 +160,7 @@ function Register() {
           Quay lại trang chủ
         </button>
         <div className="login-links">
-          <a href="#">Đã có tài khoản? Đăng nhập</a>
+          <Link to="/login">Đã có tài khoản? Đăng nhập</Link>
         </div>
         <div className="toggle-switch">
           <label className="switch">

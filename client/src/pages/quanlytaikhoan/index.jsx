@@ -22,7 +22,10 @@ function QuanLyTaiKhoan() {
   // Helper để map ID vai trò ra tên vai trò
   const vaiTroMap = {
     1: 'Khách hàng',
-    2: 'Chủ dự án',
+    3: 'Chủ dự án',
+    2: 'Nhân viên bán hàng',
+    4: 'Nhân viên Điều hành',
+    5: 'Quản trị viên Hệ thống',
   };
 
   useEffect(() => {
@@ -124,6 +127,7 @@ function QuanLyTaiKhoan() {
 
   return (
     <div className="quanlytk-wrapper">
+   
       <div className="quanlytk-container">
         <div className="ql-header">
           <h3>Quản lý tài khoản</h3>

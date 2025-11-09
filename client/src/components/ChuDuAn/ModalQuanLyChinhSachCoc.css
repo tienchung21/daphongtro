@@ -222,19 +222,7 @@
   border-top: 1px solid rgba(139, 92, 246, 0.1);
 }
 
-/* Buttons */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
+
 
 .btn:disabled {
   opacity: 0.5;
@@ -300,8 +288,5 @@
     flex-direction: column-reverse;
   }
 
-  .btn {
-    width: 100%;
-    justify-content: center;
-  }
+
 }
