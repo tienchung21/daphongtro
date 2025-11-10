@@ -1,11 +1,7 @@
-/* ============================================
-   TAO TIN DANG - BEM NAMING CONVENTION
-   Block: tao-tin-dang
-   Liquid Glass Design System
-   ============================================ */
+/* TaoTinDang.css - Liquid Glass Design System */
 
-/* CSS Variables */
-.tao-tin-dang {
+/* Tokens màu sắc */
+.trang.roleChuDuAn {
   --mau-chu-dao: #1a1a1a;
   --mau-chu-phu: #666;
   --mau-chu-nhe: #888;
@@ -35,8 +31,8 @@
   overflow-x: hidden;
 }
 
-/* Header */
-.tao-tin-dang__header {
+/* Header trang */
+/* .header {
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
@@ -49,9 +45,9 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
-}
+} */
 
-.tao-tin-dang__title {
+.tieuDe {
   color: var(--mau-chu-dao);
   font-size: clamp(1.5rem, 4vw, 2rem);
   font-weight: 700;
@@ -59,21 +55,20 @@
   text-shadow: 0 2px 4px var(--mau-bong);
 }
 
-.tao-tin-dang__actions {
+.thanhTacVu {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-/* Content Container */
-.tao-tin-dang__content {
+/* Form container */
+.noiDung {
   max-width: 900px;
   margin: 0 auto;
   padding: 0 1rem 2rem;
 }
 
-/* Card */
-.tao-tin-dang__card {
+.card {
   background: var(--gradient-card);
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
@@ -85,19 +80,19 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-/* Form Sections */
-.tao-tin-dang__section {
+/* Form sections */
+.phanForm {
   margin-bottom: 2rem;
   padding-bottom: 1.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-.tao-tin-dang__section:last-child {
+.phanForm:last-child {
   border-bottom: none;
   margin-bottom: 0;
 }
 
-.tao-tin-dang__section-title {
+.phanForm h3 {
   color: var(--mau-chu-dao);
   font-size: 1.25rem;
   font-weight: 600;
@@ -106,42 +101,42 @@
   border-left: 4px solid var(--mau-accent);
 }
 
-/* Form Grid Layouts */
-.tao-tin-dang__grid {
+/* Form grid */
+.formGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
 }
 
-.tao-tin-dang__grid--col-2 {
+.formGridCol2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1.5rem;
 }
 
-.tao-tin-dang__grid--col-3 {
+.formGridCol3 {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 1.5rem;
 }
 
-/* Input Groups */
-.tao-tin-dang__input-group {
+/* Input groups */
+.nhomNhap {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.tao-tin-dang__label {
+.nhomNhap label {
   color: var(--mau-chu-dao);
   font-weight: 500;
   font-size: 0.875rem;
   text-transform: capitalize;
 }
 
-.tao-tin-dang__input,
-.tao-tin-dang__select,
-.tao-tin-dang__textarea {
+.nhomNhap input,
+.nhomNhap select,
+.nhomNhap textarea {
   background: rgba(255, 255, 255, 0.9);
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 12px;
@@ -152,9 +147,9 @@
   backdrop-filter: blur(8px);
 }
 
-.tao-tin-dang__input:focus,
-.tao-tin-dang__select:focus,
-.tao-tin-dang__textarea:focus {
+.nhomNhap input:focus,
+.nhomNhap select:focus,
+.nhomNhap textarea:focus {
   outline: none;
   border-color: var(--mau-accent);
   box-shadow: 
@@ -163,14 +158,14 @@
   background: rgba(255, 255, 255, 0.95);
 }
 
-.tao-tin-dang__textarea {
+.nhomNhap textarea {
   min-height: 120px;
   resize: vertical;
   font-family: inherit;
 }
 
-/* File Upload */
-.tao-tin-dang__upload {
+/* File upload */
+.taiLenAnh {
   background: rgba(255, 255, 255, 0.5);
   border: 2px dashed rgba(0, 123, 255, 0.3);
   border-radius: 12px;
@@ -180,35 +175,35 @@
   cursor: pointer;
 }
 
-.tao-tin-dang__upload:hover {
+.taiLenAnh:hover {
   border-color: var(--mau-accent);
   background: rgba(255, 255, 255, 0.7);
 }
 
-.tao-tin-dang__upload input[type="file"] {
+.taiLenAnh input[type="file"] {
   display: none;
 }
 
-.tao-tin-dang__upload-icon {
+.iconTaiLen {
   font-size: 2rem;
   color: var(--mau-accent);
   margin-bottom: 0.5rem;
 }
 
-.tao-tin-dang__upload-text {
+.taiLenText {
   color: var(--mau-chu-phu);
   font-size: 0.875rem;
 }
 
-/* Image Preview */
-.tao-tin-dang__image-preview {
+/* Image preview */
+.xemTruocAnh {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1rem;
   margin-top: 1rem;
 }
 
-.tao-tin-dang__image-item {
+.anhItem {
   position: relative;
   border-radius: 8px;
   overflow: hidden;
@@ -216,13 +211,13 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-.tao-tin-dang__image-item img {
+.anhItem img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.tao-tin-dang__image-delete {
+.xoaAnh {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
@@ -240,13 +235,13 @@
   transition: all 0.2s ease;
 }
 
-.tao-tin-dang__image-delete:hover {
+.xoaAnh:hover {
   background: #dc3545;
   transform: scale(1.1);
 }
 
 /* Buttons */
-.tao-tin-dang__btn {
+.nut {
   background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -265,47 +260,47 @@
   min-width: 120px;
 }
 
-.tao-tin-dang__btn:hover {
+.nut:hover {
   background: rgba(255, 255, 255, 1);
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.tao-tin-dang__btn--primary {
+.nutChinh {
   background: var(--gradient-primary);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.tao-tin-dang__btn--primary:hover {
+.nutChinh:hover {
   background: linear-gradient(135deg, #5a6fd8 0%, #6b5b95 100%);
   color: white;
 }
 
-.tao-tin-dang__btn--success {
+.nutThanhCong {
   background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
   color: white;
   border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-.tao-tin-dang__btn--success:hover {
+.nutThanhCong:hover {
   background: linear-gradient(135deg, #218838 0%, #1ea080 100%);
   color: white;
 }
 
-.tao-tin-dang__btn--cancel {
+.nutHuy {
   background: rgba(108, 117, 125, 0.1);
   color: var(--mau-chu-phu);
   border: 1px solid rgba(108, 117, 125, 0.2);
 }
 
-.tao-tin-dang__btn--cancel:hover {
+.nutHuy:hover {
   background: rgba(108, 117, 125, 0.2);
   color: var(--mau-chu-dao);
 }
 
-/* Action Buttons Container */
-.tao-tin-dang__footer {
+/* Action buttons */
+.cacNutTacVu {
   display: flex;
   gap: 1rem;
   justify-content: flex-end;
@@ -315,30 +310,30 @@
   flex-wrap: wrap;
 }
 
-/* Loading State */
-.tao-tin-dang__loading {
+/* Loading state */
+.taiDang {
   text-align: center;
   padding: 3rem;
   color: var(--mau-chu-phu);
 }
 
-.tao-tin-dang__spinner {
+.spinner {
   width: 40px;
   height: 40px;
   border: 3px solid rgba(255, 255, 255, 0.3);
   border-top: 3px solid var(--mau-accent);
   border-radius: 50%;
-  animation: tao-tin-dang-spin 1s linear infinite;
+  animation: spin 1s linear infinite;
   margin: 0 auto 1rem;
 }
 
-@keyframes tao-tin-dang-spin {
+@keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
 
-/* Error States */
-.tao-tin-dang__error {
+/* Error states */
+.loi {
   color: var(--mau-loi);
   font-size: 0.75rem;
   margin-top: 0.25rem;
@@ -347,15 +342,15 @@
   gap: 0.25rem;
 }
 
-.tao-tin-dang__input-group--error .tao-tin-dang__input,
-.tao-tin-dang__input-group--error .tao-tin-dang__select,
-.tao-tin-dang__input-group--error .tao-tin-dang__textarea {
+.nhomNhap.coLoi input,
+.nhomNhap.coLoi select,
+.nhomNhap.coLoi textarea {
   border-color: var(--mau-loi);
   background: rgba(220, 53, 69, 0.05);
 }
 
-/* Success States */
-.tao-tin-dang__success {
+/* Success states */
+.thanhCong {
   color: var(--mau-thanh-cong);
   font-size: 0.875rem;
   padding: 0.75rem;
@@ -365,12 +360,9 @@
   margin-bottom: 1rem;
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-
+/* Responsive */
 @media (max-width: 768px) {
-  .tao-tin-dang__header {
+  .header {
     margin: 0.5rem;
     padding: 1rem;
     flex-direction: column;
@@ -378,47 +370,47 @@
     text-align: center;
   }
   
-  .tao-tin-dang__actions {
+  .thanhTacVu {
     justify-content: center;
   }
   
-  .tao-tin-dang__grid--col-2,
-  .tao-tin-dang__grid--col-3 {
+  .formGridCol2,
+  .formGridCol3 {
     grid-template-columns: 1fr;
   }
   
-  .tao-tin-dang__card {
+  .card {
     margin: 0.5rem;
     padding: 1.5rem;
     border-radius: 16px;
   }
   
-  .tao-tin-dang__footer {
+  .cacNutTacVu {
     flex-direction: column;
     align-items: stretch;
   }
   
-  .tao-tin-dang__btn {
+  .nut {
     min-width: auto;
     width: 100%;
   }
 }
 
 @media (max-width: 480px) {
-  .tao-tin-dang__content {
+  .noiDung {
     padding: 0 0.5rem 1rem;
   }
   
-  .tao-tin-dang__card {
+  .card {
     padding: 1rem;
   }
   
-  .tao-tin-dang__grid {
+  .formGrid {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
   
-  .tao-tin-dang__section-title {
+  .phanForm h3 {
     font-size: 1.125rem;
   }
 }

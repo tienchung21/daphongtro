@@ -8,7 +8,7 @@
     box-sizing: border-box;
 }
 .content{
-    margin-top: 20px;
+    margin-top: 40px;
     width: 60vw;
     
     
@@ -22,7 +22,7 @@
     width: 70%;
     padding: 5px;
     box-shadow: 0 4px 16px 0 rgba(105, 138, 192, 0.2);
-    margin: 10px;
+    margin: 0 10px 30px 0 ;
 }
 .content2{
     min-height: 100vh;
@@ -53,7 +53,6 @@
     position: relative;
     
 }
-
 .duan::after {
   content: "";
   display: block;
@@ -82,7 +81,7 @@
     height: 100%;
     width: 70%;
     float: left;
-    padding: 5px;
+    padding: 10px 5px;
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
@@ -90,7 +89,8 @@
 }
 .thongtinduan .tieude{
     font-weight: bold;
-    font-size: 16px;
+    font-size: 18px;
+    margin-bottom:8px ;
     
 }
 .thongtinduan .diachi{
@@ -102,6 +102,7 @@
     font-size: 16px;
     color: red;
     font-weight: bold;
+    margin: 5px 0;
 }
 .thongtinduan .thoigian{
     font-size: 12px;
@@ -109,6 +110,7 @@
     font-weight: 300;
     display: flex;
     position: relative;
+    margin-top: 2px;
 }
 .thongtinduan .thoigian>button{
    text-decoration: none;

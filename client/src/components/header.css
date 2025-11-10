@@ -58,8 +58,9 @@
     font-weight: bold;
     font-size: 13px;
 }
-.user{
-    padding: 10px;
+.user ul li{
+    display: flex;
+    align-items: center;
 }
 /* header-search */
 .header-search{
@@ -176,10 +177,22 @@
     width: 65%;
     float: left;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
 }
 .tintuc-baiviet1>.thongtinduan>.tieude {
     font-weight: bold;
     font-size: 8px;
+}
+.fav-actions{
+    width: 5px;
+    height: 5px;
+}
+.fav-actions .btn{
+    width: 5px !important;
+    height: 5px !important;
+    padding: 0 !important;
+    font-size: 8px !important;
+    color: red !important;
+
 }

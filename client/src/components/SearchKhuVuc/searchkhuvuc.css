@@ -1,4 +1,4 @@
-.search-khuvuc { width: 60vw; box-sizing: border-box; margin: auto; justify-content: center; display: flex; margin-top: 10px;}
+.search-khuvuc { width: 60vw; box-sizing: border-box; margin: auto; justify-content: center; display: flex; margin-top: 10px; justify-content: flex-start;}
 .sk-row {
   display: flex;
   gap: 8px;

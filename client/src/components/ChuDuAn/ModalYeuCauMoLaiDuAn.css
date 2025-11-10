@@ -1,11 +1,10 @@
 /**
  * CSS cho Modal Yêu cầu Mở lại Dự án
  * Theme: Light Glass Morphism với accent màu warning
- * BEM Naming Convention
  */
 
 /* Modal specific */
-.modal-yeu-cau-mo-lai-du-an {
+.modal-content.modal-yeu-cau {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-radius: 16px;
@@ -14,22 +13,11 @@
   max-width: 700px;
   max-height: 90vh;
   overflow-y: auto;
-  animation: modal-yeu-cau-mo-lai-du-an-slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes modal-yeu-cau-mo-lai-du-an-slide-up {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Header with warning color */
-.modal-yeu-cau-mo-lai-du-an__header--warning {
+.modal-header.modal-header-warning {
   background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(251, 191, 36, 0.05) 100%);
   border-bottom: 2px solid rgba(245, 158, 11, 0.2);
   padding: 20px 32px;
@@ -38,7 +26,7 @@
   gap: 16px;
 }
 
-.modal-yeu-cau-mo-lai-du-an__header-icon {
+.modal-header-icon {
   width: 48px;
   height: 48px;
   background: rgba(245, 158, 11, 0.15);
@@ -50,7 +38,7 @@
   font-size: 24px;
 }
 
-.modal-yeu-cau-mo-lai-du-an__title {
+.modal-title {
   flex: 1;
   font-size: 20px;
   font-weight: 600;
@@ -59,7 +47,7 @@
 }
 
 /* Banned info section */
-.modal-yeu-cau-mo-lai-du-an__banned-info-section {
+.banned-info-section {
   background: rgba(239, 68, 68, 0.05);
   border-left: 4px solid #ef4444;
   border-radius: 8px;
@@ -67,25 +55,25 @@
   margin-bottom: 24px;
 }
 
-.modal-yeu-cau-mo-lai-du-an__section-title {
+.section-title {
   font-size: 16px;
   font-weight: 600;
   color: #111827;
   margin: 0 0 16px 0;
 }
 
-.modal-yeu-cau-mo-lai-du-an__info-row {
+.info-row {
   display: flex;
   gap: 12px;
   margin-bottom: 12px;
   align-items: flex-start;
 }
 
-.modal-yeu-cau-mo-lai-du-an__info-row:last-child {
+.info-row:last-child {
   margin-bottom: 0;
 }
 
-.modal-yeu-cau-mo-lai-du-an__info-label {
+.info-label {
   font-size: 14px;
   font-weight: 500;
   color: #6b7280;
@@ -93,13 +81,13 @@
   flex-shrink: 0;
 }
 
-.modal-yeu-cau-mo-lai-du-an__info-value {
+.info-value {
   font-size: 14px;
   color: #111827;
   flex: 1;
 }
 
-.modal-yeu-cau-mo-lai-du-an__info-value--danger {
+.info-value-danger {
   color: #dc2626;
   font-weight: 500;
   background: rgba(239, 68, 68, 0.1);
@@ -108,11 +96,11 @@
 }
 
 /* Form elements */
-.modal-yeu-cau-mo-lai-du-an__form-group {
+.form-group {
   margin-bottom: 20px;
 }
 
-.modal-yeu-cau-mo-lai-du-an__form-label {
+.form-label {
   display: block;
   font-size: 14px;
   font-weight: 500;
@@ -120,12 +108,12 @@
   margin-bottom: 8px;
 }
 
-.modal-yeu-cau-mo-lai-du-an__form-label--required::after {
+.form-label.required::after {
   content: ' *';
   color: #ef4444;
 }
 
-.modal-yeu-cau-mo-lai-du-an__form-textarea {
+.form-textarea {
   width: 100%;
   padding: 12px 16px;
   font-size: 14px;
@@ -140,43 +128,43 @@
   font-family: inherit;
 }
 
-.modal-yeu-cau-mo-lai-du-an__form-textarea:focus {
+.form-textarea:focus {
   outline: none;
   border-color: #f59e0b;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
 }
 
-.modal-yeu-cau-mo-lai-du-an__form-textarea--error {
+.form-textarea.error {
   border-color: #ef4444;
 }
 
-.modal-yeu-cau-mo-lai-du-an__form-textarea:disabled {
+.form-textarea:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   background: #f9fafb;
 }
 
 /* Textarea footer */
-.modal-yeu-cau-mo-lai-du-an__textarea-footer {
+.textarea-footer {
   display: flex;
   justify-content: flex-end;
   margin-top: 4px;
 }
 
-.modal-yeu-cau-mo-lai-du-an__char-count {
+.char-count {
   font-size: 12px;
   font-weight: 500;
 }
 
-.modal-yeu-cau-mo-lai-du-an__char-count--warning {
+.char-count.warning {
   color: #f59e0b;
 }
 
-.modal-yeu-cau-mo-lai-du-an__char-count--success {
+.char-count.success {
   color: #10b981;
 }
 
-.modal-yeu-cau-mo-lai-du-an__error-text {
+.error-text {
   display: block;
   font-size: 12px;
   color: #ef4444;
@@ -184,7 +172,7 @@
 }
 
 /* Warning notice */
-.modal-yeu-cau-mo-lai-du-an__warning-notice {
+.warning-notice {
   display: flex;
   gap: 12px;
   background: rgba(245, 158, 11, 0.08);
@@ -194,7 +182,7 @@
   margin-bottom: 24px;
 }
 
-.modal-yeu-cau-mo-lai-du-an__warning-notice-icon {
+.warning-notice .icon {
   width: 24px;
   height: 24px;
   color: #f59e0b;
@@ -202,27 +190,27 @@
   margin-top: 2px;
 }
 
-.modal-yeu-cau-mo-lai-du-an__warning-content {
+.warning-content {
   flex: 1;
   font-size: 13px;
   color: #78350f;
 }
 
-.modal-yeu-cau-mo-lai-du-an__warning-content strong {
+.warning-content strong {
   color: #92400e;
 }
 
-.modal-yeu-cau-mo-lai-du-an__warning-content ul {
+.warning-content ul {
   margin: 8px 0 0 0;
   padding-left: 20px;
 }
 
-.modal-yeu-cau-mo-lai-du-an__warning-content li {
+.warning-content li {
   margin-bottom: 4px;
 }
 
 /* Modal footer */
-.modal-yeu-cau-mo-lai-du-an__footer {
+.modal-footer {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
@@ -231,54 +219,38 @@
   border-top: 1px solid rgba(245, 158, 11, 0.1);
 }
 
-/* Buttons */
-.modal-yeu-cau-mo-lai-du-an__btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-.modal-yeu-cau-mo-lai-du-an__btn:disabled {
+
+.btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.modal-yeu-cau-mo-lai-du-an__btn--primary-submit {
+.btn-primary.btn-submit {
   background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   color: #ffffff;
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
-.modal-yeu-cau-mo-lai-du-an__btn--primary-submit:hover:not(:disabled) {
+.btn-primary.btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
 }
 
-.modal-yeu-cau-mo-lai-du-an__btn--secondary {
+.btn-secondary {
   background: #ffffff;
   color: #374151;
   border: 1px solid #d1d5db;
 }
 
-.modal-yeu-cau-mo-lai-du-an__btn--secondary:hover:not(:disabled) {
+.btn-secondary:hover:not(:disabled) {
   background: #f9fafb;
   border-color: #9ca3af;
 }
 
-.modal-yeu-cau-mo-lai-du-an__btn-icon {
-  width: 18px;
-  height: 18px;
-}
 
 /* Close button */
-.modal-yeu-cau-mo-lai-du-an__close-btn {
+.modal-close-btn {
   background: none;
   border: none;
   font-size: 24px;
@@ -289,59 +261,56 @@
   transition: all 0.2s ease;
 }
 
-.modal-yeu-cau-mo-lai-du-an__close-btn:hover {
+.modal-close-btn:hover {
   color: #ef4444;
   transform: scale(1.1);
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .modal-yeu-cau-mo-lai-du-an {
+  .modal-content.modal-yeu-cau {
     width: 95%;
     max-height: 95vh;
   }
 
-  .modal-yeu-cau-mo-lai-du-an__header--warning {
+  .modal-header.modal-header-warning {
     padding: 16px 20px;
   }
 
-  .modal-yeu-cau-mo-lai-du-an__body {
+  .modal-body {
     padding: 20px;
   }
 
-  .modal-yeu-cau-mo-lai-du-an__title {
+  .modal-title {
     font-size: 18px;
   }
 
-  .modal-yeu-cau-mo-lai-du-an__info-row {
+  .info-row {
     flex-direction: column;
     gap: 4px;
   }
 
-  .modal-yeu-cau-mo-lai-du-an__info-label {
+  .info-label {
     min-width: auto;
   }
 }
 
 @media (max-width: 480px) {
-  .modal-yeu-cau-mo-lai-du-an {
+  .modal-content.modal-yeu-cau {
     width: 100%;
     max-height: 100vh;
     border-radius: 0;
   }
 
-  .modal-yeu-cau-mo-lai-du-an__header-icon {
+  .modal-header-icon {
     width: 40px;
     height: 40px;
     font-size: 20px;
   }
 
-  .modal-yeu-cau-mo-lai-du-an__footer {
+  .modal-footer {
     flex-direction: column-reverse;
   }
 
-  .modal-yeu-cau-mo-lai-du-an__btn {
-    width: 100%;
-    justify-content: center;
-  }
+
 }

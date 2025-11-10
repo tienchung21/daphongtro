@@ -11,7 +11,7 @@ const mapUser = (row) => {
     TrangThai: row.TrangThai === undefined ? null : row.TrangThai,
     TaoLuc: row.TaoLuc,
     CapNhatLuc: row.CapNhatLuc,
-    VaiTroID: row.VaiTroID
+    VaiTroID: row.VaiTroHoatDongID
   };
 };
 

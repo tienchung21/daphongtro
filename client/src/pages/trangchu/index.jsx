@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
+import NavigationChuDuAn from '../../components/ChuDuAn/NavigationChuDuAn';
 import './trangchu.css';
 // thay đổi: dùng hàm của chủ dự án
 import { TinDangService } from '../../services/ChuDuAnService';
@@ -250,11 +251,11 @@ function TrangChu() {
             </div>
             <div className="tintuc-baiviet">
               <div className="anhduan">
-              <img src="https://tse4.mm.bing.net/th/id/OIP.1a31QUbCZjQD8w2KP2DKnwHaGu?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Ảnh dự án" />
+              <img src="https://tse1.mm.bing.net/th/id/OIP.nwpNtC4zPc0jnBd5AULU-gHaFj?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Ảnh dự án" />
               </div>
               <div className="thongtinduan">
               <div className="tieude">
-                 Cho thuê phòng trọ ngay quận 2 có đủ tiện nghi
+                 Cho thuê phòng trọ ngay quận 10 có đủ tiện nghi
               </div>
               
               <div className="thoigian">
@@ -267,11 +268,11 @@ function TrangChu() {
             </div>
             <div className="tintuc-baiviet">
               <div className="anhduan">
-              <img src="https://tse4.mm.bing.net/th/id/OIP.1a31QUbCZjQD8w2KP2DKnwHaGu?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Ảnh dự án" />
+              <img src="https://th.bing.com/th/id/R.e7fbd2d75d40b4a405a283c4deb7bb37?rik=nUrwglwUVlTZgQ&pid=ImgRaw&r=0" alt="Ảnh dự án" />
               </div>
               <div className="thongtinduan">
               <div className="tieude">
-                 Cho thuê phòng trọ ngay quận 2 có đủ tiện nghi
+                 Cho thuê phòng trọ ngay quận gò vấp có đủ tiện nghi
               </div>
               
               <div className="thoigian">
@@ -284,11 +285,11 @@ function TrangChu() {
             </div>
             <div className="tintuc-baiviet">
               <div className="anhduan">
-              <img src="https://tse4.mm.bing.net/th/id/OIP.1a31QUbCZjQD8w2KP2DKnwHaGu?r=0&rs=1&pid=ImgDetMain&o=7&rm=3" alt="Ảnh dự án" />
+              <img src="https://tse3.mm.bing.net/th/id/OIP.-6ttgevwVQAzlCfmVixTBQHaHa?rs=1&pid=ImgDetMain&o=7&rm=3" alt="Ảnh dự án" />
               </div>
               <div className="thongtinduan">
               <div className="tieude">
-                 Cho thuê phòng trọ ngay quận 2 có đủ tiện nghi
+                 Cho thuê phòng trọ ngay quận 4 có đủ tiện nghi
               </div>
               
               <div className="thoigian">
@@ -305,6 +306,7 @@ function TrangChu() {
       </div>
 
       <Footer />
+      
     </div>
   )
 }
