@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import {
   HiOutlineArrowLeft,
   HiOutlineHeart,
@@ -19,26 +19,27 @@ import {
   HiOutlineChevronRight,
   HiOutlineCalendar,
   HiOutlineEye,
-  HiOutlineClock
-} from 'react-icons/hi2';
-import Header from '../../components/Header';
-import Footer from '../../components/Footer';
-import { TinDangService } from '../../services/ChuDuAnService';
-import MapViTriPhong from '../../components/MapViTriPhong/MapViTriPhong';
-import yeuThichApi from '../../api/yeuThichApi';
-import './chitiettindang.css';
+  HiOutlineClock,
+} from "react-icons/hi2";
+import Header from "../../components/Header";
+import Footer from "../../components/Footer";
+import { TinDangService } from "../../services/ChuDuAnService";
+import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
+import yeuThichApi from "../../api/yeuThichApi";
+import axiosClient from "../../api/axiosClient";
+import "./chitiettindang.css";
 
 /**
  * Component: Chi tiết Tin Đăng cho Khách hàng (Public View)
  * Route: /tin-dang/:id
- * 
+ *
  * Design: Soft Tech Theme (Customer-centric)
  * - Neutral slate colors (#334155 primary)
  * - Trust-building indigo accents (#6366F1)
  * - Fresh cyan highlights (#06B6D4)
  * - Clean, modern, customer-friendly interface
  * - Mobile-first responsive design
- * 
+ *
  * Features:
  * - Public viewing (không cần đăng nhập để xem)
  * - Yêu thích (cần đăng nhập)
@@ -52,25 +53,112 @@ import './chitiettindang.css';
 const ChiTietTinDang = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [tinDang, setTinDang] = useState(null);
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [danhSachAnh, setDanhSachAnh] = useState([]);
   const [tinTuongTu, setTinTuongTu] = useState([]);
   const [daLuu, setDaLuu] = useState(false);
-  
-  // 🎨 NEW: Enhanced UX states
+
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [imageZoom, setImageZoom] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [henSubmitting, setHenSubmitting] = useState(false);
+
+  // Thêm state (đặt dưới các useState hiện có)
+  const [henModalOpen, setHenModalOpen] = useState(false);
+  const [henPhongId, setHenPhongId] = useState(null);
+  const [henThoiGian, setHenThoiGian] = useState("");
+  const [henGhiChu, setHenGhiChu] = useState("");
+
+  // Hàm chuẩn hóa datetime-local -> ISO
+  const toISOFromLocal = (v) => {
+    if (!v) return null;
+    const d = new Date(v);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString();
+  };
+
+  // Chuẩn bị giá trị PheDuyetChuDuAn từ tin đăng (1 => ChoPheDuyet, 0 => DaPheDuyet)
+  const getPheDuyetChuValue = () => {
+    const raw = tinDang?.YeuCauPheDuyetChu;
+    const v = typeof raw === "string" ? raw.trim() : raw;
+    if (v === 1 || v === "1" || v === true) return "ChoPheDuyet";
+    if (v === 0 || v === "0" || v === false) return "DaPheDuyet";
+    return "ChoPheDuyet";
+  };
+
+  // Mở modal hẹn (nút tổng quát)
+  const openHenModal = (phongId = null) => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      alert("📢 Cần đăng nhập để đặt lịch.\nChuyển đến trang đăng nhập?");
+      navigate("/login");
+      return;
+    }
+    if (!phongId && tinDang?.DanhSachPhong?.length === 1) {
+      phongId = tinDang.DanhSachPhong[0].PhongID;
+    }
+    setHenPhongId(phongId);
+    // Giá trị mặc định: hiện tại + 30 phút (đảm bảo >= hiện tại)
+    const now = new Date();
+    now.setMinutes(now.getMinutes() + 30);
+    const localValue = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16); // yyyy-MM-ddTHH:mm
+    setHenThoiGian(localValue);
+    setHenGhiChu("");
+    setHenModalOpen(true);
+  };
+
+  // Gửi tạo cuộc hẹn
+  const submitHen = async (e) => {
+    e.preventDefault();
+    const userId = getCurrentUserId();
+    if (!userId) {
+      showToast("❌ Chưa đăng nhập");
+      return;
+    }
+    if (!henThoiGian) {
+      showToast("❌ Chưa chọn thời gian");
+      return;
+    }
+    const isoRaw = henThoiGian; // ví dụ '2025-11-10T15:30'
+    const mysqlTime = toMySqlDateTime(isoRaw);
+    if (!mysqlTime) {
+      showToast("❌ Thời gian không hợp lệ");
+      return;
+    }
+    const payload = {
+      TinDangID: tinDang?.TinDangID,
+      PhongID: henPhongId,
+      KhachHangID: userId,
+      NhanVienBanHangID: tinDang?.NhanVienBanHangID ?? 13,
+      ThoiGianHen: mysqlTime, // <-- sửa
+      GhiChu: henGhiChu.trim() || null,
+      PheDuyetChuDuAn: getPheDuyetChuValue(),
+    };
+    setHenSubmitting(true);
+    try {
+      const res = await axiosClient.post("/cuoc-hen", payload);
+      if (res?.data?.success) {
+        showToast("✅ Đặt lịch thành công");
+        setHenModalOpen(false);
+      } else {
+        showToast(`❌ ${res?.data?.message || "Lỗi"}`);
+      }
+    } catch (err) {
+      showToast(`❌ ${err?.response?.data?.message || err.message || "Lỗi"}`);
+    } finally {
+      setHenSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     layChiTietTinDang();
     layTinTuongTu();
   }, [id]);
 
-  // 🎨 NEW: Scroll progress tracking
   useEffect(() => {
     const handleScroll = () => {
       const windowHeight = window.innerHeight;
@@ -80,37 +168,36 @@ const ChiTietTinDang = () => {
       setScrollProgress(Math.min(progress, 100));
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // 🎨 NEW: Keyboard navigation for gallery
   useEffect(() => {
     const handleKeyPress = (e) => {
       if (lightboxOpen) {
-        if (e.key === 'ArrowLeft') prevImage();
-        if (e.key === 'ArrowRight') nextImage();
-        if (e.key === 'Escape') setLightboxOpen(false);
+        if (e.key === "ArrowLeft") prevImage();
+        if (e.key === "ArrowRight") nextImage();
+        if (e.key === "Escape") setLightboxOpen(false);
       }
     };
 
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, [lightboxOpen, currentImageIndex]);
 
   const layChiTietTinDang = async () => {
     try {
       setLoading(true);
       const response = await TinDangService.layChiTiet(id);
-      if (response.success) {
+      if (response && response.success) {
         setTinDang(response.data);
-        
+
         // Parse danh sách ảnh
         const urls = parseImages(response.data.URL);
         setDanhSachAnh(urls);
       }
     } catch (error) {
-      console.error('Lỗi tải chi tiết tin đăng:', error);
+      console.error("Lỗi tải chi tiết tin đăng:", error);
     } finally {
       setLoading(false);
     }
@@ -118,31 +205,29 @@ const ChiTietTinDang = () => {
 
   const layTinTuongTu = async () => {
     try {
-      // TODO: Implement API lấy tin tương tự
-      // const response = await TinDangService.layTinTuongTu(id);
-      // setTinTuongTu(response.data);
+      // placeholder
     } catch (error) {
-      console.error('Lỗi tải tin tương tự:', error);
+      console.error("Lỗi tải tin tương tự:", error);
     }
   };
 
   const parseImages = (urlJson) => {
     try {
       if (!urlJson) return [];
-      
+
       // Handle string path
-      if (typeof urlJson === 'string' && urlJson.startsWith('/uploads')) {
+      if (typeof urlJson === "string" && urlJson.startsWith("/uploads")) {
         return [`http://localhost:5000${urlJson}`];
       }
-      
+
       // Handle JSON array
       const urls = JSON.parse(urlJson);
       if (Array.isArray(urls)) {
-        return urls.map(url => 
-          url.startsWith('http') ? url : `http://localhost:5000${url}`
+        return urls.map((url) =>
+          url.startsWith("http") ? url : `http://localhost:5000${url}`
         );
       }
-      
+
       return [];
     } catch {
       return [];
@@ -151,14 +236,14 @@ const ChiTietTinDang = () => {
 
   const parseTienIch = (tienIchJson) => {
     try {
-      return JSON.parse(tienIchJson || '[]');
+      return JSON.parse(tienIchJson || "[]");
     } catch {
       return [];
     }
   };
 
   const formatCurrency = (value) => {
-    return parseInt(value || 0).toLocaleString('vi-VN') + ' ₫';
+    return parseInt(value || 0).toLocaleString("vi-VN") + " ₫";
   };
 
   /**
@@ -174,12 +259,12 @@ const ChiTietTinDang = () => {
 
     // Case 2: Nhiều phòng - Tính khoảng giá từ DanhSachPhong
     if (tinDang.DanhSachPhong && tinDang.DanhSachPhong.length > 0) {
-      const gias = tinDang.DanhSachPhong
-        .map(p => parseFloat(p.Gia))
-        .filter(g => !isNaN(g) && g > 0);
+      const gias = tinDang.DanhSachPhong.map((p) => parseFloat(p.Gia)).filter(
+        (g) => !isNaN(g) && g > 0
+      );
 
       if (gias.length === 0) {
-        return 'Liên hệ';
+        return "Liên hệ";
       }
 
       const minGia = Math.min(...gias);
@@ -195,7 +280,7 @@ const ChiTietTinDang = () => {
     }
 
     // Fallback
-    return 'Liên hệ';
+    return "Liên hệ";
   };
 
   /**
@@ -206,17 +291,17 @@ const ChiTietTinDang = () => {
   const getDienTichHienThi = () => {
     // Case 1: Phòng đơn
     if (!tinDang.TongSoPhong || tinDang.TongSoPhong <= 1) {
-      return tinDang.DienTich ? `${tinDang.DienTich} m²` : 'N/A';
+      return tinDang.DienTich ? `${tinDang.DienTich} m²` : "N/A";
     }
 
     // Case 2: Nhiều phòng
     if (tinDang.DanhSachPhong && tinDang.DanhSachPhong.length > 0) {
-      const dienTichs = tinDang.DanhSachPhong
-        .map(p => parseFloat(p.DienTich))
-        .filter(dt => !isNaN(dt) && dt > 0);
+      const dienTichs = tinDang.DanhSachPhong.map((p) =>
+        parseFloat(p.DienTich)
+      ).filter((dt) => !isNaN(dt) && dt > 0);
 
       if (dienTichs.length === 0) {
-        return 'N/A';
+        return "N/A";
       }
 
       const minDT = Math.min(...dienTichs);
@@ -229,41 +314,44 @@ const ChiTietTinDang = () => {
       return `${minDT} - ${maxDT} m²`;
     }
 
-    return 'N/A';
+    return "N/A";
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('vi-VN', { 
-      day: '2-digit', 
-      month: '2-digit', 
-      year: 'numeric' 
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
   };
 
   const nextImage = () => {
-    setCurrentImageIndex((prev) => 
+    setCurrentImageIndex((prev) =>
       prev === danhSachAnh.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => 
+    setCurrentImageIndex((prev) =>
       prev === 0 ? danhSachAnh.length - 1 : prev - 1
     );
   };
 
   const getCurrentUserId = () => {
     try {
-      const raw = localStorage.getItem('user') || localStorage.getItem('currentUser');
+      const raw =
+        localStorage.getItem("user") || localStorage.getItem("currentUser");
       if (raw) {
         const parsed = JSON.parse(raw);
         const actual = parsed.user ?? parsed;
         const id = actual?.NguoiDungID ?? actual?.id ?? actual?.userId;
         if (id) return Number(id);
       }
-    } catch (e) { /* ignore */ }
-    const idKey = localStorage.getItem('userId');
+    } catch (e) {
+      /* ignore */
+    }
+    const idKey = localStorage.getItem("userId");
     if (idKey && !isNaN(Number(idKey))) return Number(idKey);
     return null;
   };
@@ -271,130 +359,116 @@ const ChiTietTinDang = () => {
   const handleLuuTin = async () => {
     const userId = getCurrentUserId();
     if (!userId) {
-      alert('📢 Yêu cầu đăng nhập\n\nBạn cần đăng nhập để lưu tin yêu thích.\nClick OK để chuyển đến trang đăng nhập.');
-      navigate('/login');
+      alert(
+        "📢 Yêu cầu đăng nhập\n\nBạn cần đăng nhập để lưu tin yêu thích.\nClick OK để chuyển đến trang đăng nhập."
+      );
+      navigate("/login");
       return;
     }
-    
+
     try {
       if (daLuu) {
-        // TODO: API bỏ yêu thích chưa có
         setDaLuu(false);
-        showToast('✅ Đã bỏ lưu tin');
+        showToast("✅ Đã bỏ lưu tin");
       } else {
-        // ✅ Sử dụng API thật
-        await yeuThichApi.add({ 
-          NguoiDungID: userId, 
-          TinDangID: tinDang.TinDangID 
+        await yeuThichApi.add({
+          NguoiDungID: userId,
+          TinDangID: tinDang.TinDangID,
         });
         setDaLuu(true);
-        showToast('✅ Đã lưu tin thành công!');
+        showToast("✅ Đã lưu tin thành công!");
       }
     } catch (error) {
-      console.error('Lỗi lưu tin:', error);
-      const errorMsg = error?.response?.data?.message || 'Có lỗi xảy ra';
+      console.error("Lỗi lưu tin:", error);
+      const errorMsg = error?.response?.data?.message || "Có lỗi xảy ra";
       showToast(`❌ ${errorMsg}`);
     }
   };
 
   const handleChiaSeHu = () => {
-    // ✅ Sử dụng Clipboard API (native browser)
-    navigator.clipboard.writeText(window.location.href).then(() => {
-      showToast('✅ Đã sao chép link chia sẻ!');
-    }).catch(() => {
-      showToast('❌ Không thể sao chép. Vui lòng thử lại.');
-    });
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() => {
+        showToast("✅ Đã sao chép link chia sẻ!");
+      })
+      .catch(() => {
+        showToast("❌ Không thể sao chép. Vui lòng thử lại.");
+      });
   };
 
-  // Handler cho nút "Đặt lịch xem phòng"
-  const handleHenLichNgay = () => {
-    const userId = getCurrentUserId();
-    if (!userId) {
-      alert('📢 Yêu cầu đăng nhập\n\nBạn cần đăng nhập để đặt lịch xem phòng.\nClick OK để chuyển đến trang đăng nhập.');
-      navigate('/login');
-      return;
+  // Create appointment POST /api/cuoc-hen
+  const createAppointment = async (payload) => {
+    setHenSubmitting(true);
+    try {
+      const res = await axiosClient.post("/cuoc-hen", payload);
+      if (res?.data?.success) {
+        showToast("✅ Đặt lịch thành công. Người quản lý sẽ liên hệ bạn sớm.");
+        return true;
+      } else {
+        const msg = res?.data?.message || "Lỗi";
+        showToast(`❌ ${msg}`);
+        return false;
+      }
+    } catch (err) {
+      console.error("Lỗi tạo cuộc hẹn:", err);
+      const msg = err?.response?.data?.message || err.message || "Có lỗi";
+      showToast(`❌ ${msg}`);
+      return false;
+    } finally {
+      setHenSubmitting(false);
     }
-    
-    // 🚧 DEMO: Chức năng đang phát triển
-    alert('🚧 Chức năng đang phát triển\n\n"Đặt lịch xem phòng" sẽ sớm được ra mắt.\n\nHiện tại bạn có thể liên hệ trực tiếp qua số điện thoại bên dưới.');
   };
 
-  // Handler cho nút "Liên hệ ngay"
-  const handleGuiTinNhan = () => {
-    // ✅ Hiển thị thông tin liên hệ thật (có thể lấy từ tinDang nếu có)
-    const sdt = tinDang?.SDTLienHe || tinDang?.SoDienThoai || '0123 456 789';
-    const email = tinDang?.EmailLienHe || 'contact@daphongtro.com';
-    
-    alert(`📞 Thông tin liên hệ\n\n` +
-          `Điện thoại: ${sdt}\n` +
-          `Email: ${email}\n\n` +
-          `💡 Mẹo: Nên gọi điện trực tiếp để được tư vấn nhanh nhất!`);
-  };
-
-  // Handler cho nút "Đặt lịch xem phòng" (trong danh sách phòng)
-  const handleDatLichXemPhong = (tenPhong) => {
-    const userId = getCurrentUserId();
-    if (!userId) {
-      alert(`📢 Yêu cầu đăng nhập\n\nBạn cần đăng nhập để đặt lịch xem ${tenPhong}.\nClick OK để chuyển đến trang đăng nhập.`);
-      navigate('/login');
-      return;
-    }
-    
-    // 🚧 DEMO: Chức năng đang phát triển
-    alert(`🚧 Chức năng đang phát triển\n\nĐặt lịch xem "${tenPhong}" sẽ sớm được ra mắt.\n\nHiện tại bạn có thể liên hệ trực tiếp để hẹn xem phòng.`);
-  };
-
-  // �🎨 NEW: Toast notification helper
   const showToast = (message) => {
-    const toast = document.createElement('div');
-    toast.className = 'ctd-toast';
+    const toast = document.createElement("div");
+    toast.className = "ctd-toast";
     toast.textContent = message;
     document.body.appendChild(toast);
-    
-    setTimeout(() => toast.classList.add('show'), 10);
+
+    setTimeout(() => toast.classList.add("show"), 10);
     setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => document.body.removeChild(toast), 300);
+      toast.classList.remove("show");
+      setTimeout(() => {
+        if (document.body.contains(toast)) document.body.removeChild(toast);
+      }, 300);
     }, 3000);
   };
 
-  // 🎨 NEW: Open lightbox
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
     setLightboxOpen(true);
-    document.body.style.overflow = 'hidden'; // Prevent scroll
+    document.body.style.overflow = "hidden"; // Prevent scroll
   };
 
-  // 🎨 NEW: Close lightbox
   const closeLightbox = () => {
     setLightboxOpen(false);
-    document.body.style.overflow = 'auto';
+    document.body.style.overflow = "auto";
   };
 
   const getTrangThaiInfo = (trangThai) => {
     const map = {
-      'HoatDong': { 
-        label: 'Đang hoạt động', 
-        icon: <HiOutlineCheckCircle />, 
-        color: '#10b981' 
+      HoatDong: {
+        label: "Đang hoạt động",
+        icon: <HiOutlineCheckCircle />,
+        color: "#10b981",
       },
-      'ChoXuLy': { 
-        label: 'Chờ duyệt', 
-        icon: <HiOutlineClock />, 
-        color: '#D4AF37' 
+      ChoXuLy: {
+        label: "Chờ duyệt",
+        icon: <HiOutlineClock />,
+        color: "#D4AF37",
       },
-      'TuChoi': { 
-        label: 'Từ chối', 
-        icon: <HiOutlineXCircle />, 
-        color: '#ef4444' 
+      TuChoi: {
+        label: "Từ chối",
+        icon: <HiOutlineXCircle />,
+        color: "#ef4444",
       },
-      'Nhap': { 
-        label: 'Bản nháp', 
-        icon: <HiOutlineDocumentText />, 
-        color: '#6b7280' 
-      }
+      Nhap: {
+        label: "Bản nháp",
+        icon: <HiOutlineDocumentText />,
+        color: "#6b7280",
+      },
     };
-    return map[trangThai] || map['Nhap'];
+    return map[trangThai] || map["Nhap"];
   };
 
   // Skeleton Loading Component
@@ -403,25 +477,40 @@ const ChiTietTinDang = () => {
       <Header />
       <div className="chi-tiet-tin-dang">
         {/* Scroll Progress Bar */}
-        <div className="ctd-scroll-progress" style={{ width: `${scrollProgress}%` }} />
-        
+        <div
+          className="ctd-scroll-progress"
+          style={{ width: `${scrollProgress}%` }}
+        />
+
         {/* Skeleton Header */}
         <div className="ctd-header">
-          <div className="ctd-skeleton ctd-skeleton-button" style={{ width: '120px' }} />
-          <div className="ctd-skeleton ctd-skeleton-text" style={{ width: '300px' }} />
+          <div
+            className="ctd-skeleton ctd-skeleton-button"
+            style={{ width: "120px" }}
+          />
+          <div
+            className="ctd-skeleton ctd-skeleton-text"
+            style={{ width: "300px" }}
+          />
         </div>
 
         {/* Skeleton Grid */}
         <div className="ctd-grid">
           <div className="ctd-left">
             {/* Skeleton Gallery */}
-            <div className="ctd-skeleton ctd-skeleton-gallery" style={{ height: '500px' }} />
-            
+            <div
+              className="ctd-skeleton ctd-skeleton-gallery"
+              style={{ height: "500px" }}
+            />
+
             {/* Skeleton Specs */}
             <div className="ctd-section">
-              <div className="ctd-skeleton ctd-skeleton-title" style={{ width: '200px' }} />
+              <div
+                className="ctd-skeleton ctd-skeleton-title"
+                style={{ width: "200px" }}
+              />
               <div className="ctd-specs-grid">
-                {[1, 2, 3, 4, 5, 6].map(i => (
+                {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="ctd-skeleton ctd-skeleton-spec" />
                 ))}
               </div>
@@ -429,18 +518,36 @@ const ChiTietTinDang = () => {
 
             {/* Skeleton Description */}
             <div className="ctd-section">
-              <div className="ctd-skeleton ctd-skeleton-title" style={{ width: '150px' }} />
-              <div className="ctd-skeleton ctd-skeleton-text" style={{ height: '100px' }} />
+              <div
+                className="ctd-skeleton ctd-skeleton-title"
+                style={{ width: "150px" }}
+              />
+              <div
+                className="ctd-skeleton ctd-skeleton-text"
+                style={{ height: "100px" }}
+              />
             </div>
           </div>
 
           {/* Skeleton Info Card */}
           <div className="ctd-right">
             <div className="ctd-info-card">
-              <div className="ctd-skeleton ctd-skeleton-title" style={{ width: '100%', height: '30px' }} />
-              <div className="ctd-skeleton ctd-skeleton-text" style={{ width: '150px', height: '40px', marginTop: '16px' }} />
-              <div className="ctd-skeleton ctd-skeleton-button" style={{ width: '100%', marginTop: '24px' }} />
-              <div className="ctd-skeleton ctd-skeleton-button" style={{ width: '100%', marginTop: '12px' }} />
+              <div
+                className="ctd-skeleton ctd-skeleton-title"
+                style={{ width: "100%", height: "30px" }}
+              />
+              <div
+                className="ctd-skeleton ctd-skeleton-text"
+                style={{ width: "150px", height: "40px", marginTop: "16px" }}
+              />
+              <div
+                className="ctd-skeleton ctd-skeleton-button"
+                style={{ width: "100%", marginTop: "24px" }}
+              />
+              <div
+                className="ctd-skeleton ctd-skeleton-button"
+                style={{ width: "100%", marginTop: "12px" }}
+              />
             </div>
           </div>
         </div>
@@ -461,7 +568,7 @@ const ChiTietTinDang = () => {
           <div className="ctd-error">
             <HiOutlineXCircle className="ctd-error-icon" />
             <h3>Không tìm thấy tin đăng</h3>
-            <button onClick={() => navigate('/')} className="ctd-btn-primary">
+            <button onClick={() => navigate("/")} className="ctd-btn-primary">
               Về trang chủ
             </button>
           </div>
@@ -476,7 +583,7 @@ const ChiTietTinDang = () => {
   return (
     <div className="chi-tiet-tin-dang-wrapper">
       <Header />
-      
+
       <div className="chi-tiet-tin-dang">
         {/* Header với Breadcrumb */}
         <div className="ctd-header">
@@ -484,7 +591,7 @@ const ChiTietTinDang = () => {
             <HiOutlineArrowLeft />
             <span>Quay lại</span>
           </button>
-          
+
           <div className="ctd-breadcrumb">
             <Link to="/">Trang chủ</Link>
             <span>/</span>
@@ -492,19 +599,27 @@ const ChiTietTinDang = () => {
           </div>
 
           <div className="ctd-header-actions">
-            <button 
-              onClick={handleLuuTin} 
-              className={`ctd-btn-icon ${daLuu ? 'active' : ''}`}
+            <button
+              onClick={handleLuuTin}
+              className={`ctd-btn-icon ${daLuu ? "active" : ""}`}
               title="Lưu tin yêu thích"
             >
-              <HiOutlineHeart style={{ width: '24px', height: '24px', color: daLuu ? '#ef4444' : '#334155' }} />
+              <HiOutlineHeart
+                style={{
+                  width: "24px",
+                  height: "24px",
+                  color: daLuu ? "#ef4444" : "#334155",
+                }}
+              />
             </button>
-            <button 
-              onClick={handleChiaSeHu} 
+            <button
+              onClick={handleChiaSeHu}
               className="ctd-btn-icon"
               title="Chia sẻ"
             >
-              <HiOutlineShare style={{ width: '24px', height: '24px', color: '#111827' }} />
+              <HiOutlineShare
+                style={{ width: "24px", height: "24px", color: "#111827" }}
+              />
             </button>
           </div>
         </div>
@@ -516,31 +631,37 @@ const ChiTietTinDang = () => {
             {/* Image Gallery */}
             {danhSachAnh.length > 0 && (
               <div className="ctd-gallery">
-                <div 
+                <div
                   className="ctd-gallery-main"
                   onClick={() => openLightbox(currentImageIndex)}
-                  style={{ cursor: 'zoom-in' }}
+                  style={{ cursor: "zoom-in" }}
                   role="button"
                   tabIndex={0}
                   aria-label="Click to view full size"
                 >
-                  <img 
-                    src={danhSachAnh[currentImageIndex]} 
+                  <img
+                    src={danhSachAnh[currentImageIndex]}
                     alt={`${tinDang.TieuDe} - ${currentImageIndex + 1}`}
                     className="ctd-gallery-image"
                   />
-                  
+
                   {danhSachAnh.length > 1 && (
                     <>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          prevImage();
+                        }}
                         className="ctd-gallery-nav ctd-gallery-prev"
                         aria-label="Previous image"
                       >
                         <HiOutlineChevronLeft />
                       </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          nextImage();
+                        }}
                         className="ctd-gallery-nav ctd-gallery-next"
                         aria-label="Next image"
                       >
@@ -562,10 +683,12 @@ const ChiTietTinDang = () => {
                 {danhSachAnh.length > 1 && (
                   <div className="ctd-gallery-thumbs">
                     {danhSachAnh.map((url, index) => (
-                      <div 
+                      <div
                         key={index}
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`ctd-thumb ${index === currentImageIndex ? 'active' : ''}`}
+                        className={`ctd-thumb ${
+                          index === currentImageIndex ? "active" : ""
+                        }`}
                         role="button"
                         tabIndex={0}
                         aria-label={`View image ${index + 1}`}
@@ -586,7 +709,9 @@ const ChiTietTinDang = () => {
                   <HiOutlineCurrencyDollar className="ctd-spec-icon" />
                   <div className="ctd-spec-content">
                     <span className="ctd-spec-label">Giá thuê</span>
-                    <span className="ctd-spec-value">{getGiaHienThi()}/tháng</span>
+                    <span className="ctd-spec-value">
+                      {getGiaHienThi()}/tháng
+                    </span>
                   </div>
                 </div>
 
@@ -594,7 +719,9 @@ const ChiTietTinDang = () => {
                   <HiOutlineSquare3Stack3D className="ctd-spec-icon" />
                   <div className="ctd-spec-content">
                     <span className="ctd-spec-label">Diện tích</span>
-                    <span className="ctd-spec-value">{getDienTichHienThi()}</span>
+                    <span className="ctd-spec-value">
+                      {getDienTichHienThi()}
+                    </span>
                   </div>
                 </div>
 
@@ -602,7 +729,9 @@ const ChiTietTinDang = () => {
                   <HiOutlineHome className="ctd-spec-icon" />
                   <div className="ctd-spec-content">
                     <span className="ctd-spec-label">Loại phòng</span>
-                    <span className="ctd-spec-value">{tinDang.LoaiPhong || 'Phòng trọ'}</span>
+                    <span className="ctd-spec-value">
+                      {tinDang.LoaiPhong || "Phòng trọ"}
+                    </span>
                   </div>
                 </div>
 
@@ -612,7 +741,9 @@ const ChiTietTinDang = () => {
                       <HiOutlineHome className="ctd-spec-icon" />
                       <div className="ctd-spec-content">
                         <span className="ctd-spec-label">Tổng số phòng</span>
-                        <span className="ctd-spec-value">{tinDang.TongSoPhong}</span>
+                        <span className="ctd-spec-value">
+                          {tinDang.TongSoPhong}
+                        </span>
                       </div>
                     </div>
 
@@ -620,7 +751,9 @@ const ChiTietTinDang = () => {
                       <HiOutlineCheckCircle className="ctd-spec-icon" />
                       <div className="ctd-spec-content">
                         <span className="ctd-spec-label">Phòng trống</span>
-                        <span className="ctd-spec-value">{tinDang.SoPhongTrong}</span>
+                        <span className="ctd-spec-value">
+                          {tinDang.SoPhongTrong}
+                        </span>
                       </div>
                     </div>
                   </>
@@ -630,7 +763,9 @@ const ChiTietTinDang = () => {
                   <HiOutlineCalendar className="ctd-spec-icon" />
                   <div className="ctd-spec-content">
                     <span className="ctd-spec-label">Đăng lúc</span>
-                    <span className="ctd-spec-value">{formatDate(tinDang.TaoLuc)}</span>
+                    <span className="ctd-spec-value">
+                      {formatDate(tinDang.TaoLuc)}
+                    </span>
                   </div>
                 </div>
 
@@ -638,7 +773,9 @@ const ChiTietTinDang = () => {
                   <HiOutlineEye className="ctd-spec-icon" />
                   <div className="ctd-spec-content">
                     <span className="ctd-spec-label">Lượt xem</span>
-                    <span className="ctd-spec-value">{tinDang.LuotXem || 0}</span>
+                    <span className="ctd-spec-value">
+                      {tinDang.LuotXem || 0}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -651,7 +788,9 @@ const ChiTietTinDang = () => {
                 {tinDang.MoTa ? (
                   <p>{tinDang.MoTa}</p>
                 ) : (
-                  <p className="ctd-description-empty">Chưa có mô tả chi tiết</p>
+                  <p className="ctd-description-empty">
+                    Chưa có mô tả chi tiết
+                  </p>
                 )}
               </div>
             </div>
@@ -677,33 +816,39 @@ const ChiTietTinDang = () => {
                 <div className="ctd-section-header">
                   <h2 className="ctd-section-title">
                     <HiOutlineBuildingOffice2 />
-                    <span>Danh sách phòng ({tinDang.DanhSachPhong.length} phòng)</span>
+                    <span>
+                      Danh sách phòng ({tinDang.DanhSachPhong.length} phòng)
+                    </span>
                   </h2>
                   <div className="ctd-rooms-summary">
                     <span className="ctd-rooms-available">
-                      <HiOutlineCheckCircle /> {tinDang.SoPhongTrong || 0} còn trống
+                      <HiOutlineCheckCircle /> {tinDang.SoPhongTrong || 0} còn
+                      trống
                     </span>
                     <span className="ctd-rooms-rented">
-                      {tinDang.TongSoPhong - (tinDang.SoPhongTrong || 0)} đã thuê
+                      {tinDang.TongSoPhong - (tinDang.SoPhongTrong || 0)} đã
+                      thuê
                     </span>
                   </div>
                 </div>
 
                 <div className="ctd-rooms-grid">
-                  {tinDang.DanhSachPhong.map((phong, index) => {
+                  {tinDang.DanhSachPhong.map((phong) => {
                     const phongImages = parseImages(phong.URL);
-                    const isAvailable = phong.TrangThai === 'Trong';
+                    const isAvailable = phong.TrangThai === "Trong";
 
                     return (
-                      <div 
-                        key={phong.PhongID} 
-                        className={`ctd-room-card ${!isAvailable ? 'ctd-room-card-rented' : ''}`}
+                      <div
+                        key={phong.PhongID}
+                        className={`ctd-room-card ${
+                          !isAvailable ? "ctd-room-card-rented" : ""
+                        }`}
                       >
                         {/* Room Image */}
                         <div className="ctd-room-image-wrapper">
                           {phongImages.length > 0 ? (
-                            <img 
-                              src={phongImages[0]} 
+                            <img
+                              src={phongImages[0]}
                               alt={phong.TenPhong}
                               className="ctd-room-image"
                               loading="lazy"
@@ -713,9 +858,13 @@ const ChiTietTinDang = () => {
                               <HiOutlineHome />
                             </div>
                           )}
-                          
+
                           {/* Status Badge */}
-                          <div className={`ctd-room-status ${isAvailable ? 'available' : 'rented'}`}>
+                          <div
+                            className={`ctd-room-status ${
+                              isAvailable ? "available" : "rented"
+                            }`}
+                          >
                             {isAvailable ? (
                               <>
                                 <HiOutlineCheckCircle />
@@ -741,16 +890,20 @@ const ChiTietTinDang = () => {
                         {/* Room Info */}
                         <div className="ctd-room-info">
                           <h3 className="ctd-room-name">{phong.TenPhong}</h3>
-                          
+
                           <div className="ctd-room-specs">
                             <div className="ctd-room-spec">
                               <HiOutlineCurrencyDollar className="ctd-room-spec-icon" />
-                              <span className="ctd-room-spec-value">{formatCurrency(phong.Gia)}</span>
+                              <span className="ctd-room-spec-value">
+                                {formatCurrency(phong.Gia)}
+                              </span>
                               <span className="ctd-room-spec-unit">/tháng</span>
                             </div>
                             <div className="ctd-room-spec">
                               <HiOutlineSquare3Stack3D className="ctd-room-spec-icon" />
-                              <span className="ctd-room-spec-value">{phong.DienTich}</span>
+                              <span className="ctd-room-spec-value">
+                                {phong.DienTich}
+                              </span>
                               <span className="ctd-room-spec-unit">m²</span>
                             </div>
                           </div>
@@ -758,21 +911,20 @@ const ChiTietTinDang = () => {
                           {/* Room Description */}
                           {phong.MoTa && (
                             <p className="ctd-room-description">
-                              {phong.MoTa.length > 80 
-                                ? `${phong.MoTa.substring(0, 80)}...` 
+                              {phong.MoTa.length > 80
+                                ? `${phong.MoTa.substring(0, 80)}...`
                                 : phong.MoTa}
                             </p>
                           )}
 
                           {/* CTA Button */}
                           {isAvailable && (
-                            <button 
+                            <button
                               className="ctd-room-cta"
-                              onClick={() => handleDatLichXemPhong(phong.TenPhong)}
+                              onClick={() => openHenModal(phong.PhongID)}
                             >
                               <HiOutlineCalendar />
                               <span>Đặt lịch xem phòng</span>
-                              <span className="ctd-badge-demo-small">🚧</span>
                             </button>
                           )}
                         </div>
@@ -784,7 +936,7 @@ const ChiTietTinDang = () => {
             )}
 
             {/* Vị trí */}
-            {(tinDang.ViDo && tinDang.KinhDo) ? (
+            {tinDang.ViDo && tinDang.KinhDo ? (
               <MapViTriPhong
                 lat={parseFloat(tinDang.ViDo)}
                 lng={parseFloat(tinDang.KinhDo)}
@@ -800,7 +952,9 @@ const ChiTietTinDang = () => {
                   <span>Vị trí</span>
                 </h2>
                 <div className="ctd-location">
-                  <p className="ctd-location-address">{tinDang.DiaChi || tinDang.DiaChiDuAn}</p>
+                  <p className="ctd-location-address">
+                    {tinDang.DiaChi || tinDang.DiaChiDuAn}
+                  </p>
                   <div className="ctd-map-placeholder">
                     <HiOutlineMapPin />
                     <p>Thông tin vị trí chưa có sẵn</p>
@@ -835,45 +989,48 @@ const ChiTietTinDang = () => {
               </div>
 
               <div className="ctd-actions">
-                <button 
+                <button
                   className="ctd-btn-primary ctd-btn-full"
-                  onClick={handleHenLichNgay}
+                  onClick={() => openHenModal(null)}
+                  disabled={henSubmitting}
                 >
                   <HiOutlineCalendar />
                   <span>Đặt lịch xem phòng</span>
-                  <span className="ctd-badge-demo">🚧 Demo</span>
                 </button>
-                <button 
+                <button
                   className="ctd-btn-secondary ctd-btn-full"
-                  onClick={handleGuiTinNhan}
+                  onClick={handleChiaSeHu}
                 >
                   <HiOutlinePhone />
                   <span>Liên hệ ngay</span>
                 </button>
                 <button
-  className="ctd-btn-secondary ctd-btn-deposit"
-  onClick={() => {
-    const acc = tinDang?.BankAccountNumber ?? '80349195777';
-    const bank = tinDang?.BankName ?? 'TPBank';
-    const amount = tinDang?.Gia ?? tinDang?.TienCoc ?? '100000';
-    const des = `dk${tinDang?.TinDangID ?? tinDang?.id ?? ''}`;
+                  className="ctd-btn-secondary ctd-btn-deposit"
+                  onClick={() => {
+                    const acc = tinDang?.BankAccountNumber ?? "80349195777";
+                    const bank = tinDang?.BankName ?? "TPBank";
+                    const amount = tinDang?.Gia ?? tinDang?.TienCoc ?? "100000";
+                    const des = `dk${tinDang?.TinDangID ?? tinDang?.id ?? ""}`;
 
-    navigate(
-      `/thanhtoancoc?acc=${encodeURIComponent(acc)}&bank=${encodeURIComponent(bank)}&amount=${encodeURIComponent(amount)}&des=${encodeURIComponent(des)}&order=${encodeURIComponent(
-        tinDang?.TinDangID ?? ''
-      )}`
-    );
-  }}
-  title="Đặt cọc"
->
-  <HiOutlineCurrencyDollar style={{ width: 18, height: 18, marginRight: 8 }} />
-  <span>Đặt cọc</span>
-</button>
-
-
-
-                
-                
+                    navigate(
+                      `/thanhtoancoc?acc=${encodeURIComponent(
+                        acc
+                      )}&bank=${encodeURIComponent(
+                        bank
+                      )}&amount=${encodeURIComponent(
+                        amount
+                      )}&des=${encodeURIComponent(
+                        des
+                      )}&order=${encodeURIComponent(tinDang?.TinDangID ?? "")}`
+                    );
+                  }}
+                  title="Đặt cọc"
+                >
+                  <HiOutlineCurrencyDollar
+                    style={{ width: 18, height: 18, marginRight: 8 }}
+                  />
+                  <span>Đặt cọc</span>
+                </button>
               </div>
 
               {/* Thông tin dự án */}
@@ -918,15 +1075,18 @@ const ChiTietTinDang = () => {
 
         {/* 🎨 NEW: Image Lightbox */}
         {lightboxOpen && (
-          <div 
+          <div
             className="ctd-lightbox"
             onClick={closeLightbox}
             role="dialog"
             aria-modal="true"
             aria-label="Image lightbox"
           >
-            <div className="ctd-lightbox-content" onClick={(e) => e.stopPropagation()}>
-              <button 
+            <div
+              className="ctd-lightbox-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
                 className="ctd-lightbox-close"
                 onClick={closeLightbox}
                 aria-label="Close lightbox"
@@ -934,7 +1094,7 @@ const ChiTietTinDang = () => {
                 <HiOutlineXCircle />
               </button>
 
-              <img 
+              <img
                 src={danhSachAnh[currentImageIndex]}
                 alt={`${tinDang.TieuDe} - Full size`}
                 className="ctd-lightbox-image"
@@ -942,14 +1102,14 @@ const ChiTietTinDang = () => {
 
               {danhSachAnh.length > 1 && (
                 <>
-                  <button 
+                  <button
                     className="ctd-lightbox-nav ctd-lightbox-prev"
                     onClick={prevImage}
                     aria-label="Previous image"
                   >
                     <HiOutlineChevronLeft />
                   </button>
-                  <button 
+                  <button
                     className="ctd-lightbox-nav ctd-lightbox-next"
                     onClick={nextImage}
                     aria-label="Next image"
@@ -966,8 +1126,13 @@ const ChiTietTinDang = () => {
                     {danhSachAnh.map((url, index) => (
                       <div
                         key={index}
-                        className={`ctd-lightbox-thumb ${index === currentImageIndex ? 'active' : ''}`}
-                        onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(index); }}
+                        className={`ctd-lightbox-thumb ${
+                          index === currentImageIndex ? "active" : ""
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentImageIndex(index);
+                        }}
                       >
                         <img src={url} alt={`Thumb ${index + 1}`} />
                       </div>
@@ -980,19 +1145,122 @@ const ChiTietTinDang = () => {
         )}
 
         {/* 🎨 NEW: Scroll Progress Bar */}
-        <div 
-          className="ctd-scroll-progress" 
+        <div
+          className="ctd-scroll-progress"
           style={{ width: `${scrollProgress}%` }}
           role="progressbar"
           aria-valuenow={scrollProgress}
           aria-valuemin="0"
           aria-valuemax="100"
         />
-      </div>
 
+        {/* Modal đặt lịch (thêm trước Footer) */}
+        {henModalOpen && (
+          <div
+            className="hen-modal-overlay"
+            onClick={() => !henSubmitting && setHenModalOpen(false)}
+          >
+            <div
+              className="hen-modal"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <h3>Đặt lịch xem phòng</h3>
+              <form onSubmit={submitHen} className="hen-form">
+                <div className="hen-form-row">
+                  <label>Phòng</label>
+                  <select
+                    value={henPhongId ?? ""}
+                    onChange={(e) =>
+                      setHenPhongId(
+                        e.target.value ? Number(e.target.value) : null
+                      )
+                    }
+                  >
+                    <option value="">(Không chọn phòng cụ thể)</option>
+                    {tinDang?.DanhSachPhong?.map((p) => (
+                      <option key={p.PhongID} value={p.PhongID}>
+                        {p.TenPhong} - {formatCurrency(p.Gia)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="hen-form-row">
+                  <label>Thời gian hẹn</label>
+                  <input
+                    type="datetime-local"
+                    value={henThoiGian}
+                    onChange={(e) => setHenThoiGian(e.target.value)}
+                    required
+                    min={new Date(
+                      Date.now() - new Date().getTimezoneOffset() * 60000
+                    )
+                      .toISOString()
+                      .slice(0, 16)}
+                  />
+                </div>
+                <div className="hen-form-row">
+                  <label>Ghi chú (tuỳ chọn)</label>
+                  <textarea
+                    value={henGhiChu}
+                    onChange={(e) => setHenGhiChu(e.target.value)}
+                    placeholder="Ví dụ: Muốn xem phòng buổi chiều..."
+                    rows={3}
+                  />
+                </div>
+                <div className="hen-form-footer">
+                  <button
+                    type="button"
+                    className="hen-btn secondary"
+                    disabled={henSubmitting}
+                    onClick={() => setHenModalOpen(false)}
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    className="hen-btn primary"
+                    disabled={henSubmitting}
+                  >
+                    {henSubmitting ? "Đang gửi..." : "Xác nhận đặt lịch"}
+                  </button>
+                </div>
+                <div className="hen-note">
+                  PheDuyetChuDuAn sẽ gửi: {getPheDuyetChuValue()}
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
       <Footer />
     </div>
   );
 };
 
 export default ChiTietTinDang;
+
+// ...existing code (đặt cùng nơi khai báo helpers)...
+const toMySqlDateTime = (input) => {
+  if (!input) return null;
+  // 1) datetime-local từ input: 'YYYY-MM-DDTHH:MM' -> giữ giờ local
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input)) {
+    return input.replace("T", " ") + ":00";
+  }
+  // 2) ISO có Z/+07:00 -> format theo giờ local thành 'YYYY-MM-DD HH:MM:SS'
+  try {
+    const d = new Date(input);
+    if (!isNaN(d.getTime())) {
+      const pad = (n) => String(n).padStart(2, "0");
+      const y = d.getFullYear();
+      const m = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const h = pad(d.getHours());
+      const mi = pad(d.getMinutes());
+      const s = pad(d.getSeconds());
+      return `${y}-${m}-${day} ${h}:${mi}:${s}`;
+    }
+  } catch {}
+  return null;
+};

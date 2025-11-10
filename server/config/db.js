@@ -32,3 +32,24 @@ testConnection();
 
 // Dùng .promise() để query bằng async/await
 module.exports = pool.promise();
+
+
+
+
+
+
+
+// 
+
+/*
+
+POST http://localhost:5000/api/cuoc-hen
+{
+"TinDangID": 5,
+"KhachHangID": 15,
+"NhanVienBanHangID": 13,
+"ThoiGianHen": "2025-11-10T15:30:00+07:00",
+"GhiChu": "Xem phòng buổi chiều"
+}
+
+*/
