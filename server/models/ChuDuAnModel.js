@@ -45,6 +45,12 @@ class ChuDuAnModel {
           td.TinDangID, td.DuAnID, td.KhuVucID, td.ChinhSachCocID,
           td.TieuDe, td.URL, td.MoTa, td.TienIch, td.GiaDien, td.GiaNuoc, td.GiaDichVu, td.MoTaGiaDichVu,
           (
+            SELECT MIN(pt.PhongID) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID
+          ) AS PhongID,
+          (
+            SELECT GROUP_CONCAT(pt.PhongID) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID
+          ) AS PhongIDs,
+          (
             SELECT MIN(COALESCE(pt.GiaTinDang, p.GiaChuan))
             FROM phong_tindang pt
             JOIN phong p ON pt.PhongID = p.PhongID
@@ -58,7 +64,7 @@ class ChuDuAnModel {
           ) as DienTich,
           td.TrangThai,
           td.LyDoTuChoi, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,
-          da.TenDuAn, da.DiaChi AS DiaChi, kv.TenKhuVuc,
+          da.TenDuAn, da.DiaChi AS DiaChi, da.YeuCauPheDuyetChu, kv.TenKhuVuc,
           (SELECT COUNT(*) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID) as TongSoPhong,
           (SELECT COUNT(*) FROM phong_tindang pt 
            JOIN phong p ON pt.PhongID = p.PhongID 
@@ -110,7 +116,7 @@ class ChuDuAnModel {
    */
   static async layChiTietTinDang(tinDangId, chuDuAnId) {
     try {
-      // Query chi tiết tin đăng
+      // Query chi tiết tin đăng (thêm da.ChuDuAnID và da.YeuCauPheDuyetChu)
       let query = `
         SELECT 
           td.TinDangID, td.DuAnID, td.KhuVucID, td.ChinhSachCocID,
@@ -128,7 +134,8 @@ class ChuDuAnModel {
             WHERE pt.TinDangID = td.TinDangID
           ) as DienTich,
           td.TrangThai, td.LyDoTuChoi, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,
-          da.TenDuAn, da.DiaChi as DiaChiDuAn, da.ViDo, da.KinhDo,
+          da.DuAnID as DuAnID, da.ChuDuAnID as ChuDuAnID, da.TenDuAn, da.DiaChi as DiaChiDuAn, da.ViDo, da.KinhDo,
+          da.YeuCauPheDuyetChu, -- <-- thêm trường ở đây
           kv.TenKhuVuc, csc.TenChinhSach, csc.MoTa as MoTaChinhSach,
           nd.TenDayDu as TenChuDuAn, nd.Email as EmailChuDuAn,
           (SELECT COUNT(*) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID) as TongSoPhong,
@@ -1460,6 +1467,7 @@ class ChuDuAnModel {
    * @param {number} chuDuAnId 
    * @param {Object} filters {tuNgay, denNgay}
    * @returns {Promise<Array>}
+  
    */
   static async layTopTinDang(chuDuAnId, filters = {}) {
     try {

@@ -48,6 +48,7 @@ import QuanLyTinDang from './pages/quanlytindang';
 import QuanLyKhuVuc from './pages/quanlykhuvuc';
 import ThanhToan from './pages/thanhtoan';
 import ThanhToanCoc from './pages/thanhtoancoc';
+import Appointments from './pages/cuochencuatoi'; // đúng thư mục hiện tại
 
 function App() {
 
@@ -105,6 +106,7 @@ function App() {
       <Route path="/quanlykhuvuc" element={<QuanLyKhuVuc />} />
       <Route path="/thanhtoan" element={<ThanhToan />} />
       <Route path="/thanhtoancoc" element={<ThanhToanCoc />} />
+      <Route path="/cuochencuatoi" element={<Appointments />} />
     </Routes>
         </div>
  

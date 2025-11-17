@@ -36,7 +36,9 @@ const yeuThichRoutes = require('./routes/yeuThichRoutes');
 const sepayRoutes = require('./routes/sepayRoutes');
 const transactionRoutes = require('./routes/transactionRoutes');
 const sepayCallbackRoutes = require('./routes/sepayCallbackRoutes');
-
+const cuocHenRoutes = require('./routes/cuocHenRoutes');
+const publicDuAnRoutes = require('./routes/publicDuAnRoutes');
+const publicTinDangRoutes = require('./routes/publicTinDangRoutes');
 const sepaySync = require('./services/sepaySyncService');
 
 // Create Express app and HTTP server
@@ -103,7 +105,9 @@ app.use('/api/yeuthich', yeuThichRoutes);
 app.use('/api/sepay', sepayRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/sepay', sepayCallbackRoutes);
-
+app.use('/api/cuoc-hen', cuocHenRoutes);
+app.use('/api/public/du-an', publicDuAnRoutes);
+app.use('/api/public/tin-dang', publicTinDangRoutes);
 app.get('/', (req, res) => {
   res.send('API server đang chạy - Module Chủ dự án + Upstream APIs');
 });
