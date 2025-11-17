@@ -9,7 +9,7 @@ const NhatKyService = require('../services/NhatKyHeThongService');
 // Rate limiting: Map để lưu số lượng tin nhắn của mỗi user
 const userMessageCount = new Map();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 phút
-const MAX_MESSAGES_PER_MINUTE = 10;
+const MAX_MESSAGES_PER_MINUTE = 50;
 
 /**
  * Reset message count sau mỗi phút

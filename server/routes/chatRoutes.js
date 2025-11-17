@@ -5,7 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authFlexible } = require('../middleware/authFlexible');
+const authMiddleware = require('../middleware/auth');
 const ChatController = require('../controllers/ChatController');
 
 // Base path: /api/chat
@@ -16,7 +16,7 @@ const ChatController = require('../controllers/ChatController');
  */
 router.post(
   '/conversations',
-  authFlexible,
+  authMiddleware,
   ChatController.taoHoacLayCuocHoiThoai
 );
 
@@ -26,7 +26,7 @@ router.post(
  */
 router.get(
   '/conversations',
-  authFlexible,
+  authMiddleware,
   ChatController.layDanhSachCuocHoiThoai
 );
 
@@ -36,7 +36,7 @@ router.get(
  */
 router.get(
   '/conversations/:id',
-  authFlexible,
+  authMiddleware,
   ChatController.layChiTietCuocHoiThoai
 );
 
@@ -46,7 +46,7 @@ router.get(
  */
 router.get(
   '/conversations/:id/messages',
-  authFlexible,
+  authMiddleware,
   ChatController.layTinNhan
 );
 
@@ -56,7 +56,7 @@ router.get(
  */
 router.post(
   '/conversations/:id/messages',
-  authFlexible,
+  authMiddleware,
   ChatController.guiTinNhan
 );
 
@@ -66,7 +66,7 @@ router.post(
  */
 router.put(
   '/conversations/:id/mark-read',
-  authFlexible,
+  authMiddleware,
   ChatController.danhDauDaDoc
 );
 
@@ -76,7 +76,7 @@ router.put(
  */
 router.delete(
   '/messages/:id',
-  authFlexible,
+  authMiddleware,
   ChatController.xoaTinNhan
 );
 

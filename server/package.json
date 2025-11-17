@@ -5,7 +5,12 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "smoke": "node scripts/smoke.js",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "accounts": "node scripts/print-login-accounts.js",
+    "seed:accounts": "node scripts/seed-min-accounts.js"
   },
   "keywords": [],
   "author": "",
@@ -27,6 +32,21 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/tests/**/*.test.js"],
+    "collectCoverageFrom": [
+      "controllers/**/*.js",
+      "models/**/*.js",
+      "services/**/*.js"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/tests/"
+    ]
   }
 }

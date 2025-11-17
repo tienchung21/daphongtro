@@ -17,7 +17,7 @@ const { requireRoles } = require('../middleware/role');
  * 
  * Middleware:
  * - auth: Xác thực JWT
- * - requireRole(['Operator', 'Admin']): Chỉ Operator/Admin được thực hiện
+ * - requireRole(['NhanVienDieuHanh', 'QuanTriVienHeThong']): Chỉ Nhân viên Điều hành/Admin được thực hiện
  * 
  * Body:
  * - LyDoNgungHoatDong (string, required, min 10 chars): Lý do vi phạm
@@ -26,14 +26,14 @@ const { requireRoles } = require('../middleware/role');
  * - 200: Success với thông tin dự án đã banned
  * - 400: Validation errors
  * - 401: Chưa đăng nhập
- * - 403: Không có quyền (không phải Operator/Admin)
+ * - 403: Không có quyền (không phải Nhân viên Điều hành/Admin)
  * - 404: Dự án không tồn tại
  * - 409: Dự án đã bị banned trước đó
  */
 router.put(
   '/du-an/:id/banned',
   auth,
-  requireRoles(['Operator', 'Admin']),
+  requireRoles(['NhanVienDieuHanh', 'QuanTriVienHeThong']),
   OperatorController.bannedDuAn
 );
 
@@ -43,7 +43,7 @@ router.put(
  * 
  * Middleware:
  * - auth: Xác thực JWT
- * - requireRole(['Operator', 'Admin']): Chỉ Operator/Admin được thực hiện
+ * - requireRole(['NhanVienDieuHanh', 'QuanTriVienHeThong']): Chỉ Nhân viên Điều hành/Admin được thực hiện
  * 
  * Body:
  * - KetQua (string, required): 'ChapNhan' hoặc 'TuChoi'
@@ -60,7 +60,7 @@ router.put(
 router.put(
   '/du-an/:id/xu-ly-yeu-cau',
   auth,
-  requireRoles(['Operator', 'Admin']),
+  requireRoles(['NhanVienDieuHanh', 'QuanTriVienHeThong']),
   OperatorController.xuLyYeuCauMoLai
 );
 

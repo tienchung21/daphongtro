@@ -912,7 +912,41 @@ function QuanLyDuAn() {
                           </td>
                           <td className="col-project">
                             <div className="project-info">
-                              <div className="project-name">{duAn.TenDuAn}</div>
+                              <div className="project-name">
+                                {duAn.TenDuAn}
+                                {/* Badge trạng thái duyệt hoa hồng */}
+                                {duAn.TrangThaiDuyetHoaHong && (
+                                  <span
+                                    style={{
+                                      marginLeft: '0.5rem',
+                                      padding: '0.125rem 0.5rem',
+                                      borderRadius: '0.25rem',
+                                      fontSize: '0.7rem',
+                                      fontWeight: 500,
+                                      background: duAn.TrangThaiDuyetHoaHong === 'DaDuyet'
+                                        ? '#dcfce7'
+                                        : duAn.TrangThaiDuyetHoaHong === 'TuChoi'
+                                        ? '#fee2e2'
+                                        : '#fef3c7',
+                                      color: duAn.TrangThaiDuyetHoaHong === 'DaDuyet'
+                                        ? '#166534'
+                                        : duAn.TrangThaiDuyetHoaHong === 'TuChoi'
+                                        ? '#991b1b'
+                                        : '#92400e',
+                                      cursor: 'help',
+                                      title: duAn.TrangThaiDuyetHoaHong === 'DaDuyet'
+                                        ? 'Hoa hồng đã được duyệt'
+                                        : duAn.TrangThaiDuyetHoaHong === 'TuChoi'
+                                        ? 'Hoa hồng bị từ chối - Cần chỉnh sửa và gửi lại'
+                                        : 'Hoa hồng đang chờ duyệt'
+                                    }}
+                                  >
+                                    {duAn.TrangThaiDuyetHoaHong === 'DaDuyet' && '✓ HH'}
+                                    {duAn.TrangThaiDuyetHoaHong === 'TuChoi' && '✗ HH'}
+                                    {duAn.TrangThaiDuyetHoaHong === 'ChoDuyet' && '⏳ HH'}
+                                  </span>
+                                )}
+                              </div>
                               <div className="project-address">
                                 {duAn.ViDo && duAn.KinhDo ? (
                                   <>

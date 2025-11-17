@@ -7,7 +7,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { authFlexible } = require('../middleware/authFlexible');
+const authMiddleware = require('../middleware/auth');
 const { requireRole } = require('../middleware/role');
 const HopDongController = require('../controllers/HopDongController');
 
@@ -45,7 +45,7 @@ const upload = multer({
  */
 router.post(
   '/hop-dong/bao-cao',
-  authFlexible,
+  authMiddleware,
   requireRole('ChuDuAn'),
   HopDongController.baoCao
 );
@@ -56,7 +56,7 @@ router.post(
  */
 router.get(
   '/hop-dong',
-  authFlexible,
+  authMiddleware,
   requireRole('ChuDuAn'),
   HopDongController.layDanhSach
 );
@@ -67,7 +67,7 @@ router.get(
  */
 router.get(
   '/hop-dong/:id',
-  authFlexible,
+  authMiddleware,
   requireRole('ChuDuAn'),
   HopDongController.layChiTiet
 );
@@ -78,7 +78,7 @@ router.get(
  */
 router.post(
   '/hop-dong/:id/upload',
-  authFlexible,
+  authMiddleware,
   requireRole('ChuDuAn'),
   upload.single('file'),
   HopDongController.uploadFileScan

@@ -36,6 +36,7 @@ class DuAnModel {
           da.NguoiXuLyYeuCauID,
           da.ThoiGianXuLyYeuCau,
           da.LyDoTuChoiMoLai,
+          da.BangHoaHong,
           nd_banned.TenDayDu AS NguoiNgungHoatDong_TenDayDu,
           nd_xulyban.TenDayDu AS NguoiXuLyYeuCau_TenDayDu,
           (SELECT COUNT(*) FROM tindang td WHERE td.DuAnID = da.DuAnID AND td.TrangThai != 'LuuTru') as SoTinDang,
@@ -250,7 +251,12 @@ class DuAnModel {
           d.YeuCauPheDuyetChu,
           d.TrangThai,
           d.TaoLuc,
-          d.CapNhatLuc
+          d.CapNhatLuc,
+          d.ViDo,
+          d.KinhDo,
+          d.PhuongThucVao,
+          d.SoThangCocToiThieu,
+          d.BangHoaHong
         FROM duan d
         WHERE d.DuAnID = ? AND d.ChuDuAnID = ?
       `;
@@ -470,6 +476,34 @@ class DuAnModel {
         params.push(trangThai);
       }
 
+      // Xử lý cập nhật hoa hồng
+      if (Object.prototype.hasOwnProperty.call(data, 'SoThangCocToiThieu')) {
+        const soThang = data.SoThangCocToiThieu === null ? null : parseInt(data.SoThangCocToiThieu);
+        if (soThang !== null && (isNaN(soThang) || soThang < 1)) {
+          throw new Error('Số tháng cọc tối thiểu phải >= 1');
+        }
+        updates.push('SoThangCocToiThieu = ?');
+        params.push(soThang);
+      }
+
+      if (Object.prototype.hasOwnProperty.call(data, 'BangHoaHong')) {
+        // BangHoaHong là DECIMAL(5,2) - % hoa hồng (ví dụ: 5.00 = 5%)
+        const bangHoaHong = data.BangHoaHong === null ? null : parseFloat(data.BangHoaHong);
+        
+        if (bangHoaHong !== null) {
+          if (isNaN(bangHoaHong) || bangHoaHong < 0 || bangHoaHong > 100) {
+            throw new Error('Bảng hoa hồng phải từ 0-100%');
+          }
+          // TODO: Thêm validation theo quy định tối đa của hệ thống (ví dụ: max 10%)
+          // if (bangHoaHong > 10) {
+          //   throw new Error('Hoa hồng không được vượt quá 10%');
+          // }
+        }
+        
+        updates.push('BangHoaHong = ?');
+        params.push(bangHoaHong);
+      }
+
       if (updates.length === 0) {
         return await this.layChiTietDuAn(duAnId, chuDuAnId);
       }
@@ -526,6 +560,15 @@ class DuAnModel {
 }
 
 module.exports = DuAnModel;
+
+
+
+
+
+
+
+
+
 
 
 

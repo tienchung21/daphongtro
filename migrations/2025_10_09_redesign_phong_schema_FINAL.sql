@@ -323,8 +323,8 @@ WHERE p.PhongID IS NULL;
 COMMIT;
 SET FOREIGN_KEY_CHECKS = 1;
 
--- Sau khi verify trên production (1-2 tuần), xóa bảng cũ:
--- DROP TABLE phong_old;
+-- Bảng phong_old không còn được sử dụng trong kiến trúc mới
+DROP TABLE IF EXISTS phong_old;
 
 -- ============================================================================
 -- ROLLBACK (Nếu có lỗi)

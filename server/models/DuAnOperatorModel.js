@@ -1,0 +1,442 @@
+/**
+ * Model cho Nhân viên Điều hành - Quản lý Dự án
+ * UC-OPER-02: Quản lý danh sách dự án
+ * Tạm ngưng, kích hoạt, thống kê dự án
+ */
+
+const db = require('../config/db');
+const NhatKyHeThongService = require('../services/NhatKyHeThongService');
+
+/**
+ * @typedef {Object} DuAn
+ * @property {number} DuAnID
+ * @property {string} TenDuAn
+ * @property {string} DiaChi
+ * @property {string} TrangThai
+ * @property {string} TenChuDuAn
+ */
+
+class DuAnOperatorModel {
+  /**
+   * Lấy danh sách dự án với bộ lọc và phân trang
+   * @param {Object} filters - Bộ lọc
+   * @param {string} [filters.keyword] - Từ khóa tìm kiếm
+   * @param {string} [filters.trangThai] - Trạng thái dự án
+   * @param {number} [filters.chuDuAnId] - ID chủ dự án
+   * @param {number} [filters.page=1] - Trang hiện tại
+   * @param {number} [filters.limit=20] - Số items mỗi trang
+   * @returns {Promise<{data: Array, total: number, page: number, totalPages: number}>}
+   */
+  static async layDanhSachDuAn(filters = {}) {
+    try {
+      const {
+        keyword = '',
+        trangThai = null,
+        chuDuAnId = null,
+        page = 1,
+        limit = 20
+      } = filters;
+
+      const offset = (page - 1) * limit;
+
+      // Build WHERE conditions
+      let whereConditions = [];
+      const params = [];
+
+      if (keyword && keyword.trim()) {
+        whereConditions.push(`(da.TenDuAn LIKE ? OR da.DiaChi LIKE ?)`);
+        const keywordParam = `%${keyword.trim()}%`;
+        params.push(keywordParam, keywordParam);
+      }
+
+      if (trangThai) {
+        whereConditions.push(`da.TrangThai = ?`);
+        params.push(trangThai);
+      }
+
+      if (chuDuAnId) {
+        whereConditions.push(`da.ChuDuAnID = ?`);
+        params.push(chuDuAnId);
+      }
+
+      const whereClause = whereConditions.length > 0 
+        ? 'WHERE ' + whereConditions.join(' AND ')
+        : '';
+
+      // Query danh sách
+      const query = `
+        SELECT 
+          da.DuAnID,
+          da.TenDuAn,
+          da.DiaChi,
+          da.TrangThai,
+          da.YeuCauPheDuyetChu,
+          da.YeuCauMoLai,
+          da.LyDoNgungHoatDong,
+          da.NgungHoatDongLuc,
+          da.TaoLuc,
+          da.CapNhatLuc,
+          da.BangHoaHong,
+          da.SoThangCocToiThieu,
+          nd.NguoiDungID as ChuDuAnID,
+          nd.TenDayDu as TenChuDuAn,
+          nd.Email as EmailChuDuAn,
+          nd.SoDienThoai as SoDienThoaiChuDuAn,
+          nd_ngung.TenDayDu as NguoiNgungHoatDong,
+          (SELECT COUNT(*) FROM tindang WHERE DuAnID = da.DuAnID AND TrangThai = 'DaDang') as SoTinDangDang,
+          (SELECT COUNT(*) FROM tindang WHERE DuAnID = da.DuAnID AND TrangThai = 'ChoDuyet') as SoTinDangChoDuyet
+        FROM duan da
+        INNER JOIN nguoidung nd ON da.ChuDuAnID = nd.NguoiDungID
+        LEFT JOIN nguoidung nd_ngung ON da.NguoiNgungHoatDongID = nd_ngung.NguoiDungID
+        ${whereClause}
+        ORDER BY 
+          CASE da.TrangThai
+            WHEN 'HoatDong' THEN 1
+            WHEN 'NgungHoatDong' THEN 2
+            WHEN 'LuuTru' THEN 3
+          END,
+          da.CapNhatLuc DESC
+        LIMIT ? OFFSET ?
+      `;
+
+      params.push(limit, offset);
+      const [rows] = await db.execute(query, params);
+
+      // Query total count
+      const countQuery = `
+        SELECT COUNT(*) as total
+        FROM duan da
+        INNER JOIN nguoidung nd ON da.ChuDuAnID = nd.NguoiDungID
+        ${whereClause}
+      `;
+
+      const countParams = params.slice(0, -2);
+      const [countRows] = await db.execute(countQuery, countParams);
+      const total = countRows[0].total;
+
+      return {
+        data: rows,
+        total,
+        page: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        limit: parseInt(limit)
+      };
+    } catch (error) {
+      console.error('[DuAnOperatorModel] Lỗi layDanhSachDuAn:', error);
+      throw new Error(`Lỗi lấy danh sách dự án: ${error.message}`);
+    }
+  }
+
+  /**
+   * Tạm ngưng dự án (không banned, chỉ tạm ngưng)
+   * @param {number} duAnId - ID dự án
+   * @param {number} nhanVienId - ID nhân viên thực hiện
+   * @param {string} lyDo - Lý do tạm ngưng
+   * @returns {Promise<Object>} Thông tin dự án sau khi tạm ngưng
+   */
+  static async tamNgungDuAn(duAnId, nhanVienId, lyDo) {
+    const connection = await db.getConnection();
+    
+    try {
+      // Validation lý do
+      if (!lyDo || lyDo.trim().length < 10) {
+        throw new Error('Lý do tạm ngưng phải có ít nhất 10 ký tự');
+      }
+
+      await connection.beginTransaction();
+
+      // Kiểm tra dự án
+      const [duAnRows] = await connection.execute(
+        `SELECT DuAnID, TenDuAn, TrangThai, ChuDuAnID 
+         FROM duan WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      if (!duAnRows.length) {
+        throw new Error('Dự án không tồn tại');
+      }
+
+      const duAn = duAnRows[0];
+
+      if (duAn.TrangThai === 'NgungHoatDong') {
+        throw new Error('Dự án đã bị ngưng hoạt động (banned)');
+      }
+
+      if (duAn.TrangThai === 'LuuTru') {
+        throw new Error('Dự án đang ở trạng thái lưu trữ');
+      }
+
+      // Cập nhật dự án về LuuTru (tạm ngưng)
+      await connection.execute(
+        `UPDATE duan 
+         SET TrangThai = 'LuuTru',
+             CapNhatLuc = NOW()
+         WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      // Tạm ngưng tất cả tin đăng của dự án
+      await connection.execute(
+        `UPDATE tindang 
+         SET TrangThai = 'TamNgung',
+             CapNhatLuc = NOW()
+         WHERE DuAnID = ? 
+         AND TrangThai IN ('DaDang', 'DaDuyet', 'ChoDuyet')`,
+        [duAnId]
+      );
+
+      // Ghi audit log
+      await NhatKyHeThongService.ghiNhan({
+        TacNhan: 'Operator',
+        NguoiDungID: nhanVienId,
+        HanhDong: 'TAM_NGUNG_DU_AN',
+        DoiTuong: 'DuAn',
+        DoiTuongID: duAnId,
+        ChiTiet: JSON.stringify({
+          TenDuAn: duAn.TenDuAn,
+          ChuDuAnID: duAn.ChuDuAnID,
+          LyDo: lyDo.trim(),
+          TrangThaiCu: duAn.TrangThai,
+          TrangThaiMoi: 'LuuTru'
+        })
+      });
+
+      await connection.commit();
+
+      // Lấy thông tin sau khi cập nhật
+      const [updatedRows] = await connection.execute(
+        `SELECT da.*, nd.TenDayDu as TenChuDuAn
+         FROM duan da
+         INNER JOIN nguoidung nd ON da.ChuDuAnID = nd.NguoiDungID
+         WHERE da.DuAnID = ?`,
+        [duAnId]
+      );
+
+      return updatedRows[0];
+    } catch (error) {
+      await connection.rollback();
+      console.error('[DuAnOperatorModel] Lỗi tamNgungDuAn:', error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  /**
+   * Kích hoạt lại dự án (từ LuuTru → HoatDong)
+   * @param {number} duAnId - ID dự án
+   * @param {number} nhanVienId - ID nhân viên thực hiện
+   * @returns {Promise<Object>} Thông tin dự án sau khi kích hoạt
+   */
+  static async kichHoatDuAn(duAnId, nhanVienId) {
+    const connection = await db.getConnection();
+    
+    try {
+      await connection.beginTransaction();
+
+      // Kiểm tra dự án
+      const [duAnRows] = await connection.execute(
+        `SELECT DuAnID, TenDuAn, TrangThai, ChuDuAnID 
+         FROM duan WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      if (!duAnRows.length) {
+        throw new Error('Dự án không tồn tại');
+      }
+
+      const duAn = duAnRows[0];
+
+      if (duAn.TrangThai === 'NgungHoatDong') {
+        throw new Error('Dự án đã bị banned. Cần xử lý yêu cầu mở lại trước.');
+      }
+
+      if (duAn.TrangThai === 'HoatDong') {
+        throw new Error('Dự án đang hoạt động');
+      }
+
+      // Kích hoạt dự án
+      await connection.execute(
+        `UPDATE duan 
+         SET TrangThai = 'HoatDong',
+             CapNhatLuc = NOW()
+         WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      // Kích hoạt lại các tin đăng đã bị tạm ngưng
+      await connection.execute(
+        `UPDATE tindang 
+         SET TrangThai = 'DaDang',
+             CapNhatLuc = NOW()
+         WHERE DuAnID = ? 
+         AND TrangThai = 'TamNgung'`,
+        [duAnId]
+      );
+
+      // Ghi audit log
+      await NhatKyHeThongService.ghiNhan({
+        TacNhan: 'Operator',
+        NguoiDungID: nhanVienId,
+        HanhDong: 'KICH_HOAT_DU_AN',
+        DoiTuong: 'DuAn',
+        DoiTuongID: duAnId,
+        ChiTiet: JSON.stringify({
+          TenDuAn: duAn.TenDuAn,
+          ChuDuAnID: duAn.ChuDuAnID,
+          TrangThaiCu: duAn.TrangThai,
+          TrangThaiMoi: 'HoatDong'
+        })
+      });
+
+      await connection.commit();
+
+      // Lấy thông tin sau khi cập nhật
+      const [updatedRows] = await connection.execute(
+        `SELECT da.*, nd.TenDayDu as TenChuDuAn
+         FROM duan da
+         INNER JOIN nguoidung nd ON da.ChuDuAnID = nd.NguoiDungID
+         WHERE da.DuAnID = ?`,
+        [duAnId]
+      );
+
+      return updatedRows[0];
+    } catch (error) {
+      await connection.rollback();
+      console.error('[DuAnOperatorModel] Lỗi kichHoatDuAn:', error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  /**
+   * Lấy thống kê dự án theo trạng thái
+   * @returns {Promise<Object>} Thống kê số lượng dự án
+   */
+  static async layThongKeDuAn() {
+    try {
+      const query = `
+        SELECT 
+          COUNT(CASE WHEN TrangThai = 'HoatDong' THEN 1 END) as HoatDong,
+          COUNT(CASE WHEN TrangThai = 'NgungHoatDong' THEN 1 END) as NgungHoatDong,
+          COUNT(CASE WHEN TrangThai = 'LuuTru' THEN 1 END) as LuuTru,
+          COUNT(CASE WHEN YeuCauMoLai = 'DangXuLy' THEN 1 END) as YeuCauMoLaiDangXuLy,
+          COUNT(*) as TongSo
+        FROM duan
+      `;
+
+      const [rows] = await db.execute(query);
+      
+      // Thống kê tin đăng theo dự án
+      const tinDangQuery = `
+        SELECT 
+          da.TrangThai as TrangThaiDuAn,
+          COUNT(CASE WHEN td.TrangThai = 'ChoDuyet' THEN 1 END) as TinDangChoDuyet,
+          COUNT(CASE WHEN td.TrangThai = 'DaDang' THEN 1 END) as TinDangDaDang
+        FROM duan da
+        LEFT JOIN tindang td ON da.DuAnID = td.DuAnID
+        GROUP BY da.TrangThai
+      `;
+
+      const [tinDangRows] = await db.execute(tinDangQuery);
+
+      return {
+        duAn: rows[0],
+        tinDang: tinDangRows
+      };
+    } catch (error) {
+      console.error('[DuAnOperatorModel] Lỗi layThongKeDuAn:', error);
+      throw new Error(`Lỗi lấy thống kê dự án: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy chi tiết dự án
+   * @param {number} duAnId - ID dự án
+   * @returns {Promise<Object>} Chi tiết dự án
+   */
+  static async layChiTietDuAn(duAnId) {
+    try {
+      const query = `
+        SELECT 
+          da.*,
+          nd.NguoiDungID as ChuDuAnID,
+          nd.TenDayDu as TenChuDuAn,
+          nd.Email as EmailChuDuAn,
+          nd.SoDienThoai as SoDienThoaiChuDuAn,
+          nd.TrangThaiXacMinh as TrangThaiKYC,
+          nd_ngung.TenDayDu as NguoiNgungHoatDong,
+          nd_xuLy.TenDayDu as NguoiXuLyYeuCau,
+          csc.TenChinhSach as TenChinhSachCoc
+        FROM duan da
+        INNER JOIN nguoidung nd ON da.ChuDuAnID = nd.NguoiDungID
+        LEFT JOIN nguoidung nd_ngung ON da.NguoiNgungHoatDongID = nd_ngung.NguoiDungID
+        LEFT JOIN nguoidung nd_xuLy ON da.NguoiXuLyYeuCauID = nd_xuLy.NguoiDungID
+        LEFT JOIN chinhsachcoc csc ON da.ChinhSachCocID = csc.ChinhSachCocID
+        WHERE da.DuAnID = ?
+      `;
+
+      const [rows] = await db.execute(query, [duAnId]);
+
+      if (!rows.length) {
+        throw new Error('Dự án không tồn tại');
+      }
+
+      const duAn = rows[0];
+
+      // Lấy thống kê tin đăng của dự án
+      const thongKeQuery = `
+        SELECT 
+          COUNT(*) as TongSoTinDang,
+          COUNT(CASE WHEN TrangThai = 'ChoDuyet' THEN 1 END) as ChoDuyet,
+          COUNT(CASE WHEN TrangThai = 'DaDang' THEN 1 END) as DaDang,
+          COUNT(CASE WHEN TrangThai = 'TamNgung' THEN 1 END) as TamNgung,
+          COUNT(CASE WHEN TrangThai = 'TuChoi' THEN 1 END) as TuChoi
+        FROM tindang
+        WHERE DuAnID = ?
+      `;
+
+      const [thongKeRows] = await db.execute(thongKeQuery, [duAnId]);
+      duAn.ThongKeTinDang = thongKeRows[0];
+
+      return duAn;
+    } catch (error) {
+      console.error('[DuAnOperatorModel] Lỗi layChiTietDuAn:', error);
+      throw new Error(`Lỗi lấy chi tiết dự án: ${error.message}`);
+    }
+  }
+
+  /**
+   * ❌ REMOVED: duyetHoaHongDuAn() - Không cần duyệt hoa hồng riêng
+   * 
+   * Lý do:
+   * - Hoa hồng là CẤU HÌNH của dự án, không phải trạng thái cần duyệt riêng
+   * - Operator chỉ cần kiểm tra và BANNED dự án nếu hoa hồng vi phạm
+   * - Sử dụng ngungHoatDongDuAn() để banned dự án do hoa hồng sai
+   * - Sử dụng xuLyYeuCauMoLai() để duyệt sau khi chủ dự án sửa hoa hồng
+   * 
+   * Migration: 06/11/2025
+   * Xem docs/HOA_HONG_SCHEMA_ANALYSIS.md để biết thêm chi tiết
+   */
+
+  /**
+   * ❌ REMOVED: tuChoiHoaHongDuAn() - Không cần từ chối hoa hồng riêng
+   * 
+   * Thay thế bằng: ngungHoatDongDuAn(duAnId, operatorId, lyDo)
+   * Ví dụ: 
+   *   await DuAnOperatorModel.ngungHoatDongDuAn(
+   *     duAnId, 
+   *     operatorId, 
+   *     'Hoa hồng 15% vượt quy định tối đa 10%'
+   *   );
+   */
+}
+
+module.exports = DuAnOperatorModel;
+
+
+
+
+
+

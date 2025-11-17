@@ -376,8 +376,8 @@ ADD FOREIGN KEY (PhongID) REFERENCES phong(PhongID);
 
 COMMIT;
 
--- 5. Backup bảng cũ (không xóa ngay)
--- DROP TABLE phong_old; -- Chạy sau khi verify OK
+-- 5. Dọn bảng cũ (đã thực hiện trong migration final)
+DROP TABLE IF EXISTS phong_old;
 ```
 
 ---

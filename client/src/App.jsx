@@ -21,6 +21,26 @@ import CaiDat from './pages/ChuDuAn/CaiDat'; // ✨ Cài đặt tài khoản Ch�
 // Import trang Chi Tiết Tin Đăng cho Khách hàng
 import ChiTietTinDangKhachHang from './pages/chitiettindang'; // 🎯 Soft Tech Theme - Dành cho khách hàng
 
+// Import cho Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
+import LayoutNhanVienBanHang from './components/NhanVienBanHang/LayoutNhanVienBanHang';
+import DashboardNVBH from './pages/NhanVienBanHang/Dashboard';
+import LichLamViec from './pages/NhanVienBanHang/LichLamViec';
+import QuanLyCuocHenNVBH from './pages/NhanVienBanHang/QuanLyCuocHen';
+import ChiTietCuocHenNVBH from './pages/NhanVienBanHang/ChiTietCuocHen';
+import QuanLyGiaoDich from './pages/NhanVienBanHang/QuanLyGiaoDich';
+import BaoCaoThuNhap from './pages/NhanVienBanHang/BaoCaoThuNhap';
+import TinNhanNVBH from './pages/NhanVienBanHang/TinNhan';
+import ChiTietTinNhanNVBH from './pages/NhanVienBanHang/ChiTietTinNhan';
+import CaiDatNhanVienBanHang from './pages/NhanVienBanHang/CaiDat';
+
+// Import cho Operator (UC-OPER-01 đến UC-OPER-06)
+import DashboardOperator from './pages/Operator/DashboardOperator';
+import DuyetTinDang from './pages/Operator/DuyetTinDang';
+import QuanLyDuAnOperator from './pages/Operator/QuanLyDuAnOperator';
+import QuanLyLichNVBH from './pages/Operator/QuanLyLichNVBH';
+import QuanLyNhanVien from './pages/Operator/QuanLyNhanVien';
+import QuanLyBienBan from './pages/Operator/QuanLyBienBan';
+
 // Import từ upstream
 import QuanLyTaiKhoan from './pages/quanlytaikhoan';
 import SearchKhuVuc from './components/SearchKhuVuc';
@@ -43,6 +63,27 @@ function App() {
       {/* 🎯 Route cho Khách hàng - Chi tiết tin đăng công khai (Soft Tech Theme) */}
       <Route path='/tin-dang/:id' element={<ChiTietTinDangKhachHang />} />
       
+      {/* Routes cho Nhân viên Bán hàng */}
+      <Route path='/nhan-vien-ban-hang' element={<LayoutNhanVienBanHang />}>
+        <Route index element={<DashboardNVBH />} />
+        <Route path='lich-lam-viec' element={<LichLamViec />} />
+        <Route path='cuoc-hen' element={<QuanLyCuocHenNVBH />} />
+        <Route path='cuoc-hen/:id' element={<ChiTietCuocHenNVBH />} />
+        <Route path='giao-dich' element={<QuanLyGiaoDich />} />
+        <Route path='thu-nhap' element={<BaoCaoThuNhap />} />
+        <Route path='tin-nhan' element={<TinNhanNVBH />} />
+        <Route path='tin-nhan/:id' element={<ChiTietTinNhanNVBH />} />
+        <Route path='cai-dat' element={<CaiDatNhanVienBanHang />} />
+      </Route>
+
+      {/* Routes cho NVDH (UC-OPER-01 đến UC-OPER-06) */}
+      <Route path='/nvdh/dashboard' element={<DashboardOperator />} />
+      <Route path='/nvdh/duyet-tin-dang' element={<DuyetTinDang />} />
+      <Route path='/nvdh/du-an' element={<QuanLyDuAnOperator />} />
+      <Route path='/nvdh/lich-nvbh' element={<QuanLyLichNVBH />} />
+      <Route path='/nvdh/nhan-vien' element={<QuanLyNhanVien />} />
+      <Route path='/nvdh/bien-ban' element={<QuanLyBienBan />} />
+
       {/* Routes cho Chủ dự án */}
       <Route path='/chu-du-an/dashboard' element={<DashboardChuDuAn />} />
       <Route path='/chu-du-an/du-an' element={<QuanLyDuAn />} /> {/* ✨ Quản lý dự án */}

@@ -1,0 +1,254 @@
+/* UC-OPER-02: Quản lý Dự án - Glass Morphism Theme */
+
+.quan-ly-du-an {
+  width: 100%;
+  min-height: 100vh;
+  padding: 2rem;
+  animation: fadeIn 0.3s ease-in;
+}
+
+/* ===== Header ===== */
+.quan-ly-du-an__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  gap: 2rem;
+}
+
+.quan-ly-du-an__title-section {
+  flex: 1;
+}
+
+.quan-ly-du-an__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--operator-text-primary);
+  margin: 0 0 0.5rem 0;
+}
+
+.quan-ly-du-an__subtitle {
+  font-size: 0.95rem;
+  color: var(--operator-text-secondary);
+  margin: 0;
+}
+
+/* ===== Quick Stats ===== */
+.quan-ly-du-an__stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.quan-ly-du-an__stat-item {
+  background: var(--operator-glass-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--operator-glass-border);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  text-align: center;
+  min-width: 110px;
+  transition: all 0.3s ease;
+}
+
+.quan-ly-du-an__stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--operator-shadow-lg);
+}
+
+.quan-ly-du-an__stat-item--success {
+  border-color: var(--operator-success);
+}
+
+.quan-ly-du-an__stat-item--warning {
+  border-color: var(--operator-warning);
+}
+
+.quan-ly-du-an__stat-item--danger {
+  border-color: var(--operator-danger);
+}
+
+.quan-ly-du-an__stat-item--primary {
+  border-color: var(--operator-primary);
+  animation: pulse 2s infinite;
+}
+
+.quan-ly-du-an__stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--operator-text-primary);
+  margin-bottom: 0.25rem;
+}
+
+.quan-ly-du-an__stat-item--success .quan-ly-du-an__stat-value {
+  color: var(--operator-success);
+}
+
+.quan-ly-du-an__stat-item--warning .quan-ly-du-an__stat-value {
+  color: var(--operator-warning);
+}
+
+.quan-ly-du-an__stat-item--danger .quan-ly-du-an__stat-value {
+  color: var(--operator-danger);
+}
+
+.quan-ly-du-an__stat-item--primary .quan-ly-du-an__stat-value {
+  color: var(--operator-primary);
+}
+
+.quan-ly-du-an__stat-label {
+  font-size: 0.8rem;
+  color: var(--operator-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== Content ===== */
+.quan-ly-du-an__content {
+  background: var(--operator-glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--operator-glass-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--operator-shadow-lg);
+}
+
+.quan-ly-du-an__error {
+  text-align: center;
+  padding: 3rem;
+  color: var(--operator-danger);
+  font-size: 1.1rem;
+}
+
+/* ===== Table Cell Custom Renders ===== */
+.quan-ly-du-an__ten-du-an {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.quan-ly-du-an__ten {
+  font-weight: 600;
+  color: var(--operator-text-primary);
+}
+
+.quan-ly-du-an__dia-chi {
+  font-size: 0.85rem;
+  color: var(--operator-text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.quan-ly-du-an__chu-du-an {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.quan-ly-du-an__ten-chu {
+  font-weight: 500;
+  color: var(--operator-text-primary);
+}
+
+.quan-ly-du-an__email {
+  font-size: 0.8rem;
+  color: var(--operator-text-secondary);
+}
+
+.quan-ly-du-an__so-tin-dang {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.quan-ly-du-an__so-tin-dang-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--operator-primary);
+}
+
+.quan-ly-du-an__so-tin-dang-label {
+  font-size: 0.85rem;
+  color: var(--operator-text-secondary);
+}
+
+/* ===== Actions ===== */
+.quan-ly-du-an__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ===== Hoa Hong ===== */
+.quan-ly-du-an__hoa-hong {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quan-ly-du-an__hoa-hong-empty {
+  color: var(--operator-text-secondary);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.quan-ly-du-an__hoa-hong-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.quan-ly-du-an__hoa-hong-value {
+  font-weight: 600;
+  color: var(--operator-primary);
+  font-size: 0.95rem;
+}
+
+.quan-ly-du-an__hoa-hong-thang {
+  font-size: 0.8rem;
+  color: var(--operator-text-secondary);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 1024px) {
+  .quan-ly-du-an__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .quan-ly-du-an__stats {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .quan-ly-du-an {
+    padding: 1rem;
+  }
+  
+  .quan-ly-du-an__title {
+    font-size: 1.5rem;
+  }
+  
+  .quan-ly-du-an__stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .quan-ly-du-an__actions {
+    flex-direction: column;
+  }
+  
+  .quan-ly-du-an__actions .operator-btn {
+    width: 100%;
+  }
+}
+
+
+
+
+
+

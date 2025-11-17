@@ -44,16 +44,40 @@ function Login() {
 
       alert('Đăng nhập thành công!');
       
-      // 🟢 Redirect theo vai trò (VaiTroID theo DB: 1=Khách hàng, 3=Chủ dự án)
+      // 🟢 Redirect theo vai trò (VaiTroID theo DB)
+      // 1=Khách hàng, 2=Nhân viên Bán hàng, 3=Chủ dự án, 4=Điều hành, 5=Admin
       const vaiTroId = user?.VaiTroHoatDongID || user?.VaiTroID || user?.roleId;
       const tenVaiTro = user?.TenVaiTro || user?.VaiTro || user?.role;
       
-      // Check cả VaiTroID (3) và TenVaiTro ("Chủ dự án")
-      if (vaiTroId === 3 || tenVaiTro === 'Chủ dự án' || tenVaiTro === 'chuduan') {
-        // Chủ dự án → Dashboard
+      // 🔍 DEBUG: Log để kiểm tra
+      console.log('📊 Login Debug:', {
+        vaiTroId,
+        tenVaiTro,
+        VaiTroHoatDongID: user?.VaiTroHoatDongID,
+        VaiTroID: user?.VaiTroID,
+        fullUser: user
+      });
+      
+      // Route theo vai trò
+      if (vaiTroId === 2 || tenVaiTro === 'Nhân viên Bán hàng' || tenVaiTro === 'NhanVienBanHang') {
+        // Nhân viên Bán hàng → Dashboard NVBH
+        console.log('✅ Redirecting to NVBH Dashboard');
+        navigate('/nhan-vien-ban-hang');
+      } else if (vaiTroId === 3 || tenVaiTro === 'Chủ dự án' || tenVaiTro === 'chuduan') {
+        // Chủ dự án → Dashboard Chủ dự án
+        console.log('✅ Redirecting to Chủ dự án Dashboard');
         navigate('/chu-du-an/dashboard');
+      } else if (vaiTroId === 4 || tenVaiTro === 'Nhân viên Điều hành' || tenVaiTro === 'DieuHanh' || tenVaiTro === 'Operator') {
+        // Điều hành → Dashboard NVDH
+        console.log('✅ Redirecting to NVDH Dashboard');
+        navigate('/nvdh/dashboard');
+      } else if (vaiTroId === 5 || tenVaiTro === 'Quản trị viên Hệ thống' || tenVaiTro === 'Admin') {
+        // Admin → Dashboard NVDH (hoặc tạo dashboard riêng)
+        console.log('✅ Redirecting to Admin/NVDH Dashboard');
+        navigate('/nvdh/dashboard');
       } else {
         // Khách hàng hoặc vai trò khác → Trang chủ
+        console.log('✅ Redirecting to Home');
         navigate('/');
       }
     } catch (err) {

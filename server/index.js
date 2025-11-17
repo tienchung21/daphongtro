@@ -17,6 +17,18 @@ const operatorRoutes = require('./routes/operatorRoutes'); // API Operator/Admin
 const geocodingRoutes = require('./routes/geocodingRoutes'); // Geocoding API
 const chatRoutes = require('./routes/chatRoutes'); // API Chat/Messaging (UC-PROJ-05)
 
+// Routes cho Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
+const nhanVienBanHangRoutes = require('./routes/nhanVienBanHangRoutes');
+
+// Routes cho Operator (UC-OPER-01 đến UC-OPER-06)
+const tinDangOperatorRoutes = require('./routes/tinDangOperatorRoutes'); // UC-OPER-01: Duyệt tin đăng
+const duAnOperatorRoutes = require('./routes/duAnOperatorRoutes'); // UC-OPER-02: Quản lý dự án
+const lichLamViecOperatorRoutes = require('./routes/lichLamViecOperatorRoutes'); // UC-OPER-03: Lịch NVBH
+const cuocHenOperatorRoutes = require('./routes/cuocHenOperatorRoutes'); // UC-OPER-03: Gán cuộc hẹn
+const hoSoNhanVienRoutes = require('./routes/hoSoNhanVienRoutes'); // UC-OPER-04&05: Quản lý NVBH
+const bienBanBanGiaoRoutes = require('./routes/bienBanBanGiaoRoutes'); // UC-OPER-06: Biên bản bàn giao
+const dashboardOperatorRoutes = require('./routes/dashboardOperatorRoutes'); // Dashboard metrics
+
 // Routes từ upstream
 const tinDangRoutes = require('./routes/tinDangRoutes');
 const khuVucRoutes = require('./routes/khuVucRoutes');
@@ -71,6 +83,18 @@ app.use('/api/chu-du-an/chinh-sach-coc', chinhSachCocRoutes); // API Chính sác
 app.use('/api/operator', operatorRoutes); // API Operator/Admin (UC-OPR-01, UC-OPR-02)
 app.use('/api/geocode', geocodingRoutes); // Geocoding API (Nominatim)
 app.use('/api/chat', chatRoutes); // API Chat/Messaging (UC-PROJ-05)
+
+// API Operator (UC-OPER-01 đến UC-OPER-06)
+app.use('/api/operator/tin-dang', tinDangOperatorRoutes); // UC-OPER-01: Duyệt tin đăng
+app.use('/api/operator/du-an', duAnOperatorRoutes); // UC-OPER-02: Quản lý dự án
+app.use('/api/operator/lich-lam-viec', lichLamViecOperatorRoutes); // UC-OPER-03: Lịch NVBH
+app.use('/api/operator/cuoc-hen', cuocHenOperatorRoutes); // UC-OPER-03: Gán cuộc hẹn
+app.use('/api/operator/nhan-vien', hoSoNhanVienRoutes); // UC-OPER-04&05: Quản lý NVBH
+app.use('/api/operator/bien-ban', bienBanBanGiaoRoutes); // UC-OPER-06: Biên bản bàn giao
+app.use('/api/operator/dashboard', dashboardOperatorRoutes); // Dashboard metrics
+
+// API Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
+app.use('/api/nhan-vien-ban-hang', nhanVienBanHangRoutes);
 
 // API từ upstream
 app.use('/api/tindangs', tinDangRoutes); 

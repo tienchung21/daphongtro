@@ -26,12 +26,14 @@
   --nvbh-accent-light: #CBD5E1;      /* Slate 300 */
   --nvbh-accent-lighter: #E2E8F0;    /* Slate 200 */
   --nvbh-accent-dark: #64748B;       /* Slate 500 */
+  --nvbh-accent-50: rgba(148, 163, 184, 0.1); /* Accent với opacity cho hover states */
   
   /* Backgrounds - Light Professional */
   --nvbh-bg-primary: #F8FAFC;        /* Slate 50 */
   --nvbh-bg-secondary: #F1F5F9;      /* Slate 100 */
   --nvbh-bg-tertiary: #E2E8F0;       /* Slate 200 */
   --nvbh-surface: #FFFFFF;
+  --nvbh-card-bg: #FFFFFF;           /* Background cho card/sidebar */
   
   /* Glass Morphism */
   --nvbh-glass-bg: rgba(255, 255, 255, 0.8);
@@ -47,6 +49,9 @@
   --nvbh-text-tertiary: #64748B;     /* Slate 500 */
   --nvbh-text-disabled: #94A3B8;     /* Slate 400 */
   --nvbh-text-white: #FFFFFF;
+  
+  /* Primary Foreground - Text color khi active (thường là white) */
+  --nvbh-primary-foreground: #FFFFFF;
   
   /* Semantic Colors */
   --nvbh-success: #10B981;           /* Green 500 */
@@ -111,7 +116,7 @@
   --nvbh-font-size-4xl: 2.25rem;    /* 36px */
   
   /* Layout */
-  --nvbh-sidebar-width: 280px;
+  --nvbh-sidebar-width: 240px;
   --nvbh-sidebar-collapsed: 72px;
   --nvbh-topbar-height: 64px;
 }
@@ -356,6 +361,10 @@
   font-family: var(--nvbh-font-family);
 }
 
+/* Sidebar styles đã được di chuyển sang NavigationNhanVienBanHang.css */
+/* Giữ lại để tham khảo, nhưng không sử dụng để tránh conflict */
+
+/*
 .nvbh-sidebar {
   width: var(--nvbh-sidebar-width);
   background: var(--nvbh-gradient-primary);
@@ -382,11 +391,15 @@
   text-align: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
+*/
 
+/* .nvbh-sidebar__nav đã được di chuyển sang NavigationNhanVienBanHang.css */
+/*
 .nvbh-sidebar__nav {
   flex: 1;
   padding: var(--nvbh-spacing-md) 0;
 }
+*/
 
 .nvbh-main {
   flex: 1;
@@ -423,62 +436,8 @@
    7. NAVIGATION
    ===================================================== */
 
-.nvbh-nav-item {
-  display: flex;
-  align-items: center;
-  gap: var(--nvbh-spacing-md);
-  padding: var(--nvbh-spacing-md) var(--nvbh-spacing-lg);
-  margin: 0 var(--nvbh-spacing-sm);
-  border-radius: var(--nvbh-radius-md);
-  color: rgba(255, 255, 255, 0.8);
-  text-decoration: none;
-  font-size: var(--nvbh-font-size-base);
-  font-weight: 500;
-  transition: all var(--nvbh-transition-fast);
-  cursor: pointer;
-  position: relative;
-}
-
-.nvbh-nav-item:hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--nvbh-text-white);
-}
-
-.nvbh-nav-item--active {
-  background: rgba(255, 255, 255, 0.16);
-  color: var(--nvbh-text-white);
-}
-
-.nvbh-nav-item--active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 60%;
-  background: var(--nvbh-accent-light);
-  border-radius: 0 var(--nvbh-radius-sm) var(--nvbh-radius-sm) 0;
-}
-
-.nvbh-nav-item__icon {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nvbh-nav-item__label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Collapsed sidebar navigation */
-.nvbh-sidebar--collapsed .nvbh-nav-item__label {
-  display: none;
-}
+/* Navigation styles được định nghĩa trong NavigationNhanVienBanHang.css
+   để tránh conflict với component-specific styles */
 
 /* =====================================================
    8. FORMS
