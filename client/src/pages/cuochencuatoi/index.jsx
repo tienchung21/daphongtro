@@ -211,7 +211,7 @@ const Appointments = () => {
 
   return (
     <div className="appointments">
-      <Header />
+  
       <main className="appointments__content">
         <div className="appointments__header">
           <h2 className="appointments__title">
@@ -364,7 +364,7 @@ const Appointments = () => {
           </div>
         )}
       </main>
-      <Footer />
+  
     </div>
   );
 };
