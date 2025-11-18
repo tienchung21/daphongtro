@@ -3399,32 +3399,6 @@ INSERT INTO `nguoidung_vaitro` (`NguoiDungID`, `VaiTroID`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `nhanvienbanhang_caidat`
---
-
-CREATE TABLE `nhanvienbanhang_caidat` (
-  `NguoiDungID` int(11) NOT NULL,
-  `ThongBaoUngDung` tinyint(1) NOT NULL DEFAULT 1,
-  `ThongBaoEmail` tinyint(1) NOT NULL DEFAULT 1,
-  `ThongBaoSMS` tinyint(1) NOT NULL DEFAULT 0,
-  `ThongBaoCuocHen` tinyint(1) NOT NULL DEFAULT 1,
-  `ThongBaoGiaoDich` tinyint(1) NOT NULL DEFAULT 1,
-  `BaoCaoHangNgay` tinyint(1) NOT NULL DEFAULT 0,
-  `BaoCaoHangTuan` tinyint(1) NOT NULL DEFAULT 1,
-  `BaoCaoHangThang` tinyint(1) NOT NULL DEFAULT 1,
-  `PhuongThucNhanThuNhap` enum('BankTransfer','Momo','TienMat') NOT NULL DEFAULT 'BankTransfer',
-  `TenChuTaiKhoan` varchar(255) DEFAULT NULL,
-  `SoTaiKhoan` varchar(50) DEFAULT NULL,
-  `NganHang` varchar(255) DEFAULT NULL,
-  `ChiNhanh` varchar(255) DEFAULT NULL,
-  `GhiChuThanhToan` text DEFAULT NULL,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `nhatkyhethong`
 --
 
@@ -4752,12 +4726,6 @@ ALTER TABLE `nguoidung`
 ALTER TABLE `nguoidung_vaitro`
   ADD CONSTRAINT `nguoidung_vaitro_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`),
   ADD CONSTRAINT `nguoidung_vaitro_ibfk_2` FOREIGN KEY (`VaiTroID`) REFERENCES `vaitro` (`VaiTroID`);
-
---
--- Constraints for table `nhanvienbanhang_caidat`
---
-ALTER TABLE `nhanvienbanhang_caidat`
-  ADD CONSTRAINT `fk_caidat_nhanvien` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `nhatkyhethong`
