@@ -101,13 +101,19 @@ function Header() {
         <div className="nav">
           <ul>
             <li>
-              <a href="#">Trang chủ</a>
+              <Link to="/" style={{ cursor: "pointer" }}>
+                Trang chủ
+              </Link>
             </li>
             <li>
-              <a href="#">Blog</a>
+              <Link to="/blog" style={{ cursor: "pointer" }}>
+                Blog
+              </Link>
             </li>
             <li>
-              <a href="#">Bảng giá dịch vụ</a>
+              <Link to="/bang-gia" style={{ cursor: "pointer" }}>
+                Bảng giá dịch vụ
+              </Link>
             </li>
           </ul>
         </div>

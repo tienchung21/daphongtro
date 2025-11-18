@@ -49,12 +49,13 @@ import QuanLyKhuVuc from './pages/quanlykhuvuc';
 import ThanhToan from './pages/thanhtoan';
 import ThanhToanCoc from './pages/thanhtoancoc';
 import Appointments from './pages/cuochencuatoi'; // đúng thư mục hiện tại
-
+import QuanLy from './pages/QuanLy';
 function App() {
 
   return (
 
       <div className="App"> 
+     
     <Routes>
       <Route path='/' element={<TrangChu />} />
       {/* <Route path='/about' element={<div>About Page</div>} /> */}
@@ -107,6 +108,9 @@ function App() {
       <Route path="/thanhtoan" element={<ThanhToan />} />
       <Route path="/thanhtoancoc" element={<ThanhToanCoc />} />
       <Route path="/cuochencuatoi" element={<Appointments />} />
+ 
+
+<Route path="/quan-ly" element={<QuanLy />} />
     </Routes>
         </div>
  
