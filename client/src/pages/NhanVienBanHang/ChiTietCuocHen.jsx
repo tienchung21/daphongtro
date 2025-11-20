@@ -24,6 +24,7 @@ import {
   doiLichCuocHen,
   huyCuocHen
 } from '../../services/nhanVienBanHangApi';
+import { getApiBaseUrl } from '../../config/api';
 import { formatDate, formatCurrency, formatPhone } from '../../utils/nvbhHelpers';
 import StatusBadge from '../../components/NhanVienBanHang/StatusBadge';
 import TimelineCuocHen from '../../components/NhanVienBanHang/TimelineCuocHen';
@@ -158,12 +159,13 @@ const ChiTietCuocHen = () => {
         TieuDe: `Cuộc hẹn #${appointment.CuocHenID} - ${appointment.TenKhachHang || 'Khách hàng'}`
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/chat/conversations`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/chat/conversations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
 
@@ -195,12 +197,13 @@ const ChiTietCuocHen = () => {
         TieuDe: `Cuộc hẹn #${appointment.CuocHenID} - ${appointment.TenDuAn || 'Dự án'}`
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/chat/conversations`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/chat/conversations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
 

@@ -136,7 +136,7 @@ function QuanLyCuocHen() {
       
       console.log('[QuanLyCuocHen] 📤 Creating chat conversation:', payload);
       
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/chat/conversations`, {
+      const response = await fetch(`${getApiBaseUrl()}/api/chat/conversations`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

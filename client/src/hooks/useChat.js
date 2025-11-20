@@ -4,6 +4,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { getApiBaseUrl } from '../config/api';
 import useSocket from './useSocket';
 
 /**
@@ -149,7 +150,7 @@ export const useChat = (cuocHoiThoaiID) => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/conversations/${cuocHoiThoaiID}/messages?limit=${limit}&offset=${offset}`,
+        `${getApiBaseUrl()}/api/chat/conversations/${cuocHoiThoaiID}/messages?limit=${limit}&offset=${offset}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
