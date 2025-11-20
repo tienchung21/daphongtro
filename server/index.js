@@ -45,10 +45,20 @@ const sepaySync = require('./services/sepaySyncService');
 const app = express();
 const server = http.createServer(app);
 
-// Setup Socket.IO
+// Setup Socket.IO with function-based CORS (matches Express CORS)
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    origin: function (origin, callback) {
+      // Allow requests with no origin
+      if (!origin) return callback(null, true);
+      
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        console.log('⚠️ Socket.IO CORS blocked origin:', origin);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
     credentials: true
   },
@@ -62,7 +72,38 @@ io.on('connection', (socket) => {
   setupChatHandlers(socket, io);
 });
 
-app.use(cors());
+// ✅ CORS Configuration - Function-based origin validation (Required for credentials: true)
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'https://mt5vhvtq-5173.asse.devtunnels.ms', // DevTunnel Frontend
+  'https://mt5vhvtq-5000.asse.devtunnels.ms'  // DevTunnel Backend (self-origin)
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman, curl)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true); // Origin allowed
+    } else {
+      console.log('⚠️ CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 204, // Some legacy browsers choke on 204
+  preflightContinue: false
+};
+
+app.use(cors(corsOptions));
+
+// ✅ Explicit preflight handler for all routes
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

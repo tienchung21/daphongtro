@@ -16,30 +16,60 @@
   border-bottom: 1px solid rgba(20, 83, 45, 0.1);
 }
 
+/* Reset button defaults và ép buộc style */
 .chat-window-back-btn,
-.chat-window-menu-btn {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: rgba(20, 83, 45, 0.1);
-  border-radius: 10px;
-  color: #14532D;
-  cursor: pointer;
-  transition: all 0.2s;
+.chat-window-menu-btn,
+.chat-window-action-btn {
+  /* Reset global button styles */
+  all: unset;
+  
+  /* Custom styles */
+  width: 40px !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid rgba(20, 83, 45, 0.2) !important;
+  background: #ffffff !important;
+  border-radius: 10px !important;
+  color: #14532D !important;
+  cursor: pointer !important;
+  transition: all 0.2s !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 .chat-window-back-btn:hover,
-.chat-window-menu-btn:hover {
-  background: rgba(20, 83, 45, 0.2);
+.chat-window-menu-btn:hover,
+.chat-window-action-btn:hover {
+  background: #f0fdf4 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(20, 83, 45, 0.2) !important;
+  color: #059669 !important;
+  border-color: rgba(5, 150, 105, 0.4) !important;
 }
 
 .chat-window-back-btn svg,
-.chat-window-menu-btn svg {
-  width: 20px;
-  height: 20px;
+.chat-window-menu-btn svg,
+.chat-window-action-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  stroke: #14532D !important;
+  color: #14532D !important;
+  fill: none !important;
+  display: block !important;
+}
+
+.chat-window-back-btn:hover svg,
+.chat-window-menu-btn:hover svg,
+.chat-window-action-btn:hover svg {
+  stroke: #059669 !important;
+  color: #059669 !important;
+}
+
+.chat-window-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .chat-window-header-info {

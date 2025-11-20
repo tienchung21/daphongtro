@@ -275,7 +275,7 @@ npm run dev
 **Expected output (Backend):**
 ```
 ✅ Server chạy tại http://localhost:5000
-🔌 Socket.IO chạy tại ws://localhost:5000
+🔌 Socket.IO chạy tại ws://mt5vhvtq-5000.asse.devtunnels.ms/
 💬 Chat: GET/POST /api/chat/conversations (Real-time với Socket.IO)
 📡 Socket.IO Events:
    - join_conversation, leave_conversation

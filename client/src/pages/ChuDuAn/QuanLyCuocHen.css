@@ -270,14 +270,14 @@
 
 .cuoc-hen-table {
   width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: var(--font-size-sm);
 }
 
 .cuoc-hen-table thead {
-  background: linear-gradient(90deg, rgba(139, 92, 246, 0.08) 0%, rgba(59, 130, 246, 0.04) 100%);
-  position: sticky;
-  top: 0;
+  /* Removed sticky from thead to fix alignment issues */
   z-index: 10;
 }
 
@@ -292,7 +292,7 @@
 }
 
 .cuoc-hen-table th {
-  padding: 0.875rem 1rem;
+  padding: 0.75rem 0.5rem;
   text-align: left;
   font-weight: 600;
   color: var(--color-text-primary);
@@ -300,10 +300,29 @@
   font-size: var(--font-size-xs);
   letter-spacing: 0.05em;
   white-space: nowrap;
+  /* Sticky header cells */
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #f9fafb; /* Fallback */
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.08) 0%, rgba(59, 130, 246, 0.04) 100%);
+  backdrop-filter: blur(10px);
+}
+
+.cuoc-hen-table th:first-child,
+.cuoc-hen-table td:first-child {
+  text-align: center;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.cuoc-hen-table th:nth-child(2),
+.cuoc-hen-table td:nth-child(2) {
+  text-align: center;
 }
 
 .cuoc-hen-table td {
-  padding: 1rem;
+  padding: 0.75rem 0.5rem;
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   vertical-align: middle;
 }

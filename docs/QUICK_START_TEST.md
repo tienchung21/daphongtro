@@ -74,7 +74,7 @@ npm run dev
 **Kiểm tra console Backend:**
 ```
 ✅ Server chạy tại http://localhost:5000
-🔌 Socket.IO chạy tại ws://localhost:5000
+🔌 Socket.IO chạy tại ws://mt5vhvtq-5000.asse.devtunnels.ms/
 💬 Chat API: /api/chat/conversations
 ```
 
@@ -247,7 +247,7 @@ console.log(localStorage.getItem('token')); // Có token?
 
 **Fix:**
 - Logout → Login lại để lấy token mới
-- Check backend console: `🔌 Socket.IO chạy tại ws://localhost:5000`
+- Check backend console: `🔌 Socket.IO chạy tại ws://mt5vhvtq-5000.asse.devtunnels.ms/`
 
 ### Issue: Không thấy conversations
 

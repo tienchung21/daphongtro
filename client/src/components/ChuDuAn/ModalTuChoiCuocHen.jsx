@@ -68,77 +68,78 @@ function ModalTuChoiCuocHen({ cuocHen, onClose, onSuccess }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content tu-choi-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-tu-choi-cuoc-hen__overlay" onClick={onClose}>
+      <div className="modal-tu-choi-cuoc-hen" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="modal-header danger">
-          <div className="modal-header-content">
-            <div className="modal-icon danger">
+        <div className="modal-tu-choi-cuoc-hen__header modal-tu-choi-cuoc-hen__header--danger">
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div className="modal-tu-choi-cuoc-hen__header-icon modal-tu-choi-cuoc-hen__header-icon--danger">
               <HiOutlineXMark />
             </div>
             <div>
-              <h2 className="modal-title">Từ chối Cuộc hẹn</h2>
-              <p className="modal-subtitle">Cuộc hẹn #{cuocHen?.CuocHenID}</p>
+              <h2 className="modal-tu-choi-cuoc-hen__title">Từ chối Cuộc hẹn</h2>
+              <p className="modal-tu-choi-cuoc-hen__subtitle">Cuộc hẹn #{cuocHen?.CuocHenID}</p>
             </div>
           </div>
-          <button className="modal-close" onClick={onClose}>
+          <button className="modal-tu-choi-cuoc-hen__close-btn" onClick={onClose}>
             <HiOutlineXMark />
           </button>
         </div>
 
         {/* Body */}
-        <div className="modal-body">
+        <div className="modal-tu-choi-cuoc-hen__body">
           {/* Thông tin cuộc hẹn */}
-          <div className="info-section">
-            <h3 className="section-title">📅 Thông tin cuộc hẹn</h3>
-            <div className="info-grid">
-              <div className="info-item">
-                <HiOutlineClock className="info-icon" />
+          <div style={{ marginBottom: '12px' }}>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '1rem', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>📅 Thông tin cuộc hẹn</h3>
+            <div className="modal-tu-choi-cuoc-hen__info-grid">
+              <div className="modal-tu-choi-cuoc-hen__detail-item">
+                <HiOutlineClock style={{ fontSize: '1.25rem', color: 'var(--color-primary)' }} />
                 <div>
-                  <div className="info-label">Thời gian</div>
-                  <div className="info-value">{formatDate(cuocHen?.ThoiGianHen)}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Thời gian</div>
+                  <div style={{ fontWeight: '600' }}>{formatDate(cuocHen?.ThoiGianHen)}</div>
                 </div>
               </div>
               
-              <div className="info-item">
-                <HiOutlineUser className="info-icon" />
+              <div className="modal-tu-choi-cuoc-hen__detail-item">
+                <HiOutlineUser style={{ fontSize: '1.25rem', color: 'var(--color-primary)' }} />
                 <div>
-                  <div className="info-label">Khách hàng</div>
-                  <div className="info-value">{cuocHen?.TenKhachHang || 'N/A'}</div>
-                  <div className="info-sub">{cuocHen?.SoDienThoaiKhach || 'N/A'}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Khách hàng</div>
+                  <div style={{ fontWeight: '600' }}>{cuocHen?.TenKhachHang || 'N/A'}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{cuocHen?.SoDienThoaiKhach || 'N/A'}</div>
                 </div>
               </div>
               
-              <div className="info-item">
-                <HiOutlineHome className="info-icon" />
+              <div className="modal-tu-choi-cuoc-hen__detail-item">
+                <HiOutlineHome style={{ fontSize: '1.25rem', color: 'var(--color-primary)' }} />
                 <div>
-                  <div className="info-label">Phòng</div>
-                  <div className="info-value">{cuocHen?.TenPhong || 'N/A'}</div>
-                  <div className="info-sub">{cuocHen?.TenDuAn || 'N/A'}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>Phòng</div>
+                  <div style={{ fontWeight: '600' }}>{cuocHen?.TenPhong || 'N/A'}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--color-text-secondary)' }}>{cuocHen?.TenDuAn || 'N/A'}</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Warning */}
-          <div className="warning-box">
-            <div className="warning-icon">⚠️</div>
-            <div className="warning-content">
+          <div className="modal-tu-choi-cuoc-hen__warning-box">
+            <div className="modal-tu-choi-cuoc-hen__warning-icon">⚠️</div>
+            <div className="modal-tu-choi-cuoc-hen__warning-content">
               <strong>Lưu ý quan trọng:</strong>
-              <p>Việc từ chối cuộc hẹn có thể ảnh hưởng đến trải nghiệm khách hàng và đánh giá của bạn. 
+              <p style={{ margin: '4px 0 0 0' }}>Việc từ chối cuộc hẹn có thể ảnh hưởng đến trải nghiệm khách hàng và đánh giá của bạn. 
               Hãy đảm bảo lý do từ chối rõ ràng và hợp lý.</p>
             </div>
           </div>
 
           {/* Form nhập lý do */}
           <form onSubmit={handleSubmit}>
-            <div className="form-section">
-              <div className="cda-form-group">
-                <label className="cda-label cda-label-required">
-                  Lý do từ chối
+            <div>
+              <div className="modal-tu-choi-cuoc-hen__form-group">
+                <label className="modal-tu-choi-cuoc-hen__label">
+                  Lý do từ chối <span style={{ color: 'red' }}>*</span>
                 </label>
                 <select
                   className="cda-select"
+                  style={{ width: '100%' }}
                   value={formData.lyDoTuChoi}
                   onChange={(e) => setFormData({ ...formData, lyDoTuChoi: e.target.value })}
                   required
@@ -153,12 +154,12 @@ function ModalTuChoiCuocHen({ cuocHen, onClose, onSuccess }) {
               </div>
 
               {formData.lyDoTuChoi === 'khac' && (
-                <div className="cda-form-group">
-                  <label className="cda-label cda-label-required">
-                    Mô tả chi tiết lý do
+                <div className="modal-tu-choi-cuoc-hen__form-group">
+                  <label className="modal-tu-choi-cuoc-hen__label">
+                    Mô tả chi tiết lý do <span style={{ color: 'red' }}>*</span>
                   </label>
                   <textarea
-                    className="cda-textarea"
+                    className="modal-tu-choi-cuoc-hen__textarea"
                     rows="4"
                     placeholder="Vui lòng mô tả chi tiết lý do từ chối..."
                     value={formData.lyDoKhac}
@@ -168,12 +169,12 @@ function ModalTuChoiCuocHen({ cuocHen, onClose, onSuccess }) {
                 </div>
               )}
 
-              <div className="cda-form-group">
-                <label className="cda-label">
+              <div className="modal-tu-choi-cuoc-hen__form-group">
+                <label className="modal-tu-choi-cuoc-hen__label">
                   Ghi chú nội bộ (tùy chọn)
                 </label>
                 <textarea
-                  className="cda-textarea"
+                  className="modal-tu-choi-cuoc-hen__textarea"
                   rows="3"
                   placeholder="Ghi chú nội bộ, không gửi cho khách hàng..."
                   value={formData.ghiChu}
@@ -183,9 +184,9 @@ function ModalTuChoiCuocHen({ cuocHen, onClose, onSuccess }) {
             </div>
 
             {/* Actions sau khi từ chối */}
-            <div className="auto-actions-info info">
-              <h4 className="auto-actions-title">ℹ️ Hệ thống sẽ tự động:</h4>
-              <ul className="auto-actions-list">
+            <div className="modal-tu-choi-cuoc-hen__auto-actions-info--info">
+              <h4 style={{ margin: '0 0 8px 0', fontSize: '0.95rem', fontWeight: '600' }}>ℹ️ Hệ thống sẽ tự động:</h4>
+              <ul className="modal-tu-choi-cuoc-hen__auto-actions-list">
                 <li>• Cập nhật trạng thái cuộc hẹn thành "Đã từ chối"</li>
                 <li>• Gửi thông báo lịch sự cho khách hàng kèm lý do</li>
                 <li>• Đề xuất các tin đăng khác phù hợp cho khách</li>
@@ -195,7 +196,7 @@ function ModalTuChoiCuocHen({ cuocHen, onClose, onSuccess }) {
             </div>
 
             {/* Footer Actions */}
-            <div className="modal-footer">
+            <div className="modal-tu-choi-cuoc-hen__footer">
               <button 
                 type="button"
                 className="cda-btn cda-btn-secondary" 

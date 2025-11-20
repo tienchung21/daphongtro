@@ -651,7 +651,9 @@ class ChuDuAnController {
         'YeuCauPheDuyetChu',
         'PhuongThucVao',
         'TrangThai',
-        'ChinhSachCocID'
+        'ChinhSachCocID',
+        'BangHoaHong',
+        'SoThangCocToiThieu'
       ];
 
       const payload = {};
@@ -661,6 +663,9 @@ class ChuDuAnController {
         }
       });
 
+      // Debug: Log payload để kiểm tra BangHoaHong
+      console.log('[ChuDuAnController.capNhatDuAn] DuAnID:', duAnId, 'Payload:', JSON.stringify(payload, null, 2));
+
       if (Object.keys(payload).length === 0) {
         return res.status(400).json({
           success: false,
@@ -668,7 +673,9 @@ class ChuDuAnController {
         });
       }
 
+      console.log('[ChuDuAnController.capNhatDuAn] Calling Model.capNhatDuAn...');
       const duAn = await ChuDuAnModel.capNhatDuAn(duAnId, chuDuAnId, payload);
+      console.log('[ChuDuAnController.capNhatDuAn] Model returned:', duAn ? 'SUCCESS' : 'NULL');
 
       if (!duAn) {
         return res.status(404).json({

@@ -64,17 +64,17 @@ function ModalPreviewDuAn({
   if (!isOpen || !duAn) return null;
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-preview-duan" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-preview-du-an__overlay" onClick={onClose}>
+      <div className="modal-preview-du-an" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="modal-header">
-          <div className="modal-header-content">
-            <h2 className="modal-title">Chi tiết Dự án</h2>
-            <p className="modal-subtitle">{duAn.TenDuAn}</p>
+        <div className="modal-preview-du-an__header">
+          <div className="modal-preview-du-an__header-content">
+            <h2 className="modal-preview-du-an__title">Chi tiết Dự án</h2>
+            <p className="modal-preview-du-an__subtitle">{duAn.TenDuAn}</p>
           </div>
           <button
             type="button"
-            className="modal-close-btn"
+            className="modal-preview-du-an__close-btn"
             onClick={onClose}
             title="Đóng"
           >
@@ -83,64 +83,64 @@ function ModalPreviewDuAn({
         </div>
 
         {/* Body */}
-        <div className="modal-body">
-          <div className="preview-content">
+        <div className="modal-preview-du-an__body">
+          <div className="modal-preview-du-an__preview-content">
             {/* === HERO INFO SECTION === */}
-            <div className="preview-hero">
-              <div className="hero-left">
-                <h1 className="hero-title">{duAn.TenDuAn}</h1>
-                <div className="hero-address">
+            <div className="modal-preview-du-an__hero">
+              <div className="modal-preview-du-an__hero-left">
+                <h1 className="modal-preview-du-an__hero-title">{duAn.TenDuAn}</h1>
+                <div className="modal-preview-du-an__hero-address">
                   <HiOutlineMapPin />
                   <span>{duAn.DiaChi || 'Chưa có địa chỉ'}</span>
                 </div>
-                <div className="hero-stats">
-                  <div className="hero-stat-item">
+                <div className="modal-preview-du-an__hero-stats">
+                  <div className="modal-preview-du-an__hero-stat-item">
                     <HiOutlineHome />
-                    <div className="hero-stat-content">
-                      <span className="hero-stat-value">{toNumber(duAn.TongPhong)}</span>
-                      <span className="hero-stat-label">Tổng phòng</span>
+                    <div className="modal-preview-du-an__hero-stat-content">
+                      <span className="modal-preview-du-an__hero-stat-value">{toNumber(duAn.TongPhong)}</span>
+                      <span className="modal-preview-du-an__hero-stat-label">Tổng phòng</span>
                     </div>
                   </div>
-                  <div className="hero-stat-item hero-stat-success">
+                  <div className="modal-preview-du-an__hero-stat-item modal-preview-du-an__hero-stat-item--success">
                     <HiOutlineCheckCircle />
-                    <div className="hero-stat-content">
-                      <span className="hero-stat-value">{toNumber(duAn.PhongTrong)}</span>
-                      <span className="hero-stat-label">Phòng trống</span>
+                    <div className="modal-preview-du-an__hero-stat-content">
+                      <span className="modal-preview-du-an__hero-stat-value">{toNumber(duAn.PhongTrong)}</span>
+                      <span className="modal-preview-du-an__hero-stat-label">Phòng trống</span>
                     </div>
                   </div>
-                  <div className="hero-stat-item">
+                  <div className="modal-preview-du-an__hero-stat-item">
                     <HiOutlineSquare3Stack3D />
-                    <div className="hero-stat-content">
-                      <span className="hero-stat-value">{toNumber(duAn.TinDangHoatDong)}/{toNumber(duAn.SoTinDang)}</span>
-                      <span className="hero-stat-label">Tin đăng</span>
+                    <div className="modal-preview-du-an__hero-stat-content">
+                      <span className="modal-preview-du-an__hero-stat-value">{toNumber(duAn.TinDangHoatDong)}/{toNumber(duAn.SoTinDang)}</span>
+                      <span className="modal-preview-du-an__hero-stat-label">Tin đăng</span>
                     </div>
                   </div>
                   {duAn.CocStats && toNumber(duAn.CocStats.CocDangHieuLuc) > 0 && (
-                    <div className="hero-stat-item hero-stat-warning">
+                    <div className="modal-preview-du-an__hero-stat-item modal-preview-du-an__hero-stat-item--warning">
                       <HiOutlineCurrencyDollar />
-                      <div className="hero-stat-content">
-                        <span className="hero-stat-value">{toNumber(duAn.CocStats.CocDangHieuLuc)}</span>
-                        <span className="hero-stat-label">Cọc hiệu lực</span>
+                      <div className="modal-preview-du-an__hero-stat-content">
+                        <span className="modal-preview-du-an__hero-stat-value">{toNumber(duAn.CocStats.CocDangHieuLuc)}</span>
+                        <span className="modal-preview-du-an__hero-stat-label">Cọc hiệu lực</span>
                       </div>
                     </div>
                   )}
                 </div>
               </div>
-              <div className="hero-right">
-                <div className="hero-meta">
+              <div className="modal-preview-du-an__hero-right">
+                <div className="modal-preview-du-an__hero-meta">
                   {duAn.YeuCauPheDuyetChu === 1 ? (
-                    <div className="hero-meta-item">
+                    <div className="modal-preview-du-an__hero-meta-item">
                       <HiOutlineCheckCircle />
                       <span>Yêu cầu duyệt cuộc hẹn</span>
                     </div>
                   ) : (
-                    <div className="hero-meta-item">
+                    <div className="modal-preview-du-an__hero-meta-item">
                       <HiOutlineClock />
                       <span>Tự động duyệt cuộc hẹn</span>
                     </div>
                   )}
                   {duAn.CapNhatLuc && (
-                    <div className="hero-meta-item">
+                    <div className="modal-preview-du-an__hero-meta-item">
                       <HiOutlineCalendar />
                       <span>Cập nhật: {Utils.formatDateTime(duAn.CapNhatLuc)}</span>
                     </div>
@@ -151,10 +151,10 @@ function ModalPreviewDuAn({
 
             {/* === BANNED INFO SECTION === */}
             {duAn.TrangThai === 'NgungHoatDong' && (
-              <div className="detail-section banned-info-section">
-                <div className="detail-header">
-                  <HiOutlineExclamationTriangle className="detail-icon text-danger" />
-                  <span className="detail-title">⚠️ Thông tin Ngưng hoạt động</span>
+              <div className="modal-preview-du-an__detail-section banned-info-section">
+                <div className="modal-preview-du-an__detail-header">
+                  <HiOutlineExclamationTriangle className="modal-preview-du-an__detail-icon text-danger" />
+                  <span className="modal-preview-du-an__detail-title">⚠️ Thông tin Ngưng hoạt động</span>
                 </div>
                 <div className="banned-info-content">
                   {/* Lý do */}
@@ -250,10 +250,10 @@ function ModalPreviewDuAn({
             )}
 
             {/* === CHÍNH SÁCH CỌC SECTION === */}
-            <div className="detail-section policy-section">
-              <div className="detail-header">
-                <HiOutlineCurrencyDollar className="detail-icon" />
-                <span className="detail-title">Chính sách Cọc</span>
+            <div className="modal-preview-du-an__detail-section policy-section">
+              <div className="modal-preview-du-an__detail-header">
+                <HiOutlineCurrencyDollar className="modal-preview-du-an__detail-icon" />
+                <span className="modal-preview-du-an__detail-title">Chính sách Cọc</span>
                 <button
                   type="button"
                   className="cda-btn cda-btn-secondary cda-btn-sm"
@@ -337,10 +337,10 @@ function ModalPreviewDuAn({
             </div>
 
             {/* === CHI TIẾT PHÒNG SECTION === */}
-            <div className="detail-section rooms-section">
-              <div className="detail-header">
-                <HiOutlineHome className="detail-icon" />
-                <span className="detail-title">Chi tiết Phòng trọ</span>
+            <div className="modal-preview-du-an__detail-section rooms-section">
+              <div className="modal-preview-du-an__detail-header">
+                <HiOutlineHome className="modal-preview-du-an__detail-icon" />
+                <span className="modal-preview-du-an__detail-title">Chi tiết Phòng trọ</span>
               </div>
               <div className="rooms-grid">
                 {Object.entries(PHONG_TRANG_THAI).map(([key, config]) => {
@@ -364,10 +364,10 @@ function ModalPreviewDuAn({
 
             {/* === THỐNG KÊ CỌC SECTION === */}
             {duAn.CocStats && toNumber(duAn.CocStats.CocDangHieuLuc) > 0 && (
-              <div className="detail-section coc-section">
-                <div className="detail-header">
-                  <HiOutlineCurrencyDollar className="detail-icon" />
-                  <span className="detail-title">Thống kê Cọc chi tiết</span>
+              <div className="modal-preview-du-an__detail-section coc-section">
+                <div className="modal-preview-du-an__detail-header">
+                  <HiOutlineCurrencyDollar className="modal-preview-du-an__detail-icon" />
+                  <span className="modal-preview-du-an__detail-title">Thống kê Cọc chi tiết</span>
                 </div>
                 <div className="coc-stats-grid">
                   <div className="coc-stat-card coc-stat-primary">
@@ -411,12 +411,60 @@ function ModalPreviewDuAn({
               </div>
             )}
 
+            {/* === BẢNG HOA HỒNG === */}
+            {(duAn.BangHoaHong || duAn.SoThangCocToiThieu) && (
+              <div className="modal-preview-du-an__detail-section info-section">
+                <div className="modal-preview-du-an__detail-header">
+                  <HiOutlineCurrencyDollar className="modal-preview-du-an__detail-icon" />
+                  <span className="modal-preview-du-an__detail-title">Bảng Hoa Hồng</span>
+                </div>
+                <div className="info-grid">
+                  {duAn.SoThangCocToiThieu && (
+                    <div className="info-item">
+                      <div className="info-icon" style={{ background: '#fef3c7', color: '#d97706' }}>
+                        📅
+                      </div>
+                      <div className="info-content">
+                        <div className="info-label">Số tháng cọc tối thiểu</div>
+                        <div className="info-value">{duAn.SoThangCocToiThieu} tháng</div>
+                      </div>
+                    </div>
+                  )}
+                  {duAn.BangHoaHong && (() => {
+                    try {
+                      const bangHoaHong = typeof duAn.BangHoaHong === 'string' 
+                        ? JSON.parse(duAn.BangHoaHong) 
+                        : duAn.BangHoaHong;
+                      if (Array.isArray(bangHoaHong) && bangHoaHong.length > 0) {
+                        return bangHoaHong.map((muc, idx) => (
+                          <div key={idx} className="info-item">
+                            <div className="info-icon" style={{ background: '#d1fae5', color: '#059669' }}>
+                              💰
+                            </div>
+                            <div className="info-content">
+                              <div className="info-label">Cọc {muc.soThang} tháng</div>
+                              <div className="info-value" style={{ color: '#059669', fontWeight: 700 }}>
+                                {muc.tyLe}% hoa hồng
+                              </div>
+                            </div>
+                          </div>
+                        ));
+                      }
+                    } catch (err) {
+                      console.error('Parse BangHoaHong error:', err);
+                    }
+                    return null;
+                  })()}
+                </div>
+              </div>
+            )}
+
             {/* === THÔNG TIN BỔ SUNG === */}
             {duAn.PhuongThucVao && (
-              <div className="detail-section info-section">
-                <div className="detail-header">
-                  <span className="detail-icon">🔑</span>
-                  <span className="detail-title">Thông tin bổ sung</span>
+              <div className="modal-preview-du-an__detail-section info-section">
+                <div className="modal-preview-du-an__detail-header">
+                  <span className="modal-preview-du-an__detail-icon">🔑</span>
+                  <span className="modal-preview-du-an__detail-title">Thông tin bổ sung</span>
                 </div>
                 <div className="info-grid">
                   <div className="info-item">
@@ -432,9 +480,9 @@ function ModalPreviewDuAn({
               </div>
             )}
 
-            {/* === VỊ TRÍ BẢN ĐỒ SECTION === */}
+            {/* === VỊ TRÍ BẢN ĐỐ SECTION === */}
             {duAn.ViDo && duAn.KinhDo && (
-              <div className="detail-section map-section">
+              <div className="modal-preview-du-an__detail-section map-section">
                 <MapViTriPhong
                   lat={parseFloat(duAn.ViDo)}
                   lng={parseFloat(duAn.KinhDo)}
@@ -449,7 +497,7 @@ function ModalPreviewDuAn({
         </div>
 
         {/* Footer */}
-        <div className="modal-footer">
+        <div className="modal-preview-du-an__footer">
           <button
             type="button"
             className="cda-btn cda-btn-secondary"

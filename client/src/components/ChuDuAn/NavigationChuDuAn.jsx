@@ -53,9 +53,9 @@ function NavigationChuDuAn() {
     },
     {
       path: '/chu-du-an/tin-nhan',
-      title: 'Tin nhắn',
+      title: 'Trò chuyện',
       icon: <HiOutlineChatBubbleLeftRight />,
-      description: 'Nhắn tin với khách hàng',
+      description: 'Trò chuyện với khách hàng',
       badge: null // Sẽ hiển thị số tin nhắn chưa đọc
     }
   ];

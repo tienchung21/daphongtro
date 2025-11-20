@@ -164,11 +164,23 @@ class NhanVienBanHangService {
           kh.SoDienThoai as SDTKhachHang,
           kh.Email as EmailKhachHang,
           
-          p.TenPhong, p.GiaChuan as GiaPhong,
+          p.TenPhong as TieuDePhong, 
+          p.GiaChuan as GiaPhong,
+          p.DienTichChuan as DienTich,
           
-          td.TinDangID, td.TieuDe as TieuDeTinDang,
+          td.TinDangID, 
+          td.TieuDe as TieuDeTinDang,
+          td.DuAnID as ChuDuAnID,
+          td.URL as HinhAnhPhong,
           
-          da.TenDuAn, da.DiaChi as DiaChiDuAn
+          da.TenDuAn, 
+          da.DiaChi as DiaChiPhong,
+          da.KinhDo,
+          da.ViDo,
+          
+          cda.TenDayDu as TenChuDuAn,
+          cda.SoDienThoai as SoDienThoaiChuDuAn,
+          cda.Email as EmailChuDuAn
           
         FROM cuochen ch
         INNER JOIN phong p ON ch.PhongID = p.PhongID
@@ -176,6 +188,7 @@ class NhanVienBanHangService {
         INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
         INNER JOIN duan da ON td.DuAnID = da.DuAnID
         LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
+        LEFT JOIN nguoidung cda ON da.ChuDuAnID = cda.NguoiDungID
         WHERE ch.CuocHenID = ? AND ch.NhanVienBanHangID = ?
       `, [cuocHenId, nhanVienId]);
 
@@ -183,7 +196,70 @@ class NhanVienBanHangService {
         throw new Error('Không tìm thấy cuộc hẹn hoặc không có quyền xem');
       }
 
-      return rows[0];
+      const appointment = rows[0];
+
+      // Parse JSON fields
+      if (appointment.HinhAnhPhong) {
+        try {
+          const images = JSON.parse(appointment.HinhAnhPhong);
+          // Convert relative URLs to full URLs
+          appointment.HinhAnhPhong = images.map(img => {
+            if (img.startsWith('/uploads')) {
+              return `http://localhost:5000${img}`;
+            }
+            return img;
+          });
+        } catch (e) {
+          appointment.HinhAnhPhong = [];
+        }
+      } else {
+        appointment.HinhAnhPhong = [];
+      }
+
+      // Parse coordinates
+      if (appointment.KinhDo && appointment.ViDo) {
+        appointment.ToaDo = {
+          lat: parseFloat(appointment.ViDo),
+          lng: parseFloat(appointment.KinhDo)
+        };
+      }
+
+      // Parse GhiChuKetQua JSON
+      if (appointment.GhiChuKetQua) {
+        try {
+          const ghiChuData = JSON.parse(appointment.GhiChuKetQua);
+          
+          // Nếu có cấu trúc mới với activities
+          if (ghiChuData.activities) {
+            appointment.ActivityLog = ghiChuData.activities;
+          } else {
+            appointment.ActivityLog = [];
+          }
+          
+          // Nếu có báo cáo kết quả (format mới với thoiGianBaoCao/ketQua)
+          if (ghiChuData.thoiGianBaoCao || ghiChuData.ketQua) {
+            appointment.BaoCaoKetQua = ghiChuData;
+          } else if (ghiChuData.oldNote) {
+            // Backward compatibility: nếu có oldNote (text cũ được migrate)
+            appointment.BaoCaoKetQua = {
+              ghiChu: ghiChuData.oldNote
+            };
+          } else {
+            appointment.BaoCaoKetQua = null;
+          }
+        } catch (e) {
+          // Nếu không phải JSON (dữ liệu cũ text thuần), giữ nguyên
+          appointment.BaoCaoKetQua = {
+            ghiChu: appointment.GhiChuKetQua
+          };
+          appointment.ActivityLog = [];
+        }
+      } else {
+        appointment.ActivityLog = [];
+        appointment.BaoCaoKetQua = null;
+      }
+
+      return appointment;
     } catch (error) {
       throw new Error(`Lỗi lấy chi tiết cuộc hẹn: ${error.message}`);
     }
@@ -208,13 +284,41 @@ class NhanVienBanHangService {
         throw new Error('Chỉ có thể xác nhận cuộc hẹn ở trạng thái Chờ xác nhận hoặc Đã yêu cầu');
       }
 
+      // Lấy GhiChuKetQua hiện tại
+      const [current] = await db.execute(
+        'SELECT GhiChuKetQua FROM cuochen WHERE CuocHenID = ?',
+        [cuocHenId]
+      );
+
+      let ghiChuData = { activities: [] };
+      if (current[0]?.GhiChuKetQua) {
+        try {
+          ghiChuData = JSON.parse(current[0].GhiChuKetQua);
+          if (!ghiChuData.activities) {
+            ghiChuData.activities = [];
+          }
+        } catch (e) {
+          // Nếu data cũ là text, khởi tạo mới
+          ghiChuData = { activities: [], oldNote: current[0].GhiChuKetQua };
+        }
+      }
+
+      // Thêm activity mới
+      ghiChuData.activities.push({
+        timestamp: new Date().toISOString(),
+        action: 'xac_nhan',
+        actor: 'NVBH',
+        nhanVienId: nhanVienId,
+        note: ghiChu || ''
+      });
+
       // Cập nhật trạng thái
       await db.execute(
         `UPDATE cuochen 
          SET TrangThai = 'DaXacNhan', 
-             GhiChuKetQua = CONCAT(IFNULL(GhiChuKetQua, ''), '\n[', NOW(), '] Xác nhận bởi NVBH: ', ?)
+             GhiChuKetQua = ?
          WHERE CuocHenID = ?`,
-        [ghiChu, cuocHenId]
+        [JSON.stringify(ghiChuData), cuocHenId]
       );
 
       return true;
@@ -255,15 +359,44 @@ class NhanVienBanHangService {
         throw new Error('Không thể đổi sang thời gian trong quá khứ');
       }
 
+      // Lấy GhiChuKetQua và thời gian cũ
+      const [current] = await db.execute(
+        'SELECT GhiChuKetQua, ThoiGianHen FROM cuochen WHERE CuocHenID = ?',
+        [cuocHenId]
+      );
+
+      let ghiChuData = { activities: [] };
+      if (current[0]?.GhiChuKetQua) {
+        try {
+          ghiChuData = JSON.parse(current[0].GhiChuKetQua);
+          if (!ghiChuData.activities) {
+            ghiChuData.activities = [];
+          }
+        } catch (e) {
+          ghiChuData = { activities: [], oldNote: current[0].GhiChuKetQua };
+        }
+      }
+
+      // Thêm activity đổi lịch
+      ghiChuData.activities.push({
+        timestamp: new Date().toISOString(),
+        action: 'doi_lich',
+        actor: 'NVBH',
+        nhanVienId: nhanVienId,
+        note: lyDo || '',
+        oldTime: current[0]?.ThoiGianHen,
+        newTime: thoiGianHenMoi
+      });
+
       // Cập nhật
       await db.execute(
         `UPDATE cuochen 
          SET ThoiGianHen = ?, 
              SoLanDoiLich = SoLanDoiLich + 1,
              TrangThai = 'DaDoiLich',
-             GhiChuKetQua = CONCAT(IFNULL(GhiChuKetQua, ''), '\n[', NOW(), '] Đổi lịch bởi NVBH: ', ?)
+             GhiChuKetQua = ?
          WHERE CuocHenID = ?`,
-        [thoiGianHenMoi, lyDo, cuocHenId]
+        [thoiGianHenMoi, JSON.stringify(ghiChuData), cuocHenId]
       );
 
       return true;
@@ -370,31 +503,55 @@ class NhanVienBanHangService {
       const thoiGianHen = new Date(cuocHen[0].ThoiGianHen);
       const now = new Date();
       const hoursLate = (now - thoiGianHen) / (1000 * 60 * 60);
-      let slaWarning = '';
-      if (hoursLate > 24) {
-        slaWarning = `\n[CẢNH BÁO SLA] Báo cáo muộn ${Math.floor(hoursLate)} giờ`;
+      const slaWarning = hoursLate > 24 ? `Báo cáo muộn ${Math.floor(hoursLate)} giờ` : null;
+      
+      // Lấy GhiChuKetQua hiện tại để giữ activities
+      const [current] = await db.execute(
+        'SELECT GhiChuKetQua FROM cuochen WHERE CuocHenID = ?',
+        [cuocHenId]
+      );
+
+      let ghiChuData = { activities: [] };
+      if (current[0]?.GhiChuKetQua) {
+        try {
+          ghiChuData = JSON.parse(current[0].GhiChuKetQua);
+          if (!ghiChuData.activities) {
+            ghiChuData.activities = [];
+          }
+        } catch (e) {
+          ghiChuData = { activities: [], oldNote: current[0].GhiChuKetQua };
+        }
       }
 
-      // Tạo ghi chú đầy đủ
-      const fullNote = `
-[${new Date().toISOString()}] Báo cáo kết quả:
-- Kết quả: ${ketQua}
-- Khách hàng quan tâm: ${khachQuanTam ? 'Có' : 'Không'}
-${lyDoThatBai ? `- Lý do thất bại: ${lyDoThatBai}` : ''}
-${keHoachFollowUp ? `- Kế hoạch follow-up: ${keHoachFollowUp}` : ''}
-${ghiChu ? `- Ghi chú: ${ghiChu}` : ''}${slaWarning}
-      `;
+      // Thêm báo cáo kết quả vào structure
+      ghiChuData.thoiGianBaoCao = new Date().toISOString();
+      ghiChuData.ketQua = ketQua;
+      ghiChuData.khachQuanTam = khachQuanTam || false;
+      ghiChuData.lyDoThatBai = lyDoThatBai || null;
+      ghiChuData.keHoachFollowUp = keHoachFollowUp || null;
+      ghiChuData.ghiChu = ghiChu || null;
+      ghiChuData.slaWarning = slaWarning;
 
-      // Cập nhật
+      // Thêm activity báo cáo
+      ghiChuData.activities.push({
+        timestamp: new Date().toISOString(),
+        action: 'bao_cao',
+        actor: 'NVBH',
+        nhanVienId: nhanVienId,
+        note: `Kết quả: ${ketQua}`,
+        ketQua: ketQua
+      });
+
+      // Cập nhật - lưu dạng JSON để dễ parse và hiển thị
       await db.execute(
         `UPDATE cuochen 
          SET TrangThai = 'HoanThanh',
-             GhiChuKetQua = CONCAT(IFNULL(GhiChuKetQua, ''), ?)
+             GhiChuKetQua = ?
          WHERE CuocHenID = ?`,
-        [fullNote, cuocHenId]
+        [JSON.stringify(ghiChuData), cuocHenId]
       );
 
-      return { success: true, slaWarning: hoursLate > 24 };
+      return { success: true, slaWarning: hoursLate > 24, baoCao: ghiChuData };
     } catch (error) {
       throw new Error(`Lỗi báo cáo kết quả: ${error.message}`);
     }

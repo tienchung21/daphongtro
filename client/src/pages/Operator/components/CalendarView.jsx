@@ -67,11 +67,12 @@ const CalendarView = ({
         const dayShifts = groupedShifts[dateKey] || [];
         const dayAppointments = groupedAppointments[dateKey] || [];
         const isToday = currentDate.toDateString() === new Date().toDateString();
+        const hasEvents = dayShifts.length > 0 || dayAppointments.length > 0;
 
         cells.push(
           <div 
             key={i} 
-            className={`calendar-view__day ${isToday ? 'is-today' : ''} ${events.length > 0 ? 'has-events' : ''}`}
+            className={`calendar-view__day ${isToday ? 'is-today' : ''} ${hasEvents ? 'has-events' : ''}`}
           >
             <div className="calendar-view__day-number">{dayNumber}</div>
 

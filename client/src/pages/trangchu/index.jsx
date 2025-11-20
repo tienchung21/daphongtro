@@ -3,8 +3,8 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import NavigationChuDuAn from '../../components/ChuDuAn/NavigationChuDuAn';
 import './trangchu.css';
-// thay đổi: dùng hàm của chủ dự án
-import { TinDangService } from '../../services/ChuDuAnService';
+// Sử dụng PublicService cho khách hàng (không cần auth)
+import { PublicTinDangService, PublicUtils } from '../../services/PublicService';
 import SearchKhuVuc from "../../components/SearchKhuVuc";
 import yeuThichApi from '../../api/yeuThichApi';
 import { Link } from 'react-router-dom';
@@ -19,14 +19,14 @@ function TrangChu() {
     fetchTinDangs();
   }, []);
 
-  // CHỈNH: dùng TinDangService.layDanhSach của chủ dự án, kèm log danh sách trả về
+  // Sử dụng PublicTinDangService để lấy tin đăng công khai (không cần đăng nhập)
   const fetchTinDangs = async (params = {}) => {
     setLoading(true);
     setError('');
     console.log('[TrangChu] fetchTinDangs params:', params); // debug
     try {
-      const res = await TinDangService.layDanhSach(params);
-      console.log('[TrangChu] TinDangService.layDanhSach response:', res);
+      const res = await PublicTinDangService.layDanhSachTinDangCongKhai(params);
+      console.log('[TrangChu] PublicTinDangService response:', res);
 
       // chuẩn hoá nhiều dạng response
       let raw = [];
@@ -91,10 +91,8 @@ function TrangChu() {
   };
 
   const formatPrice = (g) => {
-    if (!g) return '-';
-    const n = Number(g);
-    if (isNaN(n)) return g;
-    return n.toLocaleString('vi-VN') + ' VND';
+    // Sử dụng utility function từ PublicUtils
+    return PublicUtils.formatCurrency(g);
   };
 
   const getCurrentUserId = () => {
@@ -134,30 +132,9 @@ function TrangChu() {
     }
   };
 
-  // chuyển hàm ra ngoài JSX, đặt trước return
+  // Sử dụng utility function từ PublicUtils
   const getFirstImage = (tin) => {
-    const placeholder = 'https://via.placeholder.com/160x110?text=No+Image';
-    const raw = tin?.URL ?? tin?.Img ?? tin?.Images ?? tin?.images;
-    if (!raw) return placeholder;
-
-    if (Array.isArray(raw) && raw.length) return raw[0];
-
-    if (typeof raw === 'string') {
-      const s = raw.trim();
-      try {
-        if ((s.startsWith('[') && s.endsWith(']')) || s.startsWith('{"')) {
-          const parsed = JSON.parse(s);
-          if (Array.isArray(parsed) && parsed.length) return parsed[0];
-          if (parsed?.images && Array.isArray(parsed.images) && parsed.images.length) return parsed.images[0];
-        }
-      } catch (e) { /* ignore */ }
-
-      const m = s.match(/https?:\/\/[^",\]\s]+/);
-      if (m) return m[0];
-      if (s.startsWith('http') || s.startsWith('/')) return s;
-    }
-
-    return placeholder;
+    return PublicUtils.getFirstImage(tin);
   };
 
   return (

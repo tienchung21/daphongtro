@@ -434,7 +434,7 @@ class ChuDuAnModel {
       let query = `
         SELECT 
           ch.CuocHenID, p.PhongID, ch.KhachHangID, ch.NhanVienBanHangID,
-          ch.TrangThai, ch.ThoiGianHen, ch.GhiChuKetQua as GhiChu, ch.TaoLuc,
+          ch.TrangThai, ch.PheDuyetChuDuAn, ch.ThoiGianHen, ch.GhiChuKetQua as GhiChu, ch.TaoLuc, ch.CapNhatLuc,
           td.TieuDe as TieuDeTinDang,
           COALESCE(pt.GiaTinDang, p.GiaChuan) as Gia,
           p.TenPhong,
@@ -1200,6 +1200,54 @@ class ChuDuAnModel {
 
         updates.push('TrangThai = ?');
         params.push(trangThai);
+      }
+
+      // Xử lý SoThangCocToiThieu
+      if (Object.prototype.hasOwnProperty.call(data, 'SoThangCocToiThieu')) {
+        const soThang = data.SoThangCocToiThieu === null ? null : parseInt(data.SoThangCocToiThieu);
+        if (soThang !== null && (isNaN(soThang) || soThang < 1)) {
+          throw new Error('Số tháng cọc tối thiểu phải >= 1');
+        }
+        updates.push('SoThangCocToiThieu = ?');
+        params.push(soThang);
+      }
+
+      // Xử lý BangHoaHong (JSON array)
+      if (Object.prototype.hasOwnProperty.call(data, 'BangHoaHong')) {
+        let bangHoaHong = data.BangHoaHong;
+        
+        if (bangHoaHong !== null) {
+          if (Array.isArray(bangHoaHong)) {
+            // Validate từng mức hoa hồng
+            for (const muc of bangHoaHong) {
+              if (!muc.soThang || !muc.tyLe) {
+                throw new Error('Mỗi mức hoa hồng phải có soThang và tyLe');
+              }
+              const soThang = parseInt(muc.soThang);
+              const tyLe = parseFloat(muc.tyLe);
+              if (isNaN(soThang) || soThang < 1) {
+                throw new Error('Số tháng phải >= 1');
+              }
+              if (isNaN(tyLe) || tyLe < 0 || tyLe > 100) {
+                throw new Error('Tỷ lệ hoa hồng phải từ 0-100%');
+              }
+            }
+            bangHoaHong = JSON.stringify(bangHoaHong);
+          } else if (typeof bangHoaHong === 'string') {
+            // Đã là JSON string, validate format
+            try {
+              const parsed = JSON.parse(bangHoaHong);
+              if (!Array.isArray(parsed)) {
+                throw new Error('BangHoaHong phải là array');
+              }
+            } catch (err) {
+              throw new Error('BangHoaHong JSON không hợp lệ: ' + err.message);
+            }
+          }
+        }
+        
+        updates.push('BangHoaHong = ?');
+        params.push(bangHoaHong);
       }
 
       if (updates.length === 0) {

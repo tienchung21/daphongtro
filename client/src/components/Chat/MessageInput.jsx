@@ -43,8 +43,9 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled = false }) => {
   };
 
   const handleKeyDown = (e) => {
-    // Send with Ctrl/Cmd + Enter
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    // Send with Enter, newline with Shift+Enter
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSubmit(e);
     }
   };
@@ -56,7 +57,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled = false }) => {
         value={message}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        placeholder="Nhập tin nhắn... (Ctrl+Enter để gửi)"
+        placeholder="Nhập tin nhắn... (Enter để gửi, Shift+Enter để xuống hàng)"
         disabled={disabled}
         rows={1}
         className="message-input-textarea"
@@ -65,7 +66,7 @@ export const MessageInput = ({ onSendMessage, onTyping, disabled = false }) => {
         type="submit"
         disabled={!message.trim() || disabled}
         className="message-input-send-btn"
-        title="Gửi tin nhắn (Ctrl+Enter)"
+        title="Gửi tin nhắn (Enter)"
       >
         <HiOutlinePaperAirplane />
       </button>

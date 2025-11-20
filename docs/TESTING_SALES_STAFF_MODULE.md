@@ -331,7 +331,7 @@ npm run dev
 
 **Check:**
 1. Backend Socket.IO server running (port 5000)
-2. Browser console: `ws://localhost:5000`
+2. Browser console: `ws://mt5vhvtq-5000.asse.devtunnels.ms/`
 3. JWT token trong localStorage
 
 **Solution:**

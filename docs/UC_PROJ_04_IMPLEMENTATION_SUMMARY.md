@@ -287,7 +287,7 @@ node docs/test-hop-dong-api.js
 ```
 
 **Prerequisites:**
-- Server running on localhost:5000
+- Server running on mt5vhvtq-5000.asse.devtunnels.ms/
 - Valid JWT token for ChuDuAn role
 - Test data: TinDangID=1, KhachHangID=5, PhongID=1
 
