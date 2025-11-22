@@ -1,0 +1,99 @@
+/**
+ * Dashboard Operator CSS - Glass Morphism
+ */
+
+.dashboard-operator {
+  animation: operator-fade-in-up 0.5s ease-out;
+}
+
+.dashboard-operator__header {
+  margin-bottom: 2rem;
+}
+
+.dashboard-operator__title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--op-text-primary);
+  margin: 0 0 0.5rem;
+}
+
+.dashboard-operator__subtitle {
+  font-size: 1rem;
+  color: var(--op-text-secondary);
+  margin: 0;
+}
+
+.dashboard-operator__metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-operator__metric-card {
+  padding: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  text-decoration: none;
+  color: var(--op-text-primary);
+}
+
+.dashboard-operator__metric-icon {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  background: var(--op-glass-bg);
+  backdrop-filter: blur(var(--op-blur));
+  -webkit-backdrop-filter: blur(var(--op-blur));
+  border: 1px solid var(--op-glass-border);
+  border-radius: 16px;
+}
+
+.dashboard-operator__metric-content {
+  flex: 1;
+}
+
+.dashboard-operator__metric-value {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.dashboard-operator__metric-label {
+  font-size: 0.875rem;
+  color: var(--op-text-secondary);
+}
+
+.dashboard-operator__quick-actions {
+  margin-top: 2rem;
+}
+
+.dashboard-operator__actions {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .dashboard-operator__metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-operator__actions {
+    flex-direction: column;
+  }
+  
+  .dashboard-operator__actions .operator-btn {
+    width: 100%;
+  }
+}
+
+
+
+
+
+

@@ -147,7 +147,10 @@
 }
 .yeuthich>button {
     padding: 0 !important;
-
+    background-color: transparent !important;
+    border: none !important;
+    font-size: 24px;
+    cursor: pointer;
 }
 /* baiviet yeu thich */
 .tintuc-baiviet1 {

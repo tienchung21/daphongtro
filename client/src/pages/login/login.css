@@ -221,7 +221,6 @@ button[type=submit]:hover {
   pointer-events: none;
   display: flex;
 }
-
 .login-form {
   display: flex;
   position: relative;

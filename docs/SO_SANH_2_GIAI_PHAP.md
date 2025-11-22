@@ -246,7 +246,7 @@ Tuần 9
   └─ Monitor
 
 Tuần 10
-  └─ Cleanup (remove trigger, phong_old)
+  └─ Cleanup (remove trigger, drop phong_old ✅ đã thực hiện trong migration final)
 ```
 
 ---

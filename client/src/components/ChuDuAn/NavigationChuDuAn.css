@@ -369,6 +369,22 @@
   font-size: 1.125rem;
 }
 
+/* Logout button styling */
+.cda-footer-btn.logout-btn {
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.cda-footer-btn.logout-btn::before {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(185, 28, 28, 0.05));
+}
+
+.cda-footer-btn.logout-btn:hover {
+  background: rgba(220, 38, 38, 0.12);
+  border-color: #dc2626;
+  color: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
 /* ==================== COLLAPSED STATE ==================== */
 .cda-sidebar.collapsed .cda-sidebar-header {
   justify-content: center;

@@ -3,6 +3,9 @@
  * Định nghĩa colors, typography, spacing, components dùng chung
  */
 
+/* Import font Inter chỉ áp dụng cho ChuDuAn (scoped qua tokens, không ảnh hưởng global) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 /* ==================== COLOR PALETTE - EMERALD NOIR THEME (CHỦ DỰ ÁN) ==================== */
 :root {
   /* Primary Colors - Deep Emerald (Luxury, Wealth) */
@@ -94,7 +97,8 @@
   --radius-full: 9999px;
 
   /* Typography */
-  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+  --font-family-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-base: 1rem;
@@ -116,6 +120,8 @@
   min-height: 100vh;
   background: linear-gradient(135deg, #F5F7F7 0%, #E8F5F0 50%, #F9F9F7 100%);
   font-family: var(--font-family-base);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .chu-du-an-sidebar {
@@ -303,6 +309,19 @@
 .cda-btn-danger:hover:not(:disabled) {
   background-color: #dc2626;
   box-shadow: var(--shadow-md);
+}
+
+.cda-btn-warning {
+  background: linear-gradient(135deg, #D4AF37 0%, #B68C3A 100%);
+  color: var(--color-white);
+  border: none;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.cda-btn-warning:hover:not(:disabled) {
+  background: linear-gradient(135deg, #DDB945 0%, #D4AF37 100%);
+  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.4);
+  transform: translateY(-2px);
 }
 
 .cda-btn-ghost {

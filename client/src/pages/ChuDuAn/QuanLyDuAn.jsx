@@ -9,6 +9,8 @@ import ModalTaoNhanhDuAn from '../../components/ChuDuAn/ModalTaoNhanhDuAn';
 import ModalChinhSuaDuAn from '../../components/ChuDuAn/ModalChinhSuaDuAn';
 import ModalQuanLyChinhSachCoc from '../../components/ChuDuAn/ModalQuanLyChinhSachCoc';
 import ModalYeuCauMoLaiDuAn from '../../components/ChuDuAn/ModalYeuCauMoLaiDuAn';
+import ModalChonChinhSachCoc from '../../components/ChuDuAn/ModalChonChinhSachCoc';
+import ModalPreviewDuAn from '../../components/ChuDuAn/ModalPreviewDuAn';
 
 import {
   HiOutlinePlus,
@@ -24,9 +26,9 @@ import {
   HiOutlineCheckCircle,
   HiOutlineExclamationTriangle,
   HiOutlineInformationCircle,
-  HiOutlineChevronDown,
-  HiOutlineChevronUp,
-  HiOutlineDocumentArrowDown
+  HiOutlineDocumentArrowDown,
+  HiOutlineEllipsisVertical,
+  HiOutlineCurrencyDollar
 } from 'react-icons/hi2';
 
 /**
@@ -128,7 +130,6 @@ function QuanLyDuAn() {
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState(new Set());
-  const [expandedRows, setExpandedRows] = useState(new Set());
 
   // Modals
   const [showModalTaoDuAn, setShowModalTaoDuAn] = useState(false);
@@ -140,6 +141,11 @@ function QuanLyDuAn() {
   const [showModalYeuCauMoLai, setShowModalYeuCauMoLai] = useState(false);
   const [chinhSachCocList, setChinhSachCocList] = useState([]); // Danh sách chính sách cọc
   const [tooltipDuAnId, setTooltipDuAnId] = useState(null); // For banned reason tooltip
+  const [openDropdownId, setOpenDropdownId] = useState(null); // Track which dropdown is open
+  const [showModalChonChinhSachCoc, setShowModalChonChinhSachCoc] = useState(false); // Modal chọn chính sách cọc
+  const [duAnForChinhSachCoc, setDuAnForChinhSachCoc] = useState(null); // Dự án đang chọn chính sách cọc
+  const [showModalPreview, setShowModalPreview] = useState(false); // Modal preview dự án
+  const [previewDuAn, setPreviewDuAn] = useState(null); // Dự án đang preview
 
   // Action states
   const [actionLoading, setActionLoading] = useState(false);
@@ -194,6 +200,17 @@ function QuanLyDuAn() {
     const timer = setTimeout(() => setActionError(''), 5000);
     return () => clearTimeout(timer);
   }, [actionError]);
+
+  // ===== HANDLE CLICK OUTSIDE DROPDOWN =====
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openDropdownId && !event.target.closest('.action-dropdown')) {
+        setOpenDropdownId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openDropdownId]);
 
   // ===== FILTER & SORT LOGIC =====
   const filtered = useMemo(() => {
@@ -322,15 +339,25 @@ function QuanLyDuAn() {
     setSelectedIds(new Set());
   };
 
-  // ===== EXPANDABLE ROWS =====
-  const toggleExpand = (id) => {
-    const newSet = new Set(expandedRows);
-    if (newSet.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
-    }
-    setExpandedRows(newSet);
+  // ===== PREVIEW MODAL HANDLERS =====
+  const openPreviewModal = (duAn) => {
+    setPreviewDuAn(duAn);
+    setShowModalPreview(true);
+    closeDropdown();
+  };
+
+  const closePreviewModal = () => {
+    setShowModalPreview(false);
+    setPreviewDuAn(null);
+  };
+
+  // ===== DROPDOWN TOGGLE =====
+  const toggleDropdown = (id) => {
+    setOpenDropdownId(openDropdownId === id ? null : id);
+  };
+
+  const closeDropdown = () => {
+    setOpenDropdownId(null);
   };
 
   // ===== ACTION HANDLERS =====
@@ -515,6 +542,32 @@ function QuanLyDuAn() {
     } catch (error) {
       console.error('Lỗi gửi yêu cầu:', error);
       throw error; // Modal sẽ xử lý error
+    }
+  };
+
+  // ===== MODAL CHỌN CHÍNH SÁCH CỌC HANDLERS =====
+  const openModalChonChinhSachCoc = (duAn) => {
+    setDuAnForChinhSachCoc(duAn);
+    setShowModalChonChinhSachCoc(true);
+    closeDropdown(); // Đóng dropdown
+  };
+
+  const closeModalChonChinhSachCoc = () => {
+    setShowModalChonChinhSachCoc(false);
+    setDuAnForChinhSachCoc(null);
+  };
+
+  const handleChonChinhSachCocSuccess = (chinhSachCocId) => {
+    // Update local state
+    if (duAnForChinhSachCoc) {
+      setDuAns(prev =>
+        prev.map(item =>
+          item.DuAnID === duAnForChinhSachCoc.DuAnID
+            ? { ...item, ChinhSachCocID: chinhSachCocId }
+            : item
+        )
+      );
+      setSuccessMessage('Đã cập nhật chính sách cọc cho dự án');
     }
   };
 
@@ -844,14 +897,12 @@ function QuanLyDuAn() {
                 <tbody>
                   {pagedData.map((duAn) => {
                     const isSelected = selectedIds.has(duAn.DuAnID);
-                    const isExpanded = expandedRows.has(duAn.DuAnID);
                     const isPending = pendingIds.has(duAn.DuAnID);
                     const isArchived = duAn.TrangThai === TRANG_THAI_ENUM.LuuTru;
 
                     return (
-                      <React.Fragment key={duAn.DuAnID}>
-                        <tr className={`table-row ${isPending ? 'row-pending' : ''}`}>
-                          <td className="col-select">
+                      <tr key={duAn.DuAnID} className={`table-row ${isPending ? 'row-pending' : ''}`}>
+                        <td className="col-select">
                             <input
                               type="checkbox"
                               checked={isSelected}
@@ -861,7 +912,41 @@ function QuanLyDuAn() {
                           </td>
                           <td className="col-project">
                             <div className="project-info">
-                              <div className="project-name">{duAn.TenDuAn}</div>
+                              <div className="project-name">
+                                {duAn.TenDuAn}
+                                {/* Badge trạng thái duyệt hoa hồng */}
+                                {duAn.TrangThaiDuyetHoaHong && (
+                                  <span
+                                    style={{
+                                      marginLeft: '0.5rem',
+                                      padding: '0.125rem 0.5rem',
+                                      borderRadius: '0.25rem',
+                                      fontSize: '0.7rem',
+                                      fontWeight: 500,
+                                      background: duAn.TrangThaiDuyetHoaHong === 'DaDuyet'
+                                        ? '#dcfce7'
+                                        : duAn.TrangThaiDuyetHoaHong === 'TuChoi'
+                                        ? '#fee2e2'
+                                        : '#fef3c7',
+                                      color: duAn.TrangThaiDuyetHoaHong === 'DaDuyet'
+                                        ? '#166534'
+                                        : duAn.TrangThaiDuyetHoaHong === 'TuChoi'
+                                        ? '#991b1b'
+                                        : '#92400e',
+                                      cursor: 'help',
+                                      title: duAn.TrangThaiDuyetHoaHong === 'DaDuyet'
+                                        ? 'Hoa hồng đã được duyệt'
+                                        : duAn.TrangThaiDuyetHoaHong === 'TuChoi'
+                                        ? 'Hoa hồng bị từ chối - Cần chỉnh sửa và gửi lại'
+                                        : 'Hoa hồng đang chờ duyệt'
+                                    }}
+                                  >
+                                    {duAn.TrangThaiDuyetHoaHong === 'DaDuyet' && '✓ HH'}
+                                    {duAn.TrangThaiDuyetHoaHong === 'TuChoi' && '✗ HH'}
+                                    {duAn.TrangThaiDuyetHoaHong === 'ChoDuyet' && '⏳ HH'}
+                                  </span>
+                                )}
+                              </div>
                               <div className="project-address">
                                 {duAn.ViDo && duAn.KinhDo ? (
                                   <>
@@ -905,296 +990,100 @@ function QuanLyDuAn() {
                             )}
                           </td>
                           <td className="col-actions">
-                            <div className="action-buttons">
+                            <div className="action-dropdown">
                               <button
                                 type="button"
-                                className="action-btn"
-                                onClick={() => openEditModal(duAn)}
+                                className="action-dropdown-trigger"
+                                onClick={() => toggleDropdown(duAn.DuAnID)}
                                 disabled={isPending}
-                                title="Chỉnh sửa"
+                                title="Thao tác"
                               >
-                                <HiOutlinePencilSquare />
+                                <HiOutlineEllipsisVertical />
                               </button>
-                              {isArchived ? (
-                                <button
-                                  type="button"
-                                  className="action-btn action-restore"
-                                  onClick={() => handleRestore(duAn)}
-                                  disabled={isPending}
-                                  title="Khôi phục"
-                                >
-                                  <HiOutlineArrowUturnLeft />
-                                </button>
-                              ) : (
-                                <button
-                                  type="button"
-                                  className="action-btn action-archive"
-                                  onClick={() => handleArchive(duAn)}
-                                  disabled={isPending}
-                                  title="Lưu trữ"
-                                >
-                                  <HiOutlineArchiveBox />
-                                </button>
+                              
+                              {openDropdownId === duAn.DuAnID && (
+                                <div className="action-dropdown-menu">
+                                  {/* Chỉnh sửa */}
+                                  <button
+                                    type="button"
+                                    className="dropdown-item"
+                                    onClick={() => {
+                                      openEditModal(duAn);
+                                      closeDropdown();
+                                    }}
+                                  >
+                                    <HiOutlinePencilSquare className="item-icon" />
+                                    <span>Chỉnh sửa</span>
+                                  </button>
+
+                                  {/* Lưu trữ / Khôi phục */}
+                                  {isArchived ? (
+                                    <button
+                                      type="button"
+                                      className="dropdown-item"
+                                      onClick={() => {
+                                        handleRestore(duAn);
+                                        closeDropdown();
+                                      }}
+                                    >
+                                      <HiOutlineArrowUturnLeft className="item-icon" />
+                                      <span>Khôi phục</span>
+                                    </button>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      className="dropdown-item"
+                                      onClick={() => {
+                                        handleArchive(duAn);
+                                        closeDropdown();
+                                      }}
+                                    >
+                                      <HiOutlineArchiveBox className="item-icon" />
+                                      <span>Lưu trữ</span>
+                                    </button>
+                                  )}
+
+                                  {/* Xem chi tiết */}
+                                  <button
+                                    type="button"
+                                    className="dropdown-item"
+                                    onClick={() => openPreviewModal(duAn)}
+                                  >
+                                    <HiOutlineEye className="item-icon" />
+                                    <span>Xem chi tiết</span>
+                                  </button>
+
+                                  <div className="dropdown-divider"></div>
+
+                                  {/* Chính sách cọc */}
+                                  <button
+                                    type="button"
+                                    className="dropdown-item dropdown-item-clickable"
+                                    onClick={() => openModalChonChinhSachCoc(duAn)}
+                                  >
+                                    <div className="item-content-full">
+                                      <div className="item-header-full">
+                                        <HiOutlineCurrencyDollar className="item-icon" />
+                                        <span className="item-title">Chính sách cọc</span>
+                                      </div>
+                                      <div className="item-subtitle">
+                                        {duAn.ChinhSachCocID ? (
+                                          <span className="text-primary text-sm">
+                                            {chinhSachCocList.find(cs => cs.ChinhSachCocID === duAn.ChinhSachCocID)?.TenChinhSach || 'Đang sử dụng'}
+                                          </span>
+                                        ) : (
+                                          <span className="text-muted text-sm">Chưa thiết lập</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </button>
+                                </div>
                               )}
-                              <button
-                                type="button"
-                                className="action-btn action-expand"
-                                onClick={() => toggleExpand(duAn.DuAnID)}
-                                title={isExpanded ? 'Thu gọn' : 'Xem chi tiết'}
-                              >
-                                {isExpanded ? <HiOutlineChevronUp /> : <HiOutlineChevronDown />}
-                              </button>
                             </div>
                           </td>
                         </tr>
-                        {isExpanded && (
-                          <tr className="table-row-expanded">
-                            <td colSpan="7">
-                              <div className="expanded-content">
-                                {/* === TASK 14: BANNED INFO SECTION === */}
-                                {duAn.TrangThai === 'NgungHoatDong' && (
-                                  <div className="detail-section banned-info-section">
-                                    <div className="detail-header">
-                                      <HiOutlineExclamationTriangle className="detail-icon text-danger" />
-                                      <span className="detail-title">⚠️ Thông tin Ngưng hoạt động</span>
-                                    </div>
-                                    <div className="banned-info-content">
-                                      {/* Lý do */}
-                                      <div className="banned-reason">
-                                        <strong>Lý do:</strong>
-                                        <p className="reason-text">{duAn.LyDoNgungHoatDong || 'Không có thông tin'}</p>
-                                      </div>
-                                      
-                                      {/* Người xử lý & Thời gian */}
-                                      <div className="banned-meta">
-                                        {duAn.NguoiNgungHoatDong_TenDayDu && (
-                                          <div className="meta-item">
-                                            <span className="meta-label">Người xử lý:</span>
-                                            <span className="meta-value">{duAn.NguoiNgungHoatDong_TenDayDu}</span>
-                                          </div>
-                                        )}
-                                        {duAn.NgungHoatDongLuc && (
-                                          <div className="meta-item">
-                                            <span className="meta-label">Thời gian:</span>
-                                            <span className="meta-value">{Utils.formatDateTime(duAn.NgungHoatDongLuc)}</span>
-                                          </div>
-                                        )}
-                                      </div>
-                                      
-                                      {/* Trạng thái yêu cầu mở lại */}
-                                      <div className="request-status-row">
-                                        <div className="status-label">
-                                          <strong>Yêu cầu mở lại:</strong>
-                                        </div>
-                                        <div className="status-badges">
-                                          {duAn.YeuCauMoLai === 'ChuaGui' && (
-                                            <>
-                                              <span className="request-status-badge badge-secondary">
-                                                Chưa gửi
-                                              </span>
-                                              <button
-                                                type="button"
-                                                className="cda-btn cda-btn-primary cda-btn-sm btn-request-reopen"
-                                                onClick={() => openYeuCauMoLaiModal(duAn)}
-                                              >
-                                                Gửi yêu cầu mở lại
-                                              </button>
-                                            </>
-                                          )}
-                                          {duAn.YeuCauMoLai === 'DangXuLy' && (
-                                            <>
-                                              <span className="request-status-badge badge-warning">
-                                                ⏳ Đang xử lý
-                                              </span>
-                                              {duAn.NoiDungGiaiTrinh && (
-                                                <div className="giaitrinh-box">
-                                                  <strong>Nội dung giải trình:</strong>
-                                                  <p>{duAn.NoiDungGiaiTrinh}</p>
-                                                </div>
-                                              )}
-                                            </>
-                                          )}
-                                          {duAn.YeuCauMoLai === 'ChapNhan' && (
-                                            <span className="request-status-badge badge-success">
-                                              ✅ Đã chấp nhận
-                                            </span>
-                                          )}
-                                          {duAn.YeuCauMoLai === 'TuChoi' && (
-                                            <>
-                                              <span className="request-status-badge badge-danger">
-                                                ❌ Đã từ chối
-                                              </span>
-                                              {duAn.LyDoTuChoiMoLai && (
-                                                <div className="giaitrinh-box">
-                                                  <strong>Lý do từ chối:</strong>
-                                                  <p className="text-danger">{duAn.LyDoTuChoiMoLai}</p>
-                                                </div>
-                                              )}
-                                              <button
-                                                type="button"
-                                                className="cda-btn cda-btn-primary cda-btn-sm btn-request-reopen"
-                                                onClick={() => openYeuCauMoLaiModal(duAn)}
-                                              >
-                                                Gửi yêu cầu mới
-                                              </button>
-                                            </>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* === TASK 11: CHÍNH SÁCH CỌC SECTION === */}
-                                <div className="detail-section">
-                                  <div className="detail-header">
-                                    <span className="detail-icon">💎</span>
-                                    <span className="detail-title">Chính sách Cọc</span>
-                                    <button
-                                      type="button"
-                                      className="cda-btn cda-btn-secondary cda-btn-sm"
-                                      onClick={() => openChinhSachCocModal('create')}
-                                      style={{ marginLeft: 'auto' }}
-                                    >
-                                      <HiOutlinePlus className="icon" />
-                                      Thêm chính sách cọc
-                                    </button>
-                                  </div>
-                                  <div className="detail-policies">
-                                    {chinhSachCocList.length === 0 ? (
-                                      <p className="text-muted">Chưa có chính sách cọc nào</p>
-                                    ) : (
-                                      <div className="policy-cards">
-                                        {chinhSachCocList.map((policy) => (
-                                          <div key={policy.ChinhSachCocID} className="policy-card">
-                                            <div className="policy-info">
-                                              <div className="policy-name">{policy.TenChinhSach}</div>
-                                              <div className="policy-details">
-                                                {policy.ChoPhepCocGiuCho === 1 && (
-                                                  <>
-                                                    <span className="policy-tag">TTL: {policy.TTL_CocGiuCho_Gio}h</span>
-                                                    <span className="policy-tag">Phạt: {policy.TyLePhat_CocGiuCho}%</span>
-                                                  </>
-                                                )}
-                                                <span className="policy-tag">
-                                                  Giải tỏa: {policy.QuyTacGiaiToa === 'BanGiao' ? 'Bàn giao' : policy.QuyTacGiaiToa === 'TheoNgay' ? 'Theo ngày' : 'Khác'}
-                                                </span>
-                                                {policy.SoTinDangSuDung > 0 && (
-                                                  <span className="policy-usage">
-                                                    {policy.SoTinDangSuDung} tin đăng
-                                                  </span>
-                                                )}
-                                              </div>
-                                            </div>
-                                            {policy.ChuDuAnID && ( // Chỉ edit được chính sách của mình
-                                              <button
-                                                type="button"
-                                                className="policy-edit-btn"
-                                                onClick={() => openChinhSachCocModal('edit', policy)}
-                                                title="Chỉnh sửa"
-                                              >
-                                                <HiOutlinePencilSquare />
-                                              </button>
-                                            )}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-
-                                {/* Phòng details */}
-                                <div className="detail-section">
-                                  <div className="detail-header">
-                                    <span className="detail-icon">🏠</span>
-                                    <span className="detail-title">Tình trạng phòng</span>
-                                  </div>
-                                  <div className="detail-stats">
-                                    {Object.entries(PHONG_TRANG_THAI).map(([key, config]) => {
-                                      const value = toNumber(duAn[`Phong${key.charAt(0).toUpperCase() + key.slice(1)}`]);
-                                      return (
-                                        <div key={key} className="stat-item">
-                                          <span className="stat-icon">{config.icon}</span>
-                                          <span className="stat-label">{config.label}:</span>
-                                          <span className={`stat-value text-${config.color}`}>{value}</span>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
-
-                                {/* Cọc details */}
-                                {duAn.CocStats && toNumber(duAn.CocStats.CocDangHieuLuc) > 0 && (
-                                  <div className="detail-section">
-                                    <div className="detail-header">
-                                      <span className="detail-icon">💰</span>
-                                      <span className="detail-title">Thống kê cọc</span>
-                                    </div>
-                                    <div className="detail-stats">
-                                      <div className="stat-item">
-                                        <span className="stat-label">Giữ chỗ:</span>
-                                        <span className="stat-value">{toNumber(duAn.CocStats.CocDangHieuLucGiuCho)}</span>
-                                      </div>
-                                      <div className="stat-item">
-                                        <span className="stat-label">An ninh:</span>
-                                        <span className="stat-value">{toNumber(duAn.CocStats.CocDangHieuLucAnNinh)}</span>
-                                      </div>
-                                      <div className="stat-item">
-                                        <span className="stat-label">Hết hạn:</span>
-                                        <span className="stat-value text-warning">{toNumber(duAn.CocStats.CocHetHan)}</span>
-                                      </div>
-                                      <div className="stat-item">
-                                        <span className="stat-label">Đã giải tỏa:</span>
-                                        <span className="stat-value text-secondary">{toNumber(duAn.CocStats.CocDaGiaiToa)}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-
-                                {/* Metadata */}
-                                <div className="detail-section">
-                                  <div className="detail-header">
-                                    <span className="detail-icon">ℹ️</span>
-                                    <span className="detail-title">Thông tin khác</span>
-                                  </div>
-                                  <div className="detail-metadata">
-                                    {duAn.ViDo && duAn.KinhDo && (
-                                      <div className="meta-item">
-                                        <span className="meta-label">Tọa độ:</span>
-                                        <span className="meta-value">
-                                          {Number(duAn.ViDo).toFixed(6)}, {Number(duAn.KinhDo).toFixed(6)}
-                                        </span>
-                                      </div>
-                                    )}
-                                    <div className="meta-item">
-                                      <span className="meta-label">Phê duyệt cuộc hẹn:</span>
-                                      <span className="meta-value">
-                                        {Number(duAn.YeuCauPheDuyetChu) === 1
-                                          ? '✅ Chủ dự án duyệt'
-                                          : '⚡ Tự động duyệt'}
-                                      </span>
-                                    </div>
-                                    {duAn.PhuongThucVao && (
-                                      <div className="meta-item">
-                                        <span className="meta-label">Phương thức vào:</span>
-                                        <span className="meta-value">{duAn.PhuongThucVao}</span>
-                                      </div>
-                                    )}
-                                    {duAn.CapNhatLuc && (
-                                      <div className="meta-item">
-                                        <span className="meta-label">Cập nhật lần cuối:</span>
-                                        <span className="meta-value">{Utils.formatDateTime(duAn.CapNhatLuc)}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
+                      );
+                    })}
                 </tbody>
               </table>
             </div>
@@ -1279,6 +1168,25 @@ function QuanLyDuAn() {
         onClose={closeYeuCauMoLaiModal}
         onSubmit={handleGuiYeuCauMoLai}
         duAn={selectedDuAn}
+      />
+
+      {/* === MODAL CHỌN CHÍNH SÁCH CỌC === */}
+      <ModalChonChinhSachCoc
+        isOpen={showModalChonChinhSachCoc}
+        onClose={closeModalChonChinhSachCoc}
+        duAn={duAnForChinhSachCoc}
+        onSuccess={handleChonChinhSachCocSuccess}
+        onOpenCreateModal={() => openChinhSachCocModal('create')}
+      />
+
+      {/* === MODAL PREVIEW DỰ ÁN === */}
+      <ModalPreviewDuAn
+        isOpen={showModalPreview}
+        onClose={closePreviewModal}
+        duAn={previewDuAn}
+        chinhSachCocList={chinhSachCocList}
+        onOpenChinhSachCocModal={openChinhSachCocModal}
+        onOpenYeuCauMoLaiModal={openYeuCauMoLaiModal}
       />
     </ChuDuAnLayout>
   );

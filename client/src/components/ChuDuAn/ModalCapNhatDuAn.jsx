@@ -112,6 +112,10 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
   const [selectedQuan, setSelectedQuan] = useState('');
   const [selectedPhuong, setSelectedPhuong] = useState('');
 
+  // State cho hoa hồng
+  const [soThangCocToiThieu, setSoThangCocToiThieu] = useState(1);
+  const [bangHoaHong, setBangHoaHong] = useState([]); // [{soThang: 6, tyLe: 30}, ...]
+
   // State cho confirmation dialog
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [changes, setChanges] = useState([]);
@@ -178,8 +182,17 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
         PhuongThucVao: duAn.PhuongThucVao || '',
         ViDo: viDo,
         KinhDo: kinhDo,
-        TrangThai: duAn.TrangThai || 'HoatDong'
+        TrangThai: duAn.TrangThai || 'HoatDong',
+        SoThangCocToiThieu: duAn.SoThangCocToiThieu || 1,
+        BangHoaHong: duAn.BangHoaHong ? (typeof duAn.BangHoaHong === 'string' ? JSON.parse(duAn.BangHoaHong) : duAn.BangHoaHong) : []
       });
+      
+      // Initialize hoa hong data
+      setSoThangCocToiThieu(duAn.SoThangCocToiThieu || 1);
+      const bangHoaHongParsed = duAn.BangHoaHong 
+        ? (typeof duAn.BangHoaHong === 'string' ? JSON.parse(duAn.BangHoaHong) : duAn.BangHoaHong)
+        : [];
+      setBangHoaHong(bangHoaHongParsed);
       
       // Set vị trí gốc cho kiểm tra khoảng cách
       if (viDo && kinhDo) {
@@ -357,6 +370,21 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
     return () => clearTimeout(timer);
   }, [selectedTinh, selectedQuan, selectedPhuong, formData.DiaChiChiTiet, tinhs, quans, phuongs]);
 
+  // Helper functions cho hoa hồng
+  const themMucHoaHong = () => {
+    setBangHoaHong([...bangHoaHong, { soThang: '', tyLe: '' }]);
+  };
+
+  const xoaMucHoaHong = (index) => {
+    setBangHoaHong(bangHoaHong.filter((_, i) => i !== index));
+  };
+
+  const capNhatMucHoaHong = (index, field, value) => {
+    const updated = [...bangHoaHong];
+    updated[index] = { ...updated[index], [field]: value };
+    setBangHoaHong(updated);
+  };
+
   const detectChanges = () => {
     if (!originalData) return [];
 
@@ -426,6 +454,29 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
       });
     }
 
+    // Kiểm tra thay đổi hoa hồng
+    if (soThangCocToiThieu !== originalData.SoThangCocToiThieu) {
+      changeList.push({
+        field: 'Số tháng cọc tối thiểu',
+        old: originalData.SoThangCocToiThieu || 1,
+        new: soThangCocToiThieu
+      });
+    }
+
+    const bangHoaHongStr = JSON.stringify(bangHoaHong.sort((a, b) => a.soThang - b.soThang));
+    const originalBangHoaHongStr = JSON.stringify((originalData.BangHoaHong || []).sort((a, b) => a.soThang - b.soThang));
+    if (bangHoaHongStr !== originalBangHoaHongStr) {
+      changeList.push({
+        field: 'Bảng hoa hồng',
+        old: originalData.BangHoaHong?.length > 0 
+          ? `${originalData.BangHoaHong.length} mức` 
+          : '(Chưa cấu hình)',
+        new: bangHoaHong.length > 0 
+          ? `${bangHoaHong.length} mức` 
+          : '(Chưa cấu hình)'
+      });
+    }
+
     return changeList;
   };
 
@@ -442,6 +493,45 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
     if (!formData.YeuCauPheDuyetChu && !formData.PhuongThucVao.trim()) {
       setError('Vui lòng nhập phương thức vào dự án');
       return;
+    }
+
+    // Validation hoa hồng nếu có thay đổi
+    const hoaHongChanged = soThangCocToiThieu !== originalData?.SoThangCocToiThieu ||
+      JSON.stringify(bangHoaHong) !== JSON.stringify(originalData?.BangHoaHong || []);
+    
+    if (hoaHongChanged) {
+      // Validate số tháng cọc
+      if (!soThangCocToiThieu || soThangCocToiThieu < 1) {
+        setError('Số tháng cọc tối thiểu phải >= 1');
+        return;
+      }
+
+      // Validate bảng hoa hồng
+      const validBangHoaHong = bangHoaHong.filter(item => item.soThang && item.tyLe);
+      if (validBangHoaHong.length === 0 && bangHoaHong.length > 0) {
+        setError('Vui lòng nhập đầy đủ thông tin cho các mức hoa hồng');
+        return;
+      }
+
+      // Check duplicates và validate values
+      const soThangs = new Set();
+      for (const item of validBangHoaHong) {
+        const soThang = parseInt(item.soThang);
+        const tyLe = parseFloat(item.tyLe);
+        if (isNaN(soThang) || soThang < 1) {
+          setError(`Số tháng hợp đồng "${item.soThang}" không hợp lệ (phải >= 1)`);
+          return;
+        }
+        if (isNaN(tyLe) || tyLe < 0 || tyLe > 100) {
+          setError(`Tỷ lệ hoa hồng "${item.tyLe}" không hợp lệ (phải từ 0-100%)`);
+          return;
+        }
+        if (soThangs.has(soThang)) {
+          setError(`Số tháng ${soThang} bị trùng lặp trong bảng hoa hồng`);
+          return;
+        }
+        soThangs.add(soThang);
+      }
     }
 
     // Phát hiện thay đổi
@@ -486,6 +576,22 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
         payload.KinhDo = formData.KinhDo;
       }
 
+      // Thêm hoa hồng nếu có thay đổi
+      const hoaHongChanged = soThangCocToiThieu !== originalData?.SoThangCocToiThieu ||
+        JSON.stringify(bangHoaHong) !== JSON.stringify(originalData?.BangHoaHong || []);
+      
+      if (hoaHongChanged) {
+        payload.SoThangCocToiThieu = soThangCocToiThieu;
+        // Chỉ gửi bảng hoa hồng nếu có ít nhất 1 mức hợp lệ
+        const validBangHoaHong = bangHoaHong
+          .filter(item => item.soThang && item.tyLe)
+          .map(item => ({
+            soThang: parseInt(item.soThang),
+            tyLe: parseFloat(item.tyLe)
+          }));
+        payload.BangHoaHong = validBangHoaHong.length > 0 ? validBangHoaHong : null;
+      }
+
       await DuAnService.capNhat(duAn.DuAnID, payload);
       
       onSaved();
@@ -513,19 +619,19 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
   // Render confirmation dialog
   if (showConfirmation) {
     return (
-      <div className="modal-duan-overlay" onClick={(e) => e.target.className === 'modal-duan-overlay' && setShowConfirmation(false)}>
-        <div className="modal-duan-container" style={{ maxWidth: '600px' }}>
-          <div className="modal-duan-header">
+      <div className="modal-cap-nhat-du-an__overlay" onClick={(e) => e.target.className === 'modal-cap-nhat-du-an__overlay' && setShowConfirmation(false)}>
+        <div className="modal-cap-nhat-du-an" style={{ maxWidth: '600px' }}>
+          <div className="modal-cap-nhat-du-an__header">
             <div>
-              <h2 className="modal-duan-title">Xác nhận cập nhật dự án</h2>
-              <p className="modal-duan-subtitle">Vui lòng kiểm tra lại các thay đổi trước khi lưu</p>
+              <h2 className="modal-cap-nhat-du-an__title">Xác nhận cập nhật dự án</h2>
+              <p className="modal-cap-nhat-du-an__subtitle">Vui lòng kiểm tra lại các thay đổi trước khi lưu</p>
             </div>
-            <button className="modal-duan-close" onClick={() => setShowConfirmation(false)}>
+            <button className="modal-cap-nhat-du-an__close-btn" onClick={() => setShowConfirmation(false)}>
               <HiOutlineXMark size={20} />
             </button>
           </div>
 
-          <div className="modal-duan-body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+          <div className="modal-cap-nhat-du-an__body" style={{ maxHeight: '60vh', overflowY: 'auto' }}>
             <div style={{ 
               padding: '1rem', 
               background: 'rgba(59, 130, 246, 0.1)', 
@@ -605,10 +711,10 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
             )}
           </div>
 
-          <div className="modal-duan-footer">
+          <div className="modal-cap-nhat-du-an__footer">
             <button 
               type="button" 
-              className="modal-duan-btn secondary" 
+              className="modal-cap-nhat-du-an__btn modal-cap-nhat-du-an__btn--secondary" 
               onClick={() => setShowConfirmation(false)}
               disabled={loading}
             >
@@ -616,7 +722,7 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
             </button>
             <button 
               type="button" 
-              className="modal-duan-btn primary" 
+              className="modal-cap-nhat-du-an__btn modal-cap-nhat-du-an__btn--primary" 
               onClick={xuLyXacNhanLuu}
               disabled={loading}
             >
@@ -630,27 +736,28 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
 
   // Main form render
   return (
-    <div className="modal-duan-overlay" onClick={(e) => e.target.className === 'modal-duan-overlay' && xuLyDong()}>
-      <div className="modal-duan-container">
-        <div className="modal-duan-header">
+    <div className="modal-cap-nhat-du-an__overlay" onClick={(e) => e.target.className === 'modal-cap-nhat-du-an__overlay' && xuLyDong()}>
+      <div className="modal-cap-nhat-du-an">
+        <div className="modal-cap-nhat-du-an__header">
           <div>
-            <h2 className="modal-duan-title">Chỉnh sửa dự án</h2>
-            <p className="modal-duan-subtitle">Cập nhật thông tin dự án: {duAn.TenDuAn}</p>
+            <h2 className="modal-cap-nhat-du-an__title">Chỉnh sửa dự án</h2>
+            <p className="modal-cap-nhat-du-an__subtitle">Cập nhật thông tin dự án: {duAn.TenDuAn}</p>
           </div>
-          <button className="modal-duan-close" onClick={xuLyDong}>
+          <button className="modal-cap-nhat-du-an__close-btn" onClick={xuLyDong}>
             <HiOutlineXMark size={20} />
           </button>
         </div>
 
         <form onSubmit={xuLySubmit}>
-          <div className="modal-duan-body">
-            <div className="modal-duan-field">
-              <label htmlFor="TenDuAn">
-                Tên dự án <span className="label-required">*</span>
+          <div className="modal-cap-nhat-du-an__body">
+            <div className="modal-cap-nhat-du-an__field">
+              <label htmlFor="TenDuAn" className="modal-cap-nhat-du-an__label">
+                Tên dự án <span className="modal-cap-nhat-du-an__label--required">*</span>
               </label>
               <input
                 id="TenDuAn"
                 name="TenDuAn"
+                className="modal-cap-nhat-du-an__input"
                 value={formData.TenDuAn}
                 onChange={xuLyThayDoi}
                 placeholder="VD: Chung cư Vinhomes Central Park"
@@ -681,11 +788,12 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
                 💡 Chỉ chọn nếu muốn thay đổi địa chỉ. Bỏ trống để giữ nguyên địa chỉ cũ.
               </p>
 
-              <div className="modal-duan-grid">
-                <div className="modal-duan-field">
-                  <label htmlFor="selectedTinh">Tỉnh/Thành phố</label>
+              <div className="modal-cap-nhat-du-an__grid modal-cap-nhat-du-an__grid--col-2">
+                <div className="modal-cap-nhat-du-an__field">
+                  <label htmlFor="selectedTinh" className="modal-cap-nhat-du-an__label">Tỉnh/Thành phố</label>
                   <select
                     id="selectedTinh"
+                    className="modal-cap-nhat-du-an__select"
                     value={selectedTinh}
                     onChange={(e) => xuLyChonTinh(e.target.value)}
                   >
@@ -698,10 +806,11 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
                   </select>
                 </div>
 
-                <div className="modal-duan-field">
-                  <label htmlFor="selectedQuan">Quận/Huyện</label>
+                <div className="modal-cap-nhat-du-an__field">
+                  <label htmlFor="selectedQuan" className="modal-cap-nhat-du-an__label">Quận/Huyện</label>
                   <select
                     id="selectedQuan"
+                    className="modal-cap-nhat-du-an__select"
                     value={selectedQuan}
                     onChange={(e) => xuLyChonQuan(e.target.value)}
                     disabled={!selectedTinh}
@@ -715,10 +824,11 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
                   </select>
                 </div>
 
-                <div className="modal-duan-field">
-                  <label htmlFor="selectedPhuong">Phường/Xã</label>
+                <div className="modal-cap-nhat-du-an__field">
+                  <label htmlFor="selectedPhuong" className="modal-cap-nhat-du-an__label">Phường/Xã</label>
                   <select
                     id="selectedPhuong"
+                    className="modal-cap-nhat-du-an__select"
                     value={selectedPhuong}
                     onChange={(e) => setSelectedPhuong(e.target.value)}
                     disabled={!selectedQuan}
@@ -732,11 +842,12 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
                   </select>
                 </div>
 
-                <div className="modal-duan-field">
-                  <label htmlFor="DiaChiChiTiet">Địa chỉ chi tiết</label>
+                <div className="modal-cap-nhat-du-an__field">
+                  <label htmlFor="DiaChiChiTiet" className="modal-cap-nhat-du-an__label">Địa chỉ chi tiết</label>
                   <input
                     id="DiaChiChiTiet"
                     name="DiaChiChiTiet"
+                    className="modal-cap-nhat-du-an__input"
                     value={formData.DiaChiChiTiet}
                     onChange={xuLyThayDoi}
                     placeholder="VD: 40/6 Lê Văn Thọ"
@@ -762,13 +873,12 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
                       color: '#0369a1',
                       fontSize: '0.875rem'
                     }}>
-                      <span className="spinner" style={{ 
+                      <span className="modal-cap-nhat-du-an__spinner" style={{ 
                         width: '16px', 
                         height: '16px', 
                         border: '2px solid #0369a1',
                         borderTopColor: 'transparent',
-                        borderRadius: '50%',
-                        animation: 'spin 0.6s linear infinite'
+                        borderRadius: '50%'
                       }} />
                       Đang tìm tọa độ GPS...
                     </div>
@@ -877,8 +987,8 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
               )}
             </div>
 
-            <div className="modal-duan-field checkbox">
-              <label htmlFor="YeuCauPheDuyetChu" className="checkbox-label">
+            <div className="modal-cap-nhat-du-an__field modal-cap-nhat-du-an__field--checkbox">
+              <label htmlFor="YeuCauPheDuyetChu" className="modal-cap-nhat-du-an__label--checkbox">
                 <input
                   type="checkbox"
                   id="YeuCauPheDuyetChu"
@@ -888,18 +998,19 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
                 />
                 Chủ dự án duyệt cuộc hẹn
               </label>
-              <p className="field-hint">
+              <p className="modal-cap-nhat-du-an__hint">
                 Bật để yêu cầu chủ dự án duyệt từng cuộc hẹn
               </p>
             </div>
 
-            <div className="modal-duan-field">
-              <label htmlFor="PhuongThucVao">
-                Phương thức vào dự án {!formData.YeuCauPheDuyetChu && <span className="label-required">*</span>}
+            <div className="modal-cap-nhat-du-an__field">
+              <label htmlFor="PhuongThucVao" className="modal-cap-nhat-du-an__label">
+                Phương thức vào dự án {!formData.YeuCauPheDuyetChu && <span className="modal-cap-nhat-du-an__label--required">*</span>}
               </label>
               <textarea
                 id="PhuongThucVao"
                 name="PhuongThucVao"
+                className="modal-cap-nhat-du-an__textarea"
                 value={formData.PhuongThucVao}
                 onChange={xuLyThayDoi}
                 rows={3}
@@ -912,11 +1023,328 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
               />
             </div>
 
-            <div className="modal-duan-field">
-              <label htmlFor="TrangThai">Trạng thái dự án</label>
+            {/* Section Hoa hồng */}
+            <div style={{
+              marginTop: '2rem',
+              padding: '1.5rem',
+              background: '#f9fafb',
+              borderRadius: '0.5rem',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '1rem'
+              }}>
+                <div>
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    color: '#111827',
+                    margin: 0,
+                    marginBottom: '0.25rem'
+                  }}>
+                    💰 Cấu hình Hoa hồng
+                  </h3>
+                  <p style={{
+                    fontSize: '0.75rem',
+                    color: '#6b7280',
+                    margin: 0
+                  }}>
+                    Thiết lập mức hoa hồng cho nhân viên bán hàng khi chốt hợp đồng
+                  </p>
+                </div>
+                {/* Trạng thái duyệt */}
+                {duAn?.TrangThaiDuyetHoaHong && (
+                  <div style={{
+                    padding: '0.375rem 0.75rem',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.75rem',
+                    fontWeight: 500,
+                    background: duAn.TrangThaiDuyetHoaHong === 'DaDuyet' 
+                      ? '#dcfce7' 
+                      : duAn.TrangThaiDuyetHoaHong === 'TuChoi'
+                      ? '#fee2e2'
+                      : '#fef3c7',
+                    color: duAn.TrangThaiDuyetHoaHong === 'DaDuyet'
+                      ? '#166534'
+                      : duAn.TrangThaiDuyetHoaHong === 'TuChoi'
+                      ? '#991b1b'
+                      : '#92400e'
+                  }}>
+                    {duAn.TrangThaiDuyetHoaHong === 'DaDuyet' && '✓ Đã duyệt'}
+                    {duAn.TrangThaiDuyetHoaHong === 'TuChoi' && '✗ Từ chối'}
+                    {duAn.TrangThaiDuyetHoaHong === 'ChoDuyet' && '⏳ Chờ duyệt'}
+                  </div>
+                )}
+              </div>
+
+              {/* Hiển thị lý do từ chối và ghi chú */}
+              {duAn?.TrangThaiDuyetHoaHong === 'TuChoi' && (
+                <div style={{
+                  padding: '0.75rem',
+                  background: '#fee2e2',
+                  borderRadius: '0.375rem',
+                  marginBottom: '1rem',
+                  fontSize: '0.875rem'
+                }}>
+                  {duAn.LyDoTuChoiHoaHong && (
+                    <div style={{ marginBottom: '0.5rem' }}>
+                      <strong style={{ color: '#991b1b' }}>Lý do từ chối:</strong>
+                      <div style={{ color: '#dc2626', marginTop: '0.25rem' }}>
+                        {duAn.LyDoTuChoiHoaHong}
+                      </div>
+                    </div>
+                  )}
+                  {duAn.GhiChuHoaHong && (
+                    <div>
+                      <strong style={{ color: '#991b1b' }}>Ghi chú:</strong>
+                      <div style={{ color: '#dc2626', marginTop: '0.25rem' }}>
+                        {duAn.GhiChuHoaHong}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Số tháng cọc tối thiểu */}
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: '#374151',
+                  marginBottom: '0.5rem'
+                }}>
+                  Số tháng cọc tối thiểu
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={soThangCocToiThieu}
+                  onChange={(e) => setSoThangCocToiThieu(parseInt(e.target.value) || 1)}
+                  className="modal-cap-nhat-du-an__input"
+                  style={{ maxWidth: '150px' }}
+                  disabled={loading || (duAn?.TrangThaiDuyetHoaHong === 'DaDuyet')}
+                />
+                <p style={{
+                  fontSize: '0.75rem',
+                  color: '#6b7280',
+                  marginTop: '0.25rem'
+                }}>
+                  Số tháng cọc mà khách hàng phải đặt khi thuê phòng
+                </p>
+                {soThangCocToiThieu > 1 && (
+                  <div style={{
+                    marginTop: '0.5rem',
+                    padding: '0.5rem',
+                    background: '#fef3c7',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.75rem',
+                    color: '#92400e'
+                  }}>
+                    ⚠️ Dự án yêu cầu cọc {soThangCocToiThieu} tháng (cao hơn mức thông thường 1 tháng)
+                  </div>
+                )}
+              </div>
+
+              {/* Bảng hoa hồng */}
+              <div>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '0.75rem'
+                }}>
+                  <label style={{
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    color: '#374151'
+                  }}>
+                    Bảng tỷ lệ hoa hồng (% tiền cọc)
+                  </label>
+                  {(!duAn?.TrangThaiDuyetHoaHong || duAn.TrangThaiDuyetHoaHong === 'TuChoi') && (
+                    <button
+                      type="button"
+                      onClick={themMucHoaHong}
+                      className="cda-btn cda-btn-secondary"
+                      style={{
+                        padding: '0.375rem 0.75rem',
+                        fontSize: '0.75rem'
+                      }}
+                      disabled={loading}
+                    >
+                      + Thêm mức
+                    </button>
+                  )}
+                </div>
+                <p style={{
+                  fontSize: '0.75rem',
+                  color: '#6b7280',
+                  marginBottom: '0.75rem'
+                }}>
+                  💡 Đề xuất: 6 tháng = 30%, 12 tháng = 70%
+                </p>
+
+                {bangHoaHong.length === 0 ? (
+                  <div style={{
+                    padding: '1rem',
+                    background: '#f3f4f6',
+                    borderRadius: '0.375rem',
+                    textAlign: 'center',
+                    color: '#6b7280',
+                    fontSize: '0.875rem'
+                  }}>
+                    Chưa có mức hoa hồng nào. Nhấn "Thêm mức" để bắt đầu.
+                  </div>
+                ) : (
+                  <div style={{
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '0.375rem',
+                    overflow: 'hidden'
+                  }}>
+                    <table style={{
+                      width: '100%',
+                      borderCollapse: 'collapse',
+                      fontSize: '0.875rem'
+                    }}>
+                      <thead>
+                        <tr style={{
+                          background: '#f9fafb',
+                          borderBottom: '1px solid #e5e7eb'
+                        }}>
+                          <th style={{
+                            padding: '0.75rem',
+                            textAlign: 'left',
+                            fontWeight: 600,
+                            color: '#374151',
+                            width: '40%'
+                          }}>
+                            Số tháng hợp đồng
+                          </th>
+                          <th style={{
+                            padding: '0.75rem',
+                            textAlign: 'left',
+                            fontWeight: 600,
+                            color: '#374151',
+                            width: '40%'
+                          }}>
+                            Tỷ lệ hoa hồng (%)
+                          </th>
+                          {(!duAn?.TrangThaiDuyetHoaHong || duAn.TrangThaiDuyetHoaHong === 'TuChoi') && (
+                            <th style={{
+                              padding: '0.75rem',
+                              textAlign: 'center',
+                              fontWeight: 600,
+                              color: '#374151',
+                              width: '20%'
+                            }}>
+                              Thao tác
+                            </th>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bangHoaHong.map((item, index) => {
+                          const isRecommended = (item.soThang == 6 && item.tyLe == 30) || 
+                                                (item.soThang == 12 && item.tyLe == 70);
+                          const isWarning = !isRecommended && item.soThang && item.tyLe;
+                          
+                          return (
+                            <tr key={index} style={{
+                              borderBottom: index < bangHoaHong.length - 1 ? '1px solid #e5e7eb' : 'none'
+                            }}>
+                              <td style={{ padding: '0.75rem' }}>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={item.soThang}
+                                  onChange={(e) => capNhatMucHoaHong(index, 'soThang', e.target.value)}
+                                  className="modal-cap-nhat-du-an__input"
+                                  placeholder="VD: 6"
+                                  disabled={loading || (duAn?.TrangThaiDuyetHoaHong === 'DaDuyet')}
+                                  style={{
+                                    width: '100%',
+                                    fontSize: '0.875rem'
+                                  }}
+                                />
+                              </td>
+                              <td style={{ padding: '0.75rem' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.1"
+                                    value={item.tyLe}
+                                    onChange={(e) => capNhatMucHoaHong(index, 'tyLe', e.target.value)}
+                                    className="modal-cap-nhat-du-an__input"
+                                    placeholder="VD: 30"
+                                    disabled={loading || (duAn?.TrangThaiDuyetHoaHong === 'DaDuyet')}
+                                    style={{
+                                      width: '100%',
+                                      fontSize: '0.875rem'
+                                    }}
+                                  />
+                                  <span style={{ color: '#6b7280', fontSize: '0.75rem' }}>%</span>
+                                </div>
+                                {isWarning && (
+                                  <div style={{
+                                    marginTop: '0.25rem',
+                                    fontSize: '0.7rem',
+                                    color: '#f59e0b'
+                                  }}>
+                                    ⚠️ Khác mức đề xuất
+                                  </div>
+                                )}
+                              </td>
+                              {(!duAn?.TrangThaiDuyetHoaHong || duAn.TrangThaiDuyetHoaHong === 'TuChoi') && (
+                                <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => xoaMucHoaHong(index)}
+                                    className="cda-btn cda-btn-secondary"
+                                    style={{
+                                      padding: '0.25rem 0.5rem',
+                                      fontSize: '0.75rem'
+                                    }}
+                                    disabled={loading}
+                                  >
+                                    Xóa
+                                  </button>
+                                </td>
+                              )}
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Thông báo khi đã duyệt */}
+              {duAn?.TrangThaiDuyetHoaHong === 'DaDuyet' && (
+                <div style={{
+                  marginTop: '1rem',
+                  padding: '0.75rem',
+                  background: '#dcfce7',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem',
+                  color: '#166534'
+                }}>
+                  ✓ Hoa hồng đã được duyệt. Để chỉnh sửa, vui lòng liên hệ nhân viên điều hành hoặc chờ từ chối để có thể sửa lại.
+                </div>
+              )}
+            </div>
+
+            <div className="modal-cap-nhat-du-an__field">
+              <label htmlFor="TrangThai" className="modal-cap-nhat-du-an__label">Trạng thái dự án</label>
               <select
                 id="TrangThai"
                 name="TrangThai"
+                className="modal-cap-nhat-du-an__select"
                 value={formData.TrangThai}
                 onChange={xuLyThayDoi}
               >
@@ -930,13 +1358,13 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
               {/* Status description */}
               {TRANG_THAI_DESCRIPTIONS[formData.TrangThai] && (
                 <div 
-                  className="status-description"
+                  className="modal-cap-nhat-du-an__status"
                   style={{ borderLeftColor: TRANG_THAI_DESCRIPTIONS[formData.TrangThai].color }}
                 >
-                  <span className="status-icon">
+                  <span className="modal-cap-nhat-du-an__status-icon">
                     {TRANG_THAI_DESCRIPTIONS[formData.TrangThai].icon}
                   </span>
-                  <div className="status-text">
+                  <div className="modal-cap-nhat-du-an__status-text">
                     <HiOutlineInformationCircle size={16} />
                     <span>{TRANG_THAI_DESCRIPTIONS[formData.TrangThai].text}</span>
                   </div>
@@ -945,13 +1373,13 @@ function ModalCapNhatDuAn({ isOpen, duAn, onClose, onSaved }) {
             </div>
           </div>
 
-          {error && <div className="modal-duan-error">{error}</div>}
+          {error && <div className="modal-cap-nhat-du-an__error">{error}</div>}
 
-          <div className="modal-duan-footer">
-            <button type="button" className="modal-duan-btn secondary" onClick={xuLyDong} disabled={loading}>
+          <div className="modal-cap-nhat-du-an__footer">
+            <button type="button" className="modal-cap-nhat-du-an__btn modal-cap-nhat-du-an__btn--secondary" onClick={xuLyDong} disabled={loading}>
               Hủy
             </button>
-            <button type="submit" className="modal-duan-btn primary" disabled={loading}>
+            <button type="submit" className="modal-cap-nhat-du-an__btn modal-cap-nhat-du-an__btn--primary" disabled={loading}>
               {loading ? 'Đang kiểm tra...' : 'Xem thay đổi và xác nhận'}
             </button>
           </div>

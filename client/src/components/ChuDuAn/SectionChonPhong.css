@@ -1,25 +1,26 @@
 /**
- * SectionChonPhong.css - Light Glass Morphism Theme
+ * SectionChonPhong.css - Emerald Noir Theme
+ * FIX: Đồng bộ class names với JSX (không dùng BEM prefix)
  */
 
 .section-chon-phong {
   margin-top: 16px;
 }
 
-/* Empty State */
+/* Empty State - FIX: Đồng bộ class names */
 .empty-phong {
   text-align: center;
   padding: 60px 20px;
-  background: rgba(139, 92, 246, 0.05);
-  border: 2px dashed rgba(139, 92, 246, 0.3);
+  background: rgba(15, 118, 110, 0.05);
+  border: 2px dashed rgba(15, 118, 110, 0.3);
   border-radius: 16px;
 }
 
-.empty-phong .empty-icon {
+.empty-icon {
   width: 64px;
   height: 64px;
   color: #d1d5db;
-  margin-bottom: 16px;
+  margin: 0 auto 16px;
 }
 
 .empty-phong p {
@@ -33,7 +34,7 @@
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #8b5cf6 0%, #6006fc 100%);
+  background: linear-gradient(135deg, #0F766E 0%, #14532D 100%);
   color: white;
   border: none;
   border-radius: 12px;
@@ -41,12 +42,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
 }
 
 .btn-tao-phong-dau-tien:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(139, 92, 246, 0.35);
+  box-shadow: 0 8px 20px rgba(15, 118, 110, 0.35);
 }
 
 .btn-tao-phong-dau-tien svg {
@@ -54,7 +55,7 @@
   height: 20px;
 }
 
-/* Danh sách phòng */
+/* Danh sách phòng - FIX: Đồng bộ class names */
 .danh-sach-phong {
   display: flex;
   flex-direction: column;
@@ -72,6 +73,7 @@
   color: #6b7280;
   font-weight: 700;
   font-size: 13px;
+  text-transform: uppercase;
 }
 
 .phong-header .col {
@@ -79,7 +81,7 @@
 }
 
 .phong-item {
-  border: 2px solid rgba(139, 92, 246, 0.2);
+  border: 2px solid rgba(15, 118, 110, 0.2);
   border-radius: 12px;
   padding: 16px;
   background: rgba(255, 255, 255, 0.6);
@@ -88,14 +90,14 @@
 }
 
 .phong-item:hover {
-  border-color: rgba(139, 92, 246, 0.4);
+  border-color: rgba(15, 118, 110, 0.4);
   transform: translateX(4px);
 }
 
 .phong-item-checked {
-  border-color: #8b5cf6;
-  background: rgba(139, 92, 246, 0.05);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.15);
+  border-color: #0F766E;
+  background: rgba(15, 118, 110, 0.05);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.15);
 }
 
 .phong-checkbox {
@@ -111,6 +113,7 @@
   height: 20px;
   cursor: pointer;
   flex-shrink: 0;
+  accent-color: #0F766E;
 }
 
 .phong-checkbox input[type="checkbox"]:disabled {
@@ -126,29 +129,35 @@
   align-items: center;
 }
 
-.phong-ten {
+.phong-info-grid .col {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.col-ten {
   font-weight: 700;
   font-size: 16px;
   color: #111827;
-  min-width: 60px;
 }
 
-.phong-gia {
-  color: #8b5cf6;
+.col-gia {
+  color: #0F766E;
   font-weight: 600;
   font-size: 15px;
 }
 
-.phong-dientich {
+.col-dientich {
   color: #6b7280;
   font-size: 14px;
 }
 
-.phong-trangthai {
+.col-trangthai {
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 13px;
   font-weight: 600;
+  text-align: center;
+  display: inline-block;
 }
 
 .trangthai-trong {
@@ -171,21 +180,21 @@
   color: #3b82f6;
 }
 
-.phong-usage {
+.col-usage {
   font-size: 13px;
   color: #6b7280;
   font-style: italic;
 }
 
-/* Override section */
+/* Override section - FIX: Đồng bộ class names */
 .phong-override {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(139, 92, 246, 0.2);
-  animation: slideDown 0.3s ease-out;
+  border-top: 1px solid rgba(15, 118, 110, 0.2);
+  animation: phong-override-slide-down 0.3s ease-out;
 }
 
-@keyframes slideDown {
+@keyframes phong-override-slide-down {
   from {
     opacity: 0;
     max-height: 0;
@@ -203,6 +212,10 @@
   margin-bottom: 12px;
 }
 
+.form-group {
+  margin-bottom: 12px;
+}
+
 .override-label {
   display: block;
   font-size: 13px;
@@ -214,7 +227,7 @@
 .override-input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(15, 118, 110, 0.3);
   border-radius: 8px;
   font-size: 14px;
   color: #111827;
@@ -224,8 +237,8 @@
 
 .override-input:focus {
   outline: none;
-  border-color: #8b5cf6;
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  border-color: #0F766E;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
 }
 
 .override-input::placeholder {
@@ -233,11 +246,12 @@
   font-size: 13px;
 }
 
-/* Ảnh override cho phòng */
+/* Ảnh override cho phòng - FIX: Đồng bộ class names + FIX ảnh to bất thường */
 .phong-anh-uploader {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .phong-anh-preview {
@@ -256,6 +270,8 @@
   object-fit: cover;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
+  flex-shrink: 0;
+  display: block;
 }
 
 .phong-anh-placeholder {
@@ -272,8 +288,10 @@
   padding: 6px;
   text-align: center;
   line-height: 1.2;
+  flex-shrink: 0;
 }
 
+/* FIX: Nút xóa ảnh bị đen */
 .btn-xoa-anh {
   border: none;
   background: #fee2e2;
@@ -282,26 +300,31 @@
   padding: 6px 10px;
   border-radius: 8px;
   cursor: pointer;
+  font-size: 13px;
+  transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .btn-xoa-anh:hover {
   background: #fecaca;
+  transform: translateY(-1px);
 }
 
 .ghi-chu-anh {
   font-size: 12px;
   color: #6b7280;
+  font-style: italic;
 }
 
-/* Button tạo phòng mới */
+/* Button tạo phòng mới - FIX: Đồng bộ class names */
 .btn-tao-phong-moi {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 12px 20px;
   background: white;
-  color: #8b5cf6;
-  border: 2px solid #8b5cf6;
+  color: #0F766E;
+  border: 2px solid #0F766E;
   border-radius: 12px;
   font-size: 14px;
   font-weight: 600;
@@ -310,10 +333,10 @@
 }
 
 .btn-tao-phong-moi:hover {
-  background: #8b5cf6;
+  background: #0F766E;
   color: white;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.25);
 }
 
 .btn-tao-phong-moi svg {
@@ -323,7 +346,9 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .phong-header { display: none; }
+  .phong-header {
+    display: none;
+  }
   .phong-info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -335,6 +360,11 @@
   }
 
   .phong-checkbox {
+    align-items: flex-start;
+  }
+  
+  .phong-anh-uploader {
+    flex-direction: column;
     align-items: flex-start;
   }
 }

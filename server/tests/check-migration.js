@@ -1,4 +1,4 @@
-const db = require('./config/db');
+const db = require('../config/db');
 
 async function checkMigration() {
   try {
@@ -22,13 +22,13 @@ async function checkMigration() {
       console.table(phongTindangStructure);
     }
     
-    // Kiểm tra xem có bảng phong_old không (để biết migration đã chạy chưa)
+    // Kiểm tra đảm bảo không còn bảng phong_old trong kiến trúc mới
     const [oldTable] = await db.execute("SHOW TABLES LIKE 'phong_old'");
     if (oldTable.length > 0) {
-      console.log('\n⚠️  Bảng phong_old vẫn tồn tại - Migration có thể đã được chạy nhưng chưa xóa bảng cũ');
-    } else {
-      console.log('\n✅ Không tìm thấy bảng phong_old - Migration có thể đã hoàn tất');
+      console.error('\n❌ Bảng phong_old vẫn tồn tại - vui lòng dọn dẹp migration trước khi tiếp tục');
+      process.exit(1);
     }
+    console.log('\n✅ Không tìm thấy bảng phong_old - Kiến trúc mới đã sạch');
     
     process.exit(0);
   } catch (error) {

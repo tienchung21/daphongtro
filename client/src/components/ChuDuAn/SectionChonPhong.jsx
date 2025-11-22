@@ -5,10 +5,11 @@
 
 import React from 'react';
 import { HiOutlinePlus, HiOutlineHome } from 'react-icons/hi2';
+import { getApiBaseUrl } from '../../config/api';
 import './SectionChonPhong.css';
 
 // Base URL ảnh từ backend để tránh 404 ở Vite dev server
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+const API_BASE_URL = getApiBaseUrl();
 
 const resolveImageUrl = (url) => {
   if (!url) return null;

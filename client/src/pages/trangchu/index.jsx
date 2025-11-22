@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import "./trangchu.css";
-import { TinDangService } from "../../services/ChuDuAnService";
+import './trangchu.css';
+// Sử dụng PublicService cho khách hàng (không cần auth)
+import { PublicTinDangService, PublicUtils } from '../../services/PublicService';
 import SearchKhuVuc from "../../components/SearchKhuVuc";
 import yeuThichApi from "../../api/yeuThichApi";
 import { Link } from "react-router-dom";
@@ -20,13 +21,13 @@ function TrangChu() {
     fetchTinDangs();
   }, []);
 
-  // Lấy tất cả tin đăng
-  const fetchTinDangs = async () => {
+  // Sử dụng PublicTinDangService để lấy tin đăng công khai (không cần đăng nhập)
+  const fetchTinDangs = async (params = {}) => {
     setLoading(true);
     setError("");
     try {
-      const res = await tinDangPublicApi.getAll(); // ✅ Sử dụng API mới
-      console.log("[TrangChu] tinDangPublicApi.getAll response:", res);
+      const res = await PublicTinDangService.layDanhSachTinDangCongKhai(params);
+      console.log('[TrangChu] PublicTinDangService response:', res);
 
       let raw = [];
       // Cập nhật điều kiện để lấy dữ liệu từ res.data
@@ -97,10 +98,8 @@ function TrangChu() {
   };
 
   const formatPrice = (g) => {
-    if (!g) return "-";
-    const n = Number(g);
-    if (isNaN(n)) return g;
-    return n.toLocaleString("vi-VN") + " VND";
+    // Sử dụng utility function từ PublicUtils
+    return PublicUtils.formatCurrency(g);
   };
 
   const getCurrentUserId = () => {
@@ -141,6 +140,7 @@ function TrangChu() {
     }
   };
 
+<<<<<<< HEAD
   const getFirstImage = (tin) => {
     const placeholder = "https://via.placeholder.com/160x110?text=No+Image";
     const raw = tin?.URL ?? tin?.Img ?? tin?.Images ?? tin?.images;
@@ -171,6 +171,11 @@ function TrangChu() {
     }
 
     return placeholder;
+=======
+  // Sử dụng utility function từ PublicUtils
+  const getFirstImage = (tin) => {
+    return PublicUtils.getFirstImage(tin);
+>>>>>>> Hop
   };
 
   return (

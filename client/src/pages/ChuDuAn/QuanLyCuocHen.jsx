@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
 import './QuanLyCuocHen.css';
 
@@ -40,6 +40,9 @@ import { CuocHenService } from '../../services/ChuDuAnService';
  * - Export báo cáo
  */
 function QuanLyCuocHen() {
+  // Hooks
+  const navigate = useNavigate();
+  
   // State management
   const [loading, setLoading] = useState(true);
   const [cuocHenList, setCuocHenList] = useState([]);
@@ -109,6 +112,53 @@ function QuanLyCuocHen() {
 
   const handleXemChiTiet = (cuocHen) => {
     setModalChiTiet({ open: true, cuocHen });
+  };
+
+  /**
+   * Mở cuộc trò chuyện với nhân viên bán hàng phụ trách cuộc hẹn
+   */
+  const handleOpenChat = async (cuocHen) => {
+    try {
+      // Kiểm tra có nhân viên bán hàng chưa
+      if (!cuocHen.NhanVienBanHangID) {
+        alert('⚠️ Cuộc hẹn này chưa có nhân viên bán hàng phụ trách.\nVui lòng gán nhân viên trước khi trò chuyện.');
+        return;
+      }
+
+      // Tạo hoặc lấy cuộc hội thoại với context CuocHen
+      const token = localStorage.getItem('token');
+      const payload = {
+        NguCanhID: cuocHen.CuocHenID,
+        NguCanhLoai: 'CuocHen',
+        ThanhVienIDs: [cuocHen.NhanVienBanHangID], // Chat với NVBH thay vì KhachHangID
+        TieuDe: `Cuộc hẹn #${cuocHen.CuocHenID} - ${cuocHen.TenPhong || cuocHen.TenTinDang}`
+      };
+      
+      console.log('[QuanLyCuocHen] 📤 Creating chat conversation:', payload);
+      
+      const response = await fetch(`${getApiBaseUrl()}/api/chat/conversations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      
+      console.log('[QuanLyCuocHen] 📥 Chat API response:', result);
+      
+      if (result.success) {
+        navigate(`/chu-du-an/tin-nhan/${result.data.CuocHoiThoaiID}`);
+      } else {
+        console.error('[QuanLyCuocHen] ❌ Chat creation failed:', result);
+        alert(`❌ Không thể tạo cuộc trò chuyện: ${result.message || 'Lỗi không xác định'}`);
+      }
+    } catch (error) {
+      console.error('[QuanLyCuocHen] Error opening chat:', error);
+      alert('❌ Không thể mở cuộc trò chuyện. Vui lòng thử lại.');
+    }
   };
 
   const handlePheDuyetSuccess = () => {
@@ -478,22 +528,32 @@ function QuanLyCuocHen() {
         ) : (
           <div className="cuoc-hen-table-container">
             <table className="cuoc-hen-table">
+              <colgroup>
+                <col style={{ width: '40px' }} />
+                <col style={{ width: '60px' }} />
+                <col style={{ width: '200px' }} />
+                <col style={{ width: '200px' }} />
+                <col style={{ width: '180px' }} />
+                <col style={{ width: '180px' }} />
+                <col style={{ width: '140px' }} />
+                <col style={{ width: '200px' }} />
+              </colgroup>
               <thead>
                 <tr>
-                  <th style={{ width: '40px' }}>
+                  <th>
                     <input 
                       type="checkbox"
                       checked={selectedIds.length === cuocHenList.length && cuocHenList.length > 0}
                       onChange={handleSelectAll}
                     />
                   </th>
-                  <th style={{ width: '60px' }}>Ưu tiên</th>
+                  <th>Ưu tiên</th>
                   <th>Thời gian hẹn</th>
                   <th>Khách hàng</th>
                   <th>Phòng / Dự án</th>
                   <th>NV phụ trách</th>
                   <th>Trạng thái</th>
-                  <th style={{ width: '200px' }}>Hành động</th>
+                  <th>Hành động</th>
                 </tr>
               </thead>
               <tbody>
@@ -598,7 +658,8 @@ function QuanLyCuocHen() {
                           </button>
                           <button
                             className="action-btn secondary"
-                            title="Nhắn tin"
+                            title="Trò chuyện"
+                            onClick={() => handleOpenChat(cuocHen)}
                           >
                             <HiOutlineChatBubbleLeftRight />
                           </button>

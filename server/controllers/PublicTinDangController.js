@@ -18,6 +18,43 @@ class PublicTinDangController {
     }
   }
 
+  /**
+   * Lấy chi tiết tin đăng công khai
+   * GET /api/public/tin-dang/:id
+   */
+  static async getChiTietTinDang(req, res) {
+    try {
+      const tinDangId = parseInt(req.params.id, 10);
+      
+      if (!tinDangId) {
+        return res.status(400).json({ 
+          success: false, 
+          message: 'ID tin đăng không hợp lệ' 
+        });
+      }
+
+      const chiTiet = await PublicTinDangModel.layChiTietTinDang(tinDangId);
+      
+      if (!chiTiet) {
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Không tìm thấy tin đăng' 
+        });
+      }
+
+      return res.json({ 
+        success: true, 
+        data: chiTiet 
+      });
+    } catch (error) {
+      console.error('[PublicTinDangController] Error getting detail:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: error.message 
+      });
+    }
+  }
+
   // PUT /api/public/tin-dang/:id (không cần auth)
   static async updateTinDang(req, res) {
     try {

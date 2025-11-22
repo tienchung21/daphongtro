@@ -157,7 +157,7 @@ JOIN tindang td ON p.TinDangID = td.TinDangID
 JOIN phong_master pm ON pm.DuAnID = td.DuAnID AND pm.TenPhong = p.TenPhong;
 
 -- 4. Backup bảng cũ
-RENAME TABLE phong TO phong_old;
+RENAME TABLE phong TO phong_old; -- (đã được drop trong migration final sau khi verify)
 
 COMMIT;
 ```

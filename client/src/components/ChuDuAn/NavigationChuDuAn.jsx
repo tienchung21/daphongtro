@@ -8,8 +8,10 @@ import {
   HiOutlineDocumentText,
   HiOutlineHome,
   HiOutlineCalendar,
+  HiOutlineChatBubbleLeftRight,
   HiOutlineArrowTrendingUp,
-  HiOutlineCog6Tooth
+  HiOutlineCog6Tooth,
+  HiOutlineArrowRightOnRectangle
 } from 'react-icons/hi2';
 
 /**
@@ -48,6 +50,13 @@ function NavigationChuDuAn() {
       title: 'Cuộc hẹn',
       icon: <HiOutlineCalendar />,
       description: 'Lịch xem phòng'
+    },
+    {
+      path: '/chu-du-an/tin-nhan',
+      title: 'Trò chuyện',
+      icon: <HiOutlineChatBubbleLeftRight />,
+      description: 'Trò chuyện với khách hàng',
+      badge: null // Sẽ hiển thị số tin nhắn chưa đọc
     }
   ];
 
@@ -81,6 +90,16 @@ function NavigationChuDuAn() {
     setIsMobileOpen((prev) => !prev);
   };
 
+  const handleLogout = () => {
+    // Clear localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    sessionStorage.clear();
+    
+    // Redirect to login
+    navigate('/login');
+  };
+
   // Lắng nghe sự kiện global từ Header để mở/đóng sidebar trên mobile
   useEffect(() => {
     const handler = () => setIsMobileOpen((prev) => !prev);
@@ -109,12 +128,14 @@ function NavigationChuDuAn() {
       {/* Header */}
       <div className="cda-sidebar-header">
         <div className="cda-brand">
-          <div className="cda-brand-icon">🏢</div>
           {!isCollapsed && (
-            <div className="cda-brand-text">
-              <div className="cda-brand-title">Chủ dự án</div>
-              <div className="cda-brand-subtitle">Quản lý & Phát triển</div>
-            </div>
+            <>
+              <div className="cda-brand-icon">🏢</div>
+              <div className="cda-brand-text">
+                <div className="cda-brand-title">Chủ dự án</div>
+                <div className="cda-brand-subtitle">Quản lý & Phát triển</div>
+              </div>
+            </>
           )}
         </div>
         <button 
@@ -215,20 +236,20 @@ function NavigationChuDuAn() {
       {/* Footer */}
       <div className="cda-sidebar-footer">
         <button 
-          className="cda-footer-btn"
-          onClick={() => navigate('/')}
-          title="Về trang chủ"
-        >
-          <HiOutlineHome style={{ width: '20px', height: '20px' }} />
-          {!isCollapsed && <span>Trang chủ</span>}
-        </button>
-        <button 
           className={`cda-footer-btn ${location.pathname === '/cai-dat' ? 'active' : ''}`}
           onClick={() => navigate('/cai-dat')}
           title="Cài đặt"
         >
           <HiOutlineCog6Tooth style={{ width: '20px', height: '20px' }} />
           {!isCollapsed && <span>Cài đặt</span>}
+        </button>
+        <button 
+          className="cda-footer-btn logout-btn"
+          onClick={handleLogout}
+          title="Đăng xuất"
+        >
+          <HiOutlineArrowRightOnRectangle style={{ width: '20px', height: '20px' }} />
+          {!isCollapsed && <span>Đăng xuất</span>}
         </button>
       </div>
     </aside>

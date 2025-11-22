@@ -1,244 +1,529 @@
-const CuocHen = require("../models/cuocHenModel");
-const NhatKyHeThongService = require("../services/NhatKyHeThongService");
+/**
+ * Controller cho Cuộc hẹn
+ * Xử lý các nghiệp vụ liên quan đến quản lý cuộc hẹn xem phòng
+ * Tách từ ChuDuAnController.js theo domain-driven design
+ */
 
-exports.create = async (req, res) => {
-  try {
-    const {
-      TinDangID,
-      PhongID,
-      ChuDuAnID: ChuDuAnID_in, // <-- thêm dòng này
-      NhanVienBanHangID,
-      KhachHangID,
-      PheDuyetChuDuAn,
-      ThoiGianHen,
-      GhiChu,
-    } = req.body;
+const CuocHenModel = require('../models/CuocHenModel');
+const NhatKyHeThongService = require('../services/NhatKyHeThongService');
 
-    // Bắt buộc theo yêu cầu: phải có KhachHangID, NhanVienBanHangID, PhongID, TinDangID, ThoiGianHen
-    if (
-      !KhachHangID ||
-      !NhanVienBanHangID ||
-      !PhongID ||
-      !TinDangID ||
-      !ThoiGianHen
-    ) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Thiếu trường bắt buộc: KhachHangID, NhanVienBanHangID, PhongID, TinDangID, ThoiGianHen",
-      });
-    }
+class CuocHenController {
+  /**
+   * UC-CUST-03: Tạo cuộc hẹn mới (Public - dành cho khách hàng)
+   * POST /api/cuoc-hen
+   */
+  static async create(req, res) {
+    try {
+      const { PhongID, KhachHangID, NhanVienBanHangID, ThoiGianHen, GhiChu } = req.body;
 
-    // Tự động lấy ChuDuAnID từ TinDangID nếu không gửi
-    let ChuDuAnID = ChuDuAnID_in;
-    if (!ChuDuAnID && TinDangID) {
-      try {
-        ChuDuAnID = await CuocHen.getChuDuAnIdByTinDangId(TinDangID);
-      } catch (e) {
-        console.warn("Cannot resolve ChuDuAnID from TinDangID:", e.message);
+      // Validation
+      if (!PhongID || !KhachHangID || !ThoiGianHen) {
+        return res.status(400).json({
+          success: false,
+          message: 'Thiếu thông tin bắt buộc: PhongID, KhachHangID, ThoiGianHen'
+        });
       }
-    }
 
-    // Nếu vẫn NULL và DB bắt buộc → trả lỗi 400
-    if (!ChuDuAnID) {
-      return res.status(400).json({
+      // Validate datetime format
+      const henDate = new Date(ThoiGianHen);
+      if (isNaN(henDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'ThoiGianHen không hợp lệ'
+        });
+      }
+
+      // Check thời gian hẹn phải trong tương lai
+      if (henDate <= new Date()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Thời gian hẹn phải trong tương lai'
+        });
+      }
+
+      // Tạo cuộc hẹn
+      const result = await CuocHenModel.taoMoi({
+        PhongID,
+        KhachHangID,
+        NhanVienBanHangID,
+        ThoiGianHen,
+        GhiChu
+      });
+
+      // Audit log
+      await NhatKyHeThongService.ghiNhan(
+        KhachHangID,
+        'tao_cuoc_hen',
+        'CuocHen',
+        result.CuocHenID,
+        null,
+        { PhongID, ThoiGianHen },
+        req.ip,
+        req.get('User-Agent')
+      );
+
+      res.status(201).json({
+        success: true,
+        message: 'Đặt lịch hẹn thành công',
+        data: result
+      });
+    } catch (error) {
+      console.error('[CuocHenController] Lỗi tạo cuộc hẹn:', error);
+      res.status(500).json({
         success: false,
-        message:
-          "Không thể xác định ChuDuAnID. Vui lòng gửi ChuDuAnID hoặc kiểm tra TinDangID.",
+        message: error.message
       });
     }
+  }
 
-    const data = {
-      PhongID: Number(PhongID),
-      ChuDuAnID: Number(ChuDuAnID),
-      TinDangID: Number(TinDangID),
-      KhachHangID: Number(KhachHangID),
-      NhanVienBanHangID: Number(NhanVienBanHangID),
-      PheDuyetChuDuAn: PheDuyetChuDuAn,
-      ThoiGianHen: ThoiGianHen,
-      GhiChu: GhiChu || null,
-    };
-
-    const [result] = await CuocHen.createCuocHen(data);
-
-    // Lấy lại bản ghi vừa tạo để trả về đầy đủ
-    const [[createdRow]] = await Promise.all([
-      CuocHen.getById(result.insertId),
-    ]); // getById trả về [rows]
-    // Nếu getById trả về mảng dạng [rows], ensure lấy đúng phần tử
-    const created = Array.isArray(createdRow)
-      ? createdRow[0]
-      : createdRow || null;
-
-    // Ghi nhật ký (không bắt buộc)
+  /**
+   * Lấy tất cả cuộc hẹn (Admin/Public)
+   * GET /api/cuoc-hen
+   */
+  static async getAll(req, res) {
     try {
-      await NhatKyHeThongService.ghiNhan(
-        null,
-        NhatKyHeThongService.HANH_DONG?.TAO_CUOC_HEN || "tao_cuoc_hen",
-        "CuocHen",
-        result.insertId,
-        null,
-        data,
-        req.ip,
-        req.get("User-Agent") || ""
-      );
-    } catch (e) {
-      console.warn("NhatKyHeThongService.ghiNhan failed:", e.message);
-    }
+      const { trangThai } = req.query;
+      
+      const cuocHenList = await CuocHenModel.layTatCa({ trangThai });
 
-    return res.status(201).json({
-      success: true,
-      message: "Tạo cuộc hẹn thành công",
-      data: created || { CuocHenID: result.insertId },
-    });
-  } catch (error) {
-    console.error("create cuoc hen error:", error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-exports.getAll = async (req, res) => {
-  try {
-    const [rows] = await CuocHen.getAll();
-    return res.json({ success: true, data: rows });
-  } catch (error) {
-    console.error("Lỗi getAll cuoc hen:", error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-exports.getById = async (req, res) => {
-  try {
-    const id = parseInt(req.params.id, 10);
-    if (!id)
-      return res
-        .status(400)
-        .json({ success: false, message: "ID không hợp lệ" });
-    const [rows] = await CuocHen.getById(id);
-    if (!rows || rows.length === 0)
-      return res
-        .status(404)
-        .json({ success: false, message: "Không tìm thấy" });
-    return res.json({ success: true, data: rows[0] });
-  } catch (error) {
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-exports.findByKhachHang = async (req, res) => {
-  try {
-    const khId = parseInt(req.params.khachHangId, 10);
-    if (!khId)
-      return res
-        .status(400)
-        .json({ success: false, message: "KhachHangID không hợp lệ" });
-    const [rows] = await CuocHen.findByKhachHangId(khId);
-    return res.json({ success: true, data: rows });
-  } catch (error) {
-    console.error("Lỗi findByKhachHang:", error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-exports.findByNhanVien = async (req, res) => {
-  try {
-    const nvId = parseInt(req.params.nhanVienId, 10);
-    if (!nvId)
-      return res
-        .status(400)
-        .json({ success: false, message: "NhanVienID không hợp lệ" });
-    const [rows] = await CuocHen.findByNhanVienId(nvId);
-    return res.json({ success: true, data: rows });
-  } catch (error) {
-    console.error("Lỗi findByNhanVien:", error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-exports.findByChuDuAn = async (req, res) => {
-  try {
-    const chuId = parseInt(req.params.chuDuAnId, 10);
-    if (!chuId)
-      return res
-        .status(400)
-        .json({ success: false, message: "ChuDuAnID không hợp lệ" });
-    const [rows] = await CuocHen.findByChuDuAnId(chuId);
-    return res.json({ success: true, data: rows });
-  } catch (error) {
-    console.error("Lỗi findByChuDuAn:", error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
-exports.update = async (req, res) => {
-  try {
-    const id = parseInt(req.params.id, 10);
-    if (!id)
-      return res
-        .status(400)
-        .json({ success: false, message: "ID không hợp lệ" });
-
-    const allowed = [
-      "TrangThai",
-      "ThoiGianHen",
-      "GhiChu",
-      "PhuongThucVao",
-      "PheDuyetChuDuAn",
-      "NhanVienBanHangID",
-      "TenKhachHang",
-      "Email",
-      "SoDienThoai",
-      "PhongID",
-      "TinDangID",
-      "KhachHangID",
-    ];
-    const updates = {};
-    for (const k of allowed) {
-      if (req.body[k] !== undefined) updates[k] = req.body[k];
-    }
-
-    if (Object.keys(updates).length === 0) {
-      return res.status(400).json({
+      res.json({
+        success: true,
+        data: cuocHenList
+      });
+    } catch (error) {
+      console.error('[CuocHenController] Lỗi lấy danh sách cuộc hẹn:', error);
+      res.status(500).json({
         success: false,
-        message: "Không có trường hợp lệ để cập nhật",
+        message: error.message
       });
     }
+  }
 
-    await CuocHen.updateCuocHen(id, updates);
-
+  /**
+   * Tìm cuộc hẹn theo Khách hàng
+   * GET /api/cuoc-hen/search/khach-hang/:khachHangId
+   */
+  static async findByKhachHang(req, res) {
     try {
-      await NhatKyHeThongService.ghiNhan(
-        null,
-        "cap_nhat_cuoc_hen",
-        "CuocHen",
-        id,
-        null,
-        updates,
-        req.ip,
-        req.get("User-Agent") || ""
-      );
-    } catch (e) {
-      console.warn("NhatKyHeThongService.ghiNhan failed:", e.message);
+      const khachHangId = parseInt(req.params.khachHangId);
+      
+      if (isNaN(khachHangId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID khách hàng không hợp lệ'
+        });
+      }
+
+      const cuocHenList = await CuocHenModel.timTheoKhachHang(khachHangId);
+
+      res.json({
+        success: true,
+        data: cuocHenList
+      });
+    } catch (error) {
+      console.error('[CuocHenController] Lỗi tìm cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
     }
-
-    return res.json({ success: true, message: "Cập nhật thành công" });
-  } catch (error) {
-    console.error("Lỗi update cuoc hen:", error);
-    return res.status(500).json({ success: false, message: error.message });
   }
-};
 
-exports.delete = async (req, res) => {
-  try {
-    const id = parseInt(req.params.id, 10);
-    if (!id)
-      return res
-        .status(400)
-        .json({ success: false, message: "ID không hợp lệ" });
-    await CuocHen.deleteCuocHen(id);
-    return res.status(204).send();
-  } catch (error) {
-    console.error("Lỗi delete cuoc hen:", error);
-    return res.status(500).json({ success: false, message: error.message });
+  /**
+   * Tìm cuộc hẹn theo Nhân viên
+   * GET /api/cuoc-hen/search/nhan-vien/:nhanVienId
+   */
+  static async findByNhanVien(req, res) {
+    try {
+      const nhanVienId = parseInt(req.params.nhanVienId);
+      
+      if (isNaN(nhanVienId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID nhân viên không hợp lệ'
+        });
+      }
+
+      const cuocHenList = await CuocHenModel.timTheoNhanVien(nhanVienId);
+
+      res.json({
+        success: true,
+        data: cuocHenList
+      });
+    } catch (error) {
+      console.error('[CuocHenController] Lỗi tìm cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
   }
-};
+
+  /**
+   * Tìm cuộc hẹn theo Chủ dự án
+   * GET /api/cuoc-hen/search/chu-du-an/:chuDuAnId
+   */
+  static async findByChuDuAn(req, res) {
+    try {
+      const chuDuAnId = parseInt(req.params.chuDuAnId);
+      
+      if (isNaN(chuDuAnId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID chủ dự án không hợp lệ'
+        });
+      }
+
+      const cuocHenList = await CuocHenModel.timTheoChuDuAn(chuDuAnId);
+
+      res.json({
+        success: true,
+        data: cuocHenList
+      });
+    } catch (error) {
+      console.error('[CuocHenController] Lỗi tìm cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Lấy chi tiết cuộc hẹn
+   * GET /api/cuoc-hen/:id
+   */
+  static async getById(req, res) {
+    try {
+      const cuocHenId = parseInt(req.params.id);
+      
+      if (isNaN(cuocHenId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID cuộc hẹn không hợp lệ'
+        });
+      }
+
+      const cuocHen = await CuocHenModel.layChiTiet(cuocHenId);
+
+      if (!cuocHen) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy cuộc hẹn'
+        });
+      }
+
+      res.json({
+        success: true,
+        data: cuocHen
+      });
+    } catch (error) {
+      console.error('[CuocHenController] Lỗi lấy chi tiết cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Cập nhật cuộc hẹn
+   * PUT /api/cuoc-hen/:id
+   */
+  static async update(req, res) {
+    try {
+      const cuocHenId = parseInt(req.params.id);
+      // TODO: Implement
+      return res.status(501).json({
+        success: false,
+        message: 'Chức năng đang được phát triển'
+      });
+    } catch (error) {
+      console.error('Lỗi cập nhật cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Xóa cuộc hẹn
+   * DELETE /api/cuoc-hen/:id
+   */
+  static async delete(req, res) {
+    try {
+      const cuocHenId = parseInt(req.params.id);
+      // TODO: Implement
+      return res.status(501).json({
+        success: false,
+        message: 'Chức năng đang được phát triển'
+      });
+    } catch (error) {
+      console.error('Lỗi xóa cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Lấy danh sách cuộc hẹn (Chủ dự án)
+   * GET /api/chu-du-an/cuoc-hen
+   */
+  static async layDanhSachCuocHen(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const filters = {
+        trangThai: req.query.trangThai,
+        tinDangId: req.query.tinDangId,
+        tuNgay: req.query.tuNgay,
+        denNgay: req.query.denNgay,
+        limit: req.query.limit || 50
+      };
+
+      const danhSach = await CuocHenModel.layDanhSachCuocHen(chuDuAnId, filters);
+
+      res.json({
+        success: true,
+        message: 'Lấy danh sách cuộc hẹn thành công',
+        data: {
+          cuocHens: danhSach,
+          tongSo: danhSach.length
+        }
+      });
+    } catch (error) {
+      console.error('Lỗi lấy danh sách cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * UC-PROJ-02: Xác nhận cuộc hẹn
+   * PUT /api/chu-du-an/cuoc-hen/:id/xac-nhan
+   */
+  static async xacNhanCuocHen(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const cuocHenId = parseInt(req.params.id);
+      const { ghiChu } = req.body;
+
+      const success = await CuocHenModel.xacNhanCuocHen(cuocHenId, chuDuAnId, ghiChu);
+
+      if (!success) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy cuộc hẹn'
+        });
+      }
+
+      // Ghi audit log
+      await NhatKyHeThongService.ghiNhan(
+        chuDuAnId,
+        'xac_nhan_cuoc_hen',
+        'CuocHen',
+        cuocHenId,
+        { trangThai: 'ChoXacNhan' },
+        { trangThai: 'DaXacNhan', ghiChu },
+        req.ip,
+        req.get('User-Agent')
+      );
+
+      res.json({
+        success: true,
+        message: 'Xác nhận cuộc hẹn thành công'
+      });
+    } catch (error) {
+      console.error('Lỗi xác nhận cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * Lấy metrics cuộc hẹn
+   * GET /api/chu-du-an/cuoc-hen/metrics
+   */
+  static async layMetricsCuocHen(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const metrics = await CuocHenModel.layMetricsCuocHen(chuDuAnId);
+
+      res.json({
+        success: true,
+        data: metrics
+      });
+    } catch (error) {
+      console.error('Lỗi lấy metrics cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * UC-PROJ-02: Phê duyệt cuộc hẹn
+   * PUT /api/chu-du-an/cuoc-hen/:id/phe-duyet
+   */
+  static async pheDuyetCuocHen(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const cuocHenId = parseInt(req.params.id);
+      const { phuongThucVao, ghiChu } = req.body;
+
+      if (!phuongThucVao) {
+        return res.status(400).json({
+          success: false,
+          message: 'Phương thức vào là bắt buộc'
+        });
+      }
+
+      const success = await CuocHenModel.pheDuyetCuocHen(cuocHenId, chuDuAnId, phuongThucVao, ghiChu);
+
+      if (!success) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy cuộc hẹn'
+        });
+      }
+
+      // Ghi audit log
+      await NhatKyHeThongService.ghiNhan(
+        chuDuAnId,
+        'phe_duyet_cuoc_hen',
+        'CuocHen',
+        cuocHenId,
+        { pheDuyet: 'ChoPheDuyet' },
+        { pheDuyet: 'DaPheDuyet', phuongThucVao },
+        req.ip,
+        req.get('User-Agent')
+      );
+
+      res.json({
+        success: true,
+        message: 'Phê duyệt cuộc hẹn thành công'
+      });
+    } catch (error) {
+      console.error('Lỗi phê duyệt cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * UC-PROJ-02: Từ chối cuộc hẹn
+   * PUT /api/chu-du-an/cuoc-hen/:id/tu-choi
+   */
+  static async tuChoiCuocHen(req, res) {
+    try {
+      const chuDuAnId = req.user.id;
+      const cuocHenId = parseInt(req.params.id);
+      const { lyDoTuChoi } = req.body;
+
+      if (!lyDoTuChoi) {
+        return res.status(400).json({
+          success: false,
+          message: 'Lý do từ chối là bắt buộc'
+        });
+      }
+
+      const success = await CuocHenModel.tuChoiCuocHen(cuocHenId, chuDuAnId, lyDoTuChoi);
+
+      if (!success) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy cuộc hẹn'
+        });
+      }
+
+      // Ghi audit log
+      await NhatKyHeThongService.ghiNhan(
+        chuDuAnId,
+        'tu_choi_cuoc_hen',
+        'CuocHen',
+        cuocHenId,
+        { pheDuyet: 'ChoPheDuyet' },
+        { pheDuyet: 'TuChoi', lyDoTuChoi },
+        req.ip,
+        req.get('User-Agent')
+      );
+
+      res.json({
+        success: true,
+        message: 'Từ chối cuộc hẹn thành công'
+      });
+    } catch (error) {
+      console.error('Lỗi từ chối cuộc hẹn:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+}
+
+module.exports = CuocHenController;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

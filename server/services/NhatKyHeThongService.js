@@ -8,6 +8,21 @@ const db = require('../config/db');
 class NhatKyHeThongService {
   /**
    * Ghi nhận một hành động vào nhật ký hệ thống
+   * Hỗ trợ cả 2 format: legacy (positional args) và mới (object)
+   * 
+   * Format mới (object):
+   * @param {Object} data
+   * @param {string} data.TacNhan - Tác nhân (Operator, ChuDuAn, NhanVienBanHang, etc.)
+   * @param {number} data.NguoiDungID - ID người thực hiện
+   * @param {string} data.HanhDong - Hành động
+   * @param {string} data.DoiTuong - Đối tượng
+   * @param {number} data.DoiTuongID - ID đối tượng
+   * @param {Object} data.ChiTiet - Chi tiết (JSON)
+   * @param {string} [data.DiaChiIP] - IP
+   * @param {string} [data.TrinhDuyet] - User Agent
+   * @param {string} [data.ChuKy] - Chữ ký số
+   * 
+   * Format legacy (positional):
    * @param {number} nguoiDungId ID người thực hiện hành động
    * @param {string} hanhDong Tên hành động (ví dụ: 'tao_tin_dang', 'duyet_tin_dang')
    * @param {string} doiTuong Loại đối tượng (ví dụ: 'TinDang', 'CuocHen', 'NguoiDung')
@@ -20,7 +35,7 @@ class NhatKyHeThongService {
    * @returns {Promise<number>} ID của bản ghi nhật ký vừa tạo
    */
   static async ghiNhan(
-    nguoiDungId,
+    nguoiDungIdOrData,
     hanhDong,
     doiTuong,
     doiTuongId = null,
@@ -31,6 +46,28 @@ class NhatKyHeThongService {
     chuKy = null
   ) {
     try {
+      let nguoiDungId, chiTiet;
+
+      // Detect format: nếu arg đầu tiên là object → format mới
+      if (typeof nguoiDungIdOrData === 'object' && nguoiDungIdOrData !== null) {
+        const data = nguoiDungIdOrData;
+        nguoiDungId = data.NguoiDungID;
+        hanhDong = data.HanhDong;
+        doiTuong = data.DoiTuong;
+        doiTuongId = data.DoiTuongID || null;
+        chiTiet = data.ChiTiet || null;
+        diaChiIP = data.DiaChiIP || '';
+        trinhDuyet = data.TrinhDuyet || '';
+        chuKy = data.ChuKy || null;
+        
+        // Gộp GiaTriTruoc/GiaTriSau vào ChiTiet nếu có
+        giaTriTruoc = chiTiet;
+        giaTriSau = null;
+      } else {
+        // Format legacy
+        nguoiDungId = nguoiDungIdOrData;
+      }
+
       const query = `
         INSERT INTO nhatkyhethong (
           NguoiDungID, HanhDong, DoiTuong, DoiTuongID,

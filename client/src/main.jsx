@@ -9,6 +9,7 @@ import './index.css'
 import 'leaflet/dist/leaflet.css'
 
 import App from './App.jsx'
+import { ChatProvider } from './context/ChatContext'
 
 // Setup React Query Client
 const queryClient = new QueryClient({
@@ -28,7 +29,9 @@ createRoot(document.getElementById('root')).render(
   // <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <App />
+        <ChatProvider>
+          <App />
+        </ChatProvider>
       </BrowserRouter>
       {/* React Query Devtools - chỉ hiện trong development */}
       {import.meta.env.MODE === 'development' && (

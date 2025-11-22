@@ -22,6 +22,11 @@ import {
 function ModalChiTietCuocHen({ cuocHen, onClose, onPheDuyet, onTuChoi }) {
   if (!cuocHen) return null;
 
+  // Debug: Log cuộc hẹn data (commented out after testing)
+  // console.log('🔍 ModalChiTietCuocHen - cuocHen:', cuocHen);
+  // console.log('🔍 PheDuyetChuDuAn:', cuocHen.PheDuyetChuDuAn);
+  // console.log('🔍 TrangThai:', cuocHen.TrangThai);
+
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);
@@ -41,136 +46,150 @@ function ModalChiTietCuocHen({ cuocHen, onClose, onPheDuyet, onTuChoi }) {
   };
 
   const formatTrangThai = (trangThai, pheDuyet) => {
-    if (pheDuyet === 'ChoPheDuyet') return { text: 'Chờ phê duyệt của bạn', class: 'status-warning' };
+    // Ưu tiên hiển thị trạng thái phê duyệt
+    if (pheDuyet === 'ChoPheDuyet') return { text: 'Chờ phê duyệt của bạn', class: 'modal-chi-tiet-cuoc-hen__status-badge--warning' };
+    if (pheDuyet === 'TuChoi') return { text: 'Đã từ chối', class: 'modal-chi-tiet-cuoc-hen__status-badge--danger' };
+    if (pheDuyet === 'DaPheDuyet') {
+      // Nếu đã phê duyệt, hiển thị trạng thái thực tế
+      const statusMap = {
+        'ChoXacNhan': { text: 'Chờ xác nhận', class: 'modal-chi-tiet-cuoc-hen__status-badge--warning' },
+        'DaXacNhan': { text: 'Đã xác nhận', class: 'modal-chi-tiet-cuoc-hen__status-badge--success' },
+        'HoanThanh': { text: 'Hoàn thành', class: 'modal-chi-tiet-cuoc-hen__status-badge--info' },
+        'HuyBoiKhach': { text: 'Khách hủy', class: 'modal-chi-tiet-cuoc-hen__status-badge--gray' },
+        'KhachKhongDen': { text: 'Khách không đến', class: 'modal-chi-tiet-cuoc-hen__status-badge--danger' }
+      };
+      return statusMap[trangThai] || { text: trangThai, class: '' };
+    }
     
+    // Fallback
     const statusMap = {
-      'DaXacNhan': { text: 'Đã xác nhận', class: 'status-success' },
-      'HoanThanh': { text: 'Hoàn thành', class: 'status-info' },
-      'HuyBoiKhach': { text: 'Khách hủy', class: 'status-gray' },
-      'KhachKhongDen': { text: 'Khách không đến', class: 'status-danger' }
+      'ChoXacNhan': { text: 'Chờ xác nhận', class: 'modal-chi-tiet-cuoc-hen__status-badge--warning' },
+      'DaXacNhan': { text: 'Đã xác nhận', class: 'modal-chi-tiet-cuoc-hen__status-badge--success' },
+      'HoanThanh': { text: 'Hoàn thành', class: 'modal-chi-tiet-cuoc-hen__status-badge--info' },
+      'HuyBoiKhach': { text: 'Khách hủy', class: 'modal-chi-tiet-cuoc-hen__status-badge--gray' },
+      'KhachKhongDen': { text: 'Khách không đến', class: 'modal-chi-tiet-cuoc-hen__status-badge--danger' }
     };
-
     return statusMap[trangThai] || { text: trangThai, class: '' };
   };
 
   const status = formatTrangThai(cuocHen.TrangThai, cuocHen.PheDuyetChuDuAn);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content chi-tiet-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="modal-chi-tiet-cuoc-hen__overlay" onClick={onClose}>
+      <div className="modal-chi-tiet-cuoc-hen" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="modal-header">
-          <div className="modal-header-content">
-            <div className="modal-icon info">
+        <div className="modal-chi-tiet-cuoc-hen__header">
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <div className="modal-chi-tiet-cuoc-hen__header-icon modal-chi-tiet-cuoc-hen__header-icon--info">
               <HiOutlineCalendar />
             </div>
             <div>
-              <h2 className="modal-title">Chi tiết Cuộc hẹn</h2>
-              <p className="modal-subtitle">Mã cuộc hẹn: #{cuocHen.CuocHenID}</p>
+              <h2 className="modal-chi-tiet-cuoc-hen__title">Chi tiết Cuộc hẹn</h2>
+              <p className="modal-chi-tiet-cuoc-hen__subtitle">Mã cuộc hẹn: #{cuocHen.CuocHenID}</p>
             </div>
           </div>
-          <button className="modal-close" onClick={onClose}>
+          <button className="modal-chi-tiet-cuoc-hen__close-btn" onClick={onClose}>
             <HiOutlineXMark />
           </button>
         </div>
 
         {/* Body */}
-        <div className="modal-body scrollable">
+        <div className="modal-chi-tiet-cuoc-hen__body">
           {/* Status Badge */}
-          <div className="status-banner">
-            <span className={`status-badge ${status.class}`}>
+          <div className="modal-chi-tiet-cuoc-hen__status-banner">
+            <span className={`modal-chi-tiet-cuoc-hen__status-badge ${status.class}`}>
               {status.text}
             </span>
             {cuocHen.PheDuyetChuDuAn === 'ChoPheDuyet' && (
-              <span className="status-note">⏰ Cuộc hẹn đang chờ bạn phê duyệt</span>
+              <span className="modal-chi-tiet-cuoc-hen__status-note">⏰ Cuộc hẹn đang chờ bạn phê duyệt</span>
             )}
           </div>
 
           {/* Thông tin Cuộc hẹn */}
-          <div className="detail-section">
-            <h3 className="section-title">📅 Thông tin Cuộc hẹn</h3>
-            <div className="detail-grid">
-              <div className="detail-item">
-                <div className="detail-icon">
+          <div className="modal-chi-tiet-cuoc-hen__detail-section">
+            <h3 className="modal-chi-tiet-cuoc-hen__section-title">📅 Thông tin Cuộc hẹn</h3>
+            <div className="modal-chi-tiet-cuoc-hen__detail-grid">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineClock />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Thời gian hẹn</div>
-                  <div className="detail-value">{formatDate(cuocHen.ThoiGianHen)}</div>
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Thời gian hẹn</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">{formatDate(cuocHen.ThoiGianHen)}</div>
                 </div>
               </div>
 
-              <div className="detail-item">
-                <div className="detail-icon">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineCalendar />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Đã đổi lịch</div>
-                  <div className="detail-value">{cuocHen.SoLanDoiLich || 0} / 3 lần</div>
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Đã đổi lịch</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">{cuocHen.SoLanDoiLich || 0} / 3 lần</div>
                 </div>
               </div>
 
-              <div className="detail-item">
-                <div className="detail-icon">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineClock />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Tạo lúc</div>
-                  <div className="detail-value">{formatDate(cuocHen.TaoLuc)}</div>
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Tạo lúc</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">{formatDate(cuocHen.TaoLuc)}</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Thông tin Khách hàng */}
-          <div className="detail-section">
-            <h3 className="section-title">👤 Thông tin Khách hàng</h3>
-            <div className="detail-grid">
-              <div className="detail-item">
-                <div className="detail-icon">
+          <div className="modal-chi-tiet-cuoc-hen__detail-section">
+            <h3 className="modal-chi-tiet-cuoc-hen__section-title">👤 Thông tin Khách hàng</h3>
+            <div className="modal-chi-tiet-cuoc-hen__detail-grid">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineUser />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Họ tên</div>
-                  <div className="detail-value">{cuocHen.TenKhachHang || 'N/A'}</div>
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Họ tên</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">{cuocHen.TenKhachHang || 'N/A'}</div>
                 </div>
               </div>
 
-              <div className="detail-item">
-                <div className="detail-icon">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlinePhone />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Số điện thoại</div>
-                  <div className="detail-value">
-                    <a href={`tel:${cuocHen.SoDienThoaiKhach}`} className="phone-link">
-                      {cuocHen.SoDienThoaiKhach || 'N/A'}
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Số điện thoại</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">
+                    <a href={`tel:${cuocHen.SDTKhachHang || ''}`} className="modal-chi-tiet-cuoc-hen__phone-link">
+                      {cuocHen.SDTKhachHang || 'N/A'}
                     </a>
                   </div>
                 </div>
               </div>
 
-              <div className="detail-item">
-                <div className="detail-icon">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineEnvelope />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Email</div>
-                  <div className="detail-value">{cuocHen.EmailKhach || 'N/A'}</div>
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Email</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">N/A</div>
                 </div>
               </div>
 
-              <div className="detail-item">
-                <div className="detail-icon">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineCheck />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Xác minh KYC</div>
-                  <div className="detail-value">
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Xác minh KYC</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">
                     {cuocHen.TrangThaiXacMinhKhach === 'DaXacMinh' ? (
-                      <span className="kyc-badge success">✅ Đã xác minh</span>
+                      <span className="modal-chi-tiet-cuoc-hen__kyc-badge--success">✅ Đã xác minh</span>
                     ) : (
-                      <span className="kyc-badge pending">⏳ Chưa xác minh</span>
+                      <span className="modal-chi-tiet-cuoc-hen__kyc-badge--pending">⏳ Chưa xác minh</span>
                     )}
                   </div>
                 </div>
@@ -179,61 +198,57 @@ function ModalChiTietCuocHen({ cuocHen, onClose, onPheDuyet, onTuChoi }) {
           </div>
 
           {/* Thông tin Phòng */}
-          <div className="detail-section">
-            <h3 className="section-title">🏠 Thông tin Phòng</h3>
-            <div className="detail-grid">
-              <div className="detail-item">
-                <div className="detail-icon">
+          <div className="modal-chi-tiet-cuoc-hen__detail-section">
+            <h3 className="modal-chi-tiet-cuoc-hen__section-title">🏠 Thông tin Phòng</h3>
+            <div className="modal-chi-tiet-cuoc-hen__detail-grid">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineHome />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Dự án</div>
-                  <div className="detail-value">{cuocHen.TenDuAn || 'N/A'}</div>
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Tin đăng</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">{cuocHen.TieuDeTinDang || 'N/A'}</div>
                 </div>
               </div>
 
-              <div className="detail-item">
-                <div className="detail-icon">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineHome />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Phòng</div>
-                  <div className="detail-value">{cuocHen.TenPhong || 'N/A'}</div>
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Phòng</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">{cuocHen.TenPhong || 'N/A'}</div>
                 </div>
               </div>
 
-              <div className="detail-item">
-                <div className="detail-icon">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineBanknotes />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Giá thuê</div>
-                  <div className="detail-value">{formatCurrency(cuocHen.GiaThue)}/tháng</div>
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Giá thuê</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">{formatCurrency(cuocHen.Gia)}/tháng</div>
                 </div>
               </div>
 
-              <div className="detail-item">
-                <div className="detail-icon">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineMapPin />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Địa chỉ</div>
-                  <div className="detail-value">{cuocHen.DiaChiDuAn || 'N/A'}</div>
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Địa chỉ</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">N/A</div>
                 </div>
               </div>
 
-              <div className="detail-item full-width">
-                <div className="detail-icon">
+              <div className="modal-chi-tiet-cuoc-hen__detail-item modal-chi-tiet-cuoc-hen__detail-item--full-width">
+                <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                   <HiOutlineCheck />
                 </div>
-                <div className="detail-content">
-                  <div className="detail-label">Trạng thái phòng</div>
-                  <div className="detail-value">
-                    {cuocHen.TrangThaiPhong === 'Trong' ? (
-                      <span className="room-badge available">✅ Còn trống</span>
-                    ) : (
-                      <span className="room-badge occupied">❌ Đã cho thuê</span>
-                    )}
+                <div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-label">Trạng thái phòng</div>
+                  <div className="modal-chi-tiet-cuoc-hen__detail-value">
+                    <span className="room-badge">N/A</span>
                   </div>
                 </div>
               </div>
@@ -242,29 +257,27 @@ function ModalChiTietCuocHen({ cuocHen, onClose, onPheDuyet, onTuChoi }) {
 
           {/* Nhân viên phụ trách */}
           {cuocHen.TenNhanVien && (
-            <div className="detail-section">
-              <h3 className="section-title">👨‍💼 Nhân viên Phụ trách</h3>
-              <div className="detail-grid">
-                <div className="detail-item">
-                  <div className="detail-icon">
+            <div className="modal-chi-tiet-cuoc-hen__detail-section">
+              <h3 className="modal-chi-tiet-cuoc-hen__section-title">👨‍💼 Nhân viên Phụ trách</h3>
+              <div className="modal-chi-tiet-cuoc-hen__detail-grid">
+                <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                  <div className="modal-chi-tiet-cuoc-hen__detail-icon">
                     <HiOutlineUser />
                   </div>
-                  <div className="detail-content">
-                    <div className="detail-label">Họ tên</div>
-                    <div className="detail-value">{cuocHen.TenNhanVien}</div>
+                  <div>
+                    <div className="modal-chi-tiet-cuoc-hen__detail-label">Họ tên</div>
+                    <div className="modal-chi-tiet-cuoc-hen__detail-value">{cuocHen.TenNhanVien}</div>
                   </div>
                 </div>
 
-                <div className="detail-item">
-                  <div className="detail-icon">
-                    <HiOutlinePhone />
+                <div className="modal-chi-tiet-cuoc-hen__detail-item">
+                  <div className="modal-chi-tiet-cuoc-hen__detail-icon">
+                    <HiOutlineChatBubbleLeftRight />
                   </div>
-                  <div className="detail-content">
-                    <div className="detail-label">Số điện thoại</div>
-                    <div className="detail-value">
-                      <a href={`tel:${cuocHen.SoDienThoaiNV}`} className="phone-link">
-                        {cuocHen.SoDienThoaiNV}
-                      </a>
+                  <div>
+                    <div className="modal-chi-tiet-cuoc-hen__detail-label">Liên hệ</div>
+                    <div className="modal-chi-tiet-cuoc-hen__detail-value">
+                      <span className="contact-note">Liên hệ qua tin nhắn hệ thống</span>
                     </div>
                   </div>
                 </div>
@@ -274,22 +287,22 @@ function ModalChiTietCuocHen({ cuocHen, onClose, onPheDuyet, onTuChoi }) {
 
           {/* Hướng dẫn vào dự án */}
           {cuocHen.PhuongThucVao && (
-            <div className="detail-section">
-              <h3 className="section-title">
+            <div className="modal-chi-tiet-cuoc-hen__detail-section">
+              <h3 className="modal-chi-tiet-cuoc-hen__section-title">
                 <HiOutlineKey className="section-icon" />
                 Hướng dẫn vào Dự án
               </h3>
-              <div className="guide-box">
-                <pre className="guide-content">{cuocHen.PhuongThucVao}</pre>
+              <div className="modal-chi-tiet-cuoc-hen__guide-box">
+                <pre className="modal-chi-tiet-cuoc-hen__guide-content">{cuocHen.PhuongThucVao}</pre>
               </div>
             </div>
           )}
 
           {/* Ghi chú từ khách hàng */}
           {cuocHen.GhiChuKhach && (
-            <div className="detail-section">
-              <h3 className="section-title">📝 Ghi chú từ Khách hàng</h3>
-              <div className="note-box">
+            <div className="modal-chi-tiet-cuoc-hen__detail-section">
+              <h3 className="modal-chi-tiet-cuoc-hen__section-title">📝 Ghi chú từ Khách hàng</h3>
+              <div className="modal-chi-tiet-cuoc-hen__note-box">
                 <p>{cuocHen.GhiChuKhach}</p>
               </div>
             </div>
@@ -297,42 +310,42 @@ function ModalChiTietCuocHen({ cuocHen, onClose, onPheDuyet, onTuChoi }) {
 
           {/* Kết quả cuộc hẹn */}
           {cuocHen.GhiChuKetQua && (
-            <div className="detail-section">
-              <h3 className="section-title">📋 Kết quả Cuộc hẹn</h3>
-              <div className="note-box">
+            <div className="modal-chi-tiet-cuoc-hen__detail-section">
+              <h3 className="modal-chi-tiet-cuoc-hen__section-title">📋 Kết quả Cuộc hẹn</h3>
+              <div className="modal-chi-tiet-cuoc-hen__note-box">
                 <p>{cuocHen.GhiChuKetQua}</p>
               </div>
             </div>
           )}
 
           {/* Lịch sử thay đổi */}
-          <div className="detail-section">
-            <h3 className="section-title">📜 Lịch sử Thay đổi</h3>
-            <div className="timeline">
-              <div className="timeline-item">
-                <div className="timeline-dot"></div>
-                <div className="timeline-content">
-                  <div className="timeline-time">{formatDate(cuocHen.TaoLuc)}</div>
-                  <div className="timeline-text">Khách hàng tạo yêu cầu cuộc hẹn</div>
+          <div className="modal-chi-tiet-cuoc-hen__detail-section">
+            <h3 className="modal-chi-tiet-cuoc-hen__section-title">📜 Lịch sử Thay đổi</h3>
+            <div className="modal-chi-tiet-cuoc-hen__timeline">
+              <div className="modal-chi-tiet-cuoc-hen__timeline-item">
+                <div className="modal-chi-tiet-cuoc-hen__timeline-dot"></div>
+                <div className="modal-chi-tiet-cuoc-hen__timeline-content">
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-time">{formatDate(cuocHen.TaoLuc)}</div>
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-text">Khách hàng tạo yêu cầu cuộc hẹn</div>
                 </div>
               </div>
 
               {cuocHen.NhanVienBanHangID && (
-                <div className="timeline-item">
-                  <div className="timeline-dot success"></div>
-                  <div className="timeline-content">
-                    <div className="timeline-time">{formatDate(cuocHen.TaoLuc)}</div>
-                    <div className="timeline-text">Hệ thống gán nhân viên {cuocHen.TenNhanVien}</div>
+                <div className="modal-chi-tiet-cuoc-hen__timeline-item">
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-dot modal-chi-tiet-cuoc-hen__timeline-dot--success"></div>
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-content">
+                    <div className="modal-chi-tiet-cuoc-hen__timeline-time">{formatDate(cuocHen.TaoLuc)}</div>
+                    <div className="modal-chi-tiet-cuoc-hen__timeline-text">Hệ thống gán nhân viên {cuocHen.TenNhanVien}</div>
                   </div>
                 </div>
               )}
 
               {cuocHen.ThoiGianPheDuyet && (
-                <div className="timeline-item">
-                  <div className="timeline-dot success"></div>
-                  <div className="timeline-content">
-                    <div className="timeline-time">{formatDate(cuocHen.ThoiGianPheDuyet)}</div>
-                    <div className="timeline-text">
+                <div className="modal-chi-tiet-cuoc-hen__timeline-item">
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-dot modal-chi-tiet-cuoc-hen__timeline-dot--success"></div>
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-content">
+                    <div className="modal-chi-tiet-cuoc-hen__timeline-time">{formatDate(cuocHen.ThoiGianPheDuyet)}</div>
+                    <div className="modal-chi-tiet-cuoc-hen__timeline-text">
                       {cuocHen.PheDuyetChuDuAn === 'DaPheDuyet' 
                         ? 'Chủ dự án phê duyệt cuộc hẹn'
                         : 'Chủ dự án từ chối cuộc hẹn'}
@@ -342,21 +355,21 @@ function ModalChiTietCuocHen({ cuocHen, onClose, onPheDuyet, onTuChoi }) {
               )}
 
               {cuocHen.PheDuyetChuDuAn === 'ChoPheDuyet' && (
-                <div className="timeline-item">
-                  <div className="timeline-dot pending pulse"></div>
-                  <div className="timeline-content">
-                    <div className="timeline-time">Hiện tại</div>
-                    <div className="timeline-text">Đang chờ bạn phê duyệt...</div>
+                <div className="modal-chi-tiet-cuoc-hen__timeline-item">
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-dot pending pulse"></div>
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-content">
+                    <div className="modal-chi-tiet-cuoc-hen__timeline-time">Hiện tại</div>
+                    <div className="modal-chi-tiet-cuoc-hen__timeline-text">Đang chờ bạn phê duyệt...</div>
                   </div>
                 </div>
               )}
 
               {cuocHen.CapNhatLuc && cuocHen.CapNhatLuc !== cuocHen.TaoLuc && (
-                <div className="timeline-item">
-                  <div className="timeline-dot"></div>
-                  <div className="timeline-content">
-                    <div className="timeline-time">{formatDate(cuocHen.CapNhatLuc)}</div>
-                    <div className="timeline-text">Cập nhật thông tin cuộc hẹn</div>
+                <div className="modal-chi-tiet-cuoc-hen__timeline-item">
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-dot"></div>
+                  <div className="modal-chi-tiet-cuoc-hen__timeline-content">
+                    <div className="modal-chi-tiet-cuoc-hen__timeline-time">{formatDate(cuocHen.CapNhatLuc)}</div>
+                    <div className="modal-chi-tiet-cuoc-hen__timeline-text">Cập nhật thông tin cuộc hẹn</div>
                   </div>
                 </div>
               )}
@@ -365,11 +378,11 @@ function ModalChiTietCuocHen({ cuocHen, onClose, onPheDuyet, onTuChoi }) {
         </div>
 
         {/* Footer Actions */}
-        <div className="modal-footer">
-          <div className="footer-actions-left">
+        <div className="modal-chi-tiet-cuoc-hen__footer">
+          <div className="modal-chi-tiet-cuoc-hen__footer-actions-left">
             <button className="cda-btn cda-btn-secondary">
               <HiOutlineChatBubbleLeftRight />
-              Nhắn tin
+              Trò chuyện
             </button>
             <button className="cda-btn cda-btn-secondary">
               <HiOutlinePhone />
@@ -377,7 +390,7 @@ function ModalChiTietCuocHen({ cuocHen, onClose, onPheDuyet, onTuChoi }) {
             </button>
           </div>
 
-          <div className="footer-actions-right">
+          <div className="modal-chi-tiet-cuoc-hen__footer-actions-right">
             {cuocHen.PheDuyetChuDuAn === 'ChoPheDuyet' && (
               <>
                 <button 

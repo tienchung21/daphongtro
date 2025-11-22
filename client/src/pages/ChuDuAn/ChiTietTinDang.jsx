@@ -46,6 +46,8 @@ import './ChiTietTinDang.css';
  * - Scroll progress bar
  * - Accessibility (ARIA, focus states)
  */
+import { getStaticUrl } from '../../config/api';
+
 const ChiTietTinDang = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -129,14 +131,14 @@ const ChiTietTinDang = () => {
       
       // Handle string path
       if (typeof urlJson === 'string' && urlJson.startsWith('/uploads')) {
-        return [`http://localhost:5000${urlJson}`];
+        return [getStaticUrl(urlJson)];
       }
       
       // Handle JSON array
       const urls = JSON.parse(urlJson);
       if (Array.isArray(urls)) {
         return urls.map(url => 
-          url.startsWith('http') ? url : `http://localhost:5000${url}`
+          url.startsWith('http') ? url : getStaticUrl(url)
         );
       }
       
