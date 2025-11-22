@@ -48,6 +48,17 @@ export const MessageList = ({ messages, currentUserId, isTyping = false, loading
         <div className="message-list-container">
           {messages.map((message) => {
             const isOwn = message.NguoiGuiID === currentUserId;
+            
+            // Debug: Log comparison
+            if (messages.indexOf(message) === 0) {
+              console.log('🔍 Message Debug:', {
+                NguoiGuiID: message.NguoiGuiID,
+                NguoiGuiIDType: typeof message.NguoiGuiID,
+                currentUserId: currentUserId,
+                currentUserIdType: typeof currentUserId,
+                isOwn: isOwn
+              });
+            }
 
             return (
               <div

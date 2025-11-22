@@ -1,17 +1,29 @@
 const express = require("express");
 const router = express.Router();
-const CuocHenController = require("../controllers/cuocHenController");
+const cuocHenCtrl = require("../controllers/cuocHenController");
 
-// Lấy danh sách cuộc hẹn (dùng bởi Chủ dự án)
-router.get("/", CuocHenController.layDanhSachCuocHen);
+// Public: tạo cuộc hẹn (khách) - body bắt buộc: PhongID, KhachHangID, NhanVienBanHangID, ThoiGianHen
+router.post("/", cuocHenCtrl.create);
 
-// Xác nhận cuộc hẹn
-router.put("/:id/xac-nhan", CuocHenController.xacNhanCuocHen);
+// Lấy tất cả cuộc hẹn
+router.get("/", cuocHenCtrl.getAll);
 
-// Phê duyệt cuộc hẹn
-router.put("/:id/phe-duyet", CuocHenController.pheDuyetCuocHen);
+// Tìm theo Khách hàng
+router.get("/search/khach-hang/:khachHangId", cuocHenCtrl.findByKhachHang);
 
-// Từ chối cuộc hẹn
-router.put("/:id/tu-choi", CuocHenController.tuChoiCuocHen);
+// Tìm theo Nhân viên
+router.get("/search/nhan-vien/:nhanVienId", cuocHenCtrl.findByNhanVien);
+
+// Tìm theo Chủ dự án (admin/owner view)
+router.get("/search/chu-du-an/:chuDuAnId", cuocHenCtrl.findByChuDuAn);
+
+// Lấy chi tiết cuộc hẹn
+router.get("/:id", cuocHenCtrl.getById);
+
+// Cập nhật cuộc hẹn
+router.put("/:id", cuocHenCtrl.update);
+
+// Xóa cuộc hẹn
+router.delete("/:id", cuocHenCtrl.delete);
 
 module.exports = router;

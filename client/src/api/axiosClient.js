@@ -1,11 +1,16 @@
 import axios from "axios";
+import { getApiBaseUrl } from '../config/api';
 
 const axiosClient = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: `${getApiBaseUrl()}/api`,
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true, // ✅ Cho phép gửi cookies/credentials qua CORS
 });
+
+// 🐛 Debug: Log base URL khi khởi tạo
+console.log('🔗 [axiosClient] Base URL:', axiosClient.defaults.baseURL);
 
 // Interceptor: Tự động thêm token vào header
 axiosClient.interceptors.request.use(

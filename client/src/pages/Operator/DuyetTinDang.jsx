@@ -141,29 +141,40 @@ const DuyetTinDang = () => {
       )
     },
     {
-      key: 'TrangThaiDuyetHoaHong',
+      key: 'HoaHong',
       label: 'Hoa hồng',
       width: '140px',
       render: (row) => {
-        if (!row.TrangThaiDuyetHoaHong) {
+        // Parse BangHoaHong từ DuAn
+        if (!row.DuAn_BangHoaHong) {
           return (
             <span className="duyet-tin-dang__hoa-hong-empty">
-              Chưa cấu hình
+              Không áp dụng
             </span>
           );
         }
         
-        const trangThaiMap = {
-          'ChoDuyet': { label: 'Chờ duyệt', variant: 'warning' },
-          'DaDuyet': { label: 'Đã duyệt', variant: 'success' },
-          'TuChoi': { label: 'Từ chối', variant: 'danger' }
-        };
+        try {
+          const bangHoaHong = typeof row.DuAn_BangHoaHong === 'string' 
+            ? JSON.parse(row.DuAn_BangHoaHong) 
+            : row.DuAn_BangHoaHong;
+          
+          if (Array.isArray(bangHoaHong) && bangHoaHong.length > 0) {
+            const tyLeMax = Math.max(...bangHoaHong.map(m => m.tyLe));
+            return (
+              <span className="duyet-tin-dang__hoa-hong-active" title={JSON.stringify(bangHoaHong)}>
+                💰 Lên đến {tyLeMax}%
+              </span>
+            );
+          }
+        } catch (err) {
+          console.error('Parse BangHoaHong error:', err);
+        }
         
         return (
-          <BadgeStatusOperator
-            status={row.TrangThaiDuyetHoaHong}
-            statusMap={trangThaiMap}
-          />
+          <span className="duyet-tin-dang__hoa-hong-empty">
+            Không áp dụng
+          </span>
         );
       }
     },
@@ -187,19 +198,16 @@ const DuyetTinDang = () => {
           </button>
           <button
             className="operator-btn operator-btn--sm operator-btn--success"
-            onClick={() => handleDuyet(row.TinDangID)}
-            disabled={
-              row.TrangThaiKYC !== 'DaXacMinh' || 
-              row.TrangThaiDuyetHoaHong !== 'DaDuyet' ||
-              duyetMutation.isLoading
-            }
-            title={
-              row.TrangThaiKYC !== 'DaXacMinh' 
-                ? 'Chủ dự án chưa xác minh KYC'
-                : row.TrangThaiDuyetHoaHong !== 'DaDuyet'
-                ? 'Dự án chưa được duyệt hoa hồng'
-                : ''
-            }
+            onClick={() => {
+              console.log('🔍 DEBUG - Row data:', {
+                TinDangID: row.TinDangID,
+                TrangThaiKYC: row.TrangThaiKYC,
+                DuAn_BangHoaHong: row.DuAn_BangHoaHong
+              });
+              handleDuyet(row.TinDangID);
+            }}
+            disabled={duyetMutation.isLoading}
+            title="Duyệt tin đăng này"
           >
             ✅ Duyệt
           </button>

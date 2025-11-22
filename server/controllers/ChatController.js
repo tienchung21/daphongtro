@@ -13,8 +13,10 @@ class ChatController {
    */
   static async taoHoacLayCuocHoiThoai(req, res) {
     try {
-      const nguoiDungID = req.user.NguoiDungID;
+      const nguoiDungID = req.user.NguoiDungID || req.user.id;
       const { NguCanhID, NguCanhLoai, ThanhVienIDs, TieuDe } = req.body;
+
+      console.log('[ChatController] 🔍 Creating conversation - User ID:', nguoiDungID, 'ThanhVienIDs:', ThanhVienIDs);
 
       // Validation
       if (!NguCanhID || !NguCanhLoai) {
@@ -40,7 +42,10 @@ class ChatController {
         HanhDong: 'tao_cuoc_hoi_thoai',
         DoiTuong: 'cuochoithoai',
         DoiTuongID: cuocHoiThoaiID,
-        ChiTiet: JSON.stringify({ NguCanhID, NguCanhLoai })
+        ChiTiet: JSON.stringify({ NguCanhID, NguCanhLoai, ThanhVienIDs: allThanhVienIDs }),
+        DiaChiIP: req.ip || '',
+        TrinhDuyet: req.get('User-Agent') || '',
+        ChuKy: null
       });
 
       res.status(201).json({
@@ -93,7 +98,7 @@ class ChatController {
    */
   static async layChiTietCuocHoiThoai(req, res) {
     try {
-      const nguoiDungID = req.user.NguoiDungID;
+      const nguoiDungID = req.user.NguoiDungID || req.user.id;
       const { id } = req.params;
 
       const cuocHoiThoai = await ChatModel.layChiTietCuocHoiThoai(id, nguoiDungID);
@@ -125,7 +130,7 @@ class ChatController {
    */
   static async layTinNhan(req, res) {
     try {
-      const nguoiDungID = req.user.NguoiDungID;
+      const nguoiDungID = req.user.NguoiDungID || req.user.id;
       const { id } = req.params;
       const { limit, offset, beforeTimestamp } = req.query;
 
@@ -164,7 +169,7 @@ class ChatController {
    */
   static async guiTinNhan(req, res) {
     try {
-      const nguoiDungID = req.user.NguoiDungID;
+      const nguoiDungID = req.user.NguoiDungID || req.user.id;
       const { id } = req.params;
       const { NoiDung } = req.body;
 
@@ -214,7 +219,7 @@ class ChatController {
    */
   static async danhDauDaDoc(req, res) {
     try {
-      const nguoiDungID = req.user.NguoiDungID;
+      const nguoiDungID = req.user.NguoiDungID || req.user.id;
       const { id } = req.params;
 
       await ChatModel.danhDauDaDoc(id, nguoiDungID);
@@ -239,7 +244,7 @@ class ChatController {
    */
   static async xoaTinNhan(req, res) {
     try {
-      const nguoiDungID = req.user.NguoiDungID;
+      const nguoiDungID = req.user.NguoiDungID || req.user.id;
       const { id } = req.params;
 
       await ChatModel.xoaTinNhan(id, nguoiDungID);

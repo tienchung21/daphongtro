@@ -90,6 +90,8 @@ class TinDangOperatorModel {
           da.DuAnID,
           da.TenDuAn,
           da.DiaChi as DiaChiDuAn,
+          da.BangHoaHong as DuAn_BangHoaHong,
+          da.SoThangCocToiThieu as DuAn_SoThangCocToiThieu,
           kv.TenKhuVuc,
           nd.NguoiDungID as ChuDuAnID,
           nd.TenDayDu as TenChuDuAn,

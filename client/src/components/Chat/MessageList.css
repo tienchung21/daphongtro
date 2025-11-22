@@ -41,7 +41,9 @@
   display: flex;
   flex-direction: column;
   max-width: 70%;
+  width: fit-content;
   animation: message-slide-in 0.3s ease-out;
+  margin-bottom: 4px;
 }
 
 @keyframes message-slide-in {
@@ -55,14 +57,20 @@
   }
 }
 
+/* Tin nhắn của mình - LUÔN BÊN PHẢI */
 .message-own {
   align-self: flex-end;
   align-items: flex-end;
+  margin-left: auto;
+  margin-right: 0;
 }
 
+/* Tin nhắn của người khác - LUÔN BÊN TRÁI */
 .message-other {
   align-self: flex-start;
   align-items: flex-start;
+  margin-left: 0;
+  margin-right: auto;
 }
 
 .message-sender {

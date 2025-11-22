@@ -2,8 +2,11 @@ const express = require("express");
 const router = express.Router();
 const PublicTinDangController = require("../controllers/PublicTinDangController");
 
-// GET /api/public/tin-dang (public)
+// GET /api/public/tin-dang (public - danh sách)
 router.get("/", PublicTinDangController.getDanhSachTinDang);
+
+// GET /api/public/tin-dang/:id (public - chi tiết)
+router.get("/:id", PublicTinDangController.getChiTietTinDang);
 
 // PUT /api/public/tin-dang/:id (không cần auth)
 router.put("/:id", PublicTinDangController.updateTinDang);

@@ -150,7 +150,16 @@ const ModalBaoCaoKetQua = ({ appointment, isOpen, onClose, onSubmit }) => {
     try {
       setSubmitting(true);
 
-      const response = await baoCaoKetQuaCuocHen(appointment.CuocHenID, formData);
+      // Map frontend state to backend API format
+      const payload = {
+        ketQua: formData.trangThai === 'HoanThanh' ? 'thanh_cong' : 'that_bai',
+        khachQuanTam: formData.mucDoQuanTam > 0, // Convert rating to boolean
+        lyDoThatBai: formData.trangThai === 'ThatBai' ? formData.ghiChuKetQua : null,
+        keHoachFollowUp: formData.khaNangChot !== 'ThapQuaMuc' ? `Khả năng chốt: ${formData.khaNangChot}` : null,
+        ghiChu: formData.ghiChuKetQua
+      };
+
+      const response = await baoCaoKetQuaCuocHen(appointment.CuocHenID, payload);
 
       if (response.success) {
         alert('Đã báo cáo kết quả thành công');

@@ -194,14 +194,14 @@ class NhanVienBanHangController {
           kh.TenDayDu as TenKhachHang,
           kh.SoDienThoai as SDTKhachHang,
           p.TenPhong,
-          COALESCE(pt.GiaTinDang, p.GiaChuan, 0) as Gia,
+          COALESCE(pt.GiaTinDang, p.GiaChuan, 0) as GiaPhong,
           td.TieuDe as TieuDeTinDang,
           da.DiaChi as DiaChiTinDang
         FROM cuochen ch
         LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
         LEFT JOIN phong p ON ch.PhongID = p.PhongID
-        LEFT JOIN phong_tindang pt ON p.PhongID = pt.PhongID
-        LEFT JOIN tindang td ON pt.TinDangID = td.TinDangID
+        LEFT JOIN phong_tindang pt ON p.PhongID = pt.PhongID AND pt.TinDangID = ch.TinDangID
+        LEFT JOIN tindang td ON ch.TinDangID = td.TinDangID
         LEFT JOIN duan da ON td.DuAnID = da.DuAnID
         WHERE ch.NhanVienBanHangID = ?
         ${filters.trangThai ? 'AND ch.TrangThai = ?' : ''}

@@ -360,6 +360,8 @@ class DuAnModel {
    */
   static async capNhatDuAn(duAnId, chuDuAnId, data = {}) {
     try {
+      console.log('[DuAnModel.capNhatDuAn] START - DuAnID:', duAnId, 'Data keys:', Object.keys(data));
+      
       const [rows] = await db.execute(
         `SELECT DuAnID, TenDuAn, DiaChi, YeuCauPheDuyetChu, PhuongThucVao
          FROM duan
@@ -487,17 +489,39 @@ class DuAnModel {
       }
 
       if (Object.prototype.hasOwnProperty.call(data, 'BangHoaHong')) {
-        // BangHoaHong là DECIMAL(5,2) - % hoa hồng (ví dụ: 5.00 = 5%)
-        const bangHoaHong = data.BangHoaHong === null ? null : parseFloat(data.BangHoaHong);
+        // BangHoaHong là JSON array: [{soThang: 6, tyLe: 30}, {soThang: 12, tyLe: 50}]
+        // Lưu dạng JSON text trong database
+        let bangHoaHong = data.BangHoaHong;
         
         if (bangHoaHong !== null) {
-          if (isNaN(bangHoaHong) || bangHoaHong < 0 || bangHoaHong > 100) {
-            throw new Error('Bảng hoa hồng phải từ 0-100%');
+          // Nếu là array, validate và convert sang JSON string
+          if (Array.isArray(bangHoaHong)) {
+            // Validate từng mức hoa hồng
+            for (const muc of bangHoaHong) {
+              if (!muc.soThang || !muc.tyLe) {
+                throw new Error('Mỗi mức hoa hồng phải có soThang và tyLe');
+              }
+              const soThang = parseInt(muc.soThang);
+              const tyLe = parseFloat(muc.tyLe);
+              if (isNaN(soThang) || soThang < 1) {
+                throw new Error('Số tháng phải >= 1');
+              }
+              if (isNaN(tyLe) || tyLe < 0 || tyLe > 100) {
+                throw new Error('Tỷ lệ hoa hồng phải từ 0-100%');
+              }
+            }
+            bangHoaHong = JSON.stringify(bangHoaHong);
+          } else if (typeof bangHoaHong === 'string') {
+            // Đã là JSON string, validate format
+            try {
+              const parsed = JSON.parse(bangHoaHong);
+              if (!Array.isArray(parsed)) {
+                throw new Error('BangHoaHong phải là array');
+              }
+            } catch (err) {
+              throw new Error('BangHoaHong JSON không hợp lệ: ' + err.message);
+            }
           }
-          // TODO: Thêm validation theo quy định tối đa của hệ thống (ví dụ: max 10%)
-          // if (bangHoaHong > 10) {
-          //   throw new Error('Hoa hồng không được vượt quá 10%');
-          // }
         }
         
         updates.push('BangHoaHong = ?');
@@ -510,12 +534,14 @@ class DuAnModel {
 
       updates.push('CapNhatLuc = NOW()');
 
-      await db.execute(
-        `UPDATE duan
-         SET ${updates.join(', ')}
-         WHERE DuAnID = ? AND ChuDuAnID = ?`,
-        [...params, duAnId, chuDuAnId]
-      );
+      const sql = `UPDATE duan SET ${updates.join(', ')} WHERE DuAnID = ? AND ChuDuAnID = ?`;
+      const finalParams = [...params, duAnId, chuDuAnId];
+      
+      // Debug log
+      console.log('[DuAnModel.capNhatDuAn] SQL:', sql);
+      console.log('[DuAnModel.capNhatDuAn] Params:', finalParams);
+
+      await db.execute(sql, finalParams);
 
       return await this.layChiTietDuAn(duAnId, chuDuAnId);
     } catch (error) {

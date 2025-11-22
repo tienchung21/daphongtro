@@ -295,7 +295,7 @@ node test-chat-api.js
 Test thành công khi:
 
 ✅ **Backend:**
-- [ ] Socket.IO server chạy tại ws://localhost:5000
+- [ ] Socket.IO server chạy tại ws://mt5vhvtq-5000.asse.devtunnels.ms/
 - [ ] Chat API endpoints hoạt động
 - [ ] Database có test data (4 conversations, ~60 messages)
 - [ ] Migrations đã chạy thành công

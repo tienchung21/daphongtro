@@ -5,6 +5,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import useSocket from '../hooks/useSocket';
+import { getApiBaseUrl } from '../config/api';
 
 const ChatContext = createContext(null);
 
@@ -31,8 +32,14 @@ export const ChatProvider = ({ children }) => {
       setLoading(true);
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/conversations`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${getApiBaseUrl()}/api/chat/conversations`,
+        { 
+          headers: { 
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include' // ✅ Important for CORS with credentials
+        }
       );
 
       const result = await response.json();
@@ -57,13 +64,14 @@ export const ChatProvider = ({ children }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/chat/conversations`,
+        `${getApiBaseUrl()}/api/chat/conversations`,
         {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
+          credentials: 'include',
           body: JSON.stringify({ NguCanhID, NguCanhLoai, ThanhVienIDs, TieuDe })
         }
       );

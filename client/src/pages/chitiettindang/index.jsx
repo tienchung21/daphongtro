@@ -23,11 +23,42 @@ import {
 } from "react-icons/hi2";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { TinDangService } from "../../services/ChuDuAnService";
+import { PublicTinDangService, PublicCuocHenService } from "../../services/PublicService"; // Đổi sang PublicService
 import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
 import yeuThichApi from "../../api/yeuThichApi";
 import axiosClient from "../../api/axiosClient";
 import "./chitiettindang.css";
+
+/**
+ * Helper: Chuyển datetime-local input hoặc ISO string sang MySQL datetime format
+ * @param {string} input - 'YYYY-MM-DDTHH:MM' (từ datetime-local) hoặc ISO string
+ * @returns {string|null} 'YYYY-MM-DD HH:MM:SS' hoặc null nếu invalid
+ */
+const toMySqlDateTime = (input) => {
+  if (!input) return null;
+  
+  // 1) datetime-local từ input: 'YYYY-MM-DDTHH:MM' -> format sang MySQL
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input)) {
+    return input.replace('T', ' ') + ':00';
+  }
+  
+  // 2) ISO string có Z/timezone -> parse Date object -> format local time
+  try {
+    const d = new Date(input);
+    if (!isNaN(d.getTime())) {
+      const pad = (n) => String(n).padStart(2, '0');
+      const y = d.getFullYear();
+      const m = pad(d.getMonth() + 1);
+      const day = pad(d.getDate());
+      const h = pad(d.getHours());
+      const mi = pad(d.getMinutes());
+      const s = pad(d.getSeconds());
+      return `${y}-${m}-${day} ${h}:${mi}:${s}`;
+    }
+  } catch {}
+  
+  return null;
+};
 
 /**
  * Component: Chi tiết Tin Đăng cho Khách hàng (Public View)
@@ -111,7 +142,7 @@ const ChiTietTinDang = () => {
     setHenModalOpen(true);
   };
 
-  // Gửi tạo cuộc hẹn
+  // UC-CUST-03: Gửi tạo cuộc hẹn
   const submitHen = async (e) => {
     e.preventDefault();
     const userId = getCurrentUserId();
@@ -123,32 +154,60 @@ const ChiTietTinDang = () => {
       showToast("❌ Chưa chọn thời gian");
       return;
     }
-    const isoRaw = henThoiGian; // ví dụ '2025-11-10T15:30'
-    const mysqlTime = toMySqlDateTime(isoRaw);
+    
+    // Validate có phòng được chọn (yêu cầu bắt buộc)
+    if (!henPhongId) {
+      showToast("❌ Vui lòng chọn phòng cần xem");
+      return;
+    }
+
+    // Convert datetime-local -> MySQL format
+    const mysqlTime = toMySqlDateTime(henThoiGian);
     if (!mysqlTime) {
       showToast("❌ Thời gian không hợp lệ");
       return;
     }
+
+    // Lấy YeuCauPheDuyetChu từ tin đăng/dự án (1 = ChoPheDuyet, 0 = DaPheDuyet)
+    const yeuCauPheDuyet = tinDang?.YeuCauPheDuyetChu;
+    let pheDuyetValue = 'ChoPheDuyet'; // Mặc định cần phê duyệt
+    
+    if (yeuCauPheDuyet === 0 || yeuCauPheDuyet === '0' || yeuCauPheDuyet === false) {
+      pheDuyetValue = 'DaPheDuyet'; // Không cần phê duyệt
+    }
+
+    // Payload đầy đủ theo yêu cầu
     const payload = {
-      TinDangID: tinDang?.TinDangID,
+      TinDangID: tinDang.TinDangID,
+      ChuDuAnID: tinDang.DuAnID || tinDang.ChuDuAnID,
       PhongID: henPhongId,
       KhachHangID: userId,
-      NhanVienBanHangID: tinDang?.NhanVienBanHangID ?? 13,
-      ThoiGianHen: mysqlTime, // <-- sửa
-      GhiChu: henGhiChu.trim() || null,
-      PheDuyetChuDuAn: getPheDuyetChuValue(),
+      ThoiGianHen: mysqlTime,
+      GhiChuKhach: henGhiChu.trim() || undefined,
+      PheDuyetChuDuAn: pheDuyetValue
+      // Backend tự động xử lý: NhanVienBanHangID, TrangThai
     };
+
+    console.log('🔍 [DEBUG] Cuộc hẹn payload:', payload);
+    console.log('🔍 [DEBUG] tinDang object:', tinDang);
+
     setHenSubmitting(true);
     try {
-      const res = await axiosClient.post("/cuoc-hen", payload);
-      if (res?.data?.success) {
-        showToast("✅ Đặt lịch thành công");
+      const response = await PublicCuocHenService.taoMoi(payload);
+      
+      if (response?.success) {
+        showToast("✅ Đặt lịch thành công! Người quản lý sẽ liên hệ bạn sớm.");
         setHenModalOpen(false);
+        // Reset form
+        setHenPhongId(null);
+        setHenThoiGian("");
+        setHenGhiChu("");
       } else {
-        showToast(`❌ ${res?.data?.message || "Lỗi"}`);
+        showToast(`❌ ${response?.message || "Lỗi không xác định"}`);
       }
-    } catch (err) {
-      showToast(`❌ ${err?.response?.data?.message || err.message || "Lỗi"}`);
+    } catch (error) {
+      console.error('[ChiTietTinDang] Lỗi tạo cuộc hẹn:', error);
+      showToast(`❌ ${error.message || "Không thể đặt lịch. Vui lòng thử lại."}`);
     } finally {
       setHenSubmitting(false);
     }
@@ -188,7 +247,8 @@ const ChiTietTinDang = () => {
   const layChiTietTinDang = async () => {
     try {
       setLoading(true);
-      const response = await TinDangService.layChiTiet(id);
+      // Đổi sang dùng PublicTinDangService (không cần auth)
+      const response = await PublicTinDangService.layChiTietTinDang(id);
       if (response && response.success) {
         setTinDang(response.data);
 
@@ -1240,27 +1300,3 @@ const ChiTietTinDang = () => {
 };
 
 export default ChiTietTinDang;
-
-// ...existing code (đặt cùng nơi khai báo helpers)...
-const toMySqlDateTime = (input) => {
-  if (!input) return null;
-  // 1) datetime-local từ input: 'YYYY-MM-DDTHH:MM' -> giữ giờ local
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input)) {
-    return input.replace("T", " ") + ":00";
-  }
-  // 2) ISO có Z/+07:00 -> format theo giờ local thành 'YYYY-MM-DD HH:MM:SS'
-  try {
-    const d = new Date(input);
-    if (!isNaN(d.getTime())) {
-      const pad = (n) => String(n).padStart(2, "0");
-      const y = d.getFullYear();
-      const m = pad(d.getMonth() + 1);
-      const day = pad(d.getDate());
-      const h = pad(d.getHours());
-      const mi = pad(d.getMinutes());
-      const s = pad(d.getSeconds());
-      return `${y}-${m}-${day} ${h}:${mi}:${s}`;
-    }
-  } catch {}
-  return null;
-};

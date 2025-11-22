@@ -28,7 +28,52 @@ class ChatModel {
     `, [NguCanhID, NguCanhLoai]);
 
     if (existing.length > 0) {
-      return existing[0].CuocHoiThoaiID;
+      const cuocHoiThoaiID = existing[0].CuocHoiThoaiID;
+      
+      console.log(`[ChatModel] ℹ️ Conversation #${cuocHoiThoaiID} already exists, syncing members...`);
+      console.log(`[ChatModel] 🔍 Input ThanhVienIDs:`, ThanhVienIDs);
+      
+      // Sync members: Add missing members nếu có
+      if (ThanhVienIDs && ThanhVienIDs.length > 0) {
+        const normalizedIDs = ThanhVienIDs
+          .map(id => parseInt(id, 10))
+          .filter(id => !isNaN(id) && id > 0);
+        
+        console.log(`[ChatModel] 🔍 Normalized IDs:`, normalizedIDs);
+        
+        if (normalizedIDs.length > 0) {
+          // Get existing members
+          const [existingMembers] = await db.query(`
+            SELECT NguoiDungID FROM thanhviencuochoithoai 
+            WHERE CuocHoiThoaiID = ?
+          `, [cuocHoiThoaiID]);
+          
+          const existingMemberIDs = existingMembers.map(m => parseInt(m.NguoiDungID, 10));
+          const newMemberIDs = normalizedIDs.filter(id => !existingMemberIDs.includes(id));
+          
+          console.log(`[ChatModel] 🔍 Existing members:`, existingMemberIDs);
+          console.log(`[ChatModel] 🔍 New members to add:`, newMemberIDs);
+          
+          // Add new members
+          if (newMemberIDs.length > 0) {
+            const values = newMemberIDs.map(id => [cuocHoiThoaiID, id]);
+            await db.query(`
+              INSERT IGNORE INTO thanhviencuochoithoai (CuocHoiThoaiID, NguoiDungID)
+              VALUES ?
+            `, [values]);
+            
+            console.log(`[ChatModel] ✅ Added ${newMemberIDs.length} new members to existing conversation #${cuocHoiThoaiID}`);
+          } else {
+            console.log(`[ChatModel] ℹ️ All members already exist in conversation #${cuocHoiThoaiID}`);
+          }
+        } else {
+          console.warn(`[ChatModel] ⚠️ No valid IDs after normalization`);
+        }
+      } else {
+        console.warn(`[ChatModel] ⚠️ No ThanhVienIDs provided for sync`);
+      }
+      
+      return cuocHoiThoaiID;
     }
 
     // Tạo mới cuộc hội thoại
@@ -43,13 +88,39 @@ class ChatModel {
 
       const cuocHoiThoaiID = result.insertId;
 
-      // Thêm thành viên
+      // Thêm thành viên - VALIDATE trước khi insert
       if (ThanhVienIDs && ThanhVienIDs.length > 0) {
-        const values = ThanhVienIDs.map(id => [cuocHoiThoaiID, id]);
+        // Convert sang number và loại bỏ null/undefined
+        const normalizedIDs = ThanhVienIDs
+          .map(id => parseInt(id, 10))
+          .filter(id => !isNaN(id) && id > 0);
+        
+        if (normalizedIDs.length === 0) {
+          throw new Error('Danh sách thành viên không hợp lệ');
+        }
+        
+        // Kiểm tra tất cả NguoiDungID có tồn tại không
+        const placeholders = normalizedIDs.map(() => '?').join(',');
+        const [validUsers] = await connection.query(`
+          SELECT NguoiDungID FROM nguoidung WHERE NguoiDungID IN (${placeholders})
+        `, normalizedIDs);
+        
+        const validUserIDs = validUsers.map(u => parseInt(u.NguoiDungID, 10));
+        const invalidUserIDs = normalizedIDs.filter(id => !validUserIDs.includes(id));
+        
+        if (invalidUserIDs.length > 0) {
+          console.error('[ChatModel] ❌ Invalid user IDs:', invalidUserIDs);
+          throw new Error(`Người dùng không tồn tại: ${invalidUserIDs.join(', ')}`);
+        }
+        
+        // Insert thành viên hợp lệ
+        const values = validUserIDs.map(id => [cuocHoiThoaiID, id]);
         await connection.query(`
           INSERT INTO thanhviencuochoithoai (CuocHoiThoaiID, NguoiDungID)
           VALUES ?
         `, [values]);
+        
+        console.log(`[ChatModel] ✅ Added ${validUserIDs.length} members to conversation #${cuocHoiThoaiID}`);
       }
 
       await connection.commit();
@@ -257,7 +328,20 @@ class ChatModel {
       WHERE CuocHoiThoaiID = ? AND NguoiDungID = ?
     `, [cuocHoiThoaiID, nguoiDungID]);
 
-    return result.length > 0;
+    const hasAccess = result.length > 0;
+    
+    if (!hasAccess) {
+      // Debug: Show who has access to this conversation
+      const [members] = await db.query(`
+        SELECT NguoiDungID FROM thanhviencuochoithoai
+        WHERE CuocHoiThoaiID = ?
+      `, [cuocHoiThoaiID]);
+      
+      console.warn(`[ChatModel] ⚠️ User ${nguoiDungID} denied access to conversation #${cuocHoiThoaiID}`);
+      console.warn(`[ChatModel] Current members:`, members.map(m => m.NguoiDungID));
+    }
+
+    return hasAccess;
   }
 
   /**

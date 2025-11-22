@@ -36,7 +36,7 @@ const TinNhanContent = () => {
         <div className="tin-nhan-placeholder">
           <HiOutlineInbox className="placeholder-icon" />
           <h3>Chọn một cuộc trò chuyện</h3>
-          <p>Chọn cuộc trò chuyện từ danh sách bên trái để bắt đầu nhắn tin</p>
+          <p>Chọn cuộc trò chuyện từ danh sách bên trái để bắt đầu trò chuyện</p>
         </div>
       </div>
     </div>

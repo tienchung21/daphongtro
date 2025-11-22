@@ -5,7 +5,7 @@ import { TinDangService, DuAnService, KhuVucService } from '../../services/ChuDu
 import ModalChinhSuaToaDo from '../../components/ChuDuAn/ModalChinhSuaToaDo';
 import SectionChonPhong from '../../components/ChuDuAn/SectionChonPhong';
 import axios from 'axios';
-import './TaoTinDang.css'; // Tái sử dụng CSS
+import './ChinhSuaTinDang.css';
 
 // React Icons - Thêm các icon cần thiết
 import {
@@ -69,7 +69,9 @@ const tachDiaChiDuAn = (diaChi = '') => {
   return { chiTiet: chiTiet || '', phuong, quan, tinh };
 };
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+import { getApiBaseUrl } from '../../config/api';
+
+const API_BASE_URL = getApiBaseUrl();
 
 const resolveImageUrl = (url) => {
   if (!url) return null;
@@ -884,25 +886,16 @@ const layDanhSachPhongDuAn = async (duAnId) => {
   const renderSectionHeader = (title, sectionKey, required = false, subtitle = null) => (
     <div 
       onClick={() => toggleSection(sectionKey)}
-      style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '1rem 1.5rem',
-        background: sectionsExpanded[sectionKey] ? '#f9fafb' : 'white',
-        borderBottom: '1px solid #e5e7eb',
-        cursor: 'pointer',
-        transition: 'background 0.2s'
-      }}
+      className={`cda-accordion-header ${sectionsExpanded[sectionKey] ? 'expanded' : ''}`}
     >
       <div>
-        <h3 style={{ fontSize: '1.125rem', fontWeight: 600, color: '#111827', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <h3 className="cda-accordion-title">
           {title}
           {required && <span style={{ color: '#dc2626' }}>*</span>}
         </h3>
-        {subtitle && <p style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: '0.25rem' }}>{subtitle}</p>}
+        {subtitle && <p className="cda-accordion-subtitle">{subtitle}</p>}
       </div>
-      <span style={{ fontSize: '1.25rem', transition: 'transform 0.2s', transform: sectionsExpanded[sectionKey] ? 'rotate(180deg)' : 'rotate(0)' }}>
+      <span className={`cda-accordion-icon ${sectionsExpanded[sectionKey] ? 'expanded' : ''}`}>
         ▼
       </span>
     </div>
@@ -1005,27 +998,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
                   <label className="cda-label">Trạng thái tin đăng</label>
                   
                   {/* Hiển thị trạng thái dạng badge */}
-                  <div style={{
-                    padding: '0.75rem 1rem',
-                    borderRadius: '8px',
-                    border: '1px solid #e5e7eb',
-                    background: (() => {
-                      switch(formData.TrangThai) {
-                        case 'Nhap': return 'rgba(156, 163, 175, 0.1)';
-                        case 'ChoDuyet': return 'rgba(245, 158, 11, 0.1)';
-                        case 'DaDuyet': return 'rgba(34, 197, 94, 0.1)';
-                        case 'DaDang': return 'rgba(59, 130, 246, 0.1)';
-                        case 'TuChoi': return 'rgba(239, 68, 68, 0.1)';
-                        case 'DaXoa': return 'rgba(107, 114, 128, 0.1)';
-                        default: return 'rgba(156, 163, 175, 0.1)';
-                      }
-                    })(),
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    fontSize: '0.9375rem',
-                    fontWeight: 500
-                  }}>
+                  <div className={`cda-status-badge ${formData.TrangThai.toLowerCase()}`}>
                     <span style={{ fontSize: '1.25rem' }}>
                       {(() => {
                         switch(formData.TrangThai) {
@@ -1039,19 +1012,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
                         }
                       })()}
                     </span>
-                    <span style={{
-                      color: (() => {
-                        switch(formData.TrangThai) {
-                          case 'Nhap': return '#6b7280';
-                          case 'ChoDuyet': return '#D4AF37';
-                          case 'DaDuyet': return '#22c55e';
-                          case 'DaDang': return '#0F766E';
-                          case 'TuChoi': return '#ef4444';
-                          case 'DaXoa': return '#6b7280';
-                          default: return '#6b7280';
-                        }
-                      })()
-                    }}>
+                    <span>
                       {(() => {
                         switch(formData.TrangThai) {
                           case 'Nhap': return 'Nháp';
@@ -1124,25 +1085,10 @@ const layDanhSachPhongDuAn = async (duAnId) => {
           {sectionsExpanded.diaChi && (
             <div className="cda-card-body">
               {/* Cảnh báo ảnh hưởng */}
-              <div style={{
-                background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-                border: '1px solid #fbbf24',
-                borderRadius: '0.5rem',
-                padding: '1rem',
-                marginBottom: '1.5rem',
-                display: 'flex',
-                alignItems: 'flex-start',
-                gap: '0.75rem'
-              }}>
-                <HiOutlineExclamationCircle style={{ 
-                  width: '24px', 
-                  height: '24px', 
-                  color: '#D4AF37',
-                  flexShrink: 0,
-                  marginTop: '2px'
-                }} />
-                <div style={{ fontSize: '0.875rem', color: '#92400e', lineHeight: '1.5' }}>
-                  <strong style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.9375rem' }}>
+              <div className="cda-warning-box">
+                <HiOutlineExclamationCircle className="cda-warning-icon" />
+                <div className="cda-warning-content">
+                  <strong className="cda-warning-title">
                     ⚠️ Lưu ý quan trọng
                   </strong>
                   Thay đổi <strong>Khu vực</strong> hoặc <strong>Tọa độ</strong> sẽ ảnh hưởng đến <strong style={{ color: '#B68C3A' }}>TẤT CẢ các tin đăng</strong> thuộc cùng dự án này.
@@ -1340,36 +1286,19 @@ const layDanhSachPhongDuAn = async (duAnId) => {
                 {/* Tiện ích */}
                 <div className="cda-form-group">
                   <label className="cda-label">Tiện ích phòng</label>
-                  <div style={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', 
-                    gap: '0.75rem',
-                    marginTop: '0.5rem' 
-                  }}>
+                  <div className="cda-amenities-grid">
                     {DANH_SACH_TIEN_ICH.map(tienIch => (
                       <label 
                         key={tienIch} 
-                        style={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          gap: '0.5rem',
-                          cursor: 'pointer',
-                          padding: '0.5rem',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '0.375rem',
-                          transition: 'all 0.2s',
-                          background: formData.TienIch.includes(tienIch) ? '#eff6ff' : 'white',
-                          borderColor: formData.TienIch.includes(tienIch) ? '#3b82f6' : '#e5e7eb'
-                        }}
+                        className={`cda-amenity-item ${formData.TienIch.includes(tienIch) ? 'selected' : ''}`}
                       >
                         <input
                           type="checkbox"
                           checked={formData.TienIch.includes(tienIch)}
                           onChange={() => xuLyChonTienIch(tienIch)}
                           disabled={saving}
-                          style={{ cursor: 'pointer' }}
                         />
-                        <span style={{ fontSize: '0.875rem', color: '#374151' }}>{tienIch}</span>
+                        <span>{tienIch}</span>
                       </label>
                     ))}
                   </div>
@@ -1467,47 +1396,22 @@ const layDanhSachPhongDuAn = async (duAnId) => {
 
               {/* Preview ảnh */}
               {anhPreview.length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
+                <div className="cda-image-grid">
                   {anhPreview.map((preview, index) => (
-                    <div key={index} style={{ position: 'relative', border: '1px solid #e5e7eb', borderRadius: '0.375rem', overflow: 'hidden' }}>
+                    <div key={index} className="cda-image-item">
                       <img 
                         src={preview.url} 
                         alt={preview.name}
-                        style={{ width: '100%', height: '150px', objectFit: 'cover' }}
                       />
                       {preview.isExisting && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '0.5rem',
-                          left: '0.5rem',
-                          background: 'rgba(0, 0, 0, 0.7)',
-                          color: 'white',
-                          padding: '0.25rem 0.5rem',
-                          borderRadius: '0.25rem',
-                          fontSize: '0.75rem'
-                        }}>
+                        <div className="cda-image-badge">
                           Ảnh cũ
                         </div>
                       )}
                       <button
                         type="button"
                         onClick={() => xoaAnh(index)}
-                        style={{
-                          position: 'absolute',
-                          top: '0.5rem',
-                          right: '0.5rem',
-                          background: '#dc2626',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '50%',
-                          width: '24px',
-                          height: '24px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '0.75rem'
-                        }}
+                        className="cda-image-remove"
                       >
                         ✕
                       </button>
@@ -1520,18 +1424,12 @@ const layDanhSachPhongDuAn = async (duAnId) => {
         </div>
 
         {/* Submit buttons */}
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'space-between', marginTop: '1.5rem' }}>
+        <div className="cda-actions-footer">
           {/* Nút Xóa - bên trái */}
           <button
             type="button"
             onClick={xuLyXoaTinDang}
-            className="cda-btn"
-            style={{
-              background: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)',
-              color: 'white',
-              boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)',
-              border: 'none'
-            }}
+            className="cda-btn cda-btn-danger"
             disabled={saving}
           >
             <HiOutlineTrash style={{ width: '18px', height: '18px', marginRight: '6px' }} />
@@ -1539,7 +1437,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
           </button>
 
           {/* Các nút khác - bên phải */}
-          <div style={{ display: 'flex', gap: '1rem' }}>
+          <div className="cda-actions-group">
             <button
               type="button"
               onClick={() => navigate('/chu-du-an/tin-dang')}
@@ -1551,12 +1449,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
             <button
               type="button"
               onClick={xuLyLuuNhap}
-              className="cda-btn"
-              style={{
-                background: 'linear-gradient(135deg, #D4AF37 0%, #B68C3A 100%)',
-                color: 'white',
-                boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3)'
-              }}
+              className="cda-btn cda-btn-warning"
               disabled={saving}
             >
               {saving ? 'Đang lưu...' : '💾 Lưu nháp'}
@@ -1576,18 +1469,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
       {/* Modal Tạo Phòng Mới */}
       {modalTaoPhongMoi && (
         <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 1000
-          }}
+          className="cda-modal-overlay"
           onClick={() => {
             if (!dangTaoPhong) {
               setModalTaoPhongMoi(false);
@@ -1596,17 +1478,10 @@ const layDanhSachPhongDuAn = async (duAnId) => {
           }}
         >
           <div
-            style={{
-              background: 'white',
-              borderRadius: '1rem',
-              padding: '2rem',
-              width: '90%',
-              maxWidth: '500px',
-              boxShadow: '0 8px 32px rgba(139, 92, 246, 0.2)'
-            }}
+            className="cda-modal-content"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#111827', marginBottom: '1.5rem' }}>
+            <h2 className="cda-modal-title">
               Tạo Phòng Mới
             </h2>
 
@@ -1668,7 +1543,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '2rem' }}>
+            <div className="cda-modal-actions">
               <button
                 type="button"
                 onClick={() => {

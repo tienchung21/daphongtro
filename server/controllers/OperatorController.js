@@ -5,6 +5,7 @@
 
 const db = require('../config/db');
 const NhatKyHeThongService = require('../services/NhatKyHeThongService');
+const OperatorService = require('../services/OperatorService');
 
 class OperatorController {
   /**
@@ -313,6 +314,171 @@ class OperatorController {
       });
     } finally {
       connection.release();
+    }
+  }
+
+  /**
+   * UC-OPR-03: Lấy danh sách cuộc hẹn (cho Operator calendar view)
+   * GET /api/operator/cuoc-hen
+   */
+  static async layDanhSachCuocHen(req, res) {
+    try {
+      const filters = {
+        nhanVienId: req.query.nhanVienId,
+        trangThai: req.query.trangThai,
+        tuNgay: req.query.tuNgay,
+        denNgay: req.query.denNgay,
+        page: req.query.page || 1,
+        limit: req.query.limit || 20
+      };
+
+      const result = await OperatorService.layDanhSachCuocHen(filters);
+
+      res.json({
+        success: true,
+        data: result
+      });
+    } catch (error) {
+      console.error('[OperatorController] layDanhSachCuocHen error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * UC-OPR-03: Lấy cuộc hẹn cần gán NVBH
+   * GET /api/operator/cuoc-hen/can-gan
+   */
+  static async layCuocHenCanGan(req, res) {
+    try {
+      const data = await OperatorService.layCuocHenCanGan();
+
+      res.json({
+        success: true,
+        data
+      });
+    } catch (error) {
+      console.error('[OperatorController] layCuocHenCanGan error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * UC-OPR-03: Gán lại cuộc hẹn cho NVBH khác
+   * PUT /api/operator/cuoc-hen/:id/gan-lai
+   */
+  static async ganLaiCuocHen(req, res) {
+    try {
+      const cuocHenId = parseInt(req.params.id);
+      const { nhanVienBanHangId } = req.body;
+      const operatorId = req.user.NguoiDungID;
+
+      // Validation
+      if (!nhanVienBanHangId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Vui lòng chọn nhân viên bán hàng'
+        });
+      }
+
+      if (!Number.isInteger(parseInt(nhanVienBanHangId))) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID nhân viên bán hàng không hợp lệ'
+        });
+      }
+
+      const result = await OperatorService.ganLaiCuocHen(
+        cuocHenId,
+        parseInt(nhanVienBanHangId),
+        operatorId
+      );
+
+      res.json({
+        success: true,
+        message: 'Đã gán lại cuộc hẹn thành công',
+        data: result
+      });
+    } catch (error) {
+      console.error('[OperatorController] ganLaiCuocHen error:', error);
+      
+      // Handle specific errors
+      if (error.message.includes('không tồn tại')) {
+        return res.status(404).json({
+          success: false,
+          message: error.message
+        });
+      }
+
+      if (error.message.includes('không có quyền') || error.message.includes('trạng thái')) {
+        return res.status(400).json({
+          success: false,
+          message: error.message
+        });
+      }
+
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * UC-OPR-03: Lấy thống kê cuộc hẹn
+   * GET /api/operator/cuoc-hen/thong-ke
+   */
+  static async layThongKeCuocHen(req, res) {
+    try {
+      const filters = {
+        tuNgay: req.query.tuNgay,
+        denNgay: req.query.denNgay
+      };
+
+      const stats = await OperatorService.layThongKeCuocHen(filters);
+
+      res.json({
+        success: true,
+        data: stats
+      });
+    } catch (error) {
+      console.error('[OperatorController] layThongKeCuocHen error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
+    }
+  }
+
+  /**
+   * UC-OPR-03: Lấy lịch làm việc NVBH (shifts + appointments)
+   * GET /api/operator/lich-lam-viec
+   */
+  static async layLichLamViec(req, res) {
+    try {
+      const filters = {
+        nhanVienId: req.query.nhanVienId,
+        tuNgay: req.query.tuNgay,
+        denNgay: req.query.denNgay
+      };
+
+      const schedule = await OperatorService.layLichLamViec(filters);
+
+      res.json({
+        success: true,
+        data: schedule
+      });
+    } catch (error) {
+      console.error('[OperatorController] layLichLamViec error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message
+      });
     }
   }
 }

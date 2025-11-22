@@ -15,7 +15,8 @@ import {
   HiOutlineHome,
   HiOutlineMapPin,
   HiOutlineCalendarDays,
-  HiOutlineClock
+  HiOutlineClock,
+  HiOutlineChatBubbleLeftRight
 } from 'react-icons/hi2';
 import {
   xemChiTietCuocHen,
@@ -23,9 +24,11 @@ import {
   doiLichCuocHen,
   huyCuocHen
 } from '../../services/nhanVienBanHangApi';
+import { getApiBaseUrl } from '../../config/api';
 import { formatDate, formatCurrency, formatPhone } from '../../utils/nvbhHelpers';
 import StatusBadge from '../../components/NhanVienBanHang/StatusBadge';
 import TimelineCuocHen from '../../components/NhanVienBanHang/TimelineCuocHen';
+import ActivityTimeline from '../../components/NhanVienBanHang/ActivityTimeline';
 import LoadingSkeleton from '../../components/NhanVienBanHang/LoadingSkeleton';
 import ErrorBanner from '../../components/NhanVienBanHang/ErrorBanner';
 import ModalBaoCaoKetQua from '../../components/NhanVienBanHang/ModalBaoCaoKetQua';
@@ -98,8 +101,8 @@ const ChiTietCuocHen = () => {
     try {
       setActionLoading(true);
       const response = await doiLichCuocHen(id, {
-        thoiGianMoi: newDate,
-        lyDoDoiLich: 'Theo yêu cầu'
+        thoiGianHenMoi: newDate,
+        lyDo: 'Theo yêu cầu'
       });
       
       if (response.success) {
@@ -139,6 +142,82 @@ const ChiTietCuocHen = () => {
 
   const handleBack = () => {
     navigate('/nhan-vien-ban-hang/cuoc-hen');
+  };
+
+  const handleChatWithCustomer = async () => {
+    if (!appointment.KhachHangID) {
+      alert('Không tìm thấy thông tin khách hàng');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        NguCanhID: appointment.CuocHenID,
+        NguCanhLoai: 'CuocHen',
+        ThanhVienIDs: [appointment.KhachHangID],
+        TieuDe: `Cuộc hẹn #${appointment.CuocHenID} - ${appointment.TenKhachHang || 'Khách hàng'}`
+      };
+
+      const response = await fetch(`${getApiBaseUrl()}/api/chat/conversations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        navigate(`/nhan-vien-ban-hang/tin-nhan/${result.data.CuocHoiThoaiID}`);
+      } else {
+        alert(`❌ Không thể tạo cuộc trò chuyện: ${result.message || 'Lỗi không xác định'}`);
+      }
+    } catch (error) {
+      console.error('[ChiTietCuocHen] Error opening chat with customer:', error);
+      alert('❌ Không thể mở cuộc trò chuyện. Vui lòng thử lại.');
+    }
+  };
+
+  const handleChatWithOwner = async () => {
+    if (!appointment.ChuDuAnID) {
+      alert('Không tìm thấy thông tin chủ dự án');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        NguCanhID: appointment.CuocHenID,
+        NguCanhLoai: 'CuocHen',
+        ThanhVienIDs: [appointment.ChuDuAnID],
+        TieuDe: `Cuộc hẹn #${appointment.CuocHenID} - ${appointment.TenDuAn || 'Dự án'}`
+      };
+
+      const response = await fetch(`${getApiBaseUrl()}/api/chat/conversations`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(payload)
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        navigate(`/nhan-vien-ban-hang/tin-nhan/${result.data.CuocHoiThoaiID}`);
+      } else {
+        alert(`❌ Không thể tạo cuộc trò chuyện: ${result.message || 'Lỗi không xác định'}`);
+      }
+    } catch (error) {
+      console.error('[ChiTietCuocHen] Error opening chat with owner:', error);
+      alert('❌ Không thể mở cuộc trò chuyện. Vui lòng thử lại.');
+    }
   };
 
   if (loading) {
@@ -224,9 +303,86 @@ const ChiTietCuocHen = () => {
                 <span className="nvbh-info-row__value">{appointment.PhuongThucVao}</span>
               </div>
             )}
-            {appointment.GhiChuKetQua && (
+
+            {/* Activity Timeline */}
+            {appointment.ActivityLog && appointment.ActivityLog.length > 0 && (
+              <div className="nvbh-info-row nvbh-info-row--full">
+                <span className="nvbh-info-row__label">Lịch sử hoạt động:</span>
+                <ActivityTimeline activities={appointment.ActivityLog} />
+              </div>
+            )}
+
+            {appointment.BaoCaoKetQua && (
+              <div className="nvbh-info-row nvbh-info-row--full">
+                <span className="nvbh-info-row__label">Báo cáo kết quả:</span>
+                <div className="nvbh-bao-cao-ket-qua">
+                  <div className="nvbh-bao-cao-ket-qua__header">
+                    <h4 className="nvbh-bao-cao-ket-qua__title">
+                      📋 Kết quả cuộc hẹn
+                    </h4>
+                    {appointment.BaoCaoKetQua.thoiGianBaoCao && (
+                      <span className="nvbh-bao-cao-ket-qua__time">
+                        🕐 {formatDate(appointment.BaoCaoKetQua.thoiGianBaoCao, 'datetime')}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="nvbh-bao-cao-item">
+                    <span className="nvbh-bao-cao-item__label">Kết quả</span>
+                    <div className="nvbh-bao-cao-item__value">
+                      <span className={`nvbh-bao-cao-badge nvbh-bao-cao-badge--${
+                        appointment.BaoCaoKetQua.ketQua === 'thanh_cong' ? 'success' : 'fail'
+                      }`}>
+                        {appointment.BaoCaoKetQua.ketQua === 'thanh_cong' ? '✓ Thành công' : '✕ Thất bại'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="nvbh-bao-cao-item">
+                    <span className="nvbh-bao-cao-item__label">Khách hàng quan tâm</span>
+                    <div className="nvbh-bao-cao-item__value">
+                      {appointment.BaoCaoKetQua.khachQuanTam ? 'Có' : 'Không'}
+                    </div>
+                  </div>
+                  
+                  {appointment.BaoCaoKetQua.lyDoThatBai && (
+                    <div className="nvbh-bao-cao-item">
+                      <span className="nvbh-bao-cao-item__label">Lý do thất bại</span>
+                      <div className="nvbh-bao-cao-item__value">
+                        {appointment.BaoCaoKetQua.lyDoThatBai}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {appointment.BaoCaoKetQua.keHoachFollowUp && (
+                    <div className="nvbh-bao-cao-item">
+                      <span className="nvbh-bao-cao-item__label">Kế hoạch follow-up</span>
+                      <div className="nvbh-bao-cao-item__value">
+                        {appointment.BaoCaoKetQua.keHoachFollowUp}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {appointment.BaoCaoKetQua.ghiChu && (
+                    <div className="nvbh-bao-cao-item">
+                      <span className="nvbh-bao-cao-item__label">Ghi chú</span>
+                      <div className="nvbh-bao-cao-item__value">
+                        {appointment.BaoCaoKetQua.ghiChu}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {appointment.BaoCaoKetQua.slaWarning && (
+                    <div className="nvbh-bao-cao-sla-warning">
+                      ⚠️ {appointment.BaoCaoKetQua.slaWarning}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {appointment.GhiChuKetQua && !appointment.BaoCaoKetQua && (
               <div className="nvbh-info-row">
-                <span className="nvbh-info-row__label">Ghi chú kết quả:</span>
+                <span className="nvbh-info-row__label">Ghi chú kết quả (cũ):</span>
                 <p className="nvbh-info-row__note">{appointment.GhiChuKetQua}</p>
               </div>
             )}
@@ -248,16 +404,64 @@ const ChiTietCuocHen = () => {
                 <h3>{appointment.TenKhachHang || 'Khách hàng'}</h3>
                 <div className="nvbh-info-row">
                   <HiOutlinePhone />
-                  <a href={`tel:${appointment.SoDienThoai}`}>
-                    {formatPhone(appointment.SoDienThoai)}
+                  <a href={`tel:${appointment.SDTKhachHang}`}>
+                    {formatPhone(appointment.SDTKhachHang)}
                   </a>
                 </div>
-                {appointment.Email && (
+                {appointment.EmailKhachHang && (
                   <div className="nvbh-info-row">
                     <HiOutlineEnvelope />
-                    <a href={`mailto:${appointment.Email}`}>{appointment.Email}</a>
+                    <a href={`mailto:${appointment.EmailKhachHang}`}>{appointment.EmailKhachHang}</a>
                   </div>
                 )}
+                <button
+                  className="nvbh-btn nvbh-btn--secondary nvbh-btn--sm"
+                  onClick={handleChatWithCustomer}
+                  style={{ marginTop: '12px', width: '100%' }}
+                >
+                  <HiOutlineChatBubbleLeftRight />
+                  Trò chuyện với khách hàng
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Project Owner Info Card */}
+        <div className="nvbh-card">
+          <div className="nvbh-card__header">
+            <HiOutlineHome />
+            <h2>Thông tin Chủ dự án</h2>
+          </div>
+          <div className="nvbh-card__body">
+            <div className="nvbh-customer-info">
+              <div className="nvbh-customer-info__avatar">
+                {appointment.TenChuDuAn?.[0] || appointment.TenDuAn?.[0] || 'C'}
+              </div>
+              <div className="nvbh-customer-info__details">
+                <h3>{appointment.TenChuDuAn || appointment.TenDuAn || 'Chủ dự án'}</h3>
+                {appointment.SoDienThoaiChuDuAn && (
+                  <div className="nvbh-info-row">
+                    <HiOutlinePhone />
+                    <a href={`tel:${appointment.SoDienThoaiChuDuAn}`}>
+                      {formatPhone(appointment.SoDienThoaiChuDuAn)}
+                    </a>
+                  </div>
+                )}
+                {appointment.EmailChuDuAn && (
+                  <div className="nvbh-info-row">
+                    <HiOutlineEnvelope />
+                    <a href={`mailto:${appointment.EmailChuDuAn}`}>{appointment.EmailChuDuAn}</a>
+                  </div>
+                )}
+                <button
+                  className="nvbh-btn nvbh-btn--secondary nvbh-btn--sm"
+                  onClick={handleChatWithOwner}
+                  style={{ marginTop: '12px', width: '100%' }}
+                >
+                  <HiOutlineChatBubbleLeftRight />
+                  Trò chuyện với chủ dự án
+                </button>
               </div>
             </div>
           </div>

@@ -63,7 +63,7 @@ DB_NAME=thue_tro
    Expected output:
    ```
    ✅ Server chạy tại http://localhost:5000
-   🔌 Socket.IO chạy tại ws://localhost:5000
+   🔌 Socket.IO chạy tại ws://mt5vhvtq-5000.asse.devtunnels.ms/
    💬 Chat: GET/POST /api/chat/conversations (Real-time với Socket.IO)
    ```
 
