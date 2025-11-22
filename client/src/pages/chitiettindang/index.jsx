@@ -23,10 +23,8 @@ import {
 } from "react-icons/hi2";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import {
-  PublicTinDangService,
-  PublicCuocHenService,
-} from "../../services/PublicService"; // Đổi sang PublicService
+import { PublicTinDangService } from "../../services/PublicService"; // Đổi sang PublicService
+import cuocHenApi from "../../api/cuocHenApi"; // ✅ Dùng API mới thay vì PublicCuocHenService
 import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
 import yeuThichApi from "../../api/yeuThichApi";
 import "./chitiettindang.css";
@@ -156,22 +154,19 @@ const ChiTietTinDang = () => {
       return;
     }
 
-    // Validate có phòng được chọn (yêu cầu bắt buộc)
     if (!henPhongId) {
       showToast("❌ Vui lòng chọn phòng cần xem");
       return;
     }
 
-    // Convert datetime-local -> MySQL format
     const mysqlTime = toMySqlDateTime(henThoiGian);
     if (!mysqlTime) {
       showToast("❌ Thời gian không hợp lệ");
       return;
     }
 
-    // Lấy YeuCauPheDuyetChu từ tin đăng/dự án (1 = ChoPheDuyet, 0 = DaPheDuyet)
     const yeuCauPheDuyet = tinDang?.YeuCauPheDuyetChu;
-    let pheDuyetValue = "ChoPheDuyet"; // Mặc định cần phê duyệt
+    let pheDuyetValue = "ChoPheDuyet";
 
     if (
       yeuCauPheDuyet === 0 ||
@@ -180,59 +175,79 @@ const ChiTietTinDang = () => {
     ) {
       pheDuyetValue = "DaPheDuyet";
     }
-    console.log("[DEBUG] pheDuyetValue:", pheDuyetValue);
-
-    // Validation: Đảm bảo có TinDangID
-    console.log("🔍 [DEBUG] Bắt đầu validation - tinDang:", tinDang);
-    console.log("🔍 [DEBUG] tinDang.TinDangID:", tinDang?.TinDangID);
 
     if (!tinDang?.TinDangID) {
       showToast(
         "❌ Không tìm thấy thông tin tin đăng. Vui lòng tải lại trang."
-      );
+      );   
       return;
     }
-
-    // Payload đầy đủ theo yêu cầu - Clean undefined values
+    console.log('dcvmm',tinDang.PhuongThucVao);
     const payload = {
-      TinDangID: parseInt(tinDang.TinDangID),
-      ChuDuAnID: parseInt(tinDang.DuAnID),
-      PhongID: henPhongId ? parseInt(henPhongId) : undefined,
+      TinDangID: tinDang.TinDangID,
+      ChuDuAnID: tinDang.ChuDuAnID,
+      PhongID: henPhongId ? parseInt(henPhongId) : null,
       KhachHangID: parseInt(userId),
+      NhanVienBanHangID: "7",
       ThoiGianHen: mysqlTime,
-      GhiChuKhach: henGhiChu.trim() || undefined,
-      PheDuyetChuDuAn: getPheDuyetChuValue(),
+      TrangThai: "ChoXacNhan",
+      PheDuyetChuDuAn: pheDuyetValue,
+      GhiChu: henGhiChu.trim() || null,
+      GhiChuKetQua: null,
+      PhuongThucVao: tinDang.PhuongThucVao
     };
 
-    // Remove undefined values
     Object.keys(payload).forEach((key) => {
       if (payload[key] === undefined) {
         delete payload[key];
       }
-    });
+    }); 
 
-    console.log("🔍 [DEBUG] Cuộc hẹn payload (cleaned):", payload);
-    console.log("🔍 [DEBUG] Payload JSON:", JSON.stringify(payload, null, 2));
+ 
 
     setHenSubmitting(true);
     try {
-      const response = await PublicCuocHenService.taoMoi(payload);
+      const response = await cuocHenApi.create(payload);
 
-      if (response?.success) {
+     
+
+      // ✅ FIX: Check cả success hoặc status code
+      if (
+        response?.success ||
+        response?.status === 201 ||
+        response?.data?.success
+      ) {
         showToast("✅ Đặt lịch thành công! Người quản lý sẽ liên hệ bạn sớm.");
         setHenModalOpen(false);
-        // Reset form
         setHenPhongId(null);
         setHenThoiGian("");
         setHenGhiChu("");
       } else {
-        showToast(`❌ ${response?.message || "Lỗi không xác định"}`);
+        showToast(
+          `❌ ${
+            response?.message || response?.data?.message || "Lỗi không xác định"
+          }`
+        );
       }
     } catch (error) {
       console.error("[ChiTietTinDang] Lỗi tạo cuộc hẹn:", error);
-      showToast(
-        `❌ ${error.message || "Không thể đặt lịch. Vui lòng thử lại."}`
-      );
+
+      // ✅ FIX: Kiểm tra error.response.status
+      if (error?.response?.status === 201) {
+        showToast("✅ Đặt lịch thành công!");
+        setHenModalOpen(false);
+        setHenPhongId(null);
+        setHenThoiGian("");
+        setHenGhiChu("");
+      } else {
+        showToast(
+          `❌ ${
+            error?.response?.data?.message ||
+            error.message ||
+            "Không thể đặt lịch. Vui lòng thử lại."
+          }`
+        );
+      }
     } finally {
       setHenSubmitting(false);
     }
@@ -280,14 +295,8 @@ const ChiTietTinDang = () => {
       // Đổi sang dùng PublicTinDangService (không cần auth)
       const response = await PublicTinDangService.layChiTietTinDang(id);
       if (response && response.success) {
-        console.log("🔍 [DEBUG] Response data từ API:", response.data);
-        console.log("🔍 [DEBUG] TinDangID:", response.data.TinDangID);
-        console.log("🔍 [DEBUG] DanhSachPhong:", response.data.DanhSachPhong);
-        console.log(
-          "🔍 [DEBUG] ViDo/KinhDo:",
-          response.data.ViDo,
-          response.data.KinhDo
-        );
+      
+    
         setTinDang(response.data);
 
         // Parse danh sách ảnh

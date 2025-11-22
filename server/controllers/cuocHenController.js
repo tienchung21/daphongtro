@@ -4,7 +4,7 @@
  * Tách từ ChuDuAnController.js theo domain-driven design
  */
 
-const CuocHenModel = require('../models/CuocHenModel');
+const CuocHenModel = require('../models/cuocHenModel');
 const NhatKyHeThongService = require('../services/NhatKyHeThongService');
 
 class CuocHenController {
@@ -14,7 +14,7 @@ class CuocHenController {
    */
   static async create(req, res) {
     try {
-      const { PhongID, KhachHangID, NhanVienBanHangID, ThoiGianHen, GhiChu } = req.body;
+      const { PhongID, KhachHangID, NhanVienBanHangID, ThoiGianHen, GhiChu,PhuongThucVao } = req.body;
 
       // Validation
       if (!PhongID || !KhachHangID || !ThoiGianHen) {
@@ -47,7 +47,8 @@ class CuocHenController {
         KhachHangID,
         NhanVienBanHangID,
         ThoiGianHen,
-        GhiChu
+        GhiChu, 
+        PhuongThucVao
       });
 
       // Audit log

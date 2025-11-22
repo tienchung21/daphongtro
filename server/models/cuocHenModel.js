@@ -30,8 +30,14 @@ class CuocHenModel {
    */
   static async taoMoi(data) {
     try {
-      const { PhongID, KhachHangID, ThoiGianHen, NhanVienBanHangID, GhiChu } =
-        data;
+      const {
+        PhongID,
+        KhachHangID,
+        ThoiGianHen,
+        NhanVienBanHangID,
+        GhiChu,
+        PhuongThucVao,
+      } = data;
 
       // 1. Kiểm tra phòng có trống không
       const [phongRows] = await db.execute(
@@ -121,8 +127,8 @@ class CuocHenModel {
       const [result] = await db.execute(
         `
         INSERT INTO cuochen 
-        (PhongID, TinDangID, ChuDuAnID, KhachHangID, NhanVienBanHangID, ThoiGianHen, TrangThai, PheDuyetChuDuAn, GhiChu, GhiChuKetQua, TaoLuc, CapNhatLuc)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+        (PhongID, TinDangID, ChuDuAnID, KhachHangID, NhanVienBanHangID, ThoiGianHen, TrangThai, PhuongThucVao, PheDuyetChuDuAn, GhiChu, GhiChuKetQua, TaoLuc, CapNhatLuc)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
       `,
         [
           PhongID,
@@ -132,9 +138,10 @@ class CuocHenModel {
           nhanVienId,
           ThoiGianHen,
           trangThai,
+          PhuongThucVao ?? "", // Sửa lại: nếu không có thì truyền chuỗi rỗng
           pheDuyetChuDuAn,
-          GhiChu || "", // GhiChu - NOT NULL field
-          "", // GhiChuKetQua - NULL field (result notes)
+          GhiChu ?? "",
+          "",
         ]
       );
 

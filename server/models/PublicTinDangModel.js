@@ -109,20 +109,20 @@ class PublicTinDangModel {
 
       // Query chi tiết tin đăng
       const queryTinDang = `
-        SELECT 
-          td.TinDangID, td.DuAnID, td.KhuVucID, td.ChinhSachCocID,
-          td.TieuDe, td.URL, td.MoTa,
-          td.TienIch, td.GiaDien, td.GiaNuoc, td.GiaDichVu, td.MoTaGiaDichVu,
-          td.TrangThai, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,
-          da.TenDuAn, da.DiaChi, da.YeuCauPheDuyetChu,
-          da.ViDo, da.KinhDo,
-          kv.TenKhuVuc,
-          (SELECT COUNT(*) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID) as TongSoPhong
-        FROM tindang td
-        INNER JOIN duan da ON td.DuAnID = da.DuAnID
-        LEFT JOIN khuvuc kv ON td.KhuVucID = kv.KhuVucID
-        WHERE td.TinDangID = ? AND td.TrangThai != 'LuuTru'
-      `;
+      SELECT 
+        td.TinDangID, td.DuAnID, td.KhuVucID, td.ChinhSachCocID,
+        td.TieuDe, td.URL, td.MoTa,
+        td.TienIch, td.GiaDien, td.GiaNuoc, td.GiaDichVu, td.MoTaGiaDichVu,
+        td.TrangThai, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,
+        da.ChuDuAnID, da.TenDuAn,da.PhuongThucVao, da.DiaChi, da.YeuCauPheDuyetChu,
+        da.ViDo, da.KinhDo,
+        kv.TenKhuVuc,
+        (SELECT COUNT(*) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID) as TongSoPhong
+      FROM tindang td
+      INNER JOIN duan da ON td.DuAnID = da.DuAnID
+      LEFT JOIN khuvuc kv ON td.KhuVucID = kv.KhuVucID
+      WHERE td.TinDangID = ? AND td.TrangThai != 'LuuTru'
+    `;
 
       const [rows] = await db.execute(queryTinDang, [tinDangId]);
 
