@@ -23,7 +23,10 @@ import {
 } from "react-icons/hi2";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { PublicTinDangService, PublicCuocHenService } from "../../services/PublicService"; // Đổi sang PublicService
+import {
+  PublicTinDangService,
+  PublicCuocHenService,
+} from "../../services/PublicService"; // Đổi sang PublicService
 import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
 import yeuThichApi from "../../api/yeuThichApi";
 import axiosClient from "../../api/axiosClient";
@@ -36,17 +39,17 @@ import "./chitiettindang.css";
  */
 const toMySqlDateTime = (input) => {
   if (!input) return null;
-  
+
   // 1) datetime-local từ input: 'YYYY-MM-DDTHH:MM' -> format sang MySQL
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input)) {
-    return input.replace('T', ' ') + ':00';
+    return input.replace("T", " ") + ":00";
   }
-  
+
   // 2) ISO string có Z/timezone -> parse Date object -> format local time
   try {
     const d = new Date(input);
     if (!isNaN(d.getTime())) {
-      const pad = (n) => String(n).padStart(2, '0');
+      const pad = (n) => String(n).padStart(2, "0");
       const y = d.getFullYear();
       const m = pad(d.getMonth() + 1);
       const day = pad(d.getDate());
@@ -56,7 +59,7 @@ const toMySqlDateTime = (input) => {
       return `${y}-${m}-${day} ${h}:${mi}:${s}`;
     }
   } catch {}
-  
+
   return null;
 };
 
@@ -113,10 +116,11 @@ const ChiTietTinDang = () => {
   // Chuẩn bị giá trị PheDuyetChuDuAn từ tin đăng (1 => ChoPheDuyet, 0 => DaPheDuyet)
   const getPheDuyetChuValue = () => {
     const raw = tinDang?.YeuCauPheDuyetChu;
-    const v = typeof raw === "string" ? raw.trim() : raw;
-    if (v === 1 || v === "1" || v === true) return "ChoPheDuyet";
-    if (v === 0 || v === "0" || v === false) return "DaPheDuyet";
-    return "ChoPheDuyet";
+    // Backend expect: "ChoPheDuyet" hoặc "DaPheDuyet"
+    if (raw === 1 || raw === "1" || raw === true) {
+      return "ChoPheDuyet";
+    }
+    return "DaPheDuyet";
   };
 
   // Mở modal hẹn (nút tổng quát)
@@ -154,7 +158,7 @@ const ChiTietTinDang = () => {
       showToast("❌ Chưa chọn thời gian");
       return;
     }
-    
+
     // Validate có phòng được chọn (yêu cầu bắt buộc)
     if (!henPhongId) {
       showToast("❌ Vui lòng chọn phòng cần xem");
@@ -170,31 +174,52 @@ const ChiTietTinDang = () => {
 
     // Lấy YeuCauPheDuyetChu từ tin đăng/dự án (1 = ChoPheDuyet, 0 = DaPheDuyet)
     const yeuCauPheDuyet = tinDang?.YeuCauPheDuyetChu;
-    let pheDuyetValue = 'ChoPheDuyet'; // Mặc định cần phê duyệt
-    
-    if (yeuCauPheDuyet === 0 || yeuCauPheDuyet === '0' || yeuCauPheDuyet === false) {
-      pheDuyetValue = 'DaPheDuyet'; // Không cần phê duyệt
+    let pheDuyetValue = "ChoPheDuyet"; // Mặc định cần phê duyệt
+
+    if (
+      yeuCauPheDuyet === 0 ||
+      yeuCauPheDuyet === "0" ||
+      yeuCauPheDuyet === false
+    ) {
+      pheDuyetValue = "DaPheDuyet"; // Không cần phê duyệt
     }
 
-    // Payload đầy đủ theo yêu cầu
+    // Validation: Đảm bảo có TinDangID
+    console.log("🔍 [DEBUG] Bắt đầu validation - tinDang:", tinDang);
+    console.log("🔍 [DEBUG] tinDang.TinDangID:", tinDang?.TinDangID);
+
+    if (!tinDang?.TinDangID) {
+      showToast(
+        "❌ Không tìm thấy thông tin tin đăng. Vui lòng tải lại trang."
+      );
+      return;
+    }
+
+    // Payload đầy đủ theo yêu cầu - Clean undefined values
     const payload = {
-      TinDangID: tinDang.TinDangID,
-      ChuDuAnID: tinDang.DuAnID || tinDang.ChuDuAnID,
-      PhongID: henPhongId,
-      KhachHangID: userId,
+      TinDangID: parseInt(tinDang.TinDangID),
+      ChuDuAnID: parseInt(tinDang.DuAnID),
+      PhongID: henPhongId ? parseInt(henPhongId) : undefined,
+      KhachHangID: parseInt(userId),
       ThoiGianHen: mysqlTime,
       GhiChuKhach: henGhiChu.trim() || undefined,
-      PheDuyetChuDuAn: pheDuyetValue
-      // Backend tự động xử lý: NhanVienBanHangID, TrangThai
+      PheDuyetChuDuAn: getPheDuyetChuValue(),
     };
 
-    console.log('🔍 [DEBUG] Cuộc hẹn payload:', payload);
-    console.log('🔍 [DEBUG] tinDang object:', tinDang);
+    // Remove undefined values
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] === undefined) {
+        delete payload[key];
+      }
+    });
+
+    console.log("🔍 [DEBUG] Cuộc hẹn payload (cleaned):", payload);
+    console.log("🔍 [DEBUG] Payload JSON:", JSON.stringify(payload, null, 2));
 
     setHenSubmitting(true);
     try {
       const response = await PublicCuocHenService.taoMoi(payload);
-      
+
       if (response?.success) {
         showToast("✅ Đặt lịch thành công! Người quản lý sẽ liên hệ bạn sớm.");
         setHenModalOpen(false);
@@ -206,8 +231,10 @@ const ChiTietTinDang = () => {
         showToast(`❌ ${response?.message || "Lỗi không xác định"}`);
       }
     } catch (error) {
-      console.error('[ChiTietTinDang] Lỗi tạo cuộc hẹn:', error);
-      showToast(`❌ ${error.message || "Không thể đặt lịch. Vui lòng thử lại."}`);
+      console.error("[ChiTietTinDang] Lỗi tạo cuộc hẹn:", error);
+      showToast(
+        `❌ ${error.message || "Không thể đặt lịch. Vui lòng thử lại."}`
+      );
     } finally {
       setHenSubmitting(false);
     }
@@ -250,6 +277,8 @@ const ChiTietTinDang = () => {
       // Đổi sang dùng PublicTinDangService (không cần auth)
       const response = await PublicTinDangService.layChiTietTinDang(id);
       if (response && response.success) {
+        console.log("🔍 [DEBUG] Response data từ API:", response.data);
+        console.log("🔍 [DEBUG] TinDangID:", response.data.TinDangID);
         setTinDang(response.data);
 
         // Parse danh sách ảnh
@@ -312,35 +341,26 @@ const ChiTietTinDang = () => {
    * - Nhiều phòng: Hiển thị khoảng giá min-max từ DanhSachPhong
    */
   const getGiaHienThi = () => {
-    // Case 1: Phòng đơn (TongSoPhong ≤ 1)
-    if (!tinDang.TongSoPhong || tinDang.TongSoPhong <= 1) {
-      return formatCurrency(tinDang.Gia);
+    // Case 1: Không có DanhSachPhong -> lấy giá từ TinDang
+    if (!tinDang.DanhSachPhong || tinDang.DanhSachPhong.length === 0) {
+      return tinDang.Gia ? formatCurrency(tinDang.Gia) : "Liên hệ";
     }
 
-    // Case 2: Nhiều phòng - Tính khoảng giá từ DanhSachPhong
-    if (tinDang.DanhSachPhong && tinDang.DanhSachPhong.length > 0) {
-      const gias = tinDang.DanhSachPhong.map((p) => parseFloat(p.Gia)).filter(
-        (g) => !isNaN(g) && g > 0
-      );
+    // Case 2: Có DanhSachPhong -> tính khoảng giá
+    const gias = tinDang.DanhSachPhong.map((p) => parseFloat(p.Gia)).filter(
+      (g) => !isNaN(g) && g > 0
+    );
 
-      if (gias.length === 0) {
-        return "Liên hệ";
-      }
+    if (gias.length === 0) return "Liên hệ";
 
-      const minGia = Math.min(...gias);
-      const maxGia = Math.max(...gias);
+    const minGia = Math.min(...gias);
+    const maxGia = Math.max(...gias);
 
-      // Nếu tất cả phòng cùng giá
-      if (minGia === maxGia) {
-        return formatCurrency(minGia);
-      }
-
-      // Hiển thị khoảng giá
-      return `${formatCurrency(minGia)} - ${formatCurrency(maxGia)}`;
+    if (minGia === maxGia) {
+      return formatCurrency(minGia);
     }
 
-    // Fallback
-    return "Liên hệ";
+    return `${formatCurrency(minGia)} - ${formatCurrency(maxGia)}`;
   };
 
   /**
@@ -838,6 +858,39 @@ const ChiTietTinDang = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Thêm vào ctd-specs-grid */}
+                <div className="ctd-spec-item">
+                  <HiOutlineCurrencyDollar className="ctd-spec-icon" />
+                  <div className="ctd-spec-content">
+                    <span className="ctd-spec-label">Tiền điện</span>
+                    <span className="ctd-spec-value">
+                      {formatCurrency(tinDang.GiaDien)}/kWh
+                    </span>
+                  </div>
+                </div>
+
+                <div className="ctd-spec-item">
+                  <HiOutlineCurrencyDollar className="ctd-spec-icon" />
+                  <div className="ctd-spec-content">
+                    <span className="ctd-spec-label">Tiền nước</span>
+                    <span className="ctd-spec-value">
+                      {formatCurrency(tinDang.GiaNuoc)}/m³
+                    </span>
+                  </div>
+                </div>
+
+                {tinDang.MoTaGiaDichVu && (
+                  <div className="ctd-spec-item ctd-spec-full">
+                    <HiOutlineDocumentText className="ctd-spec-icon" />
+                    <div className="ctd-spec-content">
+                      <span className="ctd-spec-label">Dịch vụ khác</span>
+                      <span className="ctd-spec-value">
+                        {tinDang.MoTaGiaDichVu}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -894,8 +947,11 @@ const ChiTietTinDang = () => {
 
                 <div className="ctd-rooms-grid">
                   {tinDang.DanhSachPhong.map((phong) => {
-                    const phongImages = parseImages(phong.URL);
-                    const isAvailable = phong.TrangThai === "Trong";
+                    // Fix: AnhPhong là string, không phải JSON array
+                    const phongImage = phong.AnhPhong
+                      ? `http://localhost:5000${phong.AnhPhong}`
+                      : null;
+                    const isAvailable = phong.TrangThaiPhong === "Trong";
 
                     return (
                       <div
@@ -904,11 +960,10 @@ const ChiTietTinDang = () => {
                           !isAvailable ? "ctd-room-card-rented" : ""
                         }`}
                       >
-                        {/* Room Image */}
                         <div className="ctd-room-image-wrapper">
-                          {phongImages.length > 0 ? (
+                          {phongImage ? (
                             <img
-                              src={phongImages[0]}
+                              src={phongImage}
                               alt={phong.TenPhong}
                               className="ctd-room-image"
                               loading="lazy"
@@ -938,13 +993,7 @@ const ChiTietTinDang = () => {
                             )}
                           </div>
 
-                          {/* Image Count */}
-                          {phongImages.length > 1 && (
-                            <div className="ctd-room-image-count">
-                              <HiOutlineSquare3Stack3D />
-                              <span>{phongImages.length} ảnh</span>
-                            </div>
-                          )}
+                          {/* Image Count - Removed vì AnhPhong là single string, không phải array */}
                         </div>
 
                         {/* Room Info */}
@@ -1012,12 +1061,19 @@ const ChiTietTinDang = () => {
                   <span>Vị trí</span>
                 </h2>
                 <div className="ctd-location">
-                  <p className="ctd-location-address">
-                    {tinDang.DiaChi || tinDang.DiaChiDuAn}
-                  </p>
-                  <div className="ctd-map-placeholder">
-                    <HiOutlineMapPin />
-                    <p>Thông tin vị trí chưa có sẵn</p>
+                  <div className="ctd-location-item">
+                    <HiOutlineMapPin className="ctd-location-icon" />
+                    <div>
+                      <span className="ctd-location-label">Địa chỉ</span>
+                      <p className="ctd-location-address">{tinDang.DiaChi}</p>
+                    </div>
+                  </div>
+                  <div className="ctd-location-item">
+                    <HiOutlineMapPin className="ctd-location-icon" />
+                    <div>
+                      <span className="ctd-location-label">Khu vực</span>
+                      <p className="ctd-location-text">{tinDang.TenKhuVuc}</p>
+                    </div>
                   </div>
                 </div>
               </div>
