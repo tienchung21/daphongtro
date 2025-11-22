@@ -92,11 +92,8 @@ const Appointments = () => {
       return;
     }
 
-    const role = getUserRole(u);
+    const role = getUserRole(u) ?? 1; // fallback khách hàng
     const ids = extractIds(u);
-
-    console.log("[loadAppointments] Role:", role);
-    console.log("[loadAppointments] Extracted IDs:", ids);
 
     try {
       setLoading(true);
@@ -107,17 +104,10 @@ const Appointments = () => {
         res = await cuocHenApi.getAll();
       } else if (role === 3) {
         const chuDuAnId = ids.chuDuAnId ?? u?.NguoiDungID ?? u?.id;
-
         if (!chuDuAnId) {
-          console.error(
-            "[loadAppointments] Cannot find ChuDuAnID. User object:",
-            u
-          );
           setError("Không tìm thấy ChuDuAnID của tài khoản.");
           return;
         }
-
-        console.log("[loadAppointments] Using ChuDuAnID:", chuDuAnId);
         res = await cuocHenApi.findByChuDuAn(chuDuAnId);
       } else if (role === 2) {
         if (!ids.nhanVienId) {
@@ -130,11 +120,26 @@ const Appointments = () => {
           setError("Không tìm thấy KhachHangID của tài khoản.");
           return;
         }
-        res = await cuocHenApi.findByKhachHang(ids.khachHangId);
+        // ✅ KHÁCH HÀNG: dùng đúng endpoint /cuoc-hen/search/khach-hang/:khachHangId
+        res = await cuocHenApi.findByKhachHang(ids.khachHangId); // [`cuocHenApi.findByKhachHang`](src/api/cuocHenApi.js)
       }
 
-      const data = res?.data?.data ?? res?.data ?? [];
-      setAppointments(Array.isArray(data) ? data : []);
+      const raw = res?.data?.data ?? res?.data ?? [];
+      const data = Array.isArray(raw) ? raw : [];
+
+     // Chỉ lọc theo KhachHangID nếu là Khách hàng; role khác giữ nguyên
+     if (role === 1) {
+       const khId = Number(ids.khachHangId);
+       setAppointments(
+         Number.isFinite(khId)
+           ? data.filter((c) =>
+               Number(c?.KhachHangID ?? c?.khachHangId ?? c?.NguoiDungID) === khId
+             )
+           : data
+       );
+     } else {
+       setAppointments(data);
+     }
     } catch (e) {
       console.error("[loadAppointments] Error:", e);
       setError(
@@ -211,7 +216,6 @@ const Appointments = () => {
 
   return (
     <div className="appointments">
-  
       <main className="appointments__content">
         <div className="appointments__header">
           <h2 className="appointments__title">
@@ -364,7 +368,6 @@ const Appointments = () => {
           </div>
         )}
       </main>
-  
     </div>
   );
 };
