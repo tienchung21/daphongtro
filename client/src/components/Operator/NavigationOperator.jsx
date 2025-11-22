@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import './NavigationOperator.css';
-import IconOperator from './Icon';
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import "./NavigationOperator.css";
+import IconOperator from "./Icon";
 import {
   HiOutlineChartBar,
   HiOutlineCheckCircle,
   HiOutlineBuildingOffice,
   HiOutlineCalendar,
   HiOutlineUsers,
-  HiOutlineClipboardDocumentList
-} from 'react-icons/hi2';
+  HiOutlineClipboardDocumentList,
+} from "react-icons/hi2";
 
 /**
  * Navigation sidebar cho Operator
@@ -18,12 +18,28 @@ import {
 function NavigationOperator() {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Load user info từ localStorage khi component mount
+  useEffect(() => {
+    try {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        console.log(userData);
+        setUser(userData);
+      }
+    } catch (error) {
+      console.error("Lỗi khi parse user data:", error);
+    }
+  }, []);
 
   // Listen for toggle event from mobile topbar
   useEffect(() => {
     const handleToggle = () => setIsOpen(!isOpen);
-    window.addEventListener('operator:toggleSidebar', handleToggle);
-    return () => window.removeEventListener('operator:toggleSidebar', handleToggle);
+    window.addEventListener("operator:toggleSidebar", handleToggle);
+    return () =>
+      window.removeEventListener("operator:toggleSidebar", handleToggle);
   }, [isOpen]);
 
   // Close sidebar on route change (mobile)
@@ -33,56 +49,56 @@ function NavigationOperator() {
         setIsOpen(false);
       }
     };
-    window.addEventListener('popstate', handleRouteChange);
-    return () => window.removeEventListener('popstate', handleRouteChange);
+    window.addEventListener("popstate", handleRouteChange);
+    return () => window.removeEventListener("popstate", handleRouteChange);
   }, []);
 
   const navItems = [
     {
-      path: '/nvdh/dashboard',
+      path: "/nvdh/dashboard",
       icon: <HiOutlineChartBar />,
-      label: 'Bảng điều khiển',
-      description: 'Xem dashboard hệ thống'
+      label: "Bảng điều khiển",
+      description: "Xem dashboard hệ thống",
     },
     {
-      path: '/nvdh/duyet-tin-dang',
+      path: "/nvdh/duyet-tin-dang",
       icon: <HiOutlineCheckCircle />,
-      label: 'Duyệt Tin đăng',
-      description: 'Duyệt tin đăng'
+      label: "Duyệt Tin đăng",
+      description: "Duyệt tin đăng",
     },
     {
-      path: '/nvdh/du-an',
+      path: "/nvdh/du-an",
       icon: <HiOutlineBuildingOffice />,
-      label: 'Quản lý Dự án',
-      description: 'Quản lý dự án'
+      label: "Quản lý Dự án",
+      description: "Quản lý dự án",
     },
     {
-      path: '/nvdh/lich-nvbh',
+      path: "/nvdh/lich-nvbh",
       icon: <HiOutlineCalendar />,
-      label: 'Lịch NVBH',
-      description: 'Phân công NVBH cho cuộc hẹn'
+      label: "Lịch NVBH",
+      description: "Phân công NVBH cho cuộc hẹn",
     },
     {
-      path: '/nvdh/nhan-vien',
+      path: "/nvdh/nhan-vien",
       icon: <HiOutlineUsers />,
-      label: 'Quản lý Nhân viên',
-      description: 'Quản lý nhân viên'
+      label: "Quản lý Nhân viên",
+      description: "Quản lý nhân viên",
     },
     {
-      path: '/nvdh/bien-ban',
+      path: "/nvdh/bien-ban",
       icon: <HiOutlineClipboardDocumentList />,
-      label: 'Biên bản Bàn giao',
-      description: 'Quản lý/Lập biên bản bàn giao'
-    }
+      label: "Biên bản Bàn giao",
+      description: "Quản lý/Lập biên bản bàn giao",
+    },
   ];
 
   const handleLogout = () => {
     try {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       sessionStorage.clear();
     } finally {
-      navigate('/login');
+      navigate("/login");
     }
   };
 
@@ -90,13 +106,13 @@ function NavigationOperator() {
     <>
       {/* Overlay for mobile - MUST be sibling, not child */}
       {isOpen && (
-        <div 
-          className="operator-nav__overlay" 
+        <div
+          className="operator-nav__overlay"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      <nav className={`operator-nav ${isOpen ? 'operator-nav--open' : ''}`}>
+      <nav className={`operator-nav ${isOpen ? "operator-nav--open" : ""}`}>
         <div className="operator-nav__container">
           {/* Logo/Brand */}
           <div className="operator-nav__brand">
@@ -107,7 +123,9 @@ function NavigationOperator() {
             </div>
             <div className="operator-nav__brand-text">
               <div className="operator-nav__brand-title">Điều hành</div>
-              <div className="operator-nav__brand-subtitle">Quản trị vận hành hệ thống</div>
+              <div className="operator-nav__brand-subtitle">
+                Quản trị vận hành hệ thống
+              </div>
             </div>
           </div>
 
@@ -118,7 +136,9 @@ function NavigationOperator() {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `operator-nav__item ${isActive ? 'operator-nav__item--active' : ''}`
+                  `operator-nav__item ${
+                    isActive ? "operator-nav__item--active" : ""
+                  }`
                 }
                 onClick={() => window.innerWidth <= 1024 && setIsOpen(false)}
               >
@@ -129,7 +149,9 @@ function NavigationOperator() {
                 </span>
                 <div className="operator-nav__item-content">
                   <span className="operator-nav__item-label">{item.label}</span>
-                  <span className="operator-nav__item-desc">{item.description}</span>
+                  <span className="operator-nav__item-desc">
+                    {item.description}
+                  </span>
                 </div>
               </NavLink>
             ))}
@@ -138,10 +160,16 @@ function NavigationOperator() {
           {/* Footer */}
           <div className="operator-nav__footer">
             <div className="operator-nav__user">
-              <div className="operator-nav__user-avatar">ĐH</div>
+              <div className="operator-nav__user-avatar">
+                {user?.TenDayDu?.charAt(0).toUpperCase() || "Đ"}
+              </div>
               <div className="operator-nav__user-info">
-                <div className="operator-nav__user-name">Điều hành</div>
-                <div className="operator-nav__user-role">Nhân viên Điều hành</div>
+                <div className="operator-nav__user-name">
+                  {user?.TenDayDu || "Điều hành"}
+                </div>
+                <div className="operator-nav__user-role">
+                  {user?.VaiTro || "Nhân viên Điều hành"}
+                </div>
               </div>
             </div>
             <button
@@ -152,7 +180,11 @@ function NavigationOperator() {
               <span>⬅️</span>
               <span>Ẩn menu</span>
             </button>
-            <button className="operator-nav__logout" onClick={handleLogout} title="Đăng xuất">
+            <button
+              className="operator-nav__logout"
+              onClick={handleLogout}
+              title="Đăng xuất"
+            >
               <span>🚪</span>
               <span>Đăng xuất</span>
             </button>
@@ -164,9 +196,3 @@ function NavigationOperator() {
 }
 
 export default NavigationOperator;
-
-
-
-
-
-
