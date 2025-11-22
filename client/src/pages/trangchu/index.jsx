@@ -6,6 +6,7 @@ import { TinDangService } from "../../services/ChuDuAnService";
 import SearchKhuVuc from "../../components/SearchKhuVuc";
 import yeuThichApi from "../../api/yeuThichApi";
 import { Link } from "react-router-dom";
+import tinDangPublicApi from "../../api/tinDangPublicApi"; // ✅ Import API mới
 
 function TrangChu() {
   const [allTindangs, setAllTindangs] = useState([]); // ✅ Lưu tất cả tin đăng
@@ -24,24 +25,24 @@ function TrangChu() {
     setLoading(true);
     setError("");
     try {
-      const res = await TinDangService.layDanhSach();
-      console.log("[TrangChu] TinDangService.layDanhSach response:", res);
+      const res = await tinDangPublicApi.getAll(); // ✅ Sử dụng API mới
+      console.log("[TrangChu] tinDangPublicApi.getAll response:", res);
 
       let raw = [];
-      if (Array.isArray(res)) {
-        raw = res;
-      } else if (res?.success) {
-        const maybe = res.data ?? {};
-        if (Array.isArray(maybe?.tinDangs)) raw = maybe.tinDangs;
-        else if (Array.isArray(maybe)) raw = maybe;
-        else if (Array.isArray(res?.data)) raw = res.data;
-      } else if (Array.isArray(res?.data)) {
-        raw = res.data;
-      } else if (Array.isArray(res?.tinDangs)) {
-        raw = res.tinDangs;
-      } else {
-        raw = [];
+      // Cập nhật điều kiện để lấy dữ liệu từ res.data
+      
+      if (res?.data?.success && Array.isArray(res.data.data)) {
+         console.log('chung (Axios wrapper)', res.data.data);
+         raw = res.data.data;
+      } 
+      // Trường hợp 2: Nếu bố đã dùng interceptor để trả về data trực tiếp
+      else if (res?.success && Array.isArray(res.data)) {
+         console.log('chung (Direct data)', res.data);
+         raw = res.data;
+      }else {
+        console.warn("[TrangChu] Không có dữ liệu tin đăng.");
       }
+    
 
       console.log("[TrangChu] RAW LIST FROM SERVICE:", raw);
 

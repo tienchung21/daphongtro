@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 24, 2025 at 07:19 AM
+-- Generation Time: Nov 20, 2025 at 04:35 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -137,23 +137,6 @@ CREATE TABLE `buttoansocai` (
 -- Triggers `buttoansocai`
 --
 DELIMITER $$
-CREATE TRIGGER `trg_buttoan_balance_check` AFTER INSERT ON `buttoansocai` FOR EACH ROW BEGIN
-  DECLARE tong_no DECIMAL(18,2);
-  DECLARE tong_co DECIMAL(18,2);
-  SELECT IFNULL(SUM(CASE WHEN LoaiButToan='ghi_no' THEN SoTien ELSE 0 END),0),
-         IFNULL(SUM(CASE WHEN LoaiButToan='ghi_co' THEN SoTien ELSE 0 END),0)
-    INTO tong_no, tong_co
-    FROM buttoansocai
-   WHERE GiaoDichID = NEW.GiaoDichID;
-
-  IF (tong_no <> tong_co) THEN
-    SIGNAL SQLSTATE '45000'
-      SET MESSAGE_TEXT = 'Ledger not balanced for this transaction';
-  END IF;
-END
-$$
-DELIMITER ;
-DELIMITER $$
 CREATE TRIGGER `trg_buttoan_no_delete` BEFORE DELETE ON `buttoansocai` FOR EACH ROW BEGIN
   SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'buttoansocai is append-only';
 END
@@ -179,10 +162,11 @@ CREATE TABLE `chinhsachcoc` (
   `MoTa` text DEFAULT NULL,
   `ChoPhepCocGiuCho` tinyint(1) NOT NULL DEFAULT 1,
   `TTL_CocGiuCho_Gio` int(11) NOT NULL DEFAULT 48,
-  `TyLePhat_CocGiuCho` decimal(5,2) NOT NULL DEFAULT 0.00,
+  `TyLePhat_CocGiuCho` tinyint(3) UNSIGNED DEFAULT NULL,
   `ChoPhepCocAnNinh` tinyint(1) NOT NULL DEFAULT 1,
   `SoTienCocAnNinhMacDinh` decimal(15,2) DEFAULT NULL,
   `QuyTacGiaiToa` enum('BanGiao','TheoNgay','Khac') NOT NULL DEFAULT 'BanGiao',
+  `SoNgayGiaiToa` int(11) DEFAULT NULL,
   `HieuLuc` tinyint(1) NOT NULL DEFAULT 1,
   `TaoLuc` datetime DEFAULT current_timestamp(),
   `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -192,8 +176,28 @@ CREATE TABLE `chinhsachcoc` (
 -- Dumping data for table `chinhsachcoc`
 --
 
-INSERT INTO `chinhsachcoc` (`ChinhSachCocID`, `ChuDuAnID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `SoTienCocAnNinhMacDinh`, `QuyTacGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, NULL, 'Mặc định', 'Policy mặc định hệ thống', 1, 48, 0.00, 1, NULL, 'BanGiao', 1, '2025-09-27 14:59:04', '2025-09-27 14:59:04');
+INSERT INTO `chinhsachcoc` (`ChinhSachCocID`, `ChuDuAnID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `SoTienCocAnNinhMacDinh`, `QuyTacGiaiToa`, `SoNgayGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, NULL, 'Mặc định', 'Policy mặc định hệ thống', 1, 48, 0, 1, NULL, 'BanGiao', NULL, 1, '2025-09-27 14:59:04', '2025-09-27 14:59:04');
+
+--
+-- Triggers `chinhsachcoc`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_chk_tyle_policy_ins` BEFORE INSERT ON `chinhsachcoc` FOR EACH ROW BEGIN
+  IF NEW.TyLePhat_CocGiuCho IS NOT NULL AND (NEW.TyLePhat_CocGiuCho < 0 OR NEW.TyLePhat_CocGiuCho > 100) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='TyLePhat_CocGiuCho must be integer 0..100';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_chk_tyle_policy_upd` BEFORE UPDATE ON `chinhsachcoc` FOR EACH ROW BEGIN
+  IF NEW.TyLePhat_CocGiuCho IS NOT NULL AND (NEW.TyLePhat_CocGiuCho < 0 OR NEW.TyLePhat_CocGiuCho > 100) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='TyLePhat_CocGiuCho must be integer 0..100';
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -214,8 +218,58 @@ CREATE TABLE `coc` (
   `BienBanBanGiaoID` bigint(20) DEFAULT NULL,
   `GhiChu` text DEFAULT NULL,
   `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `ChinhSachCocID` int(11) DEFAULT NULL,
+  `QuyTacGiaiToaSnapshot` enum('BanGiao','TheoNgay','Khac') DEFAULT NULL,
+  `TyLePhatCocGiuChoSnapshot` tinyint(3) UNSIGNED DEFAULT NULL,
+  `SoNgayGiaiToaSnapshot` int(11) DEFAULT NULL,
+  `HopDongID` int(11) DEFAULT NULL,
+  `LyDoGiaiToa` text DEFAULT NULL,
+  `LyDoKhauTru` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Triggers `coc`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_chk_tyle_snapshot_ins` BEFORE INSERT ON `coc` FOR EACH ROW BEGIN
+  IF NEW.TyLePhatCocGiuChoSnapshot IS NOT NULL AND (NEW.TyLePhatCocGiuChoSnapshot < 0 OR NEW.TyLePhatCocGiuChoSnapshot > 100) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='TyLePhatCocGiuChoSnapshot must be integer 0..100';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_chk_tyle_snapshot_upd` BEFORE UPDATE ON `coc` FOR EACH ROW BEGIN
+  IF NEW.TyLePhatCocGiuChoSnapshot IS NOT NULL AND (NEW.TyLePhatCocGiuChoSnapshot < 0 OR NEW.TyLePhatCocGiuChoSnapshot > 100) THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='TyLePhatCocGiuChoSnapshot must be integer 0..100';
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_coc_one_active_per_room_ins` BEFORE INSERT ON `coc` FOR EACH ROW BEGIN
+  IF NEW.TrangThai = 'HieuLuc' THEN
+    IF EXISTS (SELECT 1 FROM coc WHERE PhongID = NEW.PhongID AND TrangThai = 'HieuLuc') THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Phong da co coc hieu luc', MYSQL_ERRNO = 1644;
+    END IF;
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_coc_one_active_per_room_upd` BEFORE UPDATE ON `coc` FOR EACH ROW BEGIN
+  IF NEW.TrangThai = 'HieuLuc' THEN
+    IF EXISTS (SELECT 1 FROM coc
+               WHERE PhongID = NEW.PhongID
+                 AND TrangThai = 'HieuLuc'
+                 AND CocID <> OLD.CocID) THEN
+      SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Phong da co coc hieu luc', MYSQL_ERRNO = 1644;
+    END IF;
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -228,6 +282,7 @@ CREATE TABLE `cuochen` (
   `KhachHangID` int(11) DEFAULT NULL,
   `NhanVienBanHangID` int(11) DEFAULT NULL,
   `PhongID` int(11) NOT NULL,
+  `TinDangID` int(11) NOT NULL,
   `ThoiGianHen` datetime DEFAULT NULL,
   `TrangThai` enum('DaYeuCau','ChoXacNhan','DaXacNhan','DaDoiLich','HuyBoiKhach','HuyBoiHeThong','KhachKhongDen','HoanThanh') DEFAULT NULL,
   `PheDuyetChuDuAn` enum('ChoPheDuyet','DaPheDuyet','TuChoi') DEFAULT NULL COMMENT 'Trạng thái phê duyệt từ chủ dự án (NULL nếu dự án không yêu cầu phê duyệt)',
@@ -237,8 +292,28 @@ CREATE TABLE `cuochen` (
   `SoLanDoiLich` int(11) NOT NULL DEFAULT 0,
   `GhiChuKetQua` text DEFAULT NULL,
   `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `CapNhatLuc` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `GhiChu` text NOT NULL,
+  `ChuDuAnID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cuochen`
+--
+
+INSERT INTO `cuochen` (`CuocHenID`, `KhachHangID`, `NhanVienBanHangID`, `PhongID`, `TinDangID`, `ThoiGianHen`, `TrangThai`, `PheDuyetChuDuAn`, `LyDoTuChoi`, `PhuongThucVao`, `ThoiGianPheDuyet`, `SoLanDoiLich`, `GhiChuKetQua`, `TaoLuc`, `CapNhatLuc`, `GhiChu`, `ChuDuAnID`) VALUES
+(8, 7, 8, 3, 5, '2025-11-10 07:30:00', 'ChoXacNhan', 'DaPheDuyet', NULL, NULL, NULL, 0, NULL, '2025-11-09 16:11:17', '2025-11-19 05:38:47', '0', 0),
+(9, 7, 8, 3, 5, '2025-11-10 07:30:00', 'ChoXacNhan', 'DaPheDuyet', NULL, NULL, NULL, 0, NULL, '2025-11-09 16:12:05', '2025-11-19 05:38:53', '0', 0),
+(11, 7, 8, 5, 8, '2025-11-09 10:07:00', 'ChoXacNhan', 'DaPheDuyet', NULL, NULL, NULL, 0, NULL, '2025-11-09 16:37:21', '2025-11-19 05:39:13', '0', 0),
+(17, 7, 8, 7, 9, '2025-11-09 17:33:00', 'ChoXacNhan', 'DaPheDuyet', NULL, NULL, NULL, 0, NULL, '2025-11-09 17:03:06', '2025-11-19 05:39:20', '3432324', 0),
+(18, 7, 8, 4, 6, '2025-11-09 17:37:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, NULL, NULL, 0, NULL, '2025-11-09 17:07:39', '2025-11-19 05:39:29', '0', 0),
+(19, 7, 8, 4, 6, '2025-11-20 15:31:00', 'DaDoiLich', 'DaPheDuyet', NULL, NULL, NULL, 1, '{\"activities\":[{\"timestamp\":\"2025-11-19T08:31:26.812Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T08:31:40.342Z\",\"action\":\"doi_lich\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Theo yêu cầu\",\"oldTime\":\"2025-11-10T15:35:00.000Z\",\"newTime\":\"2025-11-20T15:31\"}]}', '2025-11-10 22:05:57', '2025-11-19 15:31:40', '0', 1),
+(20, 7, 8, 1, 4, '2025-11-10 22:36:00', 'DaXacNhan', 'DaPheDuyet', NULL, NULL, NULL, 0, '\n[2025-11-18 22:53:15] Xác nhận bởi NVBH: ', '2025-11-10 22:06:32', '2025-11-19 05:39:45', '0', 1),
+(21, 7, 8, 7, 9, '2025-11-20 13:39:00', 'DaDoiLich', 'DaPheDuyet', NULL, NULL, NULL, 1, '\n[2025-11-19 13:38:08] Xác nhận bởi NVBH: \n[2025-11-19 13:40:00] Đổi lịch bởi NVBH: Theo yêu cầu', '2025-11-10 22:06:43', '2025-11-19 13:40:00', '0', 1),
+(22, 7, 8, 5, 8, '2025-11-10 22:36:00', 'HoanThanh', 'DaPheDuyet', NULL, NULL, NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-19T06:52:43.449Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T06:53:03.138Z\",\"action\":\"bao_cao\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Kết quả: HoanThanh\",\"ketQua\":\"HoanThanh\"}],\"thoiGianBaoCao\":\"2025-11-19T06:53:03.138Z\",\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"Chắc chắn chốt\\n\",\"slaWarning\":\"Báo cáo muộn 207 giờ\"}', '2025-11-10 22:06:49', '2025-11-19 13:53:03', '0', 1),
+(25, 7, 8, 4, 5, '2025-11-20 13:52:00', 'DaDoiLich', 'ChoPheDuyet', NULL, NULL, NULL, 1, '{\"activities\":[{\"timestamp\":\"2025-11-19T06:52:05.652Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T06:52:12.552Z\",\"action\":\"doi_lich\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Theo yêu cầu\",\"oldTime\":\"2025-11-18T17:12:00.000Z\",\"newTime\":\"2025-11-20T13:52\"}]}', '2025-11-18 23:43:00', '2025-11-19 13:52:12', '0', 0),
+(26, 7, 8, 3, 6, '2025-11-19 00:23:00', 'HoanThanh', 'ChoPheDuyet', NULL, NULL, NULL, 0, '{\"thoiGianBaoCao\":\"2025-11-19T06:37:28.455Z\",\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"Tiềm năng\",\"slaWarning\":null}', '2025-11-18 23:56:55', '2025-11-19 13:37:28', '0', 0),
+(29, 7, 8, 4, 5, '2025-11-21 00:41:00', 'HoanThanh', 'DaPheDuyet', NULL, '1234', '2025-11-19 15:26:25', 0, '\n[2025-11-19 06:34:36] Xác nhận bởi NVBH: \n[2025-11-18T23:40:04.640Z] Báo cáo kết quả:\n- Kết quả: HoanThanh\n- Khách hàng quan tâm: Có\n\n- Kế hoạch follow-up: Khả năng chốt: TrungBinh\n- Ghi chú: ha ha\n      \n[Phê duyệt bởi chủ dự án lúc 2025-11-19 15:26:25]', '2025-11-19 00:11:41', '2025-11-19 15:26:25', '0', 0);
 
 -- --------------------------------------------------------
 
@@ -249,13 +324,26 @@ CREATE TABLE `cuochen` (
 CREATE TABLE `cuochoithoai` (
   `CuocHoiThoaiID` int(11) NOT NULL,
   `NguCanhID` int(11) DEFAULT NULL,
-  `NguCanhLoai` varchar(50) DEFAULT NULL,
+  `NguCanhLoai` enum('TinDang','CuocHen','HopDong','HeThong') NOT NULL COMMENT 'Loại ngữ cảnh của cuộc hội thoại',
   `TieuDe` varchar(255) DEFAULT NULL,
   `ThoiDiemTinNhanCuoi` datetime DEFAULT NULL,
   `DangHoatDong` tinyint(1) DEFAULT 1,
   `TaoLuc` datetime DEFAULT current_timestamp(),
   `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `cuochoithoai`
+--
+
+INSERT INTO `cuochoithoai` (`CuocHoiThoaiID`, `NguCanhID`, `NguCanhLoai`, `TieuDe`, `ThoiDiemTinNhanCuoi`, `DangHoatDong`, `TaoLuc`, `CapNhatLuc`) VALUES
+(201, 4, 'TinDang', 'Tin đăng: Phòng trọ giá rẻ cho nữ thuê - Nhà trọ Minh Tâm', '2025-11-04 17:05:27', 1, '2025-11-02 22:05:27', '2025-11-04 22:05:27'),
+(202, 1, 'CuocHen', 'Cuộc hẹn xem phòng #1 - Nhà trọ Minh Tâm', '2025-11-04 04:05:27', 1, '2025-11-03 22:05:27', '2025-11-04 22:05:27'),
+(203, 1, 'HopDong', 'Hợp đồng thuê #1 - Nhà trọ Minh Tâm', '2025-11-04 22:51:51', 1, '2025-11-04 19:05:27', '2025-11-04 22:51:51'),
+(204, 17, 'TinDang', 'Tin đăng: Nhà Trọ Hoành Hợp - Hỗ trợ tư vấn', '2025-11-04 21:05:27', 1, '2025-11-04 17:05:27', '2025-11-04 22:05:27'),
+(219, 29, 'CuocHen', 'Cuộc hẹn #29 - 102', '2025-11-20 10:29:51', 1, '2025-11-19 00:16:56', '2025-11-20 10:29:51'),
+(220, 20, 'CuocHen', 'Cuộc hẹn #20 - Lam Ngoc Giang', NULL, 1, '2025-11-19 06:27:41', '2025-11-19 06:27:41'),
+(221, 21, 'CuocHen', 'Cuộc hẹn #21 - Lam Ngoc Giang', NULL, 1, '2025-11-19 13:42:47', '2025-11-19 13:42:47');
 
 -- --------------------------------------------------------
 
@@ -270,6 +358,9 @@ CREATE TABLE `duan` (
   `ViDo` decimal(10,7) DEFAULT NULL COMMENT 'Vĩ độ (Latitude) - Geocoded từ địa chỉ',
   `KinhDo` decimal(10,7) DEFAULT NULL COMMENT 'Kinh độ (Longitude) - Geocoded từ địa chỉ',
   `ChuDuAnID` int(11) DEFAULT NULL,
+  `ChinhSachCocID` int(11) DEFAULT NULL COMMENT 'ID chính sách cọc áp dụng cho dự án (NULL = dùng mặc định hệ thống)',
+  `BangHoaHong` text DEFAULT NULL COMMENT 'Bảng hoa hồng (JSON array): [{soThang: 6, tyLe: 30}, {soThang: 12, tyLe: 50}] - Tỷ lệ hoa hồng theo số tháng cọc',
+  `SoThangCocToiThieu` int(11) DEFAULT NULL COMMENT 'Số tháng cọc tối thiểu để được áp dụng hoa hồng (nếu có bảng hoa hồng)',
   `YeuCauPheDuyetChu` tinyint(1) DEFAULT 0,
   `PhuongThucVao` text DEFAULT NULL COMMENT 'Phương thức vào dự án khi không cần phê duyệt (mật khẩu cửa, vị trí lấy chìa khóa, v.v.)',
   `TrangThai` enum('HoatDong','NgungHoatDong','LuuTru') DEFAULT 'HoatDong',
@@ -290,23 +381,23 @@ CREATE TABLE `duan` (
 -- Dumping data for table `duan`
 --
 
-INSERT INTO `duan` (`DuAnID`, `TenDuAn`, `DiaChi`, `ViDo`, `KinhDo`, `ChuDuAnID`, `YeuCauPheDuyetChu`, `PhuongThucVao`, `TrangThai`, `LyDoNgungHoatDong`, `NguoiNgungHoatDongID`, `NgungHoatDongLuc`, `YeuCauMoLai`, `NoiDungGiaiTrinh`, `ThoiGianGuiYeuCau`, `NguoiXuLyYeuCauID`, `ThoiGianXuLyYeuCau`, `LyDoTuChoiMoLai`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, 'Dự án Test - Chung cư ABC', '123 Đường Test, Phường 1, Quận 1, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:35:49'),
-(2, 'Dự án Test - Nhà trọ XYZ', '456 Đường Test 2, Phường 2, Quận 2, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:35:56'),
-(3, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:03'),
-(4, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:11'),
-(5, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:17'),
-(6, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:22'),
-(7, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:27'),
-(8, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:32'),
-(9, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'LuuTru', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-09-27 14:36:39'),
-(10, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách đăng tin: Đăng tin giả mạo, thông tin sai lệch về dự án. Đã nhận 3 báo cáo từ khách hàng.', 4, '2025-09-27 14:36:46', NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-10-16 17:30:19'),
-(11, 'Dream House 1', '147 Đường số 59, Phường 15, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách thanh toán: Chủ dự án có hành vi lừa đảo, không hoàn tiền cọc cho khách hàng đúng hạn.', 5, '2025-09-27 14:36:52', 'DangXuLy', 'Tôi đã hoàn trả đầy đủ tiền cọc cho khách hàng. Xin cung cấp bằng chứng chuyển khoản đính kèm. Cam kết tuân thủ chính sách từ nay.', '2025-10-01 10:30:00', NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-10-16 17:30:19'),
-(12, 'Dream House 1', '147 Đường số 59, Phường Tân Tạo A, Quận Bình Tân, TP. Hồ Chí Minh', NULL, NULL, 1, 0, NULL, 'NgungHoatDong', 'Vi phạm quy định an toàn: Dự án không đảm bảo PCCC, có nguy cơ an toàn cao sau kiểm tra của cơ quan chức năng.', 5, '2025-09-27 14:36:58', 'TuChoi', 'Dự án đã khắc phục toàn bộ vấn đề PCCC, có giấy phép từ Cảnh sát PCCC.', '2025-10-05 09:00:00', 5, '2025-10-08 14:30:00', 'Giấy phép PCCC chưa đủ điều kiện theo quy định. Cần có chứng nhận từ UBND quận/huyện.', '2025-09-24 11:38:43', '2025-10-16 17:30:19'),
-(14, 'Nhà trọ Minh Tâm', '40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8379251, 106.6581163, 1, 0, 'mật khẩu cổng là 1234', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-01 16:17:33', '2025-10-04 03:50:52'),
-(15, 'Nhà Trọ Cheap Avocado', '27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng', 16.0626020, 108.1760841, 1, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-03 21:00:41', '2025-10-04 03:48:09'),
-(16, 'Nhà trọ Hải Hương', '15 Hà Huy Tập, Thị trấn Chợ Lầu, Huyện Bắc Bình, Bình Thuận', 11.2239833, 108.5011375, 1, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-04 03:02:48', '2025-10-04 03:02:48'),
-(17, 'Nhà Trọ Hoành Hợp', '350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8385462, 106.6744701, 1, 0, 'Mật khẩu cổng là 6824', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-05 17:05:39', '2025-10-05 17:05:39');
+INSERT INTO `duan` (`DuAnID`, `TenDuAn`, `DiaChi`, `ViDo`, `KinhDo`, `ChuDuAnID`, `ChinhSachCocID`, `BangHoaHong`, `SoThangCocToiThieu`, `YeuCauPheDuyetChu`, `PhuongThucVao`, `TrangThai`, `LyDoNgungHoatDong`, `NguoiNgungHoatDongID`, `NgungHoatDongLuc`, `YeuCauMoLai`, `NoiDungGiaiTrinh`, `ThoiGianGuiYeuCau`, `NguoiXuLyYeuCauID`, `ThoiGianXuLyYeuCau`, `LyDoTuChoiMoLai`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, 'Dự án Test - Chung cư ABC', '123 Đường Test, Phường 1, Quận 1, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:03:57'),
+(2, 'Dự án Test - Nhà trọ XYZ', '456 Đường Test 2, Phường 2, Quận 2, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:10'),
+(3, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:14'),
+(4, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:18'),
+(5, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:21'),
+(6, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:25'),
+(7, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:28'),
+(8, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-19 14:59:18'),
+(9, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'LuuTru', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:31'),
+(10, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách đăng tin: Đăng tin giả mạo, thông tin sai lệch về dự án. Đã nhận 3 báo cáo từ khách hàng.', 4, '2025-09-27 14:36:46', NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:34'),
+(11, 'Dream House 1', '147 Đường số 59, Phường 15, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách thanh toán: Chủ dự án có hành vi lừa đảo, không hoàn tiền cọc cho khách hàng đúng hạn.', 5, '2025-09-27 14:36:52', 'DangXuLy', 'Tôi đã hoàn trả đầy đủ tiền cọc cho khách hàng. Xin cung cấp bằng chứng chuyển khoản đính kèm. Cam kết tuân thủ chính sách từ nay.', '2025-10-01 10:30:00', NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:38'),
+(12, 'Dream House 1', '147 Đường số 59, Phường Tân Tạo A, Quận Bình Tân, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm quy định an toàn: Dự án không đảm bảo PCCC, có nguy cơ an toàn cao sau kiểm tra của cơ quan chức năng.', 5, '2025-09-27 14:36:58', 'TuChoi', 'Dự án đã khắc phục toàn bộ vấn đề PCCC, có giấy phép từ Cảnh sát PCCC.', '2025-10-05 09:00:00', 5, '2025-10-08 14:30:00', 'Giấy phép PCCC chưa đủ điều kiện theo quy định. Cần có chứng nhận từ UBND quận/huyện.', '2025-09-24 11:38:43', '2025-11-06 12:04:40'),
+(14, 'Nhà trọ Minh Tâm', '40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8379251, 106.6581163, 1, 1, NULL, NULL, 0, 'mật khẩu cổng là 1234', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-01 16:17:33', '2025-11-06 12:04:43'),
+(15, 'Nhà Trọ Cheap Avocado', '27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng', 16.0626020, 108.1760841, 1, 1, NULL, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-03 21:00:41', '2025-11-06 12:04:46'),
+(16, 'Nhà trọ Hải Hương', '15 Hà Huy Tập, Thị trấn Chợ Lầu, Huyện Bắc Bình, Bình Thuận', 11.2239833, 108.5011375, 1, 1, NULL, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-04 03:02:48', '2025-11-06 12:04:49'),
+(17, 'Nhà Trọ Hoành Hợp', '350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8385462, 106.6744701, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', 1, 0, 'Mật khẩu cổng là 6824', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-05 17:05:39', '2025-11-19 15:09:04');
 
 -- --------------------------------------------------------
 
@@ -318,13 +409,44 @@ CREATE TABLE `giaodich` (
   `GiaoDichID` int(11) NOT NULL,
   `ViID` int(11) DEFAULT NULL,
   `SoTien` decimal(15,2) DEFAULT NULL,
-  `Loai` enum('NAP_TIEN','COC_GIU_CHO','COC_AN_ ninh','THANH_TOAN_KY_DAU','PHI_NEN_TANG','HOAN_COC_GIU_CHO','HOAN_COC_AN_ ninh','GIAI_TOA_COC_AN_ ninh','RUT_TIEN') NOT NULL,
+  `Loai` enum('NAP_TIEN','COC_GIU_CHO','COC_AN_NINH','THANH_TOAN_KY_DAU','PHI_NEN_TANG','HOAN_COC_GIU_CHO','HOAN_COC_AN_NINH','GIAI_TOA_COC_AN_NINH','RUT_TIEN') NOT NULL,
   `TrangThai` enum('KhoiTao','DaUyQuyen','DaGhiNhan','DaThanhToan','DaHoanTien','DaDaoNguoc') DEFAULT NULL,
   `KhoaDinhDanh` char(36) NOT NULL,
   `TinDangLienQuanID` int(11) DEFAULT NULL,
   `GiaoDichThamChieuID` int(11) DEFAULT NULL,
-  `ThoiGian` datetime DEFAULT current_timestamp()
+  `ThoiGian` datetime DEFAULT current_timestamp(),
+  `KenhThanhToan` enum('CHUYEN_KHOAN','VI_DIEN_TU','TIEN_MAT') DEFAULT NULL,
+  `MaGiaoDichNCC` varchar(128) DEFAULT NULL,
+  `ChungTuDinhKemURL` text DEFAULT NULL,
+  `HoaDonDT_ID` varchar(64) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Triggers `giaodich`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_validate_ledger_on_giaodich` AFTER UPDATE ON `giaodich` FOR EACH ROW BEGIN
+  -- Khai báo biến phải ở đầu BEGIN...END
+  DECLARE tong_no DECIMAL(18,2) DEFAULT 0.00;
+  DECLARE tong_co DECIMAL(18,2) DEFAULT 0.00;
+
+  -- Chỉ kiểm tra khi trạng thái vừa chuyển sang 'DaGhiNhan'
+  IF NEW.TrangThai = 'DaGhiNhan' AND COALESCE(OLD.TrangThai,'') <> 'DaGhiNhan' THEN
+    SELECT COALESCE(SUM(CASE WHEN LoaiButToan='ghi_no' THEN SoTien ELSE 0 END),0),
+           COALESCE(SUM(CASE WHEN LoaiButToan='ghi_co' THEN SoTien ELSE 0 END),0)
+      INTO tong_no, tong_co
+      FROM buttoansocai
+     WHERE GiaoDichID = NEW.GiaoDichID;
+
+    IF tong_no <> tong_co THEN
+      SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Ledger not balanced for this transaction',
+            MYSQL_ERRNO  = 1644;
+    END IF;
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -341,7 +463,8 @@ CREATE TABLE `hopdong` (
   `GiaThueCuoiCung` decimal(15,2) DEFAULT NULL,
   `BaoCaoLuc` datetime DEFAULT NULL,
   `MauHopDongID` int(11) DEFAULT NULL,
-  `NoiDungSnapshot` text DEFAULT NULL
+  `NoiDungSnapshot` text DEFAULT NULL,
+  `FileScanPath` varchar(500) DEFAULT NULL COMMENT 'Đường dẫn file scan hợp đồng (PDF/Image)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -362,6 +485,13 @@ CREATE TABLE `hosonhanvien` (
   `NgayKetThuc` date DEFAULT NULL,
   `GhiChu` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `hosonhanvien`
+--
+
+INSERT INTO `hosonhanvien` (`HoSoID`, `NguoiDungID`, `MaNhanVien`, `KhuVucChinhID`, `KhuVucPhuTrach`, `TyLeHoaHong`, `TrangThaiLamViec`, `NgayBatDau`, `NgayKetThuc`, `GhiChu`) VALUES
+(7, 8, 'NV0001', 62, NULL, 10.00, 'Active', '2025-11-17', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -3171,6 +3301,13 @@ CREATE TABLE `lichlamviec` (
   `KetThuc` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `lichlamviec`
+--
+
+INSERT INTO `lichlamviec` (`LichID`, `NhanVienBanHangID`, `BatDau`, `KetThuc`) VALUES
+(11, 8, '2025-11-18 07:00:00', '2025-11-18 15:00:00');
+
 -- --------------------------------------------------------
 
 --
@@ -3218,12 +3355,49 @@ CREATE TABLE `nguoidung` (
 --
 
 INSERT INTO `nguoidung` (`NguoiDungID`, `TenDayDu`, `Email`, `VaiTroHoatDongID`, `SoDienThoai`, `MatKhauHash`, `TrangThai`, `TrangThaiXacMinh`, `NgaySinh`, `DiaChi`, `SoCCCD`, `NgayCapCCCD`, `NoiCapCCCD`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, 'Nguyễn Văn Chủ Dự Án', 'chuduantest@example.com', 3, '0901234567', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-29 22:58:38'),
+(1, 'Nguyễn Văn Chủ Dự Án', 'chuduantest@example.com', 3, '0901234567', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-06 12:23:30'),
 (2, 'Trần Thị Khách Hàng', 'khachhangtest@example.com', NULL, '0901234568', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:47'),
-(3, 'Lê Văn Bán Hàng', 'banhangtest@example.com', NULL, '0901234569', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:53'),
+(3, 'Lê Văn Bán Hàng', 'banhangtest@example.com', 3, '0901234569', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-06 20:24:36'),
 (4, 'Phạm Thị Điều Hành', 'dieuhanhtest@example.com', NULL, '0901234570', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:58'),
 (5, 'Hoàng Văn Admin', 'admintest@example.com', NULL, '0901234571', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:34:02'),
-(6, 'Võ Nguyễn Hoành Hợp', 'hopboy553@gmail.com', 3, '0911576456', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-10-21 13:14:40', '2025-10-21 13:14:40');
+(6, 'Võ Nguyễn Hoành Hợp', 'hopboy553@gmail.com', 3, '0911576456', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-10-21 13:14:40', '2025-10-21 13:14:40'),
+(7, 'Lam Ngoc Giang', 'khachang@gmail.com', 1, '0911576455', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-04 21:51:51', '2025-11-04 21:51:51'),
+(8, 'Nguyễn Văn Bán Hàng', 'banhang@gmail.com', 2, '0901234123', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:20:42', '2025-11-06 14:20:42'),
+(9, 'Nguyễn Thị Điều Hành', 'dieuhanh@gmail.com', 4, '0901236486', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:38:39', '2025-11-06 14:38:39'),
+(225, 'Nguyễn Văn Hệ Thống', 'hethong@gmail.com', 5, '0901234271', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-18 21:30:34', '2025-11-18 21:30:53'),
+(226, 'Võ Hoành Chung', 'test@gmail.com', 2, '09289739877', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-18 23:51:58', '2025-11-18 23:51:58'),
+(229, 'Võ Hoành Chung', 'dieuhanh1@gmail.com', 1, '0349195618', 'c4ca4238a0b923820dcc509a6f75849b', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-19 15:36:35', '2025-11-19 15:36:35');
+
+--
+-- Triggers `nguoidung`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_sync_nguoidung_vaitro_on_insert` AFTER INSERT ON `nguoidung` FOR EACH ROW BEGIN
+  
+  IF NEW.VaiTroHoatDongID IS NOT NULL THEN
+    INSERT IGNORE INTO nguoidung_vaitro (NguoiDungID, VaiTroID)
+    VALUES (NEW.NguoiDungID, NEW.VaiTroHoatDongID);
+  END IF;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `trg_sync_nguoidung_vaitro_on_update` AFTER UPDATE ON `nguoidung` FOR EACH ROW BEGIN
+  
+  IF OLD.VaiTroHoatDongID IS NOT NULL AND OLD.VaiTroHoatDongID != NEW.VaiTroHoatDongID THEN
+    DELETE FROM nguoidung_vaitro 
+    WHERE NguoiDungID = NEW.NguoiDungID 
+      AND VaiTroID = OLD.VaiTroHoatDongID;
+  END IF;
+  
+  
+  IF NEW.VaiTroHoatDongID IS NOT NULL THEN
+    INSERT IGNORE INTO nguoidung_vaitro (NguoiDungID, VaiTroID)
+    VALUES (NEW.NguoiDungID, NEW.VaiTroHoatDongID);
+  END IF;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -3241,7 +3415,41 @@ CREATE TABLE `nguoidung_vaitro` (
 --
 
 INSERT INTO `nguoidung_vaitro` (`NguoiDungID`, `VaiTroID`) VALUES
-(6, 3);
+(1, 3),
+(3, 3),
+(6, 3),
+(7, 1),
+(8, 2),
+(9, 4),
+(225, 5),
+(226, 2),
+(229, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `nhanvienbanhang_caidat`
+--
+
+CREATE TABLE `nhanvienbanhang_caidat` (
+  `NguoiDungID` int(11) NOT NULL,
+  `ThongBaoUngDung` tinyint(1) NOT NULL DEFAULT 1,
+  `ThongBaoEmail` tinyint(1) NOT NULL DEFAULT 1,
+  `ThongBaoSMS` tinyint(1) NOT NULL DEFAULT 0,
+  `ThongBaoCuocHen` tinyint(1) NOT NULL DEFAULT 1,
+  `ThongBaoGiaoDich` tinyint(1) NOT NULL DEFAULT 1,
+  `BaoCaoHangNgay` tinyint(1) NOT NULL DEFAULT 0,
+  `BaoCaoHangTuan` tinyint(1) NOT NULL DEFAULT 1,
+  `BaoCaoHangThang` tinyint(1) NOT NULL DEFAULT 1,
+  `PhuongThucNhanThuNhap` enum('BankTransfer','Momo','TienMat') NOT NULL DEFAULT 'BankTransfer',
+  `TenChuTaiKhoan` varchar(255) DEFAULT NULL,
+  `SoTaiKhoan` varchar(50) DEFAULT NULL,
+  `NganHang` varchar(255) DEFAULT NULL,
+  `ChiNhanh` varchar(255) DEFAULT NULL,
+  `GhiChuThanhToan` text DEFAULT NULL,
+  `TaoLuc` datetime DEFAULT current_timestamp(),
+  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -3527,7 +3735,155 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (256, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:24:28.672', NULL),
 (257, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:26:57.581', NULL),
 (258, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-21\",\"denNgay\":\"2025-10-21\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-21 14:27:11.183', NULL),
-(259, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-23\",\"denNgay\":\"2025-10-23\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-23 21:51:29.229', NULL);
+(259, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-23\",\"denNgay\":\"2025-10-23\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-23 21:51:29.229', NULL),
+(260, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 12:50:21.727', NULL),
+(261, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 13:07:58.719', NULL),
+(262, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 13:28:08.595', NULL),
+(263, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 13:29:15.264', NULL),
+(264, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 14:04:13.200', NULL),
+(265, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 14:06:31.586', NULL),
+(266, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 14:22:25.705', NULL),
+(267, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:49:15.838', NULL),
+(268, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:50:34.524', NULL),
+(269, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:50:49.973', NULL),
+(270, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:51:12.254', NULL),
+(271, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:54:30.138', NULL),
+(272, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:54:32.389', NULL),
+(273, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:54:48.442', NULL),
+(274, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:55:03.026', NULL),
+(275, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:55:19.412', NULL),
+(276, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:55:32.905', NULL),
+(277, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:55:46.924', NULL),
+(278, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:56:19.505', NULL),
+(279, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 18:59:36.071', NULL),
+(280, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 19:14:34.552', NULL),
+(281, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 19:17:52.308', NULL),
+(282, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-24 19:18:06.535', NULL),
+(283, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-24\",\"denNgay\":\"2025-10-24\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Mobile Safari/537.36 Edg/141.0.0.0', '2025-10-24 19:28:35.501', NULL),
+(284, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-26\",\"denNgay\":\"2025-10-26\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-26 12:29:18.293', NULL),
+(285, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-28\",\"denNgay\":\"2025-10-28\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-28 17:30:50.005', NULL),
+(286, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-28\",\"denNgay\":\"2025-10-28\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-28 17:35:14.938', NULL),
+(287, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-09-28\",\"denNgay\":\"2025-10-28\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-28 22:44:07.911', NULL),
+(288, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-05\",\"denNgay\":\"2025-11-04\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-04 20:16:05.364', NULL),
+(289, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-05\",\"denNgay\":\"2025-11-04\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-04 20:17:59.988', NULL),
+(290, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-04 20:41:27.838', NULL),
+(291, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-05\",\"denNgay\":\"2025-11-04\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-04 20:42:13.014', NULL),
+(292, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-05\",\"denNgay\":\"2025-11-04\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-04 21:37:55.032', NULL),
+(293, 6, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-07\",\"denNgay\":\"2025-11-06\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-06 11:41:40.547', NULL),
+(294, 6, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-07\",\"denNgay\":\"2025-11-06\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-06 11:42:56.103', NULL),
+(295, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-07\",\"denNgay\":\"2025-11-06\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-06 12:07:05.561', NULL),
+(296, 210, 'tao_ca_lam_viec_sales', 'LichLamViec', '1', NULL, '{\"batDau\":\"2025-11-07T02:00:00.000Z\",\"ketThuc\":\"2025-11-07T06:00:00.000Z\"}', '::ffff:127.0.0.1', '', '2025-11-06 19:51:51.539', NULL),
+(297, 210, 'cap_nhat_ca_lam_viec_sales', 'LichLamViec', '1', NULL, '{\"batDau\":\"2025-11-08T03:00:00.000Z\",\"ketThuc\":\"2025-11-08T07:00:00.000Z\"}', '::ffff:127.0.0.1', '', '2025-11-06 19:51:51.617', NULL),
+(298, 210, 'tao_ca_lam_viec_sales', 'LichLamViec', '2', NULL, '{\"batDau\":\"2025-11-09T08:00:00.000Z\",\"ketThuc\":\"2025-11-09T12:00:00.000Z\"}', '::ffff:127.0.0.1', '', '2025-11-06 19:51:51.626', NULL),
+(299, 210, 'xoa_ca_lam_viec_sales', 'LichLamViec', '2', '{\"deleted\":false}', '{\"deleted\":true}', '::ffff:127.0.0.1', '', '2025-11-06 19:51:51.639', NULL),
+(300, 210, 'coc_xac_nhan_boi_sales', 'GiaoDich', '1', '{\"trangThai\":\"DaUyQuyen\"}', '{\"trangThai\":\"DaGhiNhan\"}', '::ffff:127.0.0.1', '', '2025-11-06 19:51:51.673', NULL),
+(332, 6, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-07\",\"denNgay\":\"2025-11-06\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-06 20:09:26.607', NULL),
+(333, 8, 'tao_ca_lam_viec_sales', 'LichLamViec', '9', NULL, '{\"batDau\":\"2025-11-18T00:00:00.000Z\",\"ketThuc\":\"2025-11-18T08:00:00.000Z\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.0.64 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36', '2025-11-17 14:27:47.094', NULL),
+(334, 8, 'xoa_ca_lam_viec_sales', 'LichLamViec', '9', '{\"deleted\":false}', '{\"deleted\":true}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.0.64 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36', '2025-11-17 14:38:19.194', NULL),
+(335, 8, 'tao_ca_lam_viec_sales', 'LichLamViec', '10', NULL, '{\"batDau\":\"2025-11-18 07:00:00\",\"ketThuc\":\"2025-11-18 15:00:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.0.64 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36', '2025-11-17 14:38:30.929', NULL),
+(336, 8, 'xoa_ca_lam_viec_sales', 'LichLamViec', '10', '{\"deleted\":false}', '{\"deleted\":true}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.0.64 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36', '2025-11-17 14:38:45.409', NULL),
+(337, 8, 'tao_ca_lam_viec_sales', 'LichLamViec', '11', NULL, '{\"batDau\":\"2025-11-18 07:00:00\",\"ketThuc\":\"2025-11-18 15:00:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.0.64 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36', '2025-11-17 14:42:41.178', NULL),
+(353, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-19\",\"denNgay\":\"2025-11-18\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 20:16:33.976', NULL),
+(354, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-19\",\"denNgay\":\"2025-11-18\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 22:36:06.193', NULL),
+(355, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '20', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 22:53:15.018', NULL),
+(356, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '20', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 22:53:17.038', NULL),
+(357, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '20', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 22:54:11.278', NULL),
+(358, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '20', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:18:09.323', NULL),
+(359, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '21', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:18:15.955', NULL),
+(360, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:38:26.720', NULL),
+(361, 7, 'tao_cuoc_hen', 'CuocHen', '25', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-19 00:12:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:43:00.103', NULL);
+INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
+(362, 7, 'tao_cuoc_hen', 'CuocHen', '26', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-19 00:23:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:56:55.927', NULL),
+(363, 7, 'tao_cuoc_hen', 'CuocHen', '27', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-20 00:32:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 00:02:48.416', NULL),
+(364, 7, 'tao_cuoc_hen', 'CuocHen', '28', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-21 00:42:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 00:08:31.217', NULL),
+(365, 7, 'tao_cuoc_hen', 'CuocHen', '29', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-21 00:41:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 00:11:41.114', NULL),
+(366, 1, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '219', '\"{\\\"NguCanhID\\\":29,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[1,8]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 00:40:05.073', NULL),
+(367, 1, 'gui_tin_nhan_socket', 'tinnhan', '2068', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:40:19.943', NULL),
+(368, 1, 'gui_tin_nhan_socket', 'tinnhan', '2069', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:40:30.589', NULL),
+(369, 8, 'gui_tin_nhan_socket', 'tinnhan', '2070', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:41:12.545', NULL),
+(370, 1, 'gui_tin_nhan_socket', 'tinnhan', '2071', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:43:26.806', NULL),
+(371, 8, 'gui_tin_nhan_socket', 'tinnhan', '2072', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:43:34.253', NULL),
+(372, 1, 'gui_tin_nhan_socket', 'tinnhan', '2073', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:54:58.288', NULL),
+(373, 1, 'gui_tin_nhan_socket', 'tinnhan', '2074', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:58:04.980', NULL),
+(374, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-20\",\"denNgay\":\"2025-11-19\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 00:59:58.126', NULL),
+(375, 1, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '219', '\"{\\\"NguCanhID\\\":29,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[1,8]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:04:28.935', NULL),
+(376, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:04:57.823', NULL),
+(377, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:08:50.153', NULL),
+(378, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:09:03.395', NULL),
+(379, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:09:24.192', NULL),
+(380, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:10:33.562', NULL),
+(381, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:10:48.733', NULL),
+(382, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:11:06.735', NULL),
+(383, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:11:33.126', NULL),
+(384, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:12:30.610', NULL),
+(385, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 02:13:30.609', NULL),
+(386, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 02:18:28.381', NULL),
+(387, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-20\",\"denNgay\":\"2025-11-19\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 05:10:22.754', NULL),
+(388, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 05:10:49.679', NULL),
+(389, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 05:11:52.040', NULL),
+(390, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '20', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 06:27:27.656', NULL),
+(391, 8, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '220', '\"{\\\"NguCanhID\\\":20,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[8,7]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 06:27:41.072', NULL),
+(392, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 06:28:17.898', NULL),
+(393, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 06:29:22.877', NULL),
+(394, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '29', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 06:34:36.335', NULL),
+(395, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 06:34:37.489', NULL),
+(396, 8, 'bao_cao_ket_qua_cuoc_hen', 'CuocHen', '29', NULL, '{\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"slaWarning\":false}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 06:40:04.649', NULL),
+(397, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 06:43:24.747', NULL),
+(398, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 06:46:19.512', NULL),
+(399, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:27:44.528', NULL),
+(400, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '20', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:27:56.933', NULL),
+(401, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:30:29.293', NULL),
+(402, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:30:33.000', NULL),
+(403, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '26', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:31:05.093', NULL),
+(404, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '26', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:31:08.481', NULL),
+(405, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:31:38.571', NULL),
+(406, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:33:04.181', NULL),
+(407, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '26', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:36:55.919', NULL),
+(408, 8, 'bao_cao_ket_qua_cuoc_hen', 'CuocHen', '26', NULL, '{\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"slaWarning\":false}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:37:28.459', NULL),
+(409, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '26', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:37:30.787', NULL),
+(410, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:38:00.095', NULL),
+(411, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '21', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:38:08.310', NULL),
+(412, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '21', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:38:10.862', NULL),
+(413, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '25', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:39:37.363', NULL),
+(414, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '21', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:39:56.356', NULL),
+(415, 8, 'doi_lich_cuoc_hen', 'CuocHen', '21', NULL, '{\"thoiGianHenMoi\":\"2025-11-20T13:39\",\"lyDo\":\"Theo yêu cầu\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:40:00.916', NULL),
+(416, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '21', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:40:02.294', NULL),
+(417, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '21', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:40:24.458', NULL),
+(418, 8, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '221', '\"{\\\"NguCanhID\\\":21,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[8,7]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 13:42:47.149', NULL),
+(419, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:51:39.720', NULL),
+(420, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '25', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:52:05.658', NULL),
+(421, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '25', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:52:07.555', NULL),
+(422, 8, 'doi_lich_cuoc_hen', 'CuocHen', '25', NULL, '{\"thoiGianHenMoi\":\"2025-11-20T13:52\",\"lyDo\":\"Theo yêu cầu\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:52:12.557', NULL),
+(423, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '25', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:52:14.051', NULL),
+(424, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:52:37.374', NULL),
+(425, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '22', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:52:43.454', NULL),
+(426, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '22', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:52:46.038', NULL),
+(427, 8, 'bao_cao_ket_qua_cuoc_hen', 'CuocHen', '22', NULL, '{\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"slaWarning\":true}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:53:03.146', NULL),
+(428, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '22', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 13:53:04.753', NULL),
+(429, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '22', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 14:13:56.773', NULL),
+(430, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:44:44.540', NULL),
+(431, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '6', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:48:51.666', NULL),
+(432, 1, 'gui_duyet_tin_dang', 'TinDang', '6', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ cho nam thuê\",\"KhuVucID\":1689,\"URL\":[\"http://localhost:5000/uploads/1759501859354.jpg\",\"http://localhost:5000/uploads/1759501859374.jpg\",\"http://localhost:5000/uploads/1759501859408.jpg\",\"http://localhost:5000/uploads/1759501859434.jpg\",\"http://localhost:5000/uploads/1759501859459.jpg\",\"http://localhost:5000/uploads/1759501859470.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Tiền điện + nước sinh hoạt chung\\nRác\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":4,\"GiaTinDang\":10000,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:49:08.769', NULL),
+(433, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:58:49.523', NULL),
+(434, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:00:44.392', NULL),
+(435, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\",\"BangHoaHong\":[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}],\"SoThangCocToiThieu\":1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:02:55.691', NULL),
+(436, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\",\"BangHoaHong\":[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}],\"SoThangCocToiThieu\":1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:04:50.140', NULL),
+(437, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\",\"BangHoaHong\":[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}],\"SoThangCocToiThieu\":1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:09:04.122', NULL),
+(438, 1, 'phe_duyet_cuoc_hen', 'CuocHen', '29', '{\"pheDuyetChuDuAn\":\"ChoPheDuyet\"}', '{\"pheDuyetChuDuAn\":\"DaPheDuyet\",\"phuongThucVao\":\"1234\",\"ghiChu\":\"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:26:25.304', NULL),
+(439, 1, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '219', '\"{\\\"NguCanhID\\\":29,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[1,8]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:26:37.555', NULL),
+(440, 1, 'gui_tin_nhan_socket', 'tinnhan', '2075', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 15:26:55.379', NULL),
+(441, 1, 'gui_tin_nhan_socket', 'tinnhan', '2076', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 15:27:11.597', NULL),
+(442, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '6', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:28:27.822', NULL),
+(443, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '19', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:31:26.817', NULL),
+(444, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '19', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:31:32.688', NULL),
+(445, 8, 'doi_lich_cuoc_hen', 'CuocHen', '19', NULL, '{\"thoiGianHenMoi\":\"2025-11-20T15:31\",\"lyDo\":\"Theo yêu cầu\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:31:40.349', NULL),
+(446, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '19', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:31:41.496', NULL),
+(447, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:32:03.236', NULL),
+(448, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '26', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:32:08.616', NULL),
+(449, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '29', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:32:19.343', NULL),
+(450, 8, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '219', '\"{\\\"NguCanhID\\\":29,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[8,15]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:32:20.885', NULL),
+(451, 1, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '219', '\"{\\\"NguCanhID\\\":29,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[1,8]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-20 10:29:47.871', NULL),
+(452, 1, 'gui_tin_nhan_socket', 'tinnhan', '2077', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-20 10:29:51.869', NULL);
 
 -- --------------------------------------------------------
 
@@ -3572,42 +3928,11 @@ INSERT INTO `phong` (`PhongID`, `DuAnID`, `TenPhong`, `TrangThai`, `GiaChuan`, `
 (1, 14, '006', 'Trong', 3500000.00, 25.00, NULL, '/uploads/1759483387245.jpg', '2025-10-03 16:23:07', '2025-10-09 17:12:35'),
 (2, 14, '1006', 'Trong', 4000000.00, 25.00, NULL, '/uploads/1759483387258.jpg', '2025-10-03 16:23:07', '2025-10-09 17:12:35'),
 (3, 15, '101', 'Trong', 3000000.00, 25.00, NULL, '/uploads/1759501859518.jpg', '2025-10-03 21:30:59', '2025-10-09 17:12:35'),
-(4, 15, '102', 'Trong', 6000000.00, 50.00, NULL, '/uploads/1759501859521.jpg', '2025-10-03 21:30:59', '2025-10-09 17:12:35'),
+(4, 15, '102', 'Trong', 10000.00, 50.00, NULL, '/uploads/1759501859521.jpg', '2025-10-03 21:30:59', '2025-11-19 14:26:16'),
 (5, 17, '006', 'Trong', 3000000.00, 30.00, NULL, '/uploads/1759658857264.jpg', '2025-10-05 17:07:37', '2025-10-09 17:12:35'),
 (6, 17, '006A', 'Trong', 3500000.00, 30.00, NULL, '/uploads/1759658857272.jpg', '2025-10-05 17:07:37', '2025-10-09 17:12:35'),
-(7, 14, '202', 'Trong', 7700000.00, 55.00, 'Đây là căn 2 phòng ngủ full nội thất', NULL, '2025-10-10 18:52:58', '2025-10-10 18:52:58'),
+(7, 14, '202', 'Trong', 7700000.00, 55.00, 'Đây là căn 2 phòng ngủ full nội thất', NULL, '2025-10-10 18:52:58', '2025-11-19 14:24:52'),
 (8, 16, '101', 'Trong', 4000000.00, 25.00, 'Phòng có đầy đủ nội thất cơ bản nhưng không có bếp\n', NULL, '2025-10-10 21:34:35', '2025-10-10 21:34:35');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `phong_old`
---
-
-CREATE TABLE `phong_old` (
-  `PhongID` int(11) NOT NULL,
-  `TinDangID` int(11) NOT NULL,
-  `TenPhong` varchar(100) DEFAULT NULL,
-  `TrangThai` enum('Trong','GiuCho','DaThue','DonDep') NOT NULL DEFAULT 'Trong',
-  `Gia` decimal(15,2) DEFAULT NULL,
-  `DienTich` decimal(5,2) DEFAULT NULL,
-  `GhiChu` text DEFAULT NULL COMMENT 'Ghi chú đặc điểm riêng của phòng: hướng, tầng, view, ...',
-  `URL` varchar(500) DEFAULT NULL COMMENT 'URL hình ảnh đại diện phòng (chỉ 1 hình duy nhất) - Ví dụ: /uploads/phong/101.jpg',
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `phong_old`
---
-
-INSERT INTO `phong_old` (`PhongID`, `TinDangID`, `TenPhong`, `TrangThai`, `Gia`, `DienTich`, `GhiChu`, `URL`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, 4, '006', 'Trong', 3500000.00, 25.00, NULL, '/uploads/1759483387245.jpg', '2025-10-03 16:23:07', '2025-10-03 16:23:07'),
-(2, 4, '1006', 'Trong', 4000000.00, 25.00, NULL, '/uploads/1759483387258.jpg', '2025-10-03 16:23:07', '2025-10-03 16:23:07'),
-(3, 6, '101', 'Trong', 3000000.00, 25.00, NULL, '/uploads/1759501859518.jpg', '2025-10-03 21:30:59', '2025-10-03 21:30:59'),
-(4, 6, '102', 'Trong', 6000000.00, 50.00, NULL, '/uploads/1759501859521.jpg', '2025-10-03 21:30:59', '2025-10-03 21:30:59'),
-(5, 8, '006', 'Trong', 3000000.00, 30.00, NULL, '/uploads/1759658857264.jpg', '2025-10-05 17:07:37', '2025-10-05 17:07:37'),
-(6, 8, '006A', 'Trong', 3500000.00, 30.00, NULL, '/uploads/1759658857272.jpg', '2025-10-05 17:07:37', '2025-10-05 17:07:37');
 
 -- --------------------------------------------------------
 
@@ -3635,7 +3960,7 @@ INSERT INTO `phong_tindang` (`PhongTinDangID`, `PhongID`, `TinDangID`, `GiaTinDa
 (1, 1, 4, NULL, NULL, NULL, NULL, 0, '2025-10-03 16:23:07'),
 (2, 2, 4, NULL, NULL, NULL, NULL, 0, '2025-10-03 16:23:07'),
 (3, 3, 6, NULL, NULL, NULL, NULL, 0, '2025-10-03 21:30:59'),
-(4, 4, 6, NULL, NULL, NULL, NULL, 0, '2025-10-03 21:30:59'),
+(4, 4, 6, 10000.00, NULL, NULL, NULL, 1, '2025-10-03 21:30:59'),
 (5, 5, 8, NULL, NULL, NULL, NULL, 0, '2025-10-05 17:07:37'),
 (6, 6, 8, NULL, NULL, NULL, NULL, 0, '2025-10-05 17:07:37'),
 (7, 7, 9, NULL, NULL, NULL, '/uploads/1760102566463.jpg', 0, '2025-10-10 20:22:46'),
@@ -3664,8 +3989,29 @@ CREATE TABLE `quyen` (
 CREATE TABLE `thanhviencuochoithoai` (
   `CuocHoiThoaiID` int(11) NOT NULL,
   `NguoiDungID` int(11) NOT NULL,
-  `ThamGiaLuc` datetime DEFAULT current_timestamp()
+  `ThamGiaLuc` datetime DEFAULT current_timestamp(),
+  `TinNhanCuoiDocLuc` datetime DEFAULT NULL COMMENT 'Thời điểm tin nhắn cuối được đọc bởi thành viên'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `thanhviencuochoithoai`
+--
+
+INSERT INTO `thanhviencuochoithoai` (`CuocHoiThoaiID`, `NguoiDungID`, `ThamGiaLuc`, `TinNhanCuoiDocLuc`) VALUES
+(201, 6, '2025-11-02 22:05:27', '2025-11-06 20:09:34'),
+(201, 201, '2025-11-02 22:05:27', '2025-11-04 22:05:27'),
+(202, 6, '2025-11-03 22:05:27', '2025-11-06 20:09:38'),
+(202, 202, '2025-11-03 22:05:27', '2025-11-04 22:05:27'),
+(203, 6, '2025-11-04 19:05:27', '2025-11-06 20:09:30'),
+(203, 201, '2025-11-04 19:05:27', '2025-11-04 22:05:27'),
+(204, 6, '2025-11-04 17:05:27', '2025-11-06 20:09:33'),
+(204, 203, '2025-11-04 17:05:27', '2025-11-04 21:55:27'),
+(219, 1, '2025-11-19 00:40:05', '2025-11-20 10:29:48'),
+(219, 8, '2025-11-19 00:16:56', '2025-11-19 15:32:20'),
+(220, 7, '2025-11-19 06:27:41', NULL),
+(220, 8, '2025-11-19 06:27:41', '2025-11-19 06:27:41'),
+(221, 7, '2025-11-19 13:42:47', NULL),
+(221, 8, '2025-11-19 13:42:47', '2025-11-19 13:44:38');
 
 -- --------------------------------------------------------
 
@@ -3735,15 +4081,15 @@ CREATE TABLE `tindang` (
 --
 
 INSERT INTO `tindang` (`TinDangID`, `DuAnID`, `KhuVucID`, `ChinhSachCocID`, `TieuDe`, `URL`, `MoTa`, `TienIch`, `GiaDien`, `GiaNuoc`, `GiaDichVu`, `MoTaGiaDichVu`, `TrangThai`, `LyDoTuChoi`, `DuyetBoiNhanVienID`, `TaoLuc`, `CapNhatLuc`, `DuyetLuc`) VALUES
-(1, 5, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/tindang/tin-dang-1758324599001-bnbggsvwu.png\",\"/uploads/tindang/tin-dang-1758324599008-zi7agjzah.png\",\"/uploads/tindang/tin-dang-1758324599010-rtjkvad0k.png\",\"/uploads/tindang/tin-dang-1758324599013-xybxvgiya.png\",\"/uploads/tindang/tin-dang-175', 'Báo Cáo Phân Tích Chuyên Sâu: 3 Mô Hình Kinh Doanh Tối Ưu Cho Mặt Bằng Thị Trấn Bình Thuận\n\n\nLời Mở Đầu: Bối Cảnh và Phương Pháp Luận', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'Nhap', NULL, NULL, '2025-09-20 06:29:59', '2025-10-04 04:31:13', NULL),
-(2, 6, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/tindang/tin-dang-1758382283268-0tab7werk.png\",\"/uploads/tindang/tin-dang-1758382283328-k7vpg51yw.png\",\"/uploads/tindang/tin-dang-1758382283355-qr50hlgsc.png\",\"/uploads/tindang/tin-dang-1758382283365-8gjcd0qjb.png\",\"/uploads/tindang/tin-dang-175', 'vhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhv', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'LuuTru', 'Chủ dự án tự xóa', NULL, '2025-09-20 22:31:23', '2025-10-04 11:11:36', NULL),
-(3, 4, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/tindang/tin-dang-1758382377648-x6glsb253.png\",\"/uploads/tindang/tin-dang-1758382377651-k6ngifgcf.png\"]', 'fdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsa', NULL, NULL, NULL, NULL, NULL, 'Nhap', NULL, NULL, '2025-09-20 22:32:57', '2025-10-04 04:32:12', NULL),
+(1, 5, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"http://localhost:5000/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Báo Cáo Phân Tích Chuyên Sâu: 3 Mô Hình Kinh Doanh Tối Ưu Cho Mặt Bằng Thị Trấn Bình Thuận\n\n\nLời Mở Đầu: Bối Cảnh và Phương Pháp Luận', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'Nhap', NULL, NULL, '2025-09-20 06:29:59', '2025-11-19 14:17:43', NULL),
+(2, 6, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"http://localhost:5000/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'vhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhv', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'LuuTru', 'Chủ dự án tự xóa', NULL, '2025-09-20 22:31:23', '2025-11-19 14:17:52', NULL),
+(3, 4, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"]', 'fdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsa', NULL, NULL, NULL, NULL, NULL, 'Nhap', NULL, NULL, '2025-09-20 22:32:57', '2025-11-19 14:18:14', NULL),
 (4, 14, 941, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"]', 'Chỉ cho nữ thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"]', 3500.00, 20000.00, 150000.00, 'Bảo dưỡng + rác', 'ChoDuyet', NULL, NULL, '2025-10-03 16:23:07', '2025-10-05 17:03:42', NULL),
 (5, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"http://localhost:5000/uploads/1759500198783.jpg\",\"http://localhost:5000/uploads/1759500198803.jpg\",\"http://localhost:5000/uploads/1759500198838.jpg\",\"http://localhost:5000/uploads/1759500198843.jpg\",\"http://localhost:5000/uploads/1759500198858.jpg\",\"http://localhost:5000/uploads/1759500198873.jpg\",\"http://localhost:5000/uploads/1759500198896.jpg\"]', 'Chỉ nhận nữ', '[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 18000.00, 200000.00, 'Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt', 'ChoDuyet', NULL, NULL, '2025-10-03 21:03:18', '2025-10-11 00:03:30', NULL),
-(6, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"/uploads/1759501859354.jpg\",\"/uploads/1759501859374.jpg\",\"/uploads/1759501859408.jpg\",\"/uploads/1759501859434.jpg\",\"/uploads/1759501859459.jpg\",\"/uploads/1759501859470.jpg\"]', 'Chỉ cho nam thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3500.00, 20000.00, 200000.00, 'Tiền điện + nước sinh hoạt chung\nRác', 'ChoDuyet', NULL, NULL, '2025-10-03 21:30:59', '2025-10-04 04:37:53', NULL),
+(6, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"http://localhost:5000/uploads/1759501859354.jpg\",\"http://localhost:5000/uploads/1759501859374.jpg\",\"http://localhost:5000/uploads/1759501859408.jpg\",\"http://localhost:5000/uploads/1759501859434.jpg\",\"http://localhost:5000/uploads/1759501859459.jpg\",\"http://localhost:5000/uploads/1759501859470.jpg\"]', 'Chỉ cho nam thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3500.00, 20000.00, 200000.00, 'Tiền điện + nước sinh hoạt chung\nRác', 'ChoDuyet', NULL, NULL, '2025-10-03 21:30:59', '2025-11-19 14:49:08', NULL),
 (7, 16, 1751, 1, 'Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng', '[\"http://localhost:5000/uploads/1759523405890.jpg\",\"http://localhost:5000/uploads/1759523405900.jpg\",\"http://localhost:5000/uploads/1759523405909.jpg\",\"http://localhost:5000/uploads/1759523405923.jpg\",\"http://localhost:5000/uploads/1759523405939.jpg\",\"http://localhost:5000/uploads/1759523405943.jpg\"]', 'Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"]', 3000.00, 18000.00, 150000.00, 'Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy', 'ChoDuyet', NULL, NULL, '2025-10-04 03:30:05', '2025-10-10 21:44:15', NULL),
-(8, 17, 946, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Miễn Phí 2 tuần đầu dọn vào', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 20000.00, 150000.00, 'Bao gồm phí giữ xe', 'ChoDuyet', NULL, NULL, '2025-10-05 17:07:37', '2025-10-05 17:07:57', NULL),
-(9, 14, 941, 1, 'Cuối tháng 10 trống duy nhất 1 căn 2 phòng ngủ cao cấp ở tối đa 4 người', '[\"/uploads/1760102566417.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566419.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566422.jpg\",\"/uploads/1760102566423.jpg\",\"/uploads/1760102566424.jpg\",\"/uploads/1760102566425.jpg\"]', '2 phòng ngủ full nội thất, có thang, khóa cửa vân tay, cách IUH 3,7km', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Bếp\",\"Chỗ để xe\",\"Giường\"]', 3500.00, 20000.00, 150000.00, 'Phí giữ xe + rác sinh hoạt + điện nước khu vực chung + bảo dưỡng nội thất', 'ChoDuyet', NULL, NULL, '2025-10-10 20:22:46', '2025-10-10 20:51:22', NULL);
+(8, 17, 946, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"http://localhost:5000/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Miễn Phí 2 tuần đầu dọn vào', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 20000.00, 150000.00, 'Bao gồm phí giữ xe', 'ChoDuyet', NULL, NULL, '2025-10-05 17:07:37', '2025-11-19 14:16:49', NULL),
+(9, 14, 941, 1, 'Cuối tháng 10 trống duy nhất 1 căn 2 phòng ngủ cao cấp ở tối đa 4 người', '[\"http://localhost:5000/uploads/1760102566417.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566419.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566422.jpg\",\"/uploads/1760102566423.jpg\",\"/uploads/1760102566424.jpg\",\"/uploads/1760102566425.jpg\"]', '2 phòng ngủ full nội thất, có thang, khóa cửa vân tay, cách IUH 3,7km', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Bếp\",\"Chỗ để xe\",\"Giường\"]', 3500.00, 20000.00, 150000.00, 'Phí giữ xe + rác sinh hoạt + điện nước khu vực chung + bảo dưỡng nội thất', 'ChoDuyet', NULL, NULL, '2025-10-10 20:22:46', '2025-11-19 14:16:55', NULL);
 
 --
 -- Triggers `tindang`
@@ -3794,6 +4140,95 @@ CREATE TABLE `tinnhan` (
   `DaXoa` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `tinnhan`
+--
+
+INSERT INTO `tinnhan` (`TinNhanID`, `CuocHoiThoaiID`, `NguoiGuiID`, `NoiDung`, `ThoiGian`, `DaXoa`) VALUES
+(2001, 201, 201, 'Xin chào anh! Em thấy tin đăng phòng trọ của anh rất phù hợp. Em muốn hỏi phòng vẫn còn trống không ạ?', '2025-11-02 22:05:27', 0),
+(2002, 201, 6, 'Chào em! Phòng vẫn còn trống em nhé. Em muốn xem phòng khi nào thì báo anh để sắp xếp.', '2025-11-02 23:05:27', 0),
+(2003, 201, 201, 'Vâng ạ! Cho em hỏi phòng có máy lạnh không ạ? Và tiền điện nước tính như thế nào?', '2025-11-03 00:05:27', 0),
+(2004, 201, 6, 'Phòng có máy lạnh đầy đủ em nhé. Tiền điện 3.500đ/số, nước 20.000đ/người/tháng. Phí dịch vụ 150k/tháng bao gồm wifi, rác, và bảo dưỡng.', '2025-11-03 01:05:27', 0),
+(2005, 201, 201, 'Dạ vậy rất tốt! Em muốn xem phòng vào chiều mai được không ạ? Khoảng 3 giờ chiều có tiện không anh?', '2025-11-03 02:05:27', 0),
+(2006, 201, 6, 'OK em! 3h chiều mai được nhé. Địa chỉ là 40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp. Đến gần cổng em gọi anh nhé.', '2025-11-03 03:05:27', 0),
+(2007, 201, 201, 'Vâng em cảm ơn anh! Em sẽ đến đúng giờ ạ.', '2025-11-03 04:05:27', 0),
+(2010, 202, 6, 'Chào em! Anh nhắc lại lịch hẹn xem phòng hôm nay lúc 3h chiều nhé.', '2025-11-03 22:05:27', 0),
+(2011, 202, 202, 'Vâng em nhớ rồi ạ! Em đang trên đường đến, khoảng 10 phút nữa đến nơi.', '2025-11-03 23:05:27', 0),
+(2012, 202, 202, 'Em đã xem phòng và rất thích ạ! Em muốn thuê luôn được không anh?', '2025-11-04 00:05:27', 0),
+(2013, 202, 6, 'Được em! Anh rất vui vì em thích. Để thuê phòng, em cần đặt cọc giữ chỗ trước nhé. Tiền cọc là 1 tháng tiền phòng.', '2025-11-04 01:05:27', 0),
+(2014, 202, 202, 'Vâng ạ! Em có thể chuyển khoản được không? Số tài khoản của anh là gì ạ?', '2025-11-04 01:05:27', 0),
+(2015, 202, 6, 'Em chuyển qua hệ thống của bên mình nhé, an toàn và có bảo vệ cho cả 2 bên. Em vào mục \"Cuộc hẹn\" > chọn cuộc hẹn này > click \"Đặt cọc giữ chỗ\".', '2025-11-04 02:05:27', 0),
+(2016, 202, 202, 'Vâng em hiểu rồi! Em sẽ làm ngay bây giờ ạ.', '2025-11-04 02:05:27', 0),
+(2017, 202, 202, 'Anh ơi em đã cọc xong rồi ạ! Bây giờ em làm gì tiếp ạ?', '2025-11-04 03:05:27', 0),
+(2018, 202, 6, 'Anh đã nhận được tiền cọc rồi em. Tuần sau em dọn vào được luôn nhé. Anh sẽ chuẩn bị hợp đồng.', '2025-11-04 04:05:27', 0),
+(2020, 203, 6, 'Chào em! Anh đã chuẩn bị xong hợp đồng rồi. Em có thể qua ký hợp đồng được chưa?', '2025-11-04 19:05:27', 0),
+(2021, 203, 201, 'Vâng ạ! Em có thể qua chiều nay được anh. Khoảng 5h được không ạ?', '2025-11-04 20:05:27', 0),
+(2022, 203, 6, 'OK em! 5h chiều nay nhé. Em nhớ mang CMND/CCCD để làm hợp đồng nhé.', '2025-11-04 20:05:27', 0),
+(2023, 203, 201, 'Vâng ạ em nhớ rồi! Cho em hỏi tiền cọc an ninh và tiền kỳ đầu là bao nhiêu ạ?', '2025-11-04 21:05:27', 0),
+(2024, 203, 6, 'Cọc an ninh là 2 tháng tiền phòng (4.000.000đ), tiền kỳ đầu là 1 tháng (2.000.000đ). Tổng cộng em cần chuẩn bị 6 triệu để ký hợp đồng nhé.', '2025-11-04 21:05:27', 0),
+(2025, 203, 201, 'Dạ em hiểu rồi! Em sẽ chuẩn bị đầy đủ. Cảm ơn anh nhiều ạ!', '2025-11-04 21:15:27', 0),
+(2026, 203, 6, 'Không có gì em. Hẹn gặp em chiều nay nhé!', '2025-11-04 21:20:27', 0),
+(2030, 204, 203, 'Xin chào anh! Em thấy anh có nhiều phòng cho thuê. Em muốn hỏi phòng nào phù hợp cho sinh viên ạ?', '2025-11-04 17:05:27', 0),
+(2031, 204, 6, 'Chào em! Tùy vào nhu cầu của em. Em muốn ở gần trường nào? Và budget của em khoảng bao nhiêu?', '2025-11-04 18:05:27', 0),
+(2032, 204, 203, 'Em học ở IUH anh ạ. Budget khoảng 2-2.5 triệu/tháng. Em muốn có máy lạnh và wifi.', '2025-11-04 18:05:27', 0),
+(2033, 204, 6, 'Vậy em xem tin đăng \"Phòng trọ giá rẻ cho nữ thuê\" của anh nhé. Phòng đầy đủ tiện nghi, gần IUH chỉ 3.7km. Giá 2 triệu/tháng, có máy lạnh và wifi.', '2025-11-04 19:05:27', 0),
+(2034, 204, 203, 'Vâng em sẽ xem! Em có thể xem phòng trực tiếp được không ạ?', '2025-11-04 20:05:27', 0),
+(2035, 204, 6, 'Được em! Em vào trang tin đăng, click \"Đặt lịch xem phòng\" để book lịch nhé. Anh sẽ sắp xếp thời gian phù hợp.', '2025-11-04 20:05:27', 0),
+(2036, 204, 203, 'Vâng em cảm ơn anh! Em sẽ đặt lịch ngay ạ.', '2025-11-04 21:05:27', 0),
+(2037, 201, 201, 'Tin nhắn test số 1 - Để test pagination và scroll trong UI', '2025-11-03 12:05:27', 0),
+(2038, 201, 6, 'Tin nhắn test số 2 - Để test pagination và scroll trong UI', '2025-11-03 13:05:27', 0),
+(2039, 201, 201, 'Tin nhắn test số 3 - Để test pagination và scroll trong UI', '2025-11-03 14:05:27', 0),
+(2040, 201, 6, 'Tin nhắn test số 4 - Để test pagination và scroll trong UI', '2025-11-03 15:05:27', 0),
+(2041, 201, 201, 'Tin nhắn test số 5 - Để test pagination và scroll trong UI', '2025-11-03 16:05:27', 0),
+(2042, 201, 6, 'Tin nhắn test số 6 - Để test pagination và scroll trong UI', '2025-11-03 17:05:27', 0),
+(2043, 201, 201, 'Tin nhắn test số 7 - Để test pagination và scroll trong UI', '2025-11-03 18:05:27', 0),
+(2044, 201, 6, 'Tin nhắn test số 8 - Để test pagination và scroll trong UI', '2025-11-03 19:05:27', 0),
+(2045, 201, 201, 'Tin nhắn test số 9 - Để test pagination và scroll trong UI', '2025-11-03 20:05:27', 0),
+(2046, 201, 6, 'Tin nhắn test số 10 - Để test pagination và scroll trong UI', '2025-11-03 21:05:27', 0),
+(2047, 201, 201, 'Tin nhắn test số 11 - Để test pagination và scroll trong UI', '2025-11-03 22:05:27', 0),
+(2048, 201, 6, 'Tin nhắn test số 12 - Để test pagination và scroll trong UI', '2025-11-03 23:05:27', 0),
+(2049, 201, 201, 'Tin nhắn test số 13 - Để test pagination và scroll trong UI', '2025-11-04 00:05:27', 0),
+(2050, 201, 6, 'Tin nhắn test số 14 - Để test pagination và scroll trong UI', '2025-11-04 01:05:27', 0),
+(2051, 201, 201, 'Tin nhắn test số 15 - Để test pagination và scroll trong UI', '2025-11-04 02:05:27', 0),
+(2052, 201, 6, 'Tin nhắn test số 16 - Để test pagination và scroll trong UI', '2025-11-04 03:05:27', 0),
+(2053, 201, 201, 'Tin nhắn test số 17 - Để test pagination và scroll trong UI', '2025-11-04 04:05:27', 0),
+(2054, 201, 6, 'Tin nhắn test số 18 - Để test pagination và scroll trong UI', '2025-11-04 05:05:27', 0),
+(2055, 201, 201, 'Tin nhắn test số 19 - Để test pagination và scroll trong UI', '2025-11-04 06:05:27', 0),
+(2056, 201, 6, 'Tin nhắn test số 20 - Để test pagination và scroll trong UI', '2025-11-04 07:05:27', 0),
+(2057, 201, 201, 'Tin nhắn test số 21 - Để test pagination và scroll trong UI', '2025-11-04 08:05:27', 0),
+(2058, 201, 6, 'Tin nhắn test số 22 - Để test pagination và scroll trong UI', '2025-11-04 09:05:27', 0),
+(2059, 201, 201, 'Tin nhắn test số 23 - Để test pagination và scroll trong UI', '2025-11-04 10:05:27', 0),
+(2060, 201, 6, 'Tin nhắn test số 24 - Để test pagination và scroll trong UI', '2025-11-04 11:05:27', 0),
+(2061, 201, 201, 'Tin nhắn test số 25 - Để test pagination và scroll trong UI', '2025-11-04 12:05:27', 0),
+(2062, 201, 6, 'Tin nhắn test số 26 - Để test pagination và scroll trong UI', '2025-11-04 13:05:27', 0),
+(2063, 201, 201, 'Tin nhắn test số 27 - Để test pagination và scroll trong UI', '2025-11-04 14:05:27', 0),
+(2064, 201, 6, 'Tin nhắn test số 28 - Để test pagination và scroll trong UI', '2025-11-04 15:05:27', 0),
+(2065, 201, 201, 'Tin nhắn test số 29 - Để test pagination và scroll trong UI', '2025-11-04 16:05:27', 0),
+(2066, 201, 6, 'Tin nhắn test số 30 - Để test pagination và scroll trong UI', '2025-11-04 17:05:27', 0),
+(2067, 203, 6, 'hello em', '2025-11-04 22:51:51', 0),
+(2068, 219, 1, 'hey', '2025-11-19 00:40:19', 0),
+(2069, 219, 1, 'nghe', '2025-11-19 00:40:30', 0),
+(2070, 219, 8, 'em nghe', '2025-11-19 00:41:12', 0),
+(2071, 219, 1, 'sếp ơi', '2025-11-19 00:43:26', 0),
+(2072, 219, 8, 'anh nghe đây', '2025-11-19 00:43:34', 0),
+(2073, 219, 1, 'Test tin nhắn từ Chủ dự án', '2025-11-19 00:54:58', 0),
+(2074, 219, 1, 'chào bạn', '2025-11-19 00:58:04', 0),
+(2075, 219, 1, 'Chào em', '2025-11-19 15:26:55', 0),
+(2076, 219, 1, 'kahcsh sao rồi em', '2025-11-19 15:27:11', 0),
+(2077, 219, 1, 'ey em', '2025-11-20 10:29:51', 0);
+
+--
+-- Triggers `tinnhan`
+--
+DELIMITER $$
+CREATE TRIGGER `trg_after_insert_tinnhan` AFTER INSERT ON `tinnhan` FOR EACH ROW BEGIN
+  UPDATE cuochoithoai 
+  SET ThoiDiemTinNhanCuoi = NEW.ThoiGian 
+  WHERE CuocHoiThoaiID = NEW.CuocHoiThoaiID;
+END
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -3824,7 +4259,31 @@ CREATE TABLE `transactions` (
 
 INSERT INTO `transactions` (`id`, `user_id`, `bank_name`, `account_number`, `amount_in`, `transaction_content`, `transaction_date`, `reference_number`, `sepay_id`, `bank_brand_name`, `amount_out`, `accumulated`, `code`, `sub_account`, `bank_account_id`) VALUES
 (1, NULL, 'TPBank', '80349195777', 2000.00, '104104028174 0349195610 donhang666666', '2025-10-15 16:30:20', '668ITC1252891160', '26445532', 'TPBank', 0.00, 12000.00, NULL, NULL, '29190'),
-(2, NULL, 'TPBank', '80349195777', 10000.00, 'anh yeu em', '2025-10-15 08:47:11', '666V501252880750', '26392545', 'TPBank', 0.00, 10000.00, NULL, NULL, '29190');
+(2, NULL, 'TPBank', '80349195777', 10000.00, 'anh yeu em', '2025-10-15 08:47:11', '666V501252880750', '26392545', 'TPBank', 0.00, 10000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 2000.00, 'DK8', '2025-10-27 15:46:40', '668ITC125300APWW', '27962446', 'TPBank', 0.00, 16000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 2000.00, 'DK8', '2025-10-27 15:34:41', '668ITC125300APSM', '27961100', 'TPBank', 0.00, 14000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk1005951', '2025-10-31 14:52:26', '666V501253041149', '28484057', 'TPBank', 0.00, 86000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, '105648802230-0911576456-dk728335', '2025-10-30 13:26:57', '668ITC125303A8K2', '28318274', 'TPBank', 0.00, 76000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk1024061', '2025-10-28 16:26:46', '666V501253020009', '28081405', 'TPBank', 0.00, 66000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk1095299', '2025-10-28 16:12:33', '668ITC1253020180', '28080430', 'TPBank', 0.00, 56000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'DK1076661', '2025-10-28 16:06:24', '668ITC1253020101', '28079998', 'TPBank', 0.00, 46000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, '105459829655 0349195610 DK1055807', '2025-10-28 16:01:42', '668ITC1253020047', '28079682', 'TPBank', 0.00, 36000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 5000.00, 'DK1008860', '2025-10-28 15:52:16', '668ITC125301A9SS', '28078900', 'TPBank', 0.00, 26000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 5000.00, 'DK10', '2025-10-28 15:36:38', '668ITC125301A9MZ', '28077574', 'TPBank', 0.00, 21000.00, NULL, NULL, '29190'),
+(1, NULL, 'TPBank', '80349195777', 2000.00, '104104028174 0349195610 donhang666666', '2025-10-15 16:30:20', '668ITC1252891160', '26445532', 'TPBank', 0.00, 12000.00, NULL, NULL, '29190'),
+(2, NULL, 'TPBank', '80349195777', 10000.00, 'anh yeu em', '2025-10-15 08:47:11', '666V501252880750', '26392545', 'TPBank', 0.00, 10000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 2000.00, 'DK8', '2025-10-27 15:46:40', '668ITC125300APWW', '27962446', 'TPBank', 0.00, 16000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 2000.00, 'DK8', '2025-10-27 15:34:41', '668ITC125300APSM', '27961100', 'TPBank', 0.00, 14000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk1005951', '2025-10-31 14:52:26', '666V501253041149', '28484057', 'TPBank', 0.00, 86000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, '105648802230-0911576456-dk728335', '2025-10-30 13:26:57', '668ITC125303A8K2', '28318274', 'TPBank', 0.00, 76000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk1024061', '2025-10-28 16:26:46', '666V501253020009', '28081405', 'TPBank', 0.00, 66000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk1095299', '2025-10-28 16:12:33', '668ITC1253020180', '28080430', 'TPBank', 0.00, 56000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'DK1076661', '2025-10-28 16:06:24', '668ITC1253020101', '28079998', 'TPBank', 0.00, 46000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, '105459829655 0349195610 DK1055807', '2025-10-28 16:01:42', '668ITC1253020047', '28079682', 'TPBank', 0.00, 36000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 5000.00, 'DK1008860', '2025-10-28 15:52:16', '668ITC125301A9SS', '28078900', 'TPBank', 0.00, 26000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 5000.00, 'DK10', '2025-10-28 15:36:38', '668ITC125301A9MZ', '28077574', 'TPBank', 0.00, 21000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk922845', '2025-11-18 16:48:43', '668ITC1253230759', '31244881', 'TPBank', 0.00, 96000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk971184', '2025-11-19 08:25:08', '668ITC125323A2EA', '31326537', 'TPBank', 0.00, 106000.00, NULL, NULL, '29190');
 
 -- --------------------------------------------------------
 
@@ -3844,9 +4303,9 @@ CREATE TABLE `vaitro` (
 
 INSERT INTO `vaitro` (`VaiTroID`, `TenVaiTro`, `MoTa`) VALUES
 (1, 'Khách hàng', 'Người dùng cuối có nhu cầu tìm kiếm và thuê nơi ở'),
-(2, 'Nhân viên Bán hàng', 'Đại diện tuyến đầu hỗ trợ khách hàng'),
-(3, 'Chủ dự án', 'Cá nhân/tổ chức sở hữu bất động sản cho thuê'),
-(4, 'Nhân viên Điều hành', 'Quản trị viên nội bộ duy trì chất lượng nền tảng'),
+(2, 'NhanVienBanHang', 'Đại diện tuyến đầu hỗ trợ khách hàng'),
+(3, 'ChuDuAn', 'Cá nhân/tổ chức sở hữu bất động sản cho thuê'),
+(4, 'NhanVienDieuHanh', 'Quản trị viên nội bộ duy trì chất lượng nền tảng'),
 (5, 'Quản trị viên Hệ thống', 'Người dùng kỹ thuật cấp cao nhất');
 
 -- --------------------------------------------------------
@@ -3901,6 +4360,13 @@ CREATE TABLE `yeuthich` (
   `TinDangID` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `yeuthich`
+--
+
+INSERT INTO `yeuthich` (`NguoiDungID`, `TinDangID`) VALUES
+(6, 5);
+
 -- --------------------------------------------------------
 
 --
@@ -3946,12 +4412,13 @@ ALTER TABLE `coc`
   ADD KEY `idx_coc_phong` (`PhongID`),
   ADD KEY `idx_coc_tindang` (`TinDangID`),
   ADD KEY `idx_coc_hethan` (`HetHanLuc`),
-  ADD KEY `fk_coc_giaodich` (`GiaoDichID`),
   ADD KEY `fk_coc_bbbg` (`BienBanBanGiaoID`),
   ADD KEY `idx_coc_phong_trangthai` (`PhongID`,`TrangThai`),
   ADD KEY `idx_coc_loai_trangthai` (`Loai`,`TrangThai`),
   ADD KEY `idx_coc_taoluc_trangthai` (`TaoLuc`,`TrangThai`),
-  ADD KEY `idx_coc_taoluc_sotien` (`TaoLuc`,`SoTien`);
+  ADD KEY `idx_coc_taoluc_sotien` (`TaoLuc`,`SoTien`),
+  ADD KEY `idx_coc_giaodich` (`GiaoDichID`),
+  ADD KEY `idx_coc_hopdong` (`HopDongID`);
 
 --
 -- Indexes for table `cuochen`
@@ -3967,13 +4434,16 @@ ALTER TABLE `cuochen`
   ADD KEY `idx_cuochen_thoigianpheduyet` (`ThoiGianPheDuyet`),
   ADD KEY `idx_cuochen_phong_trangthai` (`PhongID`,`TrangThai`),
   ADD KEY `idx_cuochen_thoigianhen_trangthai` (`ThoiGianHen`,`TrangThai`),
-  ADD KEY `idx_cuochen_taoluc` (`TaoLuc`);
+  ADD KEY `idx_cuochen_taoluc` (`TaoLuc`),
+  ADD KEY `TinDangID` (`TinDangID`);
 
 --
 -- Indexes for table `cuochoithoai`
 --
 ALTER TABLE `cuochoithoai`
-  ADD PRIMARY KEY (`CuocHoiThoaiID`);
+  ADD PRIMARY KEY (`CuocHoiThoaiID`),
+  ADD KEY `idx_cuochoithoai_ngucanh` (`NguCanhID`,`NguCanhLoai`),
+  ADD KEY `idx_cuochoithoai_thoidiemtinnhan` (`ThoiDiemTinNhanCuoi`);
 
 --
 -- Indexes for table `duan`
@@ -3984,7 +4454,8 @@ ALTER TABLE `duan`
   ADD KEY `idx_nguoi_ngung_hoat_dong` (`NguoiNgungHoatDongID`),
   ADD KEY `idx_nguoi_xu_ly_yeu_cau` (`NguoiXuLyYeuCauID`),
   ADD KEY `idx_yeu_cau_mo_lai_status` (`YeuCauMoLai`),
-  ADD KEY `idx_duan_chuduan_trangthai` (`ChuDuAnID`,`TrangThai`);
+  ADD KEY `idx_duan_chuduan_trangthai` (`ChuDuAnID`,`TrangThai`),
+  ADD KEY `idx_duan_chinhsachcoc` (`ChinhSachCocID`);
 
 --
 -- Indexes for table `giaodich`
@@ -4055,6 +4526,12 @@ ALTER TABLE `nguoidung_vaitro`
   ADD KEY `VaiTroID` (`VaiTroID`);
 
 --
+-- Indexes for table `nhanvienbanhang_caidat`
+--
+ALTER TABLE `nhanvienbanhang_caidat`
+  ADD PRIMARY KEY (`NguoiDungID`);
+
+--
 -- Indexes for table `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
@@ -4077,13 +4554,6 @@ ALTER TABLE `phong`
   ADD KEY `idx_phong_duan_trangthai` (`DuAnID`,`TrangThai`);
 
 --
--- Indexes for table `phong_old`
---
-ALTER TABLE `phong_old`
-  ADD PRIMARY KEY (`PhongID`),
-  ADD KEY `TinDangID` (`TinDangID`);
-
---
 -- Indexes for table `phong_tindang`
 --
 ALTER TABLE `phong_tindang`
@@ -4104,7 +4574,8 @@ ALTER TABLE `quyen`
 --
 ALTER TABLE `thanhviencuochoithoai`
   ADD PRIMARY KEY (`CuocHoiThoaiID`,`NguoiDungID`),
-  ADD KEY `NguoiDungID` (`NguoiDungID`);
+  ADD KEY `NguoiDungID` (`NguoiDungID`),
+  ADD KEY `idx_thanhvien_nguoidung` (`NguoiDungID`,`ThamGiaLuc`);
 
 --
 -- Indexes for table `thongbao`
@@ -4141,7 +4612,10 @@ ALTER TABLE `tindang`
 ALTER TABLE `tinnhan`
   ADD PRIMARY KEY (`TinNhanID`),
   ADD KEY `CuocHoiThoaiID` (`CuocHoiThoaiID`),
-  ADD KEY `NguoiGuiID` (`NguoiGuiID`);
+  ADD KEY `NguoiGuiID` (`NguoiGuiID`),
+  ADD KEY `idx_tinnhan_cuochoithoai` (`CuocHoiThoaiID`,`ThoiGian`),
+  ADD KEY `idx_tinnhan_nguoigui` (`NguoiGuiID`,`ThoiGian`),
+  ADD KEY `idx_tinnhan_daxoa` (`DaXoa`,`CuocHoiThoaiID`);
 
 --
 -- Indexes for table `vaitro`
@@ -4202,25 +4676,25 @@ ALTER TABLE `coc`
 -- AUTO_INCREMENT for table `cuochen`
 --
 ALTER TABLE `cuochen`
-  MODIFY `CuocHenID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `CuocHenID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `cuochoithoai`
 --
 ALTER TABLE `cuochoithoai`
-  MODIFY `CuocHoiThoaiID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `CuocHoiThoaiID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=224;
 
 --
 -- AUTO_INCREMENT for table `duan`
 --
 ALTER TABLE `duan`
-  MODIFY `DuAnID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `DuAnID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `giaodich`
 --
 ALTER TABLE `giaodich`
-  MODIFY `GiaoDichID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `GiaoDichID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `hopdong`
@@ -4232,7 +4706,7 @@ ALTER TABLE `hopdong`
 -- AUTO_INCREMENT for table `hosonhanvien`
 --
 ALTER TABLE `hosonhanvien`
-  MODIFY `HoSoID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `HoSoID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `khuvuc`
@@ -4244,7 +4718,7 @@ ALTER TABLE `khuvuc`
 -- AUTO_INCREMENT for table `lichlamviec`
 --
 ALTER TABLE `lichlamviec`
-  MODIFY `LichID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `LichID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `mauhopdong`
@@ -4256,13 +4730,13 @@ ALTER TABLE `mauhopdong`
 -- AUTO_INCREMENT for table `nguoidung`
 --
 ALTER TABLE `nguoidung`
-  MODIFY `NguoiDungID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `NguoiDungID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=230;
 
 --
 -- AUTO_INCREMENT for table `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
-  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=260;
+  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=453;
 
 --
 -- AUTO_INCREMENT for table `noidunghethong`
@@ -4274,19 +4748,13 @@ ALTER TABLE `noidunghethong`
 -- AUTO_INCREMENT for table `phong`
 --
 ALTER TABLE `phong`
-  MODIFY `PhongID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
-
---
--- AUTO_INCREMENT for table `phong_old`
---
-ALTER TABLE `phong_old`
-  MODIFY `PhongID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `PhongID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `phong_tindang`
 --
 ALTER TABLE `phong_tindang`
-  MODIFY `PhongTinDangID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `PhongTinDangID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `quyen`
@@ -4310,19 +4778,19 @@ ALTER TABLE `thongketindang`
 -- AUTO_INCREMENT for table `tindang`
 --
 ALTER TABLE `tindang`
-  MODIFY `TinDangID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `TinDangID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `tinnhan`
 --
 ALTER TABLE `tinnhan`
-  MODIFY `TinNhanID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `TinNhanID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2078;
 
 --
 -- AUTO_INCREMENT for table `vaitro`
 --
 ALTER TABLE `vaitro`
-  MODIFY `VaiTroID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `VaiTroID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `vi`
@@ -4362,7 +4830,6 @@ ALTER TABLE `coc`
   ADD CONSTRAINT `coc_ibfk_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`),
   ADD CONSTRAINT `fk_coc_bbbg` FOREIGN KEY (`BienBanBanGiaoID`) REFERENCES `bienbanbangiao` (`BienBanBanGiaoID`),
   ADD CONSTRAINT `fk_coc_giaodich` FOREIGN KEY (`GiaoDichID`) REFERENCES `giaodich` (`GiaoDichID`),
-  ADD CONSTRAINT `fk_coc_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong_old` (`PhongID`),
   ADD CONSTRAINT `fk_coc_tindang` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
 
 --
@@ -4370,7 +4837,7 @@ ALTER TABLE `coc`
 --
 ALTER TABLE `cuochen`
   ADD CONSTRAINT `cuochen_ibfk_2` FOREIGN KEY (`NhanVienBanHangID`) REFERENCES `nguoidung` (`NguoiDungID`),
-  ADD CONSTRAINT `cuochen_ibfk_3` FOREIGN KEY (`PhongID`) REFERENCES `phong_old` (`PhongID`),
+  ADD CONSTRAINT `cuochen_ibfk_3` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`),
   ADD CONSTRAINT `cuochen_ibfk_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`);
 
 --
@@ -4378,6 +4845,7 @@ ALTER TABLE `cuochen`
 --
 ALTER TABLE `duan`
   ADD CONSTRAINT `duan_ibfk_1` FOREIGN KEY (`ChuDuAnID`) REFERENCES `nguoidung` (`NguoiDungID`),
+  ADD CONSTRAINT `fk_duan_chinhsachcoc` FOREIGN KEY (`ChinhSachCocID`) REFERENCES `chinhsachcoc` (`ChinhSachCocID`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_duan_nguoi_ngung_hoat_dong` FOREIGN KEY (`NguoiNgungHoatDongID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE SET NULL ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_duan_nguoi_xu_ly_yeu_cau` FOREIGN KEY (`NguoiXuLyYeuCauID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -4436,6 +4904,12 @@ ALTER TABLE `nguoidung_vaitro`
   ADD CONSTRAINT `nguoidung_vaitro_ibfk_2` FOREIGN KEY (`VaiTroID`) REFERENCES `vaitro` (`VaiTroID`);
 
 --
+-- Constraints for table `nhanvienbanhang_caidat`
+--
+ALTER TABLE `nhanvienbanhang_caidat`
+  ADD CONSTRAINT `fk_caidat_nhanvien` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE;
+
+--
 -- Constraints for table `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
@@ -4454,12 +4928,6 @@ ALTER TABLE `phong`
   ADD CONSTRAINT `phong_ibfk_1` FOREIGN KEY (`DuAnID`) REFERENCES `duan` (`DuAnID`) ON DELETE CASCADE;
 
 --
--- Constraints for table `phong_old`
---
-ALTER TABLE `phong_old`
-  ADD CONSTRAINT `phong_old_ibfk_1` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
-
---
 -- Constraints for table `phong_tindang`
 --
 ALTER TABLE `phong_tindang`
@@ -4470,6 +4938,8 @@ ALTER TABLE `phong_tindang`
 -- Constraints for table `thanhviencuochoithoai`
 --
 ALTER TABLE `thanhviencuochoithoai`
+  ADD CONSTRAINT `fk_thanhvien_cuochoithoai` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_thanhvien_nguoidung` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE,
   ADD CONSTRAINT `thanhviencuochoithoai_ibfk_1` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`),
   ADD CONSTRAINT `thanhviencuochoithoai_ibfk_2` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
 
@@ -4498,6 +4968,8 @@ ALTER TABLE `tindang`
 -- Constraints for table `tinnhan`
 --
 ALTER TABLE `tinnhan`
+  ADD CONSTRAINT `fk_tinnhan_cuochoithoai` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_tinnhan_nguoigui` FOREIGN KEY (`NguoiGuiID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE,
   ADD CONSTRAINT `tinnhan_ibfk_1` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`),
   ADD CONSTRAINT `tinnhan_ibfk_2` FOREIGN KEY (`NguoiGuiID`) REFERENCES `nguoidung` (`NguoiDungID`);
 

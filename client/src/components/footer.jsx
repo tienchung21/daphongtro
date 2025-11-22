@@ -82,37 +82,39 @@ function Footer() {
 
             {/* ✅ Thêm container cho social links */}
             <div className="social-links">
-              <SocialLink href="https://facebook.com" label="Facebook">
-                <img
-                  src="https://event.cafeland.vn/event/app/images/facebook.png"
-                  alt="Facebook"
-                  className="icon"
-                />
-              </SocialLink>
+            <SocialLink href="https://facebook.com" label="Facebook">
+  <img
+    src="https://event.cafeland.vn/event/app/images/facebook.png"
+    alt="Facebook"
+    className="icon"
+  />
+</SocialLink>
 
-              <SocialLink href="https://twitter.com" label="Twitter">
-                <img
-                  src="https://event.cafeland.vn/event/app/images/twitter.png"
-                  alt="Twitter"
-                  className="icon"
-                />
-              </SocialLink>
+<SocialLink href="https://twitter.com" label="Twitter">
+  <img
+    src="https://event.cafeland.vn/event/app/images/twitter.png"
+    alt="Twitter"
+    className="icon"
+  />
+</SocialLink>
 
-              <SocialLink href="https://instagram.com" label="Instagram">
-                <img
-                  src="https://event.cafeland.vn/event/app/images/google.png"
-                  alt="Instagram"
-                  className="icon"
-                />
-              </SocialLink>
+<SocialLink href="https://instagram.com" label="Instagram">
+  <img
+    src="https://event.cafeland.vn/event/app/images/google.png"
+    alt="Instagram"
+    className="icon"
+  />
+</SocialLink>
 
-              <SocialLink href="https://youtube.com" label="YouTube">
-                <img
-                  src="https://event.cafeland.vn/event/app/images/linkedin.png"
-                  alt="YouTube"
-                  className="icon"
-                />
-              </SocialLink>
+<SocialLink href="https://youtube.com" label="YouTube">
+  <img
+    src="https://event.cafeland.vn/event/app/images/linkedin.png"
+    alt="YouTube"
+    className="icon"
+  />
+</SocialLink>
+
+
             </div>
           </div>{" "}
           {/* ✅ Đóng footer-news */}
