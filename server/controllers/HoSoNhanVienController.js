@@ -51,7 +51,7 @@ class HoSoNhanVienController {
    */
   static async chiTiet(req, res) {
     try {
-      const nhanVienId = parseInt(req.params.id);
+      const nhanVienId = parseInt(req.params.id || req.params[0]);
 
       if (!nhanVienId || isNaN(nhanVienId)) {
         return res.status(400).json({
@@ -92,10 +92,10 @@ class HoSoNhanVienController {
         // Chuẩn hóa lịch sử cho UI hiển thị gọn
         LichSu: Array.isArray(raw.LichSuCuocHen)
           ? raw.LichSuCuocHen.map((item) => ({
-              TaoLuc: item.ThoiGianHen,
-              HanhDong: `Cuộc hẹn ${item.TrangThai}`,
-              ChiTiet: `${item.TenPhong} - ${item.TieuDeTinDang} - ${item.TenKhachHang}`
-            }))
+            TaoLuc: item.ThoiGianHen,
+            HanhDong: `Cuộc hẹn ${item.TrangThai}`,
+            ChiTiet: `${item.TenPhong} - ${item.TieuDeTinDang} - ${item.TenKhachHang}`
+          }))
           : []
       };
 
@@ -128,8 +128,8 @@ class HoSoNhanVienController {
    */
   static async capNhat(req, res) {
     try {
-      const nhanVienId = parseInt(req.params.id);
-      const operatorId = req.user.NguoiDungID;
+      const nhanVienId = parseInt(req.params.id || req.params[0]);
+      const operatorId = req.user.id;
       const {
         TenDayDu,
         SoDienThoai,
@@ -162,7 +162,7 @@ class HoSoNhanVienController {
       });
     } catch (error) {
       console.error('[HoSoNhanVienController] Lỗi capNhat:', error);
-      
+
       if (error.message === 'Nhân viên không tồn tại') {
         return res.status(404).json({
           success: false,
@@ -170,9 +170,9 @@ class HoSoNhanVienController {
         });
       }
 
-      if (error.message.includes('không hợp lệ') || 
-          error.message.includes('phải') ||
-          error.message.includes('Tỷ lệ')) {
+      if (error.message.includes('không hợp lệ') ||
+        error.message.includes('phải') ||
+        error.message.includes('Tỷ lệ')) {
         return res.status(400).json({
           success: false,
           message: error.message
@@ -193,12 +193,13 @@ class HoSoNhanVienController {
    */
   static async taoMoi(req, res) {
     try {
-      const operatorId = req.user.NguoiDungID;
+      const operatorId = req.user.id;
       const {
         Email,
         TenDayDu,
         SoDienThoai,
         KhuVucChinhID,
+        KhuVucPhuTrachID,
         TyLeHoaHong
       } = req.body;
 
@@ -215,6 +216,7 @@ class HoSoNhanVienController {
         TenDayDu,
         SoDienThoai,
         KhuVucChinhID: parseInt(KhuVucChinhID),
+        KhuVucPhuTrachID: KhuVucPhuTrachID ? parseInt(KhuVucPhuTrachID) : parseInt(KhuVucChinhID),
         TyLeHoaHong: TyLeHoaHong ? parseFloat(TyLeHoaHong) : 5
       };
 
@@ -234,12 +236,12 @@ class HoSoNhanVienController {
       });
     } catch (error) {
       console.error('[HoSoNhanVienController] Lỗi taoMoi:', error);
-      
-      if (error.message.includes('không hợp lệ') || 
-          error.message.includes('phải') ||
-          error.message.includes('đã được sử dụng') ||
-          error.message.includes('Phải chọn') ||
-          error.message.includes('chưa được tạo')) {
+
+      if (error.message.includes('không hợp lệ') ||
+        error.message.includes('phải') ||
+        error.message.includes('đã được sử dụng') ||
+        error.message.includes('Phải chọn') ||
+        error.message.includes('chưa được tạo')) {
         return res.status(400).json({
           success: false,
           message: error.message
@@ -260,8 +262,8 @@ class HoSoNhanVienController {
    */
   static async kichHoat(req, res) {
     try {
-      const nhanVienId = parseInt(req.params.id);
-      const operatorId = req.user.NguoiDungID;
+      const nhanVienId = parseInt(req.params.id || req.params[0]);
+      const operatorId = req.user.id;
       const { TrangThai } = req.body;
 
       if (!nhanVienId || isNaN(nhanVienId)) {
@@ -287,7 +289,7 @@ class HoSoNhanVienController {
       });
     } catch (error) {
       console.error('[HoSoNhanVienController] Lỗi kichHoat:', error);
-      
+
       if (error.message.includes('Trạng thái phải là')) {
         return res.status(400).json({
           success: false,
@@ -321,6 +323,93 @@ class HoSoNhanVienController {
       return res.status(500).json({
         success: false,
         message: 'Lỗi server khi lấy thống kê',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * GET /api/operator/nhan-vien/khu-vuc/mac-dinh
+   * Lấy thông tin khu vực chính và phụ trách mặc định của Operator hiện tại
+   * Dùng để mặc định cho nhân viên mới
+   */
+  static async layKhuVucMacDinh(req, res) {
+    try {
+      console.log('\n========== [HoSoNhanVienController.layKhuVucMacDinh] START ==========');
+      console.log('[HoSoNhanVienController] Raw req.user.id:', req.user?.id, 'Type:', typeof req.user?.id);
+      console.log('[HoSoNhanVienController] Full req.user:', JSON.stringify(req.user));
+
+      const operatorId = req.user.id;
+
+      console.log('[HoSoNhanVienController] After assignment - operatorId:', operatorId, 'Type:', typeof operatorId);
+
+      const khuVuc = await HoSoNhanVienModel.layKhuVucPhuTrach(operatorId);
+
+      console.log('[HoSoNhanVienController] Khu vực lấy được:', khuVuc);
+      console.log('========== [HoSoNhanVienController.layKhuVucMacDinh] END ==========\n');
+
+      return res.status(200).json({
+        success: true,
+        message: 'Lấy thông tin khu vực mặc định thành công',
+        data: khuVuc
+      });
+    } catch (error) {
+      console.error('[HoSoNhanVienController] Lỗi layKhuVucMacDinh:', error.message);
+      console.error('[HoSoNhanVienController] Stack:', error.stack);
+
+      // Trả về 404 nếu nhân viên không tồn tại
+      if (error.message === 'Nhân viên không tồn tại') {
+        return res.status(404).json({
+          success: false,
+          message: 'Nhân viên điều hành không tồn tại (không có hồ sơ trong hosonhanvien)',
+          operatorId: req.user?.id
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi server khi lấy khu vực mặc định',
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * GET /api/operator/nhan-vien/:id/khu-vuc
+   * Lấy thông tin khu vực chính và phụ trách của nhân viên
+   */
+  static async layKhuVucPhuTrach(req, res) {
+    try {
+      const nhanVienId = parseInt(req.params.id || req.params[0]);
+
+      if (!nhanVienId || isNaN(nhanVienId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID nhân viên không hợp lệ'
+        });
+      }
+
+      const khuVuc = await HoSoNhanVienModel.layKhuVucPhuTrach(nhanVienId);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Lấy thông tin khu vực thành công',
+        data: khuVuc
+      });
+    } catch (error) {
+      console.error('[HoSoNhanVienController] Lỗi layKhuVucPhuTrach:', error);
+
+      // Trả về 404 nếu nhân viên không tồn tại
+      if (error.message === 'Nhân viên không tồn tại') {
+        return res.status(404).json({
+          success: false,
+          message: 'Nhân viên không tồn tại'
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi server khi lấy khu vực phụ trách',
         error: error.message
       });
     }

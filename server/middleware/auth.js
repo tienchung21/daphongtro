@@ -8,10 +8,13 @@ const db = require('../config/db');
 
 const authMiddleware = async (req, res, next) => {
   try {
+    console.log('[AUTH] Request path:', req.path, 'Method:', req.method);
+
     // Lấy token từ header Authorization
     const authHeader = req.header('Authorization');
-    const token = authHeader && authHeader.startsWith('Bearer ') 
-      ? authHeader.slice(7) 
+    console.log('[AUTH] Authorization header:', authHeader ? '✅ Có token' : '❌ Không có token');
+    const token = authHeader && authHeader.startsWith('Bearer ')
+      ? authHeader.slice(7)
       : null;
 
     if (!token) {
@@ -38,7 +41,7 @@ const authMiddleware = async (req, res, next) => {
 
     // Verify JWT token
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    
+
     // Kiểm tra người dùng có tồn tại trong database
     const [userRows] = await db.execute(
       'SELECT NguoiDungID, TenDayDu, Email, VaiTroHoatDongID FROM nguoidung WHERE NguoiDungID = ? AND TrangThai = "HoatDong"',
@@ -82,14 +85,14 @@ const authMiddleware = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Lỗi xác thực:', error);
-    
+
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({
         success: false,
         message: 'Token không hợp lệ'
       });
     }
-    
+
     if (error.name === 'TokenExpiredError') {
       return res.status(401).json({
         success: false,
