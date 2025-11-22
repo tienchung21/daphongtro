@@ -1,55 +1,60 @@
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import './trangchu.css';
-// Sử dụng PublicService cho khách hàng (không cần auth)
-import { PublicTinDangService, PublicUtils } from '../../services/PublicService';
+import "./trangchu.css";
+import tinDangPublicApi from "../../api/tinDangPublicApi";
 import SearchKhuVuc from "../../components/SearchKhuVuc";
 import yeuThichApi from "../../api/yeuThichApi";
 import { Link } from "react-router-dom";
-import tinDangPublicApi from "../../api/tinDangPublicApi"; // ✅ Import API mới
 
 function TrangChu() {
-  const [allTindangs, setAllTindangs] = useState([]); // ✅ Lưu tất cả tin đăng
-  const [tindangs, setTindangs] = useState([]); // ✅ Tin đăng hiển thị (sau filter)
+  const [tindangs, setTindangs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [addingFavId, setAddingFavId] = useState(null);
-  const [filterInfo, setFilterInfo] = useState(null); // ✅ Thông tin filter hiện tại
 
   useEffect(() => {
     fetchTinDangs();
   }, []);
 
-  // Sử dụng PublicTinDangService để lấy tin đăng công khai (không cần đăng nhập)
+  // Sử dụng tinDangPublicApi.getAll() để lấy tin đăng công khai
   const fetchTinDangs = async (params = {}) => {
     setLoading(true);
     setError("");
+    console.log("[TrangChu] fetchTinDangs params:", params);
     try {
-      const res = await PublicTinDangService.layDanhSachTinDangCongKhai(params);
-      console.log('[TrangChu] PublicTinDangService response:', res);
+      const res = await tinDangPublicApi.getAll(params);
+      console.log("[TrangChu] tinDangPublicApi.getAll response:", res);
 
+      // Axios response structure: { data: { success, data }, status, headers }
       let raw = [];
-      // Cập nhật điều kiện để lấy dữ liệu từ res.data
-      
       if (res?.data?.success && Array.isArray(res.data.data)) {
-         console.log('chung (Axios wrapper)', res.data.data);
-         raw = res.data.data;
-      } 
-      // Trường hợp 2: Nếu bố đã dùng interceptor để trả về data trực tiếp
-      else if (res?.success && Array.isArray(res.data)) {
-         console.log('chung (Direct data)', res.data);
-         raw = res.data;
-      }else {
-        console.warn("[TrangChu] Không có dữ liệu tin đăng.");
+        // Backend trả: { success: true, data: [...] }
+        raw = res.data.data;
+      } else if (Array.isArray(res?.data)) {
+        // Fallback: { data: [...] }
+        raw = res.data;
+      } else {
+        console.warn("[TrangChu] Không nhận diện được cấu trúc response:", res);
+        raw = [];
       }
-    
 
-      console.log("[TrangChu] RAW LIST FROM SERVICE:", raw);
+      console.log("[TrangChu] RAW LIST FROM API:", raw);
 
-      setAllTindangs(raw); // ✅ Lưu danh sách đầy đủ
-      setTindangs(raw); // ✅ Khởi tạo hiển thị = tất cả
-      setFilterInfo(null);
+      // fallback filter client-side nếu muốn
+      let data = raw;
+      if (params?.KhuVucID) {
+        const needId = Number(params.KhuVucID);
+        data = raw.filter((t) => Number(t.KhuVucID) === needId);
+        console.log(
+          "[TrangChu] client-filtered count:",
+          data.length,
+          "for KhuVucID=",
+          needId
+        );
+      }
+
+      setTindangs(data);
     } catch (err) {
       console.error(
         "Lỗi lấy tin đăng:",
@@ -61,45 +66,20 @@ function TrangChu() {
     }
   };
 
-  // ✅ Filter theo tên khu vực
   const handleSearchKhuVuc = (payload = {}) => {
-    console.log("[TrangChu] handleSearchKhuVuc payload:", payload);
-
-    if (!payload?.tenKhuVuc) {
-      // Không chọn khu vực => hiển thị tất cả
-      setTindangs(allTindangs);
-      setFilterInfo(null);
+    console.log("[TrangChu] handleSearchKhuVuc payload:", payload); // debug
+    if (!payload?.KhuVucID) {
+      fetchTinDangs(); // load full list
       return;
     }
-
-    const tenKhuVuc = payload.tenKhuVuc.toLowerCase();
-
-    // Filter client-side: tìm tin đăng có địa chỉ chứa tên khu vực
-    const filtered = allTindangs.filter((t) => {
-      const diaChi = (t.DiaChi || "").toLowerCase();
-      return diaChi.includes(tenKhuVuc);
-    });
-
-    console.log(
-      `[TrangChu] Lọc được ${filtered.length}/${allTindangs.length} tin đăng chứa "${payload.tenKhuVuc}"`
-    );
-
-    setTindangs(filtered);
-    setFilterInfo({
-      tenKhuVuc: payload.tenKhuVuc,
-      count: filtered.length,
-    });
-  };
-
-  // ✅ Reset filter
-  const handleClearFilter = () => {
-    setTindangs(allTindangs);
-    setFilterInfo(null);
+    fetchTinDangs({ KhuVucID: payload.KhuVucID });
   };
 
   const formatPrice = (g) => {
-    // Sử dụng utility function từ PublicUtils
-    return PublicUtils.formatCurrency(g);
+    if (!g) return "-";
+    const n = Number(g);
+    if (isNaN(n)) return g;
+    return n.toLocaleString("vi-VN") + " VND";
   };
 
   const getCurrentUserId = () => {
@@ -112,7 +92,7 @@ function TrangChu() {
         const id = actual?.NguoiDungID ?? actual?.id ?? actual?.userId;
         if (id) return Number(id);
       }
-    } catch (e) {
+    } catch {
       /* ignore */
     }
     const idKey = localStorage.getItem("userId");
@@ -124,6 +104,7 @@ function TrangChu() {
     const tinId = tin?.TinDangID ?? tin?.id ?? tin?._id;
     const userId = getCurrentUserId();
     if (!userId) {
+      // redirect to login or show message
       window.location.href = "/login";
       return;
     }
@@ -131,6 +112,7 @@ function TrangChu() {
     setAddingFavId(tinId);
     try {
       await yeuThichApi.add({ NguoiDungID: userId, TinDangID: tinId });
+      // simple feedback
       alert("Đã thêm vào yêu thích");
     } catch (err) {
       console.error("Thêm yêu thích lỗi:", err?.response ?? err);
@@ -140,7 +122,7 @@ function TrangChu() {
     }
   };
 
-<<<<<<< HEAD
+  // chuyển hàm ra ngoài JSX, đặt trước return
   const getFirstImage = (tin) => {
     const placeholder = "https://via.placeholder.com/160x110?text=No+Image";
     const raw = tin?.URL ?? tin?.Img ?? tin?.Images ?? tin?.images;
@@ -161,7 +143,7 @@ function TrangChu() {
           )
             return parsed.images[0];
         }
-      } catch (e) {
+      } catch {
         /* ignore */
       }
 
@@ -171,43 +153,22 @@ function TrangChu() {
     }
 
     return placeholder;
-=======
-  // Sử dụng utility function từ PublicUtils
-  const getFirstImage = (tin) => {
-    return PublicUtils.getFirstImage(tin);
->>>>>>> Hop
   };
 
   return (
     <div className="trangchu">
       <Header />
+      {/* CHỈNH: truyền onSearch để nhận payload khi bấm Tìm */}
       <SearchKhuVuc onSearch={handleSearchKhuVuc} />
 
       <div className="content">
         <div className="content1">
-          {/* ✅ Hiển thị thông tin filter */}
-          {filterInfo && (
-            <div className="filter-info">
-              <span>
-                Đang hiển thị <strong>{filterInfo.count}</strong> tin đăng tại:{" "}
-                <strong>{filterInfo.tenKhuVuc}</strong>
-              </span>
-              <button onClick={handleClearFilter} className="clear-filter-btn">
-                ✕ Xóa bộ lọc
-              </button>
-            </div>
-          )}
-
           <div className="danhsach">
             {loading && <div className="tindang-loading">Đang tải...</div>}
             {error && <div className="tindang-error">{error}</div>}
 
             {!loading && tindangs.length === 0 && (
-              <div className="tindang-empty">
-                {filterInfo
-                  ? `Không tìm thấy tin đăng nào tại "${filterInfo.tenKhuVuc}"`
-                  : "Chưa có tin đăng"}
-              </div>
+              <div className="tindang-empty">Chưa có tin đăng</div>
             )}
 
             {tindangs.map((t) => {
@@ -230,6 +191,7 @@ function TrangChu() {
                     <div className="dientich">
                       Diện tích: {t.DienTich ?? "-"} m2
                     </div>
+                    {/* <div className="lienhe">Liên hệ: - </div> */}
                     <div className="thoigian">
                       {t.TaoLuc ? new Date(t.TaoLuc).toLocaleString() : ""}
                       <button
@@ -276,6 +238,7 @@ function TrangChu() {
                 <div className="tieude">
                   Cho thuê phòng trọ ngay quận 2 có đủ tiện nghi
                 </div>
+
                 <div className="thoigian">Hôm nay</div>
               </div>
             </div>
@@ -290,6 +253,7 @@ function TrangChu() {
                 <div className="tieude">
                   Cho thuê phòng trọ ngay quận 10 có đủ tiện nghi
                 </div>
+
                 <div className="thoigian">Hôm nay</div>
               </div>
             </div>
@@ -304,6 +268,7 @@ function TrangChu() {
                 <div className="tieude">
                   Cho thuê phòng trọ ngay quận gò vấp có đủ tiện nghi
                 </div>
+
                 <div className="thoigian">Hôm nay</div>
               </div>
             </div>
@@ -318,6 +283,7 @@ function TrangChu() {
                 <div className="tieude">
                   Cho thuê phòng trọ ngay quận 4 có đủ tiện nghi
                 </div>
+
                 <div className="thoigian">Hôm nay</div>
               </div>
             </div>
@@ -329,5 +295,4 @@ function TrangChu() {
     </div>
   );
 }
-
 export default TrangChu;

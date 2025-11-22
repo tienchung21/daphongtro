@@ -22,6 +22,7 @@ class PublicTinDangModel {
           ) as DienTich,
           td.TrangThai, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,
           da.TenDuAn, da.DiaChi AS DiaChi, da.YeuCauPheDuyetChu,
+          da.ViDo, da.KinhDo,
           kv.TenKhuVuc,
           (SELECT COUNT(*) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID) as TongSoPhong,
           (SELECT COUNT(*) FROM phong_tindang pt 
@@ -35,15 +36,19 @@ class PublicTinDangModel {
       const params = [];
 
       // 🔍 DEBUG: Log filters
-      console.log('[PublicTinDangModel] Filters:', filters);
+      console.log("[PublicTinDangModel] Filters:", filters);
 
       // Optional: chỉ public tin đã duyệt/đang đăng
       // 🔧 TẠM THỜI bỏ filter này để test - lấy tất cả tin (trừ LuuTru)
       if (filters.onlyPublic === "true") {
-        console.log('[PublicTinDangModel] ⚠️ Applying onlyPublic filter - only DaDang/DaDuyet');
+        console.log(
+          "[PublicTinDangModel] ⚠️ Applying onlyPublic filter - only DaDang/DaDuyet"
+        );
         query += ` AND td.TrangThai IN ('DaDang','DaDuyet')`;
       } else {
-        console.log('[PublicTinDangModel] ✅ No onlyPublic filter - getting all non-archived listings');
+        console.log(
+          "[PublicTinDangModel] ✅ No onlyPublic filter - getting all non-archived listings"
+        );
       }
 
       if (filters.trangThai) {
@@ -68,21 +73,21 @@ class PublicTinDangModel {
         query += ` LIMIT ${limitNum}`;
       }
 
-      console.log('[PublicTinDangModel] 🔍 Final Query:', query);
-      console.log('[PublicTinDangModel] 🔍 Query Params:', params);
+      console.log("[PublicTinDangModel] 🔍 Final Query:", query);
+      console.log("[PublicTinDangModel] 🔍 Query Params:", params);
 
       const [rows] = await db.execute(query, params);
-      
+
       console.log(`[PublicTinDangModel] ✅ Found ${rows.length} listings`);
       if (rows.length > 0) {
-        console.log('[PublicTinDangModel] 📋 Sample listing:', {
+        console.log("[PublicTinDangModel] 📋 Sample listing:", {
           TinDangID: rows[0].TinDangID,
           TieuDe: rows[0].TieuDe,
           TrangThai: rows[0].TrangThai,
-          Gia: rows[0].Gia
+          Gia: rows[0].Gia,
         });
       }
-      
+
       return rows;
     } catch (err) {
       throw new Error(
@@ -98,7 +103,9 @@ class PublicTinDangModel {
    */
   static async layChiTietTinDang(tinDangId) {
     try {
-      console.log(`[PublicTinDangModel] 🔍 Getting detail for TinDangID: ${tinDangId}`);
+      console.log(
+        `[PublicTinDangModel] 🔍 Getting detail for TinDangID: ${tinDangId}`
+      );
 
       // Query chi tiết tin đăng
       const queryTinDang = `
@@ -108,6 +115,7 @@ class PublicTinDangModel {
           td.TienIch, td.GiaDien, td.GiaNuoc, td.GiaDichVu, td.MoTaGiaDichVu,
           td.TrangThai, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,
           da.TenDuAn, da.DiaChi, da.YeuCauPheDuyetChu,
+          da.ViDo, da.KinhDo,
           kv.TenKhuVuc,
           (SELECT COUNT(*) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID) as TongSoPhong
         FROM tindang td
@@ -144,14 +152,14 @@ class PublicTinDangModel {
       // Attach danh sách phòng vào tin đăng
       tinDang.DanhSachPhong = phongRows;
 
-      console.log(`[PublicTinDangModel] ✅ Found tin đăng with ${phongRows.length} phòng`);
+      console.log(
+        `[PublicTinDangModel] ✅ Found tin đăng with ${phongRows.length} phòng`
+      );
 
       return tinDang;
     } catch (err) {
-      console.error('[PublicTinDangModel] Error:', err);
-      throw new Error(
-        `Lỗi khi lấy chi tiết tin đăng: ${err.message}`
-      );
+      console.error("[PublicTinDangModel] Error:", err);
+      throw new Error(`Lỗi khi lấy chi tiết tin đăng: ${err.message}`);
     }
   }
 }

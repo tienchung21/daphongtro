@@ -29,7 +29,6 @@ import {
 } from "../../services/PublicService"; // Đổi sang PublicService
 import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
 import yeuThichApi from "../../api/yeuThichApi";
-import axiosClient from "../../api/axiosClient";
 import "./chitiettindang.css";
 
 /**
@@ -58,7 +57,9 @@ const toMySqlDateTime = (input) => {
       const s = pad(d.getSeconds());
       return `${y}-${m}-${day} ${h}:${mi}:${s}`;
     }
-  } catch {}
+  } catch {
+    return null;
+  }
 
   return null;
 };
@@ -92,7 +93,7 @@ const ChiTietTinDang = () => {
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [danhSachAnh, setDanhSachAnh] = useState([]);
-  const [tinTuongTu, setTinTuongTu] = useState([]);
+  const [tinTuongTu] = useState([]); // Placeholder for future use
   const [daLuu, setDaLuu] = useState(false);
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -105,13 +106,9 @@ const ChiTietTinDang = () => {
   const [henThoiGian, setHenThoiGian] = useState("");
   const [henGhiChu, setHenGhiChu] = useState("");
 
-  // Hàm chuẩn hóa datetime-local -> ISO
-  const toISOFromLocal = (v) => {
-    if (!v) return null;
-    const d = new Date(v);
-    if (isNaN(d.getTime())) return null;
-    return d.toISOString();
-  };
+  // State cho modal chọn phòng để đặt cọc
+  const [cocModalOpen, setCocModalOpen] = useState(false);
+  const [cocPhongId, setCocPhongId] = useState(null);
 
   // Chuẩn bị giá trị PheDuyetChuDuAn từ tin đăng (1 => ChoPheDuyet, 0 => DaPheDuyet)
   const getPheDuyetChuValue = () => {
@@ -181,8 +178,9 @@ const ChiTietTinDang = () => {
       yeuCauPheDuyet === "0" ||
       yeuCauPheDuyet === false
     ) {
-      pheDuyetValue = "DaPheDuyet"; // Không cần phê duyệt
+      pheDuyetValue = "DaPheDuyet";
     }
+    console.log("[DEBUG] pheDuyetValue:", pheDuyetValue);
 
     // Validation: Đảm bảo có TinDangID
     console.log("🔍 [DEBUG] Bắt đầu validation - tinDang:", tinDang);
@@ -241,8 +239,12 @@ const ChiTietTinDang = () => {
   };
 
   useEffect(() => {
-    layChiTietTinDang();
-    layTinTuongTu();
+    const loadData = async () => {
+      await layChiTietTinDang();
+      await layTinTuongTu();
+    };
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
@@ -269,6 +271,7 @@ const ChiTietTinDang = () => {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxOpen, currentImageIndex]);
 
   const layChiTietTinDang = async () => {
@@ -279,6 +282,12 @@ const ChiTietTinDang = () => {
       if (response && response.success) {
         console.log("🔍 [DEBUG] Response data từ API:", response.data);
         console.log("🔍 [DEBUG] TinDangID:", response.data.TinDangID);
+        console.log("🔍 [DEBUG] DanhSachPhong:", response.data.DanhSachPhong);
+        console.log(
+          "🔍 [DEBUG] ViDo/KinhDo:",
+          response.data.ViDo,
+          response.data.KinhDo
+        );
         setTinDang(response.data);
 
         // Parse danh sách ảnh
@@ -333,6 +342,18 @@ const ChiTietTinDang = () => {
 
   const formatCurrency = (value) => {
     return parseInt(value || 0).toLocaleString("vi-VN") + " ₫";
+  };
+
+  /**
+   * 🔢 Tính số phòng trống động từ DanhSachPhong
+   * @returns {number} Số phòng có TrangThaiPhong === "Trong"
+   */
+  const getSoPhongTrong = () => {
+    if (!tinDang?.DanhSachPhong || tinDang.DanhSachPhong.length === 0) {
+      return 0;
+    }
+    return tinDang.DanhSachPhong.filter((p) => p.TrangThaiPhong === "Trong")
+      .length;
   };
 
   /**
@@ -428,7 +449,7 @@ const ChiTietTinDang = () => {
         const id = actual?.NguoiDungID ?? actual?.id ?? actual?.userId;
         if (id) return Number(id);
       }
-    } catch (e) {
+    } catch {
       /* ignore */
     }
     const idKey = localStorage.getItem("userId");
@@ -476,29 +497,6 @@ const ChiTietTinDang = () => {
       });
   };
 
-  // Create appointment POST /api/cuoc-hen
-  const createAppointment = async (payload) => {
-    setHenSubmitting(true);
-    try {
-      const res = await axiosClient.post("/cuoc-hen", payload);
-      if (res?.data?.success) {
-        showToast("✅ Đặt lịch thành công. Người quản lý sẽ liên hệ bạn sớm.");
-        return true;
-      } else {
-        const msg = res?.data?.message || "Lỗi";
-        showToast(`❌ ${msg}`);
-        return false;
-      }
-    } catch (err) {
-      console.error("Lỗi tạo cuộc hẹn:", err);
-      const msg = err?.response?.data?.message || err.message || "Có lỗi";
-      showToast(`❌ ${msg}`);
-      return false;
-    } finally {
-      setHenSubmitting(false);
-    }
-  };
-
   const showToast = (message) => {
     const toast = document.createElement("div");
     toast.className = "ctd-toast";
@@ -523,32 +521,6 @@ const ChiTietTinDang = () => {
   const closeLightbox = () => {
     setLightboxOpen(false);
     document.body.style.overflow = "auto";
-  };
-
-  const getTrangThaiInfo = (trangThai) => {
-    const map = {
-      HoatDong: {
-        label: "Đang hoạt động",
-        icon: <HiOutlineCheckCircle />,
-        color: "#10b981",
-      },
-      ChoXuLy: {
-        label: "Chờ duyệt",
-        icon: <HiOutlineClock />,
-        color: "#D4AF37",
-      },
-      TuChoi: {
-        label: "Từ chối",
-        icon: <HiOutlineXCircle />,
-        color: "#ef4444",
-      },
-      Nhap: {
-        label: "Bản nháp",
-        icon: <HiOutlineDocumentText />,
-        color: "#6b7280",
-      },
-    };
-    return map[trangThai] || map["Nhap"];
   };
 
   // Skeleton Loading Component
@@ -832,7 +804,7 @@ const ChiTietTinDang = () => {
                       <div className="ctd-spec-content">
                         <span className="ctd-spec-label">Phòng trống</span>
                         <span className="ctd-spec-value">
-                          {tinDang.SoPhongTrong}
+                          {getSoPhongTrong()}
                         </span>
                       </div>
                     </div>
@@ -935,12 +907,10 @@ const ChiTietTinDang = () => {
                   </h2>
                   <div className="ctd-rooms-summary">
                     <span className="ctd-rooms-available">
-                      <HiOutlineCheckCircle /> {tinDang.SoPhongTrong || 0} còn
-                      trống
+                      <HiOutlineCheckCircle /> {getSoPhongTrong()} còn trống
                     </span>
                     <span className="ctd-rooms-rented">
-                      {tinDang.TongSoPhong - (tinDang.SoPhongTrong || 0)} đã
-                      thuê
+                      {tinDang.DanhSachPhong.length - getSoPhongTrong()} đã thuê
                     </span>
                   </div>
                 </div>
@@ -1123,10 +1093,44 @@ const ChiTietTinDang = () => {
                 <button
                   className="ctd-btn-secondary ctd-btn-deposit"
                   onClick={() => {
+                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
                     const acc = tinDang?.BankAccountNumber ?? "80349195777";
                     const bank = tinDang?.BankName ?? "TPBank";
-                    const amount = tinDang?.Gia ?? tinDang?.TienCoc ?? "100000";
-                    const des = `dk${tinDang?.TinDangID ?? tinDang?.id ?? ""}`;
+
+                    // Logic chọn phòng:
+                    // 1. Nếu có nhiều phòng (> 1) → Mở modal chọn phòng
+                    // 2. Nếu 1 phòng → Lấy giá phòng đó
+                    // 3. Nếu không có phòng → Lấy TienCoc/Gia từ tin đăng
+                    if (tinDang?.DanhSachPhong?.length > 1) {
+                      // Nhiều phòng → Mở modal chọn
+                      setCocModalOpen(true);
+                      return;
+                    }
+
+                    let amount = "1000000"; // Default fallback
+
+                    if (tinDang?.DanhSachPhong?.length === 1) {
+                      // 1 phòng → Lấy giá phòng
+                      const phong = tinDang.DanhSachPhong[0];
+                      amount = String(phong.Gia || "1000000");
+                    } else {
+                      // Không có phòng → Lấy từ tin đăng
+                      if (tinDang?.TienCoc && tinDang.TienCoc > 0) {
+                        amount = String(tinDang.TienCoc);
+                      } else if (tinDang?.Gia && tinDang.Gia > 0) {
+                        amount = String(tinDang.Gia);
+                      }
+                    }
+
+                    const des = `dk${tinId}`;
+
+                    console.log("[Đặt cọc] Debug:", {
+                      tinId,
+                      soPhong: tinDang?.DanhSachPhong?.length || 0,
+                      amount,
+                      acc,
+                      bank,
+                    });
 
                     navigate(
                       `/thanhtoancoc?acc=${encodeURIComponent(
@@ -1137,7 +1141,9 @@ const ChiTietTinDang = () => {
                         amount
                       )}&des=${encodeURIComponent(
                         des
-                      )}&order=${encodeURIComponent(tinDang?.TinDangID ?? "")}`
+                      )}&tinId=${encodeURIComponent(
+                        tinId
+                      )}&order=${encodeURIComponent(tinId)}`
                     );
                   }}
                   title="Đặt cọc"
@@ -1269,6 +1275,132 @@ const ChiTietTinDang = () => {
           aria-valuemin="0"
           aria-valuemax="100"
         />
+
+        {/* 💰 Modal chọn phòng để đặt cọc */}
+        {cocModalOpen && (
+          <div
+            className="hen-modal-overlay"
+            onClick={() => setCocModalOpen(false)}
+          >
+            <div
+              className="hen-modal"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <h3>Chọn phòng để đặt cọc</h3>
+              <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 16 }}>
+                Vui lòng chọn phòng bạn muốn đặt cọc
+              </p>
+
+              <div className="coc-phong-list">
+                {tinDang?.DanhSachPhong?.map((phong) => (
+                  <div
+                    key={phong.PhongID}
+                    className={`coc-phong-item ${
+                      cocPhongId === phong.PhongID ? "selected" : ""
+                    }`}
+                    onClick={() => setCocPhongId(phong.PhongID)}
+                  >
+                    <div className="coc-phong-info">
+                      <h4>{phong.TenPhong}</h4>
+                      <div className="coc-phong-specs">
+                        <span>{phong.DienTich} m²</span>
+                        <span>•</span>
+                        <span className="coc-phong-price">
+                          {formatCurrency(phong.Gia)}/tháng
+                        </span>
+                      </div>
+                      <div className="coc-phong-status">
+                        {phong.TrangThaiPhong === "Trong" ? (
+                          <>
+                            <HiOutlineCheckCircle
+                              style={{ color: "#10b981" }}
+                            />
+                            <span>Còn trống</span>
+                          </>
+                        ) : (
+                          <>
+                            <HiOutlineXCircle style={{ color: "#ef4444" }} />
+                            <span>Đã thuê</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {phong.AnhPhong && (
+                      <img
+                        src={`http://localhost:5000${phong.AnhPhong}`}
+                        alt={phong.TenPhong}
+                        className="coc-phong-thumb"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="hen-form-footer">
+                <button
+                  type="button"
+                  className="hen-btn secondary"
+                  onClick={() => {
+                    setCocModalOpen(false);
+                    setCocPhongId(null);
+                  }}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="hen-btn primary"
+                  disabled={!cocPhongId}
+                  onClick={() => {
+                    const phong = tinDang?.DanhSachPhong?.find(
+                      (p) => p.PhongID === cocPhongId
+                    );
+                    if (!phong) {
+                      showToast("❌ Vui lòng chọn phòng");
+                      return;
+                    }
+
+                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
+                    const acc = tinDang?.BankAccountNumber ?? "80349195777";
+                    const bank = tinDang?.BankName ?? "TPBank";
+                    const amount = String(phong.Gia || "1000000");
+                    const des = `dk${tinId}_p${phong.PhongID}`;
+
+                    console.log("[Đặt cọc phòng] Debug:", {
+                      tinId,
+                      phongId: phong.PhongID,
+                      tenPhong: phong.TenPhong,
+                      amount,
+                    });
+
+                    setCocModalOpen(false);
+                    setCocPhongId(null);
+
+                    navigate(
+                      `/thanhtoancoc?acc=${encodeURIComponent(
+                        acc
+                      )}&bank=${encodeURIComponent(
+                        bank
+                      )}&amount=${encodeURIComponent(
+                        amount
+                      )}&des=${encodeURIComponent(
+                        des
+                      )}&tinId=${encodeURIComponent(
+                        tinId
+                      )}&phongId=${encodeURIComponent(
+                        phong.PhongID
+                      )}&order=${encodeURIComponent(tinId)}`
+                    );
+                  }}
+                >
+                  Xác nhận đặt cọc
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal đặt lịch (thêm trước Footer) */}
         {henModalOpen && (
