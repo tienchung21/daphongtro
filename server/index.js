@@ -31,6 +31,7 @@ const bienBanBanGiaoRoutes = require('./routes/bienBanBanGiaoRoutes'); // UC-OPE
 const dashboardOperatorRoutes = require('./routes/dashboardOperatorRoutes'); // Dashboard metrics
 
 // Routes từ upstream
+const viRoutes = require('./routes/viRoutes');
 const tinDangRoutes = require('./routes/tinDangRoutes');
 const khuVucRoutes = require('./routes/khuVucRoutes');
 const yeuThichRoutes = require('./routes/yeuThichRoutes');
@@ -41,7 +42,7 @@ const cuocHenRoutes = require('./routes/cuocHenRoutes');
 const publicDuAnRoutes = require('./routes/publicDuAnRoutes');
 const publicTinDangRoutes = require('./routes/publicTinDangRoutes');
 const sepaySync = require('./services/sepaySyncService');
-
+const lichSuViRoutes = require('./routes/lichSuViRoutes');
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
@@ -134,6 +135,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/api/users', userRoutes);
 app.use('/api', authRoutes);
 
+
 // API từ local (Module Chủ dự án)
 app.use('/api/chu-du-an', chuDuAnRoutes); // API nghiệp vụ chủ dự án theo đặc tả
 app.use('/api/chu-du-an/chinh-sach-coc', chinhSachCocRoutes); // API Chính sách Cọc
@@ -164,6 +166,8 @@ app.use('/api/sepay', sepayCallbackRoutes);
 app.use('/api/cuoc-hen', cuocHenRoutes);
 app.use('/api/public/du-an', publicDuAnRoutes);
 app.use('/api/public/tin-dang', publicTinDangRoutes);
+app.use('/api/lich-su-vi', lichSuViRoutes);
+app.use('/api/vi', viRoutes);
 app.get('/', (req, res) => {
   res.send('API server đang chạy - Module Chủ dự án + Upstream APIs');
 });

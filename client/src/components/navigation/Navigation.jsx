@@ -94,6 +94,13 @@ function Navigation({ activeTab, onTabChange }) {
       description: "Quản lý giao dịch",
     },
     {
+      path: "/quanlyvi",
+      tab: "vi",
+      title: "Ví",
+      icon: <HiOutlineArrowTrendingUp />,
+      description: "Quản lý ví người dùng",
+    },
+    {
       path: "/chu-du-an/bao-cao",
       tab: "baocao",
       title: "Báo cáo",

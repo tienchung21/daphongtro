@@ -6,9 +6,9 @@ import "./QuanLy.css";
 // Import các components có sẵn
 import QuanLyTaiKhoan from "../quanlytaikhoan/index";
 import QuanLyTinDang from "../quanlytindang/index";
-import QuanLyKhuVuc from "../quanlykhuvuc/index"; 
-import Appointments from "../cuochencuatoi/index"; 
-
+import QuanLyKhuVuc from "../quanlykhuvuc/index";
+import Appointments from "../cuochencuatoi/index";
+import ViPage from "../Vi/index";
 
 import {
   HiOutlineUsers,
@@ -105,8 +105,8 @@ function QuanLy() {
         return <QuanLyTinDang />;
       case "quanlykhuvuc":
         return <QuanLyKhuVuc />;
-      case "cuochen": // ← Placeholder thay vì component
-        return   <Appointments />;
+      case "cuochen":
+        return <Appointments />;
       case "duan":
         return (
           <div className="quanly__placeholder">
@@ -121,6 +121,8 @@ function QuanLy() {
             <p>Chức năng đang phát triển...</p>
           </div>
         );
+      case "vi":
+        return <ViPage />;
       case "yeucau":
         return (
           <div className="quanly__placeholder">

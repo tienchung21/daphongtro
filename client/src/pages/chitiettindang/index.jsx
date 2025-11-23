@@ -28,6 +28,7 @@ import cuocHenApi from "../../api/cuocHenApi"; // ✅ Dùng API mới thay vì P
 import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
 import yeuThichApi from "../../api/yeuThichApi";
 import nguoiPhuTrachDuAnApi from "../../api/nguoiPhuTrachDuAnApi"; // Thêm import
+import viApi from "../../api/viApi";
 import "./chitiettindang.css";
 
 /**
@@ -62,8 +63,6 @@ const toMySqlDateTime = (input) => {
 
   return null;
 };
-
-const toIsoString = (str) => str.replace(" ", "T");
 
 /**
  * Component: Chi tiết Tin Đăng cho Khách hàng (Public View)
@@ -110,6 +109,8 @@ const ChiTietTinDang = () => {
   // State cho modal chọn phòng để đặt cọc
   const [cocModalOpen, setCocModalOpen] = useState(false);
   const [cocPhongId, setCocPhongId] = useState(null);
+  const [soDuVi, setSoDuVi] = useState(null);
+  const [checkingCoc, setCheckingCoc] = useState(false);
 
   // Chuẩn bị giá trị PheDuyetChuDuAn từ tin đăng (1 => ChoPheDuyet, 0 => DaPheDuyet)
   const getPheDuyetChuValue = () => {
@@ -182,32 +183,54 @@ const ChiTietTinDang = () => {
         const res = await nguoiPhuTrachDuAnApi.getByDuAnId(khuVucId);
         console.log("[ChiTietTinDang] 📥 API response:", res);
         console.log("[ChiTietTinDang] 📥 API response.data:", res.data);
-        
+
         // Axios trả về {data: {...}, status: 200, ...}
         // Server trả về {success: true, data: [...]}
         // Vậy cần truy cập: res.data.success và res.data.data
         const responseData = res.data;
         const danhSachNhanVien = responseData?.data || responseData; // Fallback nếu không có nested data
-        
-        if (responseData?.success && Array.isArray(danhSachNhanVien) && danhSachNhanVien.length > 0) {
-          console.log("[ChiTietTinDang] ✅ Tìm thấy", danhSachNhanVien.length, "nhân viên");
-          
+
+        if (
+          responseData?.success &&
+          Array.isArray(danhSachNhanVien) &&
+          danhSachNhanVien.length > 0
+        ) {
+          console.log(
+            "[ChiTietTinDang] ✅ Tìm thấy",
+            danhSachNhanVien.length,
+            "nhân viên"
+          );
+
           // Duyệt từng nhân viên và từng ca làm việc
           console.log("--- DEBUG TÌM NHÂN VIÊN ---");
           console.log("Giờ hẹn khách chọn:", mysqlTime);
-          
+
           danhSachNhanVien.forEach((nv) => {
-            console.log(`Nhân viên ID ${nv.NguoiDungID}, có ${nv.lichLamViec?.length || 0} ca làm việc`);
+            console.log(
+              `Nhân viên ID ${nv.NguoiDungID}, có ${
+                nv.lichLamViec?.length || 0
+              } ca làm việc`
+            );
             if (Array.isArray(nv.lichLamViec)) {
               nv.lichLamViec.forEach((ca) => {
                 console.log("  Ca:", ca.BatDau, "→", ca.KetThuc);
                 // So sánh trực tiếp string MySQL datetime (YYYY-MM-DD HH:mm:ss)
-                const isInRange = mysqlTime >= ca.BatDau && mysqlTime <= ca.KetThuc;
-                console.log("  So sánh:", mysqlTime, "trong khoảng", ca.BatDau, "-", ca.KetThuc, "→", isInRange);
+                const isInRange =
+                  mysqlTime >= ca.BatDau && mysqlTime <= ca.KetThuc;
+                console.log(
+                  "  So sánh:",
+                  mysqlTime,
+                  "trong khoảng",
+                  ca.BatDau,
+                  "-",
+                  ca.KetThuc,
+                  "→",
+                  isInRange
+                );
               });
             }
           });
-          
+
           // Tìm nhân viên có ca làm việc chứa thời gian hẹn
           // So sánh trực tiếp string MySQL datetime (YYYY-MM-DD HH:mm:ss)
           const found = danhSachNhanVien.find(
@@ -218,25 +241,39 @@ const ChiTietTinDang = () => {
                 return mysqlTime >= ca.BatDau && mysqlTime <= ca.KetThuc;
               })
           );
-          
+
           if (found) {
             nhanVienId = found.NguoiDungID;
-            console.log("[ChiTietTinDang] ✅ Tìm thấy nhân viên phù hợp:", nhanVienId);
+            console.log(
+              "[ChiTietTinDang] ✅ Tìm thấy nhân viên phù hợp:",
+              nhanVienId
+            );
           } else {
-            console.log("[ChiTietTinDang] ⚠️ Không tìm thấy nhân viên phù hợp, dùng mặc định:", nhanVienId);
+            console.log(
+              "[ChiTietTinDang] ⚠️ Không tìm thấy nhân viên phù hợp, dùng mặc định:",
+              nhanVienId
+            );
           }
         } else {
-          console.log("[ChiTietTinDang] ⚠️ Không có nhân viên nào hoặc response không hợp lệ");
+          console.log(
+            "[ChiTietTinDang] ⚠️ Không có nhân viên nào hoặc response không hợp lệ"
+          );
           console.log("[ChiTietTinDang] responseData:", responseData);
           console.log("[ChiTietTinDang] danhSachNhanVien:", danhSachNhanVien);
         }
       } catch (err) {
         console.error("[ChiTietTinDang] ❌ Lỗi lấy nhân viên phụ trách:", err);
-        console.error("[ChiTietTinDang] Error details:", err.response?.data || err.message);
+        console.error(
+          "[ChiTietTinDang] Error details:",
+          err.response?.data || err.message
+        );
         // Giữ mặc định nhanVienId = 1
       }
     } else {
-      console.log("[ChiTietTinDang] ⚠️ Không có KhuVucID, dùng nhân viên mặc định:", nhanVienId);
+      console.log(
+        "[ChiTietTinDang] ⚠️ Không có KhuVucID, dùng nhân viên mặc định:",
+        nhanVienId
+      );
     }
 
     const yeuCauPheDuyet = tinDang?.YeuCauPheDuyetChu;
@@ -1424,8 +1461,8 @@ const ChiTietTinDang = () => {
                 <button
                   type="button"
                   className="hen-btn primary"
-                  disabled={!cocPhongId}
-                  onClick={() => {
+                  disabled={!cocPhongId || checkingCoc}
+                  onClick={async () => {
                     const phong = tinDang?.DanhSachPhong?.find(
                       (p) => p.PhongID === cocPhongId
                     );
@@ -1433,23 +1470,38 @@ const ChiTietTinDang = () => {
                       showToast("❌ Vui lòng chọn phòng");
                       return;
                     }
-
+                    setCheckingCoc(true);
+                    // Lấy số dư ví
+                    try {
+                      const user = JSON.parse(
+                        localStorage.getItem("user") || "{}"
+                      );
+                      const userId = user.id || user.NguoiDungID || user._id;
+                      const viRes = await viApi.getByUser(userId);
+                      let soDu = 0;
+                      if (viRes?.data?.data?.SoDu) {
+                        soDu = Number(viRes.data.data.SoDu);
+                      }
+                      setSoDuVi(soDu);
+                      if (soDu < Number(phong.Gia)) {
+                        showToast("❌ Số dư ví không đủ để đặt cọc phòng này!");
+                        setCheckingCoc(false);
+                        return;
+                      }
+                    } catch (err) {
+                      showToast("❌ Lỗi kiểm tra số dư ví");
+                      setCheckingCoc(false);
+                      return;
+                    }
+                    setCheckingCoc(false);
+                    // ...existing code chuyển trang hoặc xử lý đặt cọc...
                     const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
                     const acc = tinDang?.BankAccountNumber ?? "80349195777";
                     const bank = tinDang?.BankName ?? "TPBank";
                     const amount = String(phong.Gia || "1000000");
                     const des = `dk${tinId}_p${phong.PhongID}`;
-
-                    console.log("[Đặt cọc phòng] Debug:", {
-                      tinId,
-                      phongId: phong.PhongID,
-                      tenPhong: phong.TenPhong,
-                      amount,
-                    });
-
                     setCocModalOpen(false);
                     setCocPhongId(null);
-
                     navigate(
                       `/thanhtoancoc?acc=${encodeURIComponent(
                         acc
