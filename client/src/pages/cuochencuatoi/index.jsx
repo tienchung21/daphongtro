@@ -127,19 +127,21 @@ const Appointments = () => {
       const raw = res?.data?.data ?? res?.data ?? [];
       const data = Array.isArray(raw) ? raw : [];
 
-     // Chỉ lọc theo KhachHangID nếu là Khách hàng; role khác giữ nguyên
-     if (role === 1) {
-       const khId = Number(ids.khachHangId);
-       setAppointments(
-         Number.isFinite(khId)
-           ? data.filter((c) =>
-               Number(c?.KhachHangID ?? c?.khachHangId ?? c?.NguoiDungID) === khId
-             )
-           : data
-       );
-     } else {
-       setAppointments(data);
-     }
+      // Chỉ lọc theo KhachHangID nếu là Khách hàng; role khác giữ nguyên
+      if (role === 1) {
+        const khId = Number(ids.khachHangId);
+        setAppointments(
+          Number.isFinite(khId)
+            ? data.filter(
+                (c) =>
+                  Number(c?.KhachHangID ?? c?.khachHangId ?? c?.NguoiDungID) ===
+                  khId
+              )
+            : data
+        );
+      } else {
+        setAppointments(data);
+      }
     } catch (e) {
       console.error("[loadAppointments] Error:", e);
       setError(
@@ -267,10 +269,30 @@ const Appointments = () => {
                       Tin đăng: <strong>{c.TinDangID}</strong>
                     </div>
                     <div className="appointments__info-item">
+                      <strong>{c.TieuDeTinDang}</strong>
+                    </div>
+                    <div className="appointments__info-item">
+                      Thời gian hẹn:{" "}
+                      <strong>{formatDateTimeVN(c.ThoiGianHen)}</strong>
+                    </div>
+                    <div className="appointments__info-item">
+                      Khách hàng:{" "}
+                      <strong>
+                        {c.TenKhachHang} ({c.SDTKhachHang})
+                      </strong>
+                    </div>
+                    <div className="appointments__info-item">
+                      Nhân viên:{" "}
+                      <strong>
+                        {c.TenNhanVien} ({c.SDTNhanVien})
+                      </strong>
+                    </div>
+                    <div className="appointments__info-item">
                       Phòng: <strong>{c.PhongID ?? "—"}</strong>
                     </div>
                     <div className="appointments__info-item">
-                      Nhân viên: <strong>{c.NhanVienBanHangID ?? "—"}</strong>
+                      Nhân viên ID:{" "}
+                      <strong>{c.NhanVienBanHangID ?? "—"}</strong>
                     </div>
                     <div className="appointments__info-item">
                       Trạng thái:{" "}
@@ -309,7 +331,7 @@ const Appointments = () => {
                     </div>
                     {(isChuDuAn || isAdmin) && (
                       <div className="appointments__info-item">
-                        Khách hàng: <strong>{c.KhachHangID ?? "—"}</strong>
+                        Khách hàng ID: <strong>{c.KhachHangID ?? "—"}</strong>
                       </div>
                     )}
                   </div>

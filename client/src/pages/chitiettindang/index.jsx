@@ -188,7 +188,7 @@ const ChiTietTinDang = () => {
       ChuDuAnID: tinDang.ChuDuAnID,
       PhongID: henPhongId ? parseInt(henPhongId) : null,
       KhachHangID: parseInt(userId),
-      NhanVienBanHangID: "7",
+      NhanVienBanHangID: "8",
       ThoiGianHen: mysqlTime,
       TrangThai: "ChoXacNhan",
       PheDuyetChuDuAn: pheDuyetValue,

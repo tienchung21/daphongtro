@@ -208,18 +208,35 @@ class CuocHenModel {
     try {
       const [rows] = await db.execute(
         `
-        SELECT 
-          ch.CuocHenID, ch.PhongID, ch.TrangThai, ch.PheDuyetChuDuAn,
-          ch.ThoiGianHen, ch.GhiChuKetQua, ch.TaoLuc,
-          p.TenPhong,
-          da.TenDuAn, da.DiaChi,
-          nv.TenDayDu as TenNhanVien, nv.SoDienThoai as SDTNhanVien
-        FROM cuochen ch
-        INNER JOIN phong p ON ch.PhongID = p.PhongID
-        INNER JOIN duan da ON p.DuAnID = da.DuAnID
-        LEFT JOIN nguoidung nv ON ch.NhanVienBanHangID = nv.NguoiDungID
-        WHERE ch.KhachHangID = ?
-        ORDER BY ch.ThoiGianHen DESC
+      SELECT 
+        ch.CuocHenID,
+        ch.KhachHangID,
+        ch.NhanVienBanHangID,
+        ch.PhongID,
+        ch.TinDangID,
+        ch.ThoiGianHen,
+        ch.TrangThai,
+        ch.PheDuyetChuDuAn,
+        ch.LyDoTuChoi,
+        ch.ThoiGianPheDuyet,
+        ch.SoLanDoiLich,
+        ch.GhiChuKetQua,
+        ch.TaoLuc,
+        ch.CapNhatLuc,
+        ch.GhiChu,
+        ch.ChuDuAnID,
+        ch.PhuongThucVao,
+        td.TieuDe AS TieuDeTinDang, -- Lấy tiêu đề từ bảng tindang
+        kh.TenDayDu AS TenKhachHang,
+        kh.SoDienThoai AS SDTKhachHang,
+        nv.TenDayDu AS TenNhanVien,
+        nv.SoDienThoai AS SDTNhanVien
+      FROM cuochen ch
+      LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
+      LEFT JOIN nguoidung nv ON ch.NhanVienBanHangID = nv.NguoiDungID
+      LEFT JOIN tindang td ON ch.TinDangID = td.TinDangID
+      WHERE ch.KhachHangID = ?
+      ORDER BY ch.ThoiGianHen DESC
       `,
         [khachHangId]
       );
