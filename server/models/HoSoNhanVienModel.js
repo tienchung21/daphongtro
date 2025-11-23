@@ -40,7 +40,7 @@ class HoSoNhanVienModel {
       }
 
       if (trangThai) {
-        whereConditions.push(`hs.TrangThaiLamViec = ?`);
+        whereConditions.push(`nd.TrangThai = ?`);
         params.push(trangThai);
       }
 
@@ -49,6 +49,9 @@ class HoSoNhanVienModel {
         params.push(khuVucId);
       }
 
+      // Luôn loại bỏ nhân viên đã xóa mềm
+      whereConditions.push(`nd.TrangThai != 'XoaMem'`);
+      
       const whereClause = whereConditions.length > 0
         ? 'WHERE ' + whereConditions.join(' AND ')
         : '';
@@ -60,7 +63,6 @@ class HoSoNhanVienModel {
           hs.MaNhanVien,
           hs.KhuVucChinhID,
           hs.TyLeHoaHong,
-          hs.TrangThaiLamViec,
           hs.NgayBatDau,
           hs.NgayKetThuc,
           hs.GhiChu,
@@ -68,7 +70,9 @@ class HoSoNhanVienModel {
           nd.Email,
           nd.SoDienThoai,
           nd.TrangThai as TrangThaiTaiKhoan,
+          nd.TrangThai as TrangThaiLamViec,
           kv.TenKhuVuc,
+          kv.TenKhuVuc as KhuVucPhuTrach,
           COUNT(DISTINCT ch.CuocHenID) as TongSoCuocHen,
           COUNT(DISTINCT CASE WHEN ch.TrangThai = 'HoanThanh' THEN ch.CuocHenID END) as SoCuocHenHoanThanh
         FROM hosonhanvien hs
@@ -77,12 +81,14 @@ class HoSoNhanVienModel {
         LEFT JOIN cuochen ch ON nd.NguoiDungID = ch.NhanVienBanHangID
         ${whereClause}
         GROUP BY hs.HoSoID
-        ORDER BY hs.TrangThaiLamViec ASC, nd.TenDayDu ASC
+        ORDER BY nd.TrangThai ASC, nd.TenDayDu ASC
         LIMIT ? OFFSET ?
       `;
 
       params.push(limit, offset);
       const [rows] = await db.execute(query, params);
+
+      // Không cần map, dùng trạng thái DB trực tiếp (HoatDong/TamKhoa/VoHieuHoa)
 
       // Query total count
       const countQuery = `
@@ -461,12 +467,15 @@ class HoSoNhanVienModel {
         throw new Error("Trạng thái phải là 'Active' hoặc 'Inactive'");
       }
 
+      // Map frontend status sang DB status
+      const dbTrangThai = trangThai === 'Active' ? 'HoatDong' : 'VoHieuHoa';
+
       await connection.beginTransaction();
 
-      // Cập nhật trạng thái
+      // Cập nhật trạng thái tài khoản người dùng
       await connection.execute(
-        `UPDATE hosonhanvien SET TrangThaiLamViec = ? WHERE NguoiDungID = ?`,
-        [trangThai, nhanVienId]
+        `UPDATE nguoidung SET TrangThai = ? WHERE NguoiDungID = ?`,
+        [dbTrangThai, nhanVienId]
       );
 
       // Nếu vô hiệu hóa, set NgayKetThuc
@@ -540,14 +549,34 @@ class HoSoNhanVienModel {
     try {
       const query = `
         SELECT 
-          COUNT(CASE WHEN hs.TrangThaiLamViec = 'Active' THEN 1 END) as Active,
-          COUNT(CASE WHEN hs.TrangThaiLamViec = 'Inactive' THEN 1 END) as Inactive,
+          COUNT(CASE WHEN nd.TrangThai = 'HoatDong' THEN 1 END) as HoatDong,
+          COUNT(CASE WHEN nd.TrangThai = 'TamKhoa' THEN 1 END) as TamKhoa,
+          COUNT(CASE WHEN nd.TrangThai = 'VoHieuHoa' THEN 1 END) as VoHieuHoa,
           COUNT(*) as TongSo,
           AVG(hs.TyLeHoaHong) as TyLeHoaHongTrungBinh
         FROM hosonhanvien hs
+        INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
+        WHERE nd.TrangThai != 'XoaMem'
       `;
 
+      console.log('📊 [HoSoNhanVienModel] Executing stats query:', query);
       const [rows] = await db.execute(query);
+      console.log('📊 [HoSoNhanVienModel] Stats result:', rows[0]);
+      
+      // Debug: Kiểm tra dữ liệu thực tế
+      const debugQuery = `
+        SELECT 
+          nd.NguoiDungID, 
+          nd.TenDayDu, 
+          nd.TrangThai,
+          hs.HoSoID
+        FROM hosonhanvien hs
+        INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
+        WHERE nd.TrangThai != 'XoaMem'
+      `;
+      const [debugRows] = await db.execute(debugQuery);
+      console.log('📊 [HoSoNhanVienModel] All employees in hosonhanvien:', debugRows);
+      
       return rows[0];
     } catch (error) {
       console.error('[HoSoNhanVienModel] Lỗi layThongKeNhanVien:', error);
