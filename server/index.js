@@ -16,6 +16,7 @@ const chinhSachCocRoutes = require('./routes/chinhSachCocRoutes'); // API Chính
 const operatorRoutes = require('./routes/operatorRoutes'); // API Operator/Admin (Banned dự án)
 const geocodingRoutes = require('./routes/geocodingRoutes'); // Geocoding API
 const chatRoutes = require('./routes/chatRoutes'); // API Chat/Messaging (UC-PROJ-05)
+const kycRoutes = require('./api/kyc/kycRoutes'); // API KYC (Xác thực CCCD)
 
 // Routes cho Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
 const nhanVienBanHangRoutes = require('./routes/nhanVienBanHangRoutes');
@@ -45,14 +46,34 @@ const sepaySync = require('./services/sepaySyncService');
 const app = express();
 const server = http.createServer(app);
 
-// Setup Socket.IO with function-based CORS (matches Express CORS)
+// ✅ CORS Configuration - Dynamic origin validation
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+];
+
+// Helper function: Check if origin is allowed
+const isOriginAllowed = (origin) => {
+  // Allow localhost
+  if (allowedOrigins.includes(origin)) return true;
+  
+  // Allow any DevTunnel origin (*.devtunnels.ms)
+  if (origin && origin.match(/^https:\/\/[a-z0-9]+-[0-9]+\.asse\.devtunnels\.ms$/)) {
+    console.log('✅ DevTunnel origin allowed:', origin);
+    return true;
+  }
+  
+  return false;
+};
+
+// Setup Socket.IO with dynamic CORS (auto-detect DevTunnel)
 const io = new Server(server, {
   cors: {
     origin: function (origin, callback) {
       // Allow requests with no origin
       if (!origin) return callback(null, true);
       
-      if (allowedOrigins.indexOf(origin) !== -1) {
+      if (isOriginAllowed(origin)) {
         callback(null, true);
       } else {
         console.log('⚠️ Socket.IO CORS blocked origin:', origin);
@@ -72,20 +93,13 @@ io.on('connection', (socket) => {
   setupChatHandlers(socket, io);
 });
 
-// ✅ CORS Configuration - Function-based origin validation (Required for credentials: true)
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:5173',
-  'https://mt5vhvtq-5173.asse.devtunnels.ms', // DevTunnel Frontend
-  'https://mt5vhvtq-5000.asse.devtunnels.ms'  // DevTunnel Backend (self-origin)
-];
-
+// Express CORS Options (sử dụng cùng logic với Socket.IO)
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, Postman, curl)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (isOriginAllowed(origin)) {
       callback(null, true); // Origin allowed
     } else {
       console.log('⚠️ CORS blocked origin:', origin);
@@ -126,6 +140,7 @@ app.use('/api/chu-du-an/chinh-sach-coc', chinhSachCocRoutes); // API Chính sác
 app.use('/api/operator', operatorRoutes); // API Operator/Admin (UC-OPR-01, UC-OPR-02)
 app.use('/api/geocode', geocodingRoutes); // Geocoding API (Nominatim)
 app.use('/api/chat', chatRoutes); // API Chat/Messaging (UC-PROJ-05)
+app.use('/api/kyc', kycRoutes); // API KYC (Xác thực CCCD)
 
 // API Operator (UC-OPER-01 đến UC-OPER-06)
 app.use('/api/operator/tin-dang', tinDangOperatorRoutes); // UC-OPER-01: Duyệt tin đăng

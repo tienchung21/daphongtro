@@ -1,4 +1,11 @@
 {
+  "name": "daphongtro",
+  "version": "1.0.0",
+  "description": "Managed marketplace cho thuê phòng trọ",
+  "scripts": {
+    "download-kyc-models": "node scripts/download-kyc-models.js",
+    "setup-kyc": "npm run download-kyc-models"
+  },
   "dependencies": {
     "leaflet": "^1.9.4",
     "lucide-react": "^0.553.0",

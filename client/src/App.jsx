@@ -17,6 +17,7 @@ import QuanLyHopDong from './pages/ChuDuAn/QuanLyHopDong'; // ✨ UC-PROJ-04: Qu
 import TinNhan from './pages/ChuDuAn/TinNhan'; // ✨ UC-PROJ-05: Tin nhắn Chủ dự án
 import ChiTietTinNhan from './pages/ChuDuAn/ChiTietTinNhan'; // ✨ Chi tiết cuộc hội thoại
 import CaiDat from './pages/ChuDuAn/CaiDat'; // ✨ Cài đặt tài khoản Chủ dự án
+import XacThucKYC from './pages/XacThucKYC/XacThucKYC'; // ✨ Xác thực KYC (eKYC)
 
 // Import trang Chi Tiết Tin Đăng cho Khách hàng
 import ChiTietTinDangKhachHang from './pages/chitiettindang'; // 🎯 Soft Tech Theme - Dành cho khách hàng
@@ -99,6 +100,7 @@ function App() {
       <Route path='/chu-du-an/tin-nhan' element={<TinNhan />} /> {/* ✨ UC-PROJ-05: Tin nhắn */}
       <Route path='/chu-du-an/tin-nhan/:id' element={<ChiTietTinNhan />} /> {/* ✨ Chi tiết cuộc hội thoại */}
       <Route path='/cai-dat' element={<CaiDat />} /> {/* ✨ Cài đặt tài khoản Chủ dự án */}
+      <Route path='/xac-thuc-kyc' element={<XacThucKYC />} /> {/* ✨ Xác thực KYC */}
       
       {/* Routes từ upstream */}
       <Route path='/searchkhuvuc' element={<SearchKhuVuc />} />
