@@ -34,7 +34,14 @@ const QuanLyNhanVien = () => {
   // Query danh sách nhân viên
   const { data: nhanVienData, isLoading, error } = useQuery({
     queryKey: ['nhanVienOperator', filters],
-    queryFn: () => operatorApi.nhanVien.getDanhSach(filters),
+    queryFn: async () => {
+      const response = await operatorApi.nhanVien.getDanhSach(filters);
+      console.log('🔍 [QuanLyNhanVien] Full Axios Response:', response);
+      console.log('🔍 [QuanLyNhanVien] Response.data:', response.data);
+      console.log('🔍 [QuanLyNhanVien] Stats:', response.data?.stats);
+      console.log('🔍 [QuanLyNhanVien] Data array:', response.data?.data);
+      return response.data; // Return response.data (backend JSON)
+    },
     keepPreviousData: true
   });
 
@@ -107,16 +114,18 @@ const QuanLyNhanVien = () => {
       render: (row) => row.NgayBatDau ? new Date(row.NgayBatDau).toLocaleDateString('vi-VN') : 'N/A'
     },
     {
-      key: 'TrangThai',
+      key: 'TrangThaiLamViec',
       label: 'Trạng thái',
       width: '130px',
       render: (row) => (
         <BadgeStatusOperator
-          status={row.TrangThai}
+          status={row.TrangThaiLamViec}
           statusMap={{
             'Active': { label: 'Hoạt động', variant: 'success' },
             'Inactive': { label: 'Không hoạt động', variant: 'danger' },
-            'Nghi': { label: 'Nghỉ', variant: 'warning' }
+            'HoatDong': { label: 'Hoạt động', variant: 'success' },
+            'TamKhoa': { label: 'Tạm khóa', variant: 'warning' },
+            'VoHieuHoa': { label: 'Vô hiệu hóa', variant: 'danger' }
           }}
         />
       )
@@ -160,19 +169,23 @@ const QuanLyNhanVien = () => {
       value: filters.trangThai,
       options: [
         { value: '', label: 'Tất cả' },
-        { value: 'Active', label: 'Hoạt động' },
-        { value: 'Inactive', label: 'Không hoạt động' },
-        { value: 'Nghi', label: 'Nghỉ' }
+        { value: 'HoatDong', label: 'Hoạt động' },
+        { value: 'TamKhoa', label: 'Tạm khóa' },
+        { value: 'VoHieuHoa', label: 'Vô hiệu hóa' }
+        // Không hiển thị XoaMem
       ]
     }
   ];
 
-  // Stats - Kiểm tra nhanVienData.data là array
-  const stats = (nhanVienData?.data && Array.isArray(nhanVienData.data)) ? {
-    active: nhanVienData.data.filter(nv => nv.TrangThaiLamViec === 'Active').length,
-    inactive: nhanVienData.data.filter(nv => nv.TrangThaiLamViec === 'Inactive').length,
-    nghi: nhanVienData.data.filter(nv => nv.TrangThaiLamViec === 'Nghi').length
-  } : { active: 0, inactive: 0, nghi: 0 };
+  // Stats - Lấy từ backend response (3 trạng thái riêng biệt)
+  const stats = nhanVienData?.stats || {
+    hoatDong: 0,
+    tamKhoa: 0,
+    voHieuHoa: 0,
+    total: 0
+  };
+
+  console.log('📊 [QuanLyNhanVien] Final stats for display:', stats);
 
   return (
     <OperatorLayout>
@@ -187,22 +200,20 @@ const QuanLyNhanVien = () => {
           </div>
           
           {/* Stats */}
-          {stats && (
-            <div className="quan-ly-nhan-vien__stats">
-              <div className="quan-ly-nhan-vien__stat-item quan-ly-nhan-vien__stat-item--success">
-                <div className="quan-ly-nhan-vien__stat-value">{stats.active}</div>
-                <div className="quan-ly-nhan-vien__stat-label">Hoạt động</div>
-              </div>
-              <div className="quan-ly-nhan-vien__stat-item quan-ly-nhan-vien__stat-item--danger">
-                <div className="quan-ly-nhan-vien__stat-value">{stats.inactive}</div>
-                <div className="quan-ly-nhan-vien__stat-label">Không hoạt động</div>
-              </div>
-              <div className="quan-ly-nhan-vien__stat-item quan-ly-nhan-vien__stat-item--warning">
-                <div className="quan-ly-nhan-vien__stat-value">{stats.nghi}</div>
-                <div className="quan-ly-nhan-vien__stat-label">Nghỉ</div>
-              </div>
+          <div className="quan-ly-nhan-vien__stats">
+            <div className="quan-ly-nhan-vien__stat-item quan-ly-nhan-vien__stat-item--success">
+              <div className="quan-ly-nhan-vien__stat-value">{stats.hoatDong || 0}</div>
+              <div className="quan-ly-nhan-vien__stat-label">HOẠT ĐỘNG</div>
             </div>
-          )}
+            <div className="quan-ly-nhan-vien__stat-item quan-ly-nhan-vien__stat-item--warning">
+              <div className="quan-ly-nhan-vien__stat-value">{stats.tamKhoa || 0}</div>
+              <div className="quan-ly-nhan-vien__stat-label">TẠM KHÓA</div>
+            </div>
+            <div className="quan-ly-nhan-vien__stat-item quan-ly-nhan-vien__stat-item--danger">
+              <div className="quan-ly-nhan-vien__stat-value">{stats.voHieuHoa || 0}</div>
+              <div className="quan-ly-nhan-vien__stat-label">VÔ HIỆU HÓA</div>
+            </div>
+          </div>
 
           {/* Action Button */}
           <button

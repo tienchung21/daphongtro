@@ -30,10 +30,23 @@ class HoSoNhanVienController {
 
       const result = await HoSoNhanVienModel.layDanhSachNhanVien(filters);
 
+      // Lấy thống kê tổng thể
+      const stats = await HoSoNhanVienModel.layThongKeNhanVien();
+
+      console.log('📊 [HoSoNhanVienController] Raw stats from DB:', stats);
+      console.log('📊 [HoSoNhanVienController] Result data count:', result.data.length);
+      console.log('📊 [HoSoNhanVienController] Sample data:', result.data[0]);
+
       return res.status(200).json({
         success: true,
         message: 'Lấy danh sách nhân viên thành công',
-        ...result
+        ...result,
+        stats: {
+          hoatDong: stats.HoatDong || 0,
+          tamKhoa: stats.TamKhoa || 0,
+          voHieuHoa: stats.VoHieuHoa || 0,
+          total: stats.TongSo || 0
+        }
       });
     } catch (error) {
       console.error('[HoSoNhanVienController] Lỗi danhSach:', error);
