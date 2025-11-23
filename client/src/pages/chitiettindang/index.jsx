@@ -27,6 +27,7 @@ import { PublicTinDangService } from "../../services/PublicService"; // Đổi s
 import cuocHenApi from "../../api/cuocHenApi"; // ✅ Dùng API mới thay vì PublicCuocHenService
 import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
 import yeuThichApi from "../../api/yeuThichApi";
+import nguoiPhuTrachDuAnApi from "../../api/nguoiPhuTrachDuAnApi"; // Thêm import
 import "./chitiettindang.css";
 
 /**
@@ -61,6 +62,8 @@ const toMySqlDateTime = (input) => {
 
   return null;
 };
+
+const toIsoString = (str) => str.replace(" ", "T");
 
 /**
  * Component: Chi tiết Tin Đăng cho Khách hàng (Public View)
@@ -153,7 +156,6 @@ const ChiTietTinDang = () => {
       showToast("❌ Chưa chọn thời gian");
       return;
     }
-
     if (!henPhongId) {
       showToast("❌ Vui lòng chọn phòng cần xem");
       return;
@@ -165,9 +167,80 @@ const ChiTietTinDang = () => {
       return;
     }
 
+    // Lấy KhuVucID từ tin đăng
+    const khuVucId = tinDang?.KhuVucID;
+    let nhanVienId = 1; // Mặc định nếu không tìm thấy nhân viên phù hợp
+
+    console.log("[ChiTietTinDang] 🔍 Bắt đầu tìm nhân viên phụ trách");
+    console.log("[ChiTietTinDang] KhuVucID:", khuVucId);
+    console.log("[ChiTietTinDang] Thời gian hẹn (MySQL):", mysqlTime);
+
+    if (khuVucId) {
+      try {
+        // Gọi API lấy danh sách nhân viên phụ trách khu vực
+        console.log("[ChiTietTinDang] 📞 Gọi API lấy nhân viên phụ trách...");
+        const res = await nguoiPhuTrachDuAnApi.getByDuAnId(khuVucId);
+        console.log("[ChiTietTinDang] 📥 API response:", res);
+        console.log("[ChiTietTinDang] 📥 API response.data:", res.data);
+        
+        // Axios trả về {data: {...}, status: 200, ...}
+        // Server trả về {success: true, data: [...]}
+        // Vậy cần truy cập: res.data.success và res.data.data
+        const responseData = res.data;
+        const danhSachNhanVien = responseData?.data || responseData; // Fallback nếu không có nested data
+        
+        if (responseData?.success && Array.isArray(danhSachNhanVien) && danhSachNhanVien.length > 0) {
+          console.log("[ChiTietTinDang] ✅ Tìm thấy", danhSachNhanVien.length, "nhân viên");
+          
+          // Duyệt từng nhân viên và từng ca làm việc
+          console.log("--- DEBUG TÌM NHÂN VIÊN ---");
+          console.log("Giờ hẹn khách chọn:", mysqlTime);
+          
+          danhSachNhanVien.forEach((nv) => {
+            console.log(`Nhân viên ID ${nv.NguoiDungID}, có ${nv.lichLamViec?.length || 0} ca làm việc`);
+            if (Array.isArray(nv.lichLamViec)) {
+              nv.lichLamViec.forEach((ca) => {
+                console.log("  Ca:", ca.BatDau, "→", ca.KetThuc);
+                // So sánh trực tiếp string MySQL datetime (YYYY-MM-DD HH:mm:ss)
+                const isInRange = mysqlTime >= ca.BatDau && mysqlTime <= ca.KetThuc;
+                console.log("  So sánh:", mysqlTime, "trong khoảng", ca.BatDau, "-", ca.KetThuc, "→", isInRange);
+              });
+            }
+          });
+          
+          // Tìm nhân viên có ca làm việc chứa thời gian hẹn
+          // So sánh trực tiếp string MySQL datetime (YYYY-MM-DD HH:mm:ss)
+          const found = danhSachNhanVien.find(
+            (nv) =>
+              Array.isArray(nv.lichLamViec) &&
+              nv.lichLamViec.some((ca) => {
+                // So sánh trực tiếp string MySQL datetime format
+                return mysqlTime >= ca.BatDau && mysqlTime <= ca.KetThuc;
+              })
+          );
+          
+          if (found) {
+            nhanVienId = found.NguoiDungID;
+            console.log("[ChiTietTinDang] ✅ Tìm thấy nhân viên phù hợp:", nhanVienId);
+          } else {
+            console.log("[ChiTietTinDang] ⚠️ Không tìm thấy nhân viên phù hợp, dùng mặc định:", nhanVienId);
+          }
+        } else {
+          console.log("[ChiTietTinDang] ⚠️ Không có nhân viên nào hoặc response không hợp lệ");
+          console.log("[ChiTietTinDang] responseData:", responseData);
+          console.log("[ChiTietTinDang] danhSachNhanVien:", danhSachNhanVien);
+        }
+      } catch (err) {
+        console.error("[ChiTietTinDang] ❌ Lỗi lấy nhân viên phụ trách:", err);
+        console.error("[ChiTietTinDang] Error details:", err.response?.data || err.message);
+        // Giữ mặc định nhanVienId = 1
+      }
+    } else {
+      console.log("[ChiTietTinDang] ⚠️ Không có KhuVucID, dùng nhân viên mặc định:", nhanVienId);
+    }
+
     const yeuCauPheDuyet = tinDang?.YeuCauPheDuyetChu;
     let pheDuyetValue = "ChoPheDuyet";
-
     if (
       yeuCauPheDuyet === 0 ||
       yeuCauPheDuyet === "0" ||
@@ -179,39 +252,33 @@ const ChiTietTinDang = () => {
     if (!tinDang?.TinDangID) {
       showToast(
         "❌ Không tìm thấy thông tin tin đăng. Vui lòng tải lại trang."
-      );   
+      );
       return;
     }
-    console.log('dcvmm',tinDang.PhuongThucVao);
+
     const payload = {
       TinDangID: tinDang.TinDangID,
       ChuDuAnID: tinDang.ChuDuAnID,
       PhongID: henPhongId ? parseInt(henPhongId) : null,
       KhachHangID: parseInt(userId),
-      NhanVienBanHangID: "8",
+      NhanVienBanHangID: nhanVienId,
       ThoiGianHen: mysqlTime,
       TrangThai: "ChoXacNhan",
       PheDuyetChuDuAn: pheDuyetValue,
       GhiChu: henGhiChu.trim() || null,
       GhiChuKetQua: null,
-      PhuongThucVao: tinDang.PhuongThucVao
+      PhuongThucVao: tinDang.PhuongThucVao,
     };
 
     Object.keys(payload).forEach((key) => {
       if (payload[key] === undefined) {
         delete payload[key];
       }
-    }); 
-
- 
+    });
 
     setHenSubmitting(true);
     try {
       const response = await cuocHenApi.create(payload);
-
-     
-
-      // ✅ FIX: Check cả success hoặc status code
       if (
         response?.success ||
         response?.status === 201 ||
@@ -231,8 +298,6 @@ const ChiTietTinDang = () => {
       }
     } catch (error) {
       console.error("[ChiTietTinDang] Lỗi tạo cuộc hẹn:", error);
-
-      // ✅ FIX: Kiểm tra error.response.status
       if (error?.response?.status === 201) {
         showToast("✅ Đặt lịch thành công!");
         setHenModalOpen(false);
@@ -295,8 +360,6 @@ const ChiTietTinDang = () => {
       // Đổi sang dùng PublicTinDangService (không cần auth)
       const response = await PublicTinDangService.layChiTietTinDang(id);
       if (response && response.success) {
-      
-    
         setTinDang(response.data);
 
         // Parse danh sách ảnh
@@ -1107,7 +1170,7 @@ const ChiTietTinDang = () => {
                     const bank = tinDang?.BankName ?? "TPBank";
 
                     // Logic chọn phòng:
-                    // 1. Nếu có nhiều phòng (> 1) → Mở modal chọn phòng
+                    // 1. Nếu có nhiều phòng (> 1) → Mở modal chọn
                     // 2. Nếu 1 phòng → Lấy giá phòng đó
                     // 3. Nếu không có phòng → Lấy TienCoc/Gia từ tin đăng
                     if (tinDang?.DanhSachPhong?.length > 1) {

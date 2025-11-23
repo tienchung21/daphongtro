@@ -113,7 +113,7 @@ class PublicTinDangModel {
         td.TinDangID, td.DuAnID, td.KhuVucID, td.ChinhSachCocID,
         td.TieuDe, td.URL, td.MoTa,
         td.TienIch, td.GiaDien, td.GiaNuoc, td.GiaDichVu, td.MoTaGiaDichVu,
-        td.TrangThai, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,
+        td.TrangThai, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,td.KhuVucID,
         da.ChuDuAnID, da.TenDuAn,da.PhuongThucVao, da.DiaChi, da.YeuCauPheDuyetChu,
         da.ViDo, da.KinhDo,
         kv.TenKhuVuc,

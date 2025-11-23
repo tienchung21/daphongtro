@@ -20,7 +20,7 @@ const kycRoutes = require('./api/kyc/kycRoutes'); // API KYC (Xác thực CCCD)
 
 // Routes cho Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
 const nhanVienBanHangRoutes = require('./routes/nhanVienBanHangRoutes');
-
+const nguoiPhuTrachDuAnRoutes = require('./routes/nguoiPhuTrachDuAnRoutes');
 // Routes cho Operator (UC-OPER-01 đến UC-OPER-06)
 const tinDangOperatorRoutes = require('./routes/tinDangOperatorRoutes'); // UC-OPER-01: Duyệt tin đăng
 const duAnOperatorRoutes = require('./routes/duAnOperatorRoutes'); // UC-OPER-02: Quản lý dự án
@@ -153,7 +153,7 @@ app.use('/api/operator/dashboard', dashboardOperatorRoutes); // Dashboard metric
 
 // API Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
 app.use('/api/nhan-vien-ban-hang', nhanVienBanHangRoutes);
-
+app.use('/api/nguoi-phu-trach-du-an', nguoiPhuTrachDuAnRoutes);
 // API từ upstream
 app.use('/api/tindangs', tinDangRoutes); 
 app.use('/api/khuvucs', khuVucRoutes);
