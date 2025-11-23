@@ -62,6 +62,49 @@
   transition: all 0.2s ease;
 }
 
+/* Class này kế thừa style của .modal-tao-nv__input nhưng chỉnh lại một chút */
+.modal-tao-nv__input.modal-tao-nv__input--readonly {
+  /* Màu nền xám nhẹ */
+  border: 1px solid #e0e0e0;
+  /* Viền nhạt hơn chút */
+  display: flex;
+  align-items: center;
+  /* Căn giữa nội dung theo chiều dọc */
+  color: #333;
+  font-weight: 500;
+  cursor: default;
+  /* Con trỏ chuột bình thường */
+  padding-left: 12px;
+  /* Đảm bảo padding giống input */
+}
+
+/* Container bên trong để căn chỉnh icon và text */
+.kv-display-row {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  /* Cắt chữ nều quá dài */
+}
+
+.kv-icon {
+  margin-right: 8px;
+  font-size: 1.1em;
+}
+
+.kv-text {
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.kv-separator {
+  color: #999;
+  margin: 0 6px;
+  font-size: 12px;
+}
+
 .modal-tao-nv__input:focus,
 .modal-tao-nv__select:focus,
 .modal-chinh-sua-nv__input:focus,
@@ -97,6 +140,41 @@
   font-size: 0.85rem;
 }
 
+/* ===== Khu Vực Info ===== */
+.modal-tao-nv__khu-vuc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: var(--operator-glass-white);
+  border: 1px solid var(--operator-glass-border);
+  border-radius: 6px;
+  backdrop-filter: blur(10px);
+}
+
+.modal-tao-nv__khu-vuc-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.modal-tao-nv__khu-vuc-label {
+  font-weight: 600;
+  color: var(--operator-text-secondary);
+  min-width: 130px;
+  font-size: 0.9rem;
+}
+
+.modal-tao-nv__khu-vuc-value {
+  color: var(--operator-primary);
+  font-weight: 500;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 4px;
+}
+
 /* ===== Actions ===== */
 .modal-tao-nv__actions,
 .modal-chinh-sua-nv__actions {
@@ -109,6 +187,7 @@
 
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
+
   .modal-tao-nv__actions,
   .modal-chinh-sua-nv__actions {
     flex-direction: column;
@@ -118,10 +197,13 @@
   .modal-chinh-sua-nv__actions .operator-btn {
     width: 100%;
   }
+
+  .modal-tao-nv__khu-vuc-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modal-tao-nv__khu-vuc-label {
+    min-width: auto;
+  }
 }
-
-
-
-
-
-

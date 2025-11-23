@@ -23,10 +23,10 @@ import {
 } from "react-icons/hi2";
 import Header from "../../components/Header";
 import Footer from "../../components/Footer";
-import { PublicTinDangService, PublicCuocHenService } from "../../services/PublicService"; // Đổi sang PublicService
+import { PublicTinDangService } from "../../services/PublicService"; // Đổi sang PublicService
+import cuocHenApi from "../../api/cuocHenApi"; // ✅ Dùng API mới thay vì PublicCuocHenService
 import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
 import yeuThichApi from "../../api/yeuThichApi";
-import axiosClient from "../../api/axiosClient";
 import "./chitiettindang.css";
 
 /**
@@ -36,17 +36,17 @@ import "./chitiettindang.css";
  */
 const toMySqlDateTime = (input) => {
   if (!input) return null;
-  
+
   // 1) datetime-local từ input: 'YYYY-MM-DDTHH:MM' -> format sang MySQL
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(input)) {
-    return input.replace('T', ' ') + ':00';
+    return input.replace("T", " ") + ":00";
   }
-  
+
   // 2) ISO string có Z/timezone -> parse Date object -> format local time
   try {
     const d = new Date(input);
     if (!isNaN(d.getTime())) {
-      const pad = (n) => String(n).padStart(2, '0');
+      const pad = (n) => String(n).padStart(2, "0");
       const y = d.getFullYear();
       const m = pad(d.getMonth() + 1);
       const day = pad(d.getDate());
@@ -55,8 +55,10 @@ const toMySqlDateTime = (input) => {
       const s = pad(d.getSeconds());
       return `${y}-${m}-${day} ${h}:${mi}:${s}`;
     }
-  } catch {}
-  
+  } catch {
+    return null;
+  }
+
   return null;
 };
 
@@ -89,7 +91,7 @@ const ChiTietTinDang = () => {
   const [loading, setLoading] = useState(true);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [danhSachAnh, setDanhSachAnh] = useState([]);
-  const [tinTuongTu, setTinTuongTu] = useState([]);
+  const [tinTuongTu] = useState([]); // Placeholder for future use
   const [daLuu, setDaLuu] = useState(false);
 
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -102,21 +104,18 @@ const ChiTietTinDang = () => {
   const [henThoiGian, setHenThoiGian] = useState("");
   const [henGhiChu, setHenGhiChu] = useState("");
 
-  // Hàm chuẩn hóa datetime-local -> ISO
-  const toISOFromLocal = (v) => {
-    if (!v) return null;
-    const d = new Date(v);
-    if (isNaN(d.getTime())) return null;
-    return d.toISOString();
-  };
+  // State cho modal chọn phòng để đặt cọc
+  const [cocModalOpen, setCocModalOpen] = useState(false);
+  const [cocPhongId, setCocPhongId] = useState(null);
 
   // Chuẩn bị giá trị PheDuyetChuDuAn từ tin đăng (1 => ChoPheDuyet, 0 => DaPheDuyet)
   const getPheDuyetChuValue = () => {
     const raw = tinDang?.YeuCauPheDuyetChu;
-    const v = typeof raw === "string" ? raw.trim() : raw;
-    if (v === 1 || v === "1" || v === true) return "ChoPheDuyet";
-    if (v === 0 || v === "0" || v === false) return "DaPheDuyet";
-    return "ChoPheDuyet";
+    // Backend expect: "ChoPheDuyet" hoặc "DaPheDuyet"
+    if (raw === 1 || raw === "1" || raw === true) {
+      return "ChoPheDuyet";
+    }
+    return "DaPheDuyet";
   };
 
   // Mở modal hẹn (nút tổng quát)
@@ -154,68 +153,113 @@ const ChiTietTinDang = () => {
       showToast("❌ Chưa chọn thời gian");
       return;
     }
-    
-    // Validate có phòng được chọn (yêu cầu bắt buộc)
+
     if (!henPhongId) {
       showToast("❌ Vui lòng chọn phòng cần xem");
       return;
     }
 
-    // Convert datetime-local -> MySQL format
     const mysqlTime = toMySqlDateTime(henThoiGian);
     if (!mysqlTime) {
       showToast("❌ Thời gian không hợp lệ");
       return;
     }
 
-    // Lấy YeuCauPheDuyetChu từ tin đăng/dự án (1 = ChoPheDuyet, 0 = DaPheDuyet)
     const yeuCauPheDuyet = tinDang?.YeuCauPheDuyetChu;
-    let pheDuyetValue = 'ChoPheDuyet'; // Mặc định cần phê duyệt
-    
-    if (yeuCauPheDuyet === 0 || yeuCauPheDuyet === '0' || yeuCauPheDuyet === false) {
-      pheDuyetValue = 'DaPheDuyet'; // Không cần phê duyệt
+    let pheDuyetValue = "ChoPheDuyet";
+
+    if (
+      yeuCauPheDuyet === 0 ||
+      yeuCauPheDuyet === "0" ||
+      yeuCauPheDuyet === false
+    ) {
+      pheDuyetValue = "DaPheDuyet";
     }
 
-    // Payload đầy đủ theo yêu cầu
+    if (!tinDang?.TinDangID) {
+      showToast(
+        "❌ Không tìm thấy thông tin tin đăng. Vui lòng tải lại trang."
+      );   
+      return;
+    }
+    console.log('dcvmm',tinDang.PhuongThucVao);
     const payload = {
       TinDangID: tinDang.TinDangID,
-      ChuDuAnID: tinDang.DuAnID || tinDang.ChuDuAnID,
-      PhongID: henPhongId,
-      KhachHangID: userId,
+      ChuDuAnID: tinDang.ChuDuAnID,
+      PhongID: henPhongId ? parseInt(henPhongId) : null,
+      KhachHangID: parseInt(userId),
+      NhanVienBanHangID: "8",
       ThoiGianHen: mysqlTime,
-      GhiChuKhach: henGhiChu.trim() || undefined,
-      PheDuyetChuDuAn: pheDuyetValue
-      // Backend tự động xử lý: NhanVienBanHangID, TrangThai
+      TrangThai: "ChoXacNhan",
+      PheDuyetChuDuAn: pheDuyetValue,
+      GhiChu: henGhiChu.trim() || null,
+      GhiChuKetQua: null,
+      PhuongThucVao: tinDang.PhuongThucVao
     };
 
-    console.log('🔍 [DEBUG] Cuộc hẹn payload:', payload);
-    console.log('🔍 [DEBUG] tinDang object:', tinDang);
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] === undefined) {
+        delete payload[key];
+      }
+    }); 
+
+ 
 
     setHenSubmitting(true);
     try {
-      const response = await PublicCuocHenService.taoMoi(payload);
-      
-      if (response?.success) {
+      const response = await cuocHenApi.create(payload);
+
+     
+
+      // ✅ FIX: Check cả success hoặc status code
+      if (
+        response?.success ||
+        response?.status === 201 ||
+        response?.data?.success
+      ) {
         showToast("✅ Đặt lịch thành công! Người quản lý sẽ liên hệ bạn sớm.");
         setHenModalOpen(false);
-        // Reset form
         setHenPhongId(null);
         setHenThoiGian("");
         setHenGhiChu("");
       } else {
-        showToast(`❌ ${response?.message || "Lỗi không xác định"}`);
+        showToast(
+          `❌ ${
+            response?.message || response?.data?.message || "Lỗi không xác định"
+          }`
+        );
       }
     } catch (error) {
-      console.error('[ChiTietTinDang] Lỗi tạo cuộc hẹn:', error);
-      showToast(`❌ ${error.message || "Không thể đặt lịch. Vui lòng thử lại."}`);
+      console.error("[ChiTietTinDang] Lỗi tạo cuộc hẹn:", error);
+
+      // ✅ FIX: Kiểm tra error.response.status
+      if (error?.response?.status === 201) {
+        showToast("✅ Đặt lịch thành công!");
+        setHenModalOpen(false);
+        setHenPhongId(null);
+        setHenThoiGian("");
+        setHenGhiChu("");
+      } else {
+        showToast(
+          `❌ ${
+            error?.response?.data?.message ||
+            error.message ||
+            "Không thể đặt lịch. Vui lòng thử lại."
+          }`
+        );
+      }
     } finally {
       setHenSubmitting(false);
     }
   };
 
   useEffect(() => {
-    layChiTietTinDang();
-    layTinTuongTu();
+    const loadData = async () => {
+      await layChiTietTinDang();
+      await layTinTuongTu();
+    };
+    loadData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
@@ -242,6 +286,7 @@ const ChiTietTinDang = () => {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lightboxOpen, currentImageIndex]);
 
   const layChiTietTinDang = async () => {
@@ -250,6 +295,8 @@ const ChiTietTinDang = () => {
       // Đổi sang dùng PublicTinDangService (không cần auth)
       const response = await PublicTinDangService.layChiTietTinDang(id);
       if (response && response.success) {
+      
+    
         setTinDang(response.data);
 
         // Parse danh sách ảnh
@@ -307,40 +354,43 @@ const ChiTietTinDang = () => {
   };
 
   /**
+   * 🔢 Tính số phòng trống động từ DanhSachPhong
+   * @returns {number} Số phòng có TrangThaiPhong === "Trong"
+   */
+  const getSoPhongTrong = () => {
+    if (!tinDang?.DanhSachPhong || tinDang.DanhSachPhong.length === 0) {
+      return 0;
+    }
+    return tinDang.DanhSachPhong.filter((p) => p.TrangThaiPhong === "Trong")
+      .length;
+  };
+
+  /**
    * 💰 Tính giá hiển thị thông minh dựa trên loại tin đăng
    * - Phòng đơn: Lấy từ tinDang.Gia
    * - Nhiều phòng: Hiển thị khoảng giá min-max từ DanhSachPhong
    */
   const getGiaHienThi = () => {
-    // Case 1: Phòng đơn (TongSoPhong ≤ 1)
-    if (!tinDang.TongSoPhong || tinDang.TongSoPhong <= 1) {
-      return formatCurrency(tinDang.Gia);
+    // Case 1: Không có DanhSachPhong -> lấy giá từ TinDang
+    if (!tinDang.DanhSachPhong || tinDang.DanhSachPhong.length === 0) {
+      return tinDang.Gia ? formatCurrency(tinDang.Gia) : "Liên hệ";
     }
 
-    // Case 2: Nhiều phòng - Tính khoảng giá từ DanhSachPhong
-    if (tinDang.DanhSachPhong && tinDang.DanhSachPhong.length > 0) {
-      const gias = tinDang.DanhSachPhong.map((p) => parseFloat(p.Gia)).filter(
-        (g) => !isNaN(g) && g > 0
-      );
+    // Case 2: Có DanhSachPhong -> tính khoảng giá
+    const gias = tinDang.DanhSachPhong.map((p) => parseFloat(p.Gia)).filter(
+      (g) => !isNaN(g) && g > 0
+    );
 
-      if (gias.length === 0) {
-        return "Liên hệ";
-      }
+    if (gias.length === 0) return "Liên hệ";
 
-      const minGia = Math.min(...gias);
-      const maxGia = Math.max(...gias);
+    const minGia = Math.min(...gias);
+    const maxGia = Math.max(...gias);
 
-      // Nếu tất cả phòng cùng giá
-      if (minGia === maxGia) {
-        return formatCurrency(minGia);
-      }
-
-      // Hiển thị khoảng giá
-      return `${formatCurrency(minGia)} - ${formatCurrency(maxGia)}`;
+    if (minGia === maxGia) {
+      return formatCurrency(minGia);
     }
 
-    // Fallback
-    return "Liên hệ";
+    return `${formatCurrency(minGia)} - ${formatCurrency(maxGia)}`;
   };
 
   /**
@@ -408,7 +458,7 @@ const ChiTietTinDang = () => {
         const id = actual?.NguoiDungID ?? actual?.id ?? actual?.userId;
         if (id) return Number(id);
       }
-    } catch (e) {
+    } catch {
       /* ignore */
     }
     const idKey = localStorage.getItem("userId");
@@ -456,29 +506,6 @@ const ChiTietTinDang = () => {
       });
   };
 
-  // Create appointment POST /api/cuoc-hen
-  const createAppointment = async (payload) => {
-    setHenSubmitting(true);
-    try {
-      const res = await axiosClient.post("/cuoc-hen", payload);
-      if (res?.data?.success) {
-        showToast("✅ Đặt lịch thành công. Người quản lý sẽ liên hệ bạn sớm.");
-        return true;
-      } else {
-        const msg = res?.data?.message || "Lỗi";
-        showToast(`❌ ${msg}`);
-        return false;
-      }
-    } catch (err) {
-      console.error("Lỗi tạo cuộc hẹn:", err);
-      const msg = err?.response?.data?.message || err.message || "Có lỗi";
-      showToast(`❌ ${msg}`);
-      return false;
-    } finally {
-      setHenSubmitting(false);
-    }
-  };
-
   const showToast = (message) => {
     const toast = document.createElement("div");
     toast.className = "ctd-toast";
@@ -503,32 +530,6 @@ const ChiTietTinDang = () => {
   const closeLightbox = () => {
     setLightboxOpen(false);
     document.body.style.overflow = "auto";
-  };
-
-  const getTrangThaiInfo = (trangThai) => {
-    const map = {
-      HoatDong: {
-        label: "Đang hoạt động",
-        icon: <HiOutlineCheckCircle />,
-        color: "#10b981",
-      },
-      ChoXuLy: {
-        label: "Chờ duyệt",
-        icon: <HiOutlineClock />,
-        color: "#D4AF37",
-      },
-      TuChoi: {
-        label: "Từ chối",
-        icon: <HiOutlineXCircle />,
-        color: "#ef4444",
-      },
-      Nhap: {
-        label: "Bản nháp",
-        icon: <HiOutlineDocumentText />,
-        color: "#6b7280",
-      },
-    };
-    return map[trangThai] || map["Nhap"];
   };
 
   // Skeleton Loading Component
@@ -812,7 +813,7 @@ const ChiTietTinDang = () => {
                       <div className="ctd-spec-content">
                         <span className="ctd-spec-label">Phòng trống</span>
                         <span className="ctd-spec-value">
-                          {tinDang.SoPhongTrong}
+                          {getSoPhongTrong()}
                         </span>
                       </div>
                     </div>
@@ -838,6 +839,39 @@ const ChiTietTinDang = () => {
                     </span>
                   </div>
                 </div>
+
+                {/* Thêm vào ctd-specs-grid */}
+                <div className="ctd-spec-item">
+                  <HiOutlineCurrencyDollar className="ctd-spec-icon" />
+                  <div className="ctd-spec-content">
+                    <span className="ctd-spec-label">Tiền điện</span>
+                    <span className="ctd-spec-value">
+                      {formatCurrency(tinDang.GiaDien)}/kWh
+                    </span>
+                  </div>
+                </div>
+
+                <div className="ctd-spec-item">
+                  <HiOutlineCurrencyDollar className="ctd-spec-icon" />
+                  <div className="ctd-spec-content">
+                    <span className="ctd-spec-label">Tiền nước</span>
+                    <span className="ctd-spec-value">
+                      {formatCurrency(tinDang.GiaNuoc)}/m³
+                    </span>
+                  </div>
+                </div>
+
+                {tinDang.MoTaGiaDichVu && (
+                  <div className="ctd-spec-item ctd-spec-full">
+                    <HiOutlineDocumentText className="ctd-spec-icon" />
+                    <div className="ctd-spec-content">
+                      <span className="ctd-spec-label">Dịch vụ khác</span>
+                      <span className="ctd-spec-value">
+                        {tinDang.MoTaGiaDichVu}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -882,20 +916,21 @@ const ChiTietTinDang = () => {
                   </h2>
                   <div className="ctd-rooms-summary">
                     <span className="ctd-rooms-available">
-                      <HiOutlineCheckCircle /> {tinDang.SoPhongTrong || 0} còn
-                      trống
+                      <HiOutlineCheckCircle /> {getSoPhongTrong()} còn trống
                     </span>
                     <span className="ctd-rooms-rented">
-                      {tinDang.TongSoPhong - (tinDang.SoPhongTrong || 0)} đã
-                      thuê
+                      {tinDang.DanhSachPhong.length - getSoPhongTrong()} đã thuê
                     </span>
                   </div>
                 </div>
 
                 <div className="ctd-rooms-grid">
                   {tinDang.DanhSachPhong.map((phong) => {
-                    const phongImages = parseImages(phong.URL);
-                    const isAvailable = phong.TrangThai === "Trong";
+                    // Fix: AnhPhong là string, không phải JSON array
+                    const phongImage = phong.AnhPhong
+                      ? `http://localhost:5000${phong.AnhPhong}`
+                      : null;
+                    const isAvailable = phong.TrangThaiPhong === "Trong";
 
                     return (
                       <div
@@ -904,11 +939,10 @@ const ChiTietTinDang = () => {
                           !isAvailable ? "ctd-room-card-rented" : ""
                         }`}
                       >
-                        {/* Room Image */}
                         <div className="ctd-room-image-wrapper">
-                          {phongImages.length > 0 ? (
+                          {phongImage ? (
                             <img
-                              src={phongImages[0]}
+                              src={phongImage}
                               alt={phong.TenPhong}
                               className="ctd-room-image"
                               loading="lazy"
@@ -938,13 +972,7 @@ const ChiTietTinDang = () => {
                             )}
                           </div>
 
-                          {/* Image Count */}
-                          {phongImages.length > 1 && (
-                            <div className="ctd-room-image-count">
-                              <HiOutlineSquare3Stack3D />
-                              <span>{phongImages.length} ảnh</span>
-                            </div>
-                          )}
+                          {/* Image Count - Removed vì AnhPhong là single string, không phải array */}
                         </div>
 
                         {/* Room Info */}
@@ -1012,12 +1040,19 @@ const ChiTietTinDang = () => {
                   <span>Vị trí</span>
                 </h2>
                 <div className="ctd-location">
-                  <p className="ctd-location-address">
-                    {tinDang.DiaChi || tinDang.DiaChiDuAn}
-                  </p>
-                  <div className="ctd-map-placeholder">
-                    <HiOutlineMapPin />
-                    <p>Thông tin vị trí chưa có sẵn</p>
+                  <div className="ctd-location-item">
+                    <HiOutlineMapPin className="ctd-location-icon" />
+                    <div>
+                      <span className="ctd-location-label">Địa chỉ</span>
+                      <p className="ctd-location-address">{tinDang.DiaChi}</p>
+                    </div>
+                  </div>
+                  <div className="ctd-location-item">
+                    <HiOutlineMapPin className="ctd-location-icon" />
+                    <div>
+                      <span className="ctd-location-label">Khu vực</span>
+                      <p className="ctd-location-text">{tinDang.TenKhuVuc}</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1067,10 +1102,44 @@ const ChiTietTinDang = () => {
                 <button
                   className="ctd-btn-secondary ctd-btn-deposit"
                   onClick={() => {
+                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
                     const acc = tinDang?.BankAccountNumber ?? "80349195777";
                     const bank = tinDang?.BankName ?? "TPBank";
-                    const amount = tinDang?.Gia ?? tinDang?.TienCoc ?? "100000";
-                    const des = `dk${tinDang?.TinDangID ?? tinDang?.id ?? ""}`;
+
+                    // Logic chọn phòng:
+                    // 1. Nếu có nhiều phòng (> 1) → Mở modal chọn phòng
+                    // 2. Nếu 1 phòng → Lấy giá phòng đó
+                    // 3. Nếu không có phòng → Lấy TienCoc/Gia từ tin đăng
+                    if (tinDang?.DanhSachPhong?.length > 1) {
+                      // Nhiều phòng → Mở modal chọn
+                      setCocModalOpen(true);
+                      return;
+                    }
+
+                    let amount = "1000000"; // Default fallback
+
+                    if (tinDang?.DanhSachPhong?.length === 1) {
+                      // 1 phòng → Lấy giá phòng
+                      const phong = tinDang.DanhSachPhong[0];
+                      amount = String(phong.Gia || "1000000");
+                    } else {
+                      // Không có phòng → Lấy từ tin đăng
+                      if (tinDang?.TienCoc && tinDang.TienCoc > 0) {
+                        amount = String(tinDang.TienCoc);
+                      } else if (tinDang?.Gia && tinDang.Gia > 0) {
+                        amount = String(tinDang.Gia);
+                      }
+                    }
+
+                    const des = `dk${tinId}`;
+
+                    console.log("[Đặt cọc] Debug:", {
+                      tinId,
+                      soPhong: tinDang?.DanhSachPhong?.length || 0,
+                      amount,
+                      acc,
+                      bank,
+                    });
 
                     navigate(
                       `/thanhtoancoc?acc=${encodeURIComponent(
@@ -1081,7 +1150,9 @@ const ChiTietTinDang = () => {
                         amount
                       )}&des=${encodeURIComponent(
                         des
-                      )}&order=${encodeURIComponent(tinDang?.TinDangID ?? "")}`
+                      )}&tinId=${encodeURIComponent(
+                        tinId
+                      )}&order=${encodeURIComponent(tinId)}`
                     );
                   }}
                   title="Đặt cọc"
@@ -1213,6 +1284,132 @@ const ChiTietTinDang = () => {
           aria-valuemin="0"
           aria-valuemax="100"
         />
+
+        {/* 💰 Modal chọn phòng để đặt cọc */}
+        {cocModalOpen && (
+          <div
+            className="hen-modal-overlay"
+            onClick={() => setCocModalOpen(false)}
+          >
+            <div
+              className="hen-modal"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <h3>Chọn phòng để đặt cọc</h3>
+              <p style={{ fontSize: 14, color: "#6b7280", marginBottom: 16 }}>
+                Vui lòng chọn phòng bạn muốn đặt cọc
+              </p>
+
+              <div className="coc-phong-list">
+                {tinDang?.DanhSachPhong?.map((phong) => (
+                  <div
+                    key={phong.PhongID}
+                    className={`coc-phong-item ${
+                      cocPhongId === phong.PhongID ? "selected" : ""
+                    }`}
+                    onClick={() => setCocPhongId(phong.PhongID)}
+                  >
+                    <div className="coc-phong-info">
+                      <h4>{phong.TenPhong}</h4>
+                      <div className="coc-phong-specs">
+                        <span>{phong.DienTich} m²</span>
+                        <span>•</span>
+                        <span className="coc-phong-price">
+                          {formatCurrency(phong.Gia)}/tháng
+                        </span>
+                      </div>
+                      <div className="coc-phong-status">
+                        {phong.TrangThaiPhong === "Trong" ? (
+                          <>
+                            <HiOutlineCheckCircle
+                              style={{ color: "#10b981" }}
+                            />
+                            <span>Còn trống</span>
+                          </>
+                        ) : (
+                          <>
+                            <HiOutlineXCircle style={{ color: "#ef4444" }} />
+                            <span>Đã thuê</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    {phong.AnhPhong && (
+                      <img
+                        src={`http://localhost:5000${phong.AnhPhong}`}
+                        alt={phong.TenPhong}
+                        className="coc-phong-thumb"
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              <div className="hen-form-footer">
+                <button
+                  type="button"
+                  className="hen-btn secondary"
+                  onClick={() => {
+                    setCocModalOpen(false);
+                    setCocPhongId(null);
+                  }}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="hen-btn primary"
+                  disabled={!cocPhongId}
+                  onClick={() => {
+                    const phong = tinDang?.DanhSachPhong?.find(
+                      (p) => p.PhongID === cocPhongId
+                    );
+                    if (!phong) {
+                      showToast("❌ Vui lòng chọn phòng");
+                      return;
+                    }
+
+                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
+                    const acc = tinDang?.BankAccountNumber ?? "80349195777";
+                    const bank = tinDang?.BankName ?? "TPBank";
+                    const amount = String(phong.Gia || "1000000");
+                    const des = `dk${tinId}_p${phong.PhongID}`;
+
+                    console.log("[Đặt cọc phòng] Debug:", {
+                      tinId,
+                      phongId: phong.PhongID,
+                      tenPhong: phong.TenPhong,
+                      amount,
+                    });
+
+                    setCocModalOpen(false);
+                    setCocPhongId(null);
+
+                    navigate(
+                      `/thanhtoancoc?acc=${encodeURIComponent(
+                        acc
+                      )}&bank=${encodeURIComponent(
+                        bank
+                      )}&amount=${encodeURIComponent(
+                        amount
+                      )}&des=${encodeURIComponent(
+                        des
+                      )}&tinId=${encodeURIComponent(
+                        tinId
+                      )}&phongId=${encodeURIComponent(
+                        phong.PhongID
+                      )}&order=${encodeURIComponent(tinId)}`
+                    );
+                  }}
+                >
+                  Xác nhận đặt cọc
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal đặt lịch (thêm trước Footer) */}
         {henModalOpen && (

@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
-import ModalOperator from '../../../components/Operator/shared/ModalOperator';
-import { operatorApi } from '../../../services/operatorApi';
-import './ModalTaoNhanVien.css';
+import { useState, useEffect } from "react";
+import { useMutation } from "@tanstack/react-query";
+import CryptoJS from "crypto-js";
+import ModalOperator from "../../../components/Operator/shared/ModalOperator";
+import { operatorApi } from "../../../services/operatorApi";
+import "./ModalTaoNhanVien.css";
 
 /**
  * Modal tạo nhân viên mới
@@ -10,44 +11,79 @@ import './ModalTaoNhanVien.css';
  */
 const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
-    tenDayDu: '',
-    email: '',
-    soDienThoai: '',
-    khuVucPhuTrachID: '',
-    ngayBatDau: new Date().toISOString().split('T')[0]
+    tenDayDu: "",
+    email: "",
+    soDienThoai: "",
+    khuVucPhuTrachID: "",
+    ngayBatDau: new Date().toISOString().split("T")[0],
+    password: CryptoJS.MD5("123456").toString(), // MD5 hash của "123456"
   });
   const [errors, setErrors] = useState({});
+  const [khuVucInfo, setKhuVucInfo] = useState(null);
+  const [isLoadingKhuVuc, setIsLoadingKhuVuc] = useState(false);
+
+  // Load khu vực mặc định từ API khi component mount
+  useEffect(() => {
+    const loadKhuVucMacDinh = async () => {
+      try {
+        setIsLoadingKhuVuc(true);
+        console.log("[ModalTaoNhanVien] Gọi API: getKhuVucMacDinh()");
+        const response = await operatorApi.nhanVien.getKhuVucMacDinh();
+
+        console.log("[ModalTaoNhanVien] Response thành công:", response.data);
+
+        if (response.data.success) {
+          setKhuVucInfo(response.data.data);
+        }
+      } catch (error) {
+        console.error("[ModalTaoNhanVien] Lỗi:", error);
+        console.error(
+          "[ModalTaoNhanVien] Error response:",
+          error.response?.data
+        );
+        console.error(
+          "[ModalTaoNhanVien] Error status:",
+          error.response?.status
+        );
+        console.error("[ModalTaoNhanVien] Error URL:", error.config?.url);
+      } finally {
+        setIsLoadingKhuVuc(false);
+      }
+    };
+
+    loadKhuVucMacDinh();
+  }, []);
 
   const taoMutation = useMutation({
     mutationFn: (data) => operatorApi.nhanVien.taoMoi(data),
     onSuccess: () => {
-      alert('✅ Tạo nhân viên thành công! Email đặt mật khẩu đã được gửi.');
+      alert("✅ Tạo nhân viên thành công!");
       onSuccess();
     },
     onError: (error) => {
       alert(`❌ Lỗi: ${error.response?.data?.message || error.message}`);
-    }
+    },
   });
 
   const validateForm = () => {
     const newErrors = {};
 
     if (!formData.tenDayDu || formData.tenDayDu.trim().length < 3) {
-      newErrors.tenDayDu = 'Họ tên phải có ít nhất 3 ký tự';
+      newErrors.tenDayDu = "Họ tên phải có ít nhất 3 ký tự";
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.email || !emailRegex.test(formData.email)) {
-      newErrors.email = 'Email không hợp lệ';
+      newErrors.email = "Email không hợp lệ";
     }
 
     const phoneRegex = /^[0-9]{10}$/;
     if (!formData.soDienThoai || !phoneRegex.test(formData.soDienThoai)) {
-      newErrors.soDienThoai = 'Số điện thoại phải có 10 chữ số';
+      newErrors.soDienThoai = "Số điện thoại phải có 10 chữ số";
     }
 
     if (!formData.ngayBatDau) {
-      newErrors.ngayBatDau = 'Vui lòng chọn ngày bắt đầu';
+      newErrors.ngayBatDau = "Vui lòng chọn ngày bắt đầu";
     }
 
     setErrors(newErrors);
@@ -65,8 +101,9 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
       TenDayDu: formData.tenDayDu.trim(),
       Email: formData.email.trim(),
       SoDienThoai: formData.soDienThoai,
-      KhuVucPhuTrachID: formData.khuVucPhuTrachID ? parseInt(formData.khuVucPhuTrachID) : null,
-      NgayBatDau: formData.ngayBatDau
+      KhuVucChinhID: khuVucInfo?.KhuVucChinhID || null,
+      KhuVucPhuTrachID: khuVucInfo?.KhuVucPhuTrachID || null,
+      NgayBatDau: formData.ngayBatDau,
     });
   };
 
@@ -87,7 +124,8 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
       <div className="modal-tao-nv__content">
         {/* Info */}
         <div className="modal-tao-nv__info">
-          💡 Sau khi tạo, nhân viên sẽ nhận email hướng dẫn đặt mật khẩu và đăng nhập hệ thống.
+          💡 Sau khi tạo, nhân viên sẽ nhận email hướng dẫn đặt mật khẩu và đăng
+          nhập hệ thống.
         </div>
 
         {/* Form */}
@@ -100,10 +138,11 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
             <input
               type="text"
               id="tenDayDu"
-              className={`modal-tao-nv__input ${errors.tenDayDu ? 'has-error' : ''}`}
+              className={`modal-tao-nv__input ${errors.tenDayDu ? "has-error" : ""
+                }`}
               placeholder="Nguyễn Văn A"
               value={formData.tenDayDu}
-              onChange={(e) => handleChange('tenDayDu', e.target.value)}
+              onChange={(e) => handleChange("tenDayDu", e.target.value)}
               disabled={taoMutation.isLoading}
             />
             {errors.tenDayDu && (
@@ -119,10 +158,11 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
             <input
               type="email"
               id="email"
-              className={`modal-tao-nv__input ${errors.email ? 'has-error' : ''}`}
+              className={`modal-tao-nv__input ${errors.email ? "has-error" : ""
+                }`}
               placeholder="nhanvien@example.com"
               value={formData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
+              onChange={(e) => handleChange("email", e.target.value)}
               disabled={taoMutation.isLoading}
             />
             {errors.email && (
@@ -138,10 +178,11 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
             <input
               type="tel"
               id="soDienThoai"
-              className={`modal-tao-nv__input ${errors.soDienThoai ? 'has-error' : ''}`}
+              className={`modal-tao-nv__input ${errors.soDienThoai ? "has-error" : ""
+                }`}
               placeholder="0901234567"
               value={formData.soDienThoai}
-              onChange={(e) => handleChange('soDienThoai', e.target.value)}
+              onChange={(e) => handleChange("soDienThoai", e.target.value)}
               maxLength={10}
               disabled={taoMutation.isLoading}
             />
@@ -152,22 +193,37 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
 
           {/* Khu vực phụ trách */}
           <div className="modal-tao-nv__form-group">
-            <label htmlFor="khuVucPhuTrachID" className="modal-tao-nv__label">
+            <label className="modal-tao-nv__label">
               Khu vực phụ trách
             </label>
-            <select
-              id="khuVucPhuTrachID"
-              className="modal-tao-nv__select"
-              value={formData.khuVucPhuTrachID}
-              onChange={(e) => handleChange('khuVucPhuTrachID', e.target.value)}
-              disabled={taoMutation.isLoading}
-            >
-              <option value="">-- Tất cả khu vực --</option>
-              <option value="1">Quận 1</option>
-              <option value="2">Quận 2</option>
-              <option value="3">Quận 3</option>
-              {/* TODO: Load from API */}
-            </select>
+
+            {/* Sử dụng div giả lập input để đồng bộ giao diện */}
+            <div className="modal-tao-nv__input modal-tao-nv__input--readonly">
+              {isLoadingKhuVuc ? (
+                <span style={{ color: "#999" }}>Đang tải...</span>
+              ) : khuVucInfo ? (
+                <div className="kv-display-row">
+                  {/* Hiển thị icon cho sinh động (tùy chọn) */}
+                  <span className="kv-icon">📍</span>
+
+                  {/* Logic hiển thị gọn gàng trên 1 dòng hoặc 2 dòng nhỏ */}
+                  <span className="kv-text">
+                    {khuVucInfo.TenKhuVucChinh || "N/A"}
+                    {khuVucInfo.TenKhuVucPhuTrach && (
+                      <>
+                        <span className="kv-separator"> ➤ </span>
+                        {khuVucInfo.TenKhuVucPhuTrach}
+                      </>
+                    )}
+                    {!khuVucInfo.TenKhuVucChinh && !khuVucInfo.TenKhuVucPhuTrach && (
+                      "Chưa được gán khu vực"
+                    )}
+                  </span>
+                </div>
+              ) : (
+                <span style={{ color: "#999" }}>Không có thông tin</span>
+              )}
+            </div>
           </div>
 
           {/* Ngày bắt đầu */}
@@ -178,9 +234,10 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
             <input
               type="date"
               id="ngayBatDau"
-              className={`modal-tao-nv__input ${errors.ngayBatDau ? 'has-error' : ''}`}
+              className={`modal-tao-nv__input ${errors.ngayBatDau ? "has-error" : ""
+                }`}
               value={formData.ngayBatDau}
-              onChange={(e) => handleChange('ngayBatDau', e.target.value)}
+              onChange={(e) => handleChange("ngayBatDau", e.target.value)}
               disabled={taoMutation.isLoading}
             />
             {errors.ngayBatDau && (
@@ -203,7 +260,7 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
               className="operator-btn operator-btn--primary"
               disabled={taoMutation.isLoading}
             >
-              {taoMutation.isLoading ? 'Đang xử lý...' : '➕ Tạo nhân viên'}
+              {taoMutation.isLoading ? "Đang xử lý..." : "➕ Tạo nhân viên"}
             </button>
           </div>
         </form>
@@ -213,9 +270,3 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
 };
 
 export default ModalTaoNhanVien;
-
-
-
-
-
-

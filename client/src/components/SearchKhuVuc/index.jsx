@@ -96,7 +96,8 @@ function SearchKhuVuc({ onSearch }) {
       if (!selectedNode) break;
       nodeList = selectedNode?.children ?? [];
     }
-const selectedName = selectedNode
+
+    const selectedName = selectedNode
       ? selectedNode.TenKhuVuc ?? selectedNode.name
       : "";
 

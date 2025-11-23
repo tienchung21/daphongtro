@@ -4,7 +4,7 @@
  * Tách từ ChuDuAnModel.js theo domain-driven design
  */
 
-const db = require('../config/db');
+const db = require("../config/db");
 
 /**
  * @typedef {Object} CuocHen
@@ -30,52 +30,79 @@ class CuocHenModel {
    */
   static async taoMoi(data) {
     try {
-      const { PhongID, KhachHangID, ThoiGianHen, NhanVienBanHangID, GhiChu } = data;
+      const {
+        PhongID,
+        KhachHangID,
+        ThoiGianHen,
+        NhanVienBanHangID,
+        GhiChu,
+        PhuongThucVao,
+      } = data;
 
       // 1. Kiểm tra phòng có trống không
       const [phongRows] = await db.execute(
-        'SELECT TrangThai FROM phong WHERE PhongID = ?',
+        "SELECT TrangThai FROM phong WHERE PhongID = ?",
         [PhongID]
       );
 
       if (phongRows.length === 0) {
-        throw new Error('Phòng không tồn tại');
+        throw new Error("Phòng không tồn tại");
       }
 
-      if (phongRows[0].TrangThai !== 'Trong') {
-        throw new Error('Phòng không còn trống');
+      if (phongRows[0].TrangThai !== "Trong") {
+        throw new Error("Phòng không còn trống");
       }
 
       // 2. Kiểm tra slot trùng lặp (trong khoảng ±1 giờ)
-      const [slotRows] = await db.execute(`
+      const [slotRows] = await db.execute(
+        `
         SELECT COUNT(*) as count 
         FROM cuochen 
         WHERE PhongID = ? 
           AND TrangThai NOT IN ('HuyBoiKhach', 'HuyBoiHeThong', 'KhachKhongDen')
           AND ABS(TIMESTAMPDIFF(MINUTE, ThoiGianHen, ?)) < 60
-      `, [PhongID, ThoiGianHen]);
+      `,
+        [PhongID, ThoiGianHen]
+      );
 
       if (slotRows[0].count > 0) {
-        throw new Error('Slot thời gian này đã được đặt. Vui lòng chọn slot khác.');
+        throw new Error(
+          "Slot thời gian này đã được đặt. Vui lòng chọn slot khác."
+        );
       }
 
-      // 3. Lấy thông tin dự án để check yêu cầu phê duyệt
-      const [duAnRows] = await db.execute(`
-        SELECT da.YeuCauPheDuyetChu, da.DuAnID
+      // 3. Lấy thông tin dự án + tin đăng để check yêu cầu phê duyệt
+      const [duAnRows] = await db.execute(
+        `
+        SELECT da.YeuCauPheDuyetChu, da.DuAnID, da.ChuDuAnID, pt.TinDangID
         FROM phong p
         INNER JOIN duan da ON p.DuAnID = da.DuAnID
+        LEFT JOIN phong_tindang pt ON pt.PhongID = p.PhongID
         WHERE p.PhongID = ?
-      `, [PhongID]);
+        LIMIT 1
+      `,
+        [PhongID]
+      );
+
+      if (duAnRows.length === 0) {
+        throw new Error("Không tìm thấy thông tin dự án cho phòng này");
+      }
 
       const yeuCauPheDuyet = duAnRows[0]?.YeuCauPheDuyetChu || 0;
+      const chuDuAnID = duAnRows[0]?.ChuDuAnID;
+      const tinDangID = duAnRows[0]?.TinDangID;
+
+      if (!tinDangID) {
+        throw new Error("Phòng này chưa có tin đăng");
+      }
 
       // 4. Tạo cuộc hẹn
-      const trangThai = yeuCauPheDuyet ? 'ChoXacNhan' : 'DaXacNhan';
-      const pheDuyetChuDuAn = yeuCauPheDuyet ? 'ChoPheDuyet' : 'DaPheDuyet';
+      const trangThai = yeuCauPheDuyet ? "ChoXacNhan" : "DaXacNhan";
+      const pheDuyetChuDuAn = yeuCauPheDuyet ? "ChoPheDuyet" : "DaPheDuyet";
 
       // Auto-assign nhân viên bán hàng nếu không truyền vào
       let nhanVienId = NhanVienBanHangID;
-      
+
       if (!nhanVienId) {
         // Lấy nhân viên bán hàng có sẵn (VaiTroHoatDongID = 2)
         const [nvRows] = await db.execute(`
@@ -85,35 +112,50 @@ class CuocHenModel {
           ORDER BY NguoiDungID ASC 
           LIMIT 1
         `);
-        
+
         if (nvRows.length > 0) {
           nhanVienId = nvRows[0].NguoiDungID;
           console.log(`[CuocHenModel] ℹ️ Auto-assigned NVBH ID: ${nhanVienId}`);
         } else {
-          console.warn('[CuocHenModel] ⚠️ Không tìm thấy nhân viên bán hàng nào!');
+          console.warn(
+            "[CuocHenModel] ⚠️ Không tìm thấy nhân viên bán hàng nào!"
+          );
           nhanVienId = null; // Để NULL nếu không có NVBH
         }
       }
 
-      const [result] = await db.execute(`
+      const [result] = await db.execute(
+        `
         INSERT INTO cuochen 
-        (PhongID, KhachHangID, NhanVienBanHangID, ThoiGianHen, TrangThai, PheDuyetChuDuAn, GhiChuKetQua, TaoLuc, CapNhatLuc)
-        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
-      `, [
-        PhongID,
-        KhachHangID,
-        nhanVienId,
-        ThoiGianHen,
-        trangThai,
-        pheDuyetChuDuAn,
-        GhiChu || ''
-      ]);
+        (PhongID, TinDangID, ChuDuAnID, KhachHangID, NhanVienBanHangID, ThoiGianHen, TrangThai, PhuongThucVao, PheDuyetChuDuAn, GhiChu, GhiChuKetQua, TaoLuc, CapNhatLuc)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+      `,
+        [
+          PhongID,
+          tinDangID,
+          chuDuAnID,
+          KhachHangID,
+          nhanVienId,
+          ThoiGianHen,
+          trangThai,
+          PhuongThucVao ?? "", // Sửa lại: nếu không có thì truyền chuỗi rỗng
+          pheDuyetChuDuAn,
+          GhiChu ?? "",
+          "",
+        ]
+      );
 
-      console.log(`[CuocHenModel] ✅ Tạo cuộc hẹn #${result.insertId} cho PhongID=${PhongID}, KhachHangID=${KhachHangID}, NVBH=${nhanVienId || 'NULL'}`);
+      console.log(
+        `[CuocHenModel] ✅ Tạo cuộc hẹn #${
+          result.insertId
+        } cho PhongID=${PhongID}, KhachHangID=${KhachHangID}, NVBH=${
+          nhanVienId || "NULL"
+        }`
+      );
 
       return { CuocHenID: result.insertId };
     } catch (error) {
-      console.error('[CuocHenModel] ❌ Lỗi tạo cuộc hẹn:', error);
+      console.error("[CuocHenModel] ❌ Lỗi tạo cuộc hẹn:", error);
       throw new Error(`Lỗi khi tạo cuộc hẹn: ${error.message}`);
     }
   }
@@ -144,11 +186,11 @@ class CuocHenModel {
       const params = [];
 
       if (filters.trangThai) {
-        query += ' AND ch.TrangThai = ?';
+        query += " AND ch.TrangThai = ?";
         params.push(filters.trangThai);
       }
 
-      query += ' ORDER BY ch.ThoiGianHen DESC LIMIT 100';
+      query += " ORDER BY ch.ThoiGianHen DESC LIMIT 100";
 
       const [rows] = await db.execute(query, params);
       return rows;
@@ -164,20 +206,40 @@ class CuocHenModel {
    */
   static async timTheoKhachHang(khachHangId) {
     try {
-      const [rows] = await db.execute(`
-        SELECT 
-          ch.CuocHenID, ch.PhongID, ch.TrangThai, ch.PheDuyetChuDuAn,
-          ch.ThoiGianHen, ch.GhiChuKetQua, ch.TaoLuc,
-          p.TenPhong,
-          da.TenDuAn, da.DiaChi,
-          nv.TenDayDu as TenNhanVien, nv.SoDienThoai as SDTNhanVien
-        FROM cuochen ch
-        INNER JOIN phong p ON ch.PhongID = p.PhongID
-        INNER JOIN duan da ON p.DuAnID = da.DuAnID
-        LEFT JOIN nguoidung nv ON ch.NhanVienBanHangID = nv.NguoiDungID
-        WHERE ch.KhachHangID = ?
-        ORDER BY ch.ThoiGianHen DESC
-      `, [khachHangId]);
+      const [rows] = await db.execute(
+        `
+      SELECT 
+        ch.CuocHenID,
+        ch.KhachHangID,
+        ch.NhanVienBanHangID,
+        ch.PhongID,
+        ch.TinDangID,
+        ch.ThoiGianHen,
+        ch.TrangThai,
+        ch.PheDuyetChuDuAn,
+        ch.LyDoTuChoi,
+        ch.ThoiGianPheDuyet,
+        ch.SoLanDoiLich,
+        ch.GhiChuKetQua,
+        ch.TaoLuc,
+        ch.CapNhatLuc,
+        ch.GhiChu,
+        ch.ChuDuAnID,
+        ch.PhuongThucVao,
+        td.TieuDe AS TieuDeTinDang, -- Lấy tiêu đề từ bảng tindang
+        kh.TenDayDu AS TenKhachHang,
+        kh.SoDienThoai AS SDTKhachHang,
+        nv.TenDayDu AS TenNhanVien,
+        nv.SoDienThoai AS SDTNhanVien
+      FROM cuochen ch
+      LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
+      LEFT JOIN nguoidung nv ON ch.NhanVienBanHangID = nv.NguoiDungID
+      LEFT JOIN tindang td ON ch.TinDangID = td.TinDangID
+      WHERE ch.KhachHangID = ?
+      ORDER BY ch.ThoiGianHen DESC
+      `,
+        [khachHangId]
+      );
 
       return rows;
     } catch (error) {
@@ -192,7 +254,8 @@ class CuocHenModel {
    */
   static async timTheoNhanVien(nhanVienId) {
     try {
-      const [rows] = await db.execute(`
+      const [rows] = await db.execute(
+        `
         SELECT 
           ch.CuocHenID, ch.PhongID, ch.TrangThai, ch.PheDuyetChuDuAn,
           ch.ThoiGianHen, ch.GhiChuKetQua, ch.TaoLuc,
@@ -205,7 +268,9 @@ class CuocHenModel {
         LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
         WHERE ch.NhanVienBanHangID = ?
         ORDER BY ch.ThoiGianHen DESC
-      `, [nhanVienId]);
+      `,
+        [nhanVienId]
+      );
 
       return rows;
     } catch (error) {
@@ -220,7 +285,8 @@ class CuocHenModel {
    */
   static async timTheoChuDuAn(chuDuAnId) {
     try {
-      const [rows] = await db.execute(`
+      const [rows] = await db.execute(
+        `
         SELECT 
           ch.CuocHenID, ch.PhongID, ch.TrangThai, ch.PheDuyetChuDuAn,
           ch.ThoiGianHen, ch.GhiChuKetQua, ch.TaoLuc,
@@ -235,7 +301,9 @@ class CuocHenModel {
         LEFT JOIN nguoidung nv ON ch.NhanVienBanHangID = nv.NguoiDungID
         WHERE da.ChuDuAnID = ?
         ORDER BY ch.ThoiGianHen DESC
-      `, [chuDuAnId]);
+      `,
+        [chuDuAnId]
+      );
 
       return rows;
     } catch (error) {
@@ -250,7 +318,8 @@ class CuocHenModel {
    */
   static async layChiTiet(cuocHenId) {
     try {
-      const [rows] = await db.execute(`
+      const [rows] = await db.execute(
+        `
         SELECT 
           ch.*,
           p.TenPhong, p.TrangThai as TrangThaiPhong,
@@ -263,7 +332,9 @@ class CuocHenModel {
         LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
         LEFT JOIN nguoidung nv ON ch.NhanVienBanHangID = nv.NguoiDungID
         WHERE ch.CuocHenID = ?
-      `, [cuocHenId]);
+      `,
+        [cuocHenId]
+      );
 
       return rows.length > 0 ? rows[0] : null;
     } catch (error) {
@@ -297,31 +368,31 @@ class CuocHenModel {
         LEFT JOIN nguoidung nv ON ch.NhanVienBanHangID = nv.NguoiDungID
         WHERE da.ChuDuAnID = ?
       `;
-      
+
       const params = [chuDuAnId];
-      
+
       if (filters.trangThai) {
-        query += ' AND ch.TrangThai = ?';
+        query += " AND ch.TrangThai = ?";
         params.push(filters.trangThai);
       }
-      
+
       if (filters.tinDangId) {
-        query += ' AND td.TinDangID = ?';
+        query += " AND td.TinDangID = ?";
         params.push(filters.tinDangId);
       }
-      
+
       if (filters.tuNgay && filters.denNgay) {
-        query += ' AND ch.ThoiGianHen BETWEEN ? AND ?';
+        query += " AND ch.ThoiGianHen BETWEEN ? AND ?";
         params.push(filters.tuNgay, filters.denNgay);
       }
-      
-      query += ' ORDER BY ch.ThoiGianHen DESC';
-      
+
+      query += " ORDER BY ch.ThoiGianHen DESC";
+
       if (filters.limit) {
-        query += ' LIMIT ?';
+        query += " LIMIT ?";
         params.push(parseInt(filters.limit));
       }
-      
+
       const [rows] = await db.execute(query, params);
       return rows;
     } catch (error) {
@@ -336,10 +407,11 @@ class CuocHenModel {
    * @param {string} ghiChu Ghi chú xác nhận
    * @returns {Promise<boolean>}
    */
-  static async xacNhanCuocHen(cuocHenId, chuDuAnId, ghiChu = '') {
+  static async xacNhanCuocHen(cuocHenId, chuDuAnId, ghiChu = "") {
     try {
       // Kiểm tra quyền sở hữu cuộc hẹn (join đúng qua phong → tindang → duan)
-      const [rows] = await db.execute(`
+      const [rows] = await db.execute(
+        `
         SELECT ch.TrangThai 
         FROM cuochen ch
         INNER JOIN phong p ON ch.PhongID = p.PhongID
@@ -347,21 +419,25 @@ class CuocHenModel {
         INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
         INNER JOIN duan da ON td.DuAnID = da.DuAnID
         WHERE ch.CuocHenID = ? AND da.ChuDuAnID = ?
-      `, [cuocHenId, chuDuAnId]);
-      
+      `,
+        [cuocHenId, chuDuAnId]
+      );
+
       if (rows.length === 0) {
-        throw new Error('Không tìm thấy cuộc hẹn hoặc không có quyền xác nhận');
+        throw new Error("Không tìm thấy cuộc hẹn hoặc không có quyền xác nhận");
       }
 
-      if (rows[0].TrangThai !== 'ChoXacNhan') {
-        throw new Error('Chỉ có thể xác nhận cuộc hẹn ở trạng thái Chờ xác nhận');
+      if (rows[0].TrangThai !== "ChoXacNhan") {
+        throw new Error(
+          "Chỉ có thể xác nhận cuộc hẹn ở trạng thái Chờ xác nhận"
+        );
       }
 
       await db.execute(
         'UPDATE cuochen SET TrangThai = "DaXacNhan", GhiChuKetQua = CONCAT(IFNULL(GhiChuKetQua, ""), ?, "\n[Xác nhận bởi chủ dự án]") WHERE CuocHenID = ?',
         [ghiChu, cuocHenId]
       );
-      
+
       return true;
     } catch (error) {
       throw new Error(`Lỗi khi xác nhận cuộc hẹn: ${error.message}`);
@@ -375,7 +451,8 @@ class CuocHenModel {
    */
   static async layMetricsCuocHen(chuDuAnId) {
     try {
-      const [rows] = await db.execute(`
+      const [rows] = await db.execute(
+        `
         SELECT 
           COUNT(CASE WHEN ch.PheDuyetChuDuAn = 'ChoPheDuyet' THEN 1 END) as choDuyet,
           COUNT(CASE WHEN ch.TrangThai = 'DaXacNhan' THEN 1 END) as daXacNhan,
@@ -389,15 +466,19 @@ class CuocHenModel {
         INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
         INNER JOIN duan da ON td.DuAnID = da.DuAnID
         WHERE da.ChuDuAnID = ?
-      `, [chuDuAnId]);
+      `,
+        [chuDuAnId]
+      );
 
-      return rows[0] || {
-        choDuyet: 0,
-        daXacNhan: 0,
-        sapDienRa: 0,
-        daHuy: 0,
-        hoanThanh: 0
-      };
+      return (
+        rows[0] || {
+          choDuyet: 0,
+          daXacNhan: 0,
+          sapDienRa: 0,
+          daHuy: 0,
+          hoanThanh: 0,
+        }
+      );
     } catch (error) {
       throw new Error(`Lỗi khi lấy metrics cuộc hẹn: ${error.message}`);
     }
@@ -411,10 +492,16 @@ class CuocHenModel {
    * @param {string} ghiChu Ghi chú thêm
    * @returns {Promise<boolean>}
    */
-  static async pheDuyetCuocHen(cuocHenId, chuDuAnId, phuongThucVao, ghiChu = '') {
+  static async pheDuyetCuocHen(
+    cuocHenId,
+    chuDuAnId,
+    phuongThucVao,
+    ghiChu = ""
+  ) {
     try {
       // Kiểm tra quyền sở hữu và trạng thái
-      const [rows] = await db.execute(`
+      const [rows] = await db.execute(
+        `
         SELECT ch.PheDuyetChuDuAn, ch.TrangThai 
         FROM cuochen ch
         INNER JOIN phong p ON ch.PhongID = p.PhongID
@@ -422,18 +509,25 @@ class CuocHenModel {
         INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
         INNER JOIN duan da ON td.DuAnID = da.DuAnID
         WHERE ch.CuocHenID = ? AND da.ChuDuAnID = ?
-      `, [cuocHenId, chuDuAnId]);
-      
+      `,
+        [cuocHenId, chuDuAnId]
+      );
+
       if (rows.length === 0) {
-        throw new Error('Không tìm thấy cuộc hẹn hoặc không có quyền phê duyệt');
+        throw new Error(
+          "Không tìm thấy cuộc hẹn hoặc không có quyền phê duyệt"
+        );
       }
 
-      if (rows[0].PheDuyetChuDuAn !== 'ChoPheDuyet') {
-        throw new Error('Chỉ có thể phê duyệt cuộc hẹn ở trạng thái Chờ phê duyệt');
+      if (rows[0].PheDuyetChuDuAn !== "ChoPheDuyet") {
+        throw new Error(
+          "Chỉ có thể phê duyệt cuộc hẹn ở trạng thái Chờ phê duyệt"
+        );
       }
 
       // Cập nhật phê duyệt và lưu phương thức vào
-      await db.execute(`
+      await db.execute(
+        `
         UPDATE cuochen 
         SET PheDuyetChuDuAn = 'DaPheDuyet',
             ThoiGianPheDuyet = NOW(),
@@ -444,8 +538,10 @@ class CuocHenModel {
               "\n[Phê duyệt bởi chủ dự án lúc ", NOW(), "]"
             )
         WHERE CuocHenID = ?
-      `, [phuongThucVao, ghiChu, cuocHenId]);
-      
+      `,
+        [phuongThucVao, ghiChu, cuocHenId]
+      );
+
       return true;
     } catch (error) {
       throw new Error(`Lỗi khi phê duyệt cuộc hẹn: ${error.message}`);
@@ -462,7 +558,8 @@ class CuocHenModel {
   static async tuChoiCuocHen(cuocHenId, chuDuAnId, lyDoTuChoi) {
     try {
       // Kiểm tra quyền sở hữu và trạng thái
-      const [rows] = await db.execute(`
+      const [rows] = await db.execute(
+        `
         SELECT ch.PheDuyetChuDuAn, ch.TrangThai 
         FROM cuochen ch
         INNER JOIN phong p ON ch.PhongID = p.PhongID
@@ -470,18 +567,23 @@ class CuocHenModel {
         INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
         INNER JOIN duan da ON td.DuAnID = da.DuAnID
         WHERE ch.CuocHenID = ? AND da.ChuDuAnID = ?
-      `, [cuocHenId, chuDuAnId]);
-      
+      `,
+        [cuocHenId, chuDuAnId]
+      );
+
       if (rows.length === 0) {
-        throw new Error('Không tìm thấy cuộc hẹn hoặc không có quyền từ chối');
+        throw new Error("Không tìm thấy cuộc hẹn hoặc không có quyền từ chối");
       }
 
-      if (rows[0].PheDuyetChuDuAn !== 'ChoPheDuyet') {
-        throw new Error('Chỉ có thể từ chối cuộc hẹn ở trạng thái Chờ phê duyệt');
+      if (rows[0].PheDuyetChuDuAn !== "ChoPheDuyet") {
+        throw new Error(
+          "Chỉ có thể từ chối cuộc hẹn ở trạng thái Chờ phê duyệt"
+        );
       }
 
       // Cập nhật từ chối
-      await db.execute(`
+      await db.execute(
+        `
         UPDATE cuochen 
         SET PheDuyetChuDuAn = 'TuChoi',
             TrangThai = 'DaTuChoi',
@@ -493,8 +595,10 @@ class CuocHenModel {
               "\nLý do: ", ?
             )
         WHERE CuocHenID = ?
-      `, [lyDoTuChoi, lyDoTuChoi, cuocHenId]);
-      
+      `,
+        [lyDoTuChoi, lyDoTuChoi, cuocHenId]
+      );
+
       return true;
     } catch (error) {
       throw new Error(`Lỗi khi từ chối cuộc hẹn: ${error.message}`);
@@ -503,58 +607,3 @@ class CuocHenModel {
 }
 
 module.exports = CuocHenModel;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

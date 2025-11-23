@@ -49,7 +49,7 @@ class HoSoNhanVienModel {
         params.push(khuVucId);
       }
 
-      const whereClause = whereConditions.length > 0 
+      const whereClause = whereConditions.length > 0
         ? 'WHERE ' + whereConditions.join(' AND ')
         : '';
 
@@ -214,7 +214,7 @@ class HoSoNhanVienModel {
    */
   static async capNhatHoSo(nhanVienId, data, operatorId) {
     const connection = await db.getConnection();
-    
+
     try {
       await connection.beginTransaction();
 
@@ -331,7 +331,7 @@ class HoSoNhanVienModel {
    */
   static async taoTaiKhoanNhanVien(data, operatorId) {
     const connection = await db.getConnection();
-    
+
     try {
       // Validation
       if (!data.Email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.Email)) {
@@ -455,7 +455,7 @@ class HoSoNhanVienModel {
    */
   static async kichHoat_VoHieuHoaNhanVien(nhanVienId, trangThai, operatorId) {
     const connection = await db.getConnection();
-    
+
     try {
       if (!['Active', 'Inactive'].includes(trangThai)) {
         throw new Error("Trạng thái phải là 'Active' hoặc 'Inactive'");
@@ -527,7 +527,7 @@ class HoSoNhanVienModel {
       type: 'setup_password',
       exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60) // 24h
     };
-    
+
     // Simple base64 encoding (in production, use proper JWT)
     return Buffer.from(JSON.stringify(payload)).toString('base64');
   }
@@ -552,6 +552,59 @@ class HoSoNhanVienModel {
     } catch (error) {
       console.error('[HoSoNhanVienModel] Lỗi layThongKeNhanVien:', error);
       throw new Error(`Lỗi lấy thống kê nhân viên: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy thông tin khu vực chính và phụ trách của nhân viên (với tên khu vực)
+   * @param {number} nhanVienId - ID nhân viên (NguoiDungID)
+   * @returns {Promise<Object>} Thông tin khu vực với tên
+   */
+  static async layKhuVucPhuTrach(nhanVienId) {
+    try {
+      console.log('[HoSoNhanVienModel] layKhuVucPhuTrach - nhanVienId:', nhanVienId);
+
+      // Lấy KhuVucChinhID, KhuVucPhuTrachID + TÊN khu vực từ bảng khuvuc
+      const [hoSoRows] = await db.execute(
+        `SELECT 
+          h.HoSoID, 
+          h.KhuVucChinhID,
+          kv_chinh.TenKhuVuc AS TenKhuVucChinh,
+          h.KhuVucPhuTrachID,
+          kv_phu.TenKhuVuc AS TenKhuVucPhuTrach
+         FROM hosonhanvien h
+         LEFT JOIN khuvuc kv_chinh ON h.KhuVucChinhID = kv_chinh.KhuVucID
+         LEFT JOIN khuvuc kv_phu ON h.KhuVucPhuTrachID = kv_phu.KhuVucID
+         WHERE h.NguoiDungID = ?`,
+        [nhanVienId]
+      );
+
+      console.log('[HoSoNhanVienModel] layKhuVucPhuTrach - hoSoRows:', JSON.stringify(hoSoRows));
+
+      if (!hoSoRows.length) {
+        console.log('[HoSoNhanVienModel] layKhuVucPhuTrach - Không tìm thấy hồ sơ');
+        throw new Error('Nhân viên không tồn tại');
+      }
+
+      const hoSo = hoSoRows[0];
+      console.log('[HoSoNhanVienModel] layKhuVucPhuTrach - hoSo chi tiết:', hoSo);
+
+      const result = {
+        KhuVucChinhID: hoSo.KhuVucChinhID || null,
+        TenKhuVucChinh: hoSo.TenKhuVucChinh || 'N/A',
+        KhuVucPhuTrachID: hoSo.KhuVucPhuTrachID || null,
+        TenKhuVucPhuTrach: hoSo.TenKhuVucPhuTrach || 'N/A'
+      };
+
+      console.log('[HoSoNhanVienModel] layKhuVucPhuTrach - Kết quả trả về:', result);
+
+      return result;
+    } catch (error) {
+      console.error('[HoSoNhanVienModel] Lỗi layKhuVucPhuTrach:', error.message);
+      if (error.message === 'Nhân viên không tồn tại') {
+        throw error;
+      }
+      throw new Error(`Lỗi lấy khu vực phụ trách: ${error.message}`);
     }
   }
 }

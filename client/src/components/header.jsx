@@ -115,6 +115,11 @@ function Header() {
                 Bảng giá dịch vụ
               </Link>
             </li>
+            <li>
+              <Link to="/quan-ly" style={{ cursor: "pointer" }}>
+                Quản lý
+              </Link>
+            </li>
           </ul>
         </div>
 

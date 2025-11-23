@@ -9,12 +9,7 @@ import QuanLyTinDang from "../quanlytindang/index";
 import QuanLyKhuVuc from "../quanlykhuvuc/index"; 
 import Appointments from "../cuochencuatoi/index"; 
 
-// ← Nếu có
-// import QuanLyCuocHep from "../quanlycuochep/index"; // ← Comment tạm vì chưa có file
-// import QuanLyDuAn from "../quanlyduan/index";     // ← Nếu có
-// import QuanLyThanhToan from "../thanhtoan/index";  // ← Nếu có
 
-// React Icons
 import {
   HiOutlineUsers,
   HiOutlineDocumentText,

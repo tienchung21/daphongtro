@@ -87,7 +87,7 @@ export default function ThanhToanCoc() {
           if (detailPath) navigate(detailPath);
           else navigate(-1);
         } else {
-setStatus("⏳ Đang chờ người dùng thanh toán...");
+          setStatus("⏳ Đang chờ người dùng thanh toán...");
         }
       } catch (err) {
         console.error("Lỗi khi poll API:", err);
