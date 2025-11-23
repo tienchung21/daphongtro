@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 20, 2025 lúc 07:45 AM
--- Phiên bản máy phục vụ: 10.4.32-MariaDB
--- Phiên bản PHP: 8.2.12
+-- Host: 127.0.0.1
+-- Generation Time: Nov 22, 2025 at 02:56 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -341,7 +341,7 @@ INSERT INTO `cuochoithoai` (`CuocHoiThoaiID`, `NguCanhID`, `NguCanhLoai`, `TieuD
 (202, 1, 'CuocHen', 'Cuộc hẹn xem phòng #1 - Nhà trọ Minh Tâm', '2025-11-04 04:05:27', 1, '2025-11-03 22:05:27', '2025-11-04 22:05:27'),
 (203, 1, 'HopDong', 'Hợp đồng thuê #1 - Nhà trọ Minh Tâm', '2025-11-04 22:51:51', 1, '2025-11-04 19:05:27', '2025-11-04 22:51:51'),
 (204, 17, 'TinDang', 'Tin đăng: Nhà Trọ Hoành Hợp - Hỗ trợ tư vấn', '2025-11-04 21:05:27', 1, '2025-11-04 17:05:27', '2025-11-04 22:05:27'),
-(219, 29, 'CuocHen', 'Cuộc hẹn #29 - 102', '2025-11-20 10:29:51', 1, '2025-11-19 00:16:56', '2025-11-20 10:29:51'),
+(219, 29, 'CuocHen', 'Cuộc hẹn #29 - 102', '2025-11-22 20:42:24', 1, '2025-11-19 00:16:56', '2025-11-22 20:42:24'),
 (220, 20, 'CuocHen', 'Cuộc hẹn #20 - Lam Ngoc Giang', NULL, 1, '2025-11-19 06:27:41', '2025-11-19 06:27:41'),
 (221, 21, 'CuocHen', 'Cuộc hẹn #21 - Lam Ngoc Giang', NULL, 1, '2025-11-19 13:42:47', '2025-11-19 13:42:47'),
 (224, 19, 'CuocHen', 'Cuộc hẹn #19 - Lam Ngoc Giang', NULL, 1, '2025-11-20 12:31:06', '2025-11-20 12:31:06');
@@ -492,8 +492,7 @@ CREATE TABLE `hosonhanvien` (
 --
 
 INSERT INTO `hosonhanvien` (`HoSoID`, `NguoiDungID`, `MaNhanVien`, `KhuVucChinhID`, `KhuVucPhuTrachID`, `TyLeHoaHong`, `TrangThaiLamViec`, `NgayBatDau`, `NgayKetThuc`, `GhiChu`) VALUES
-(7, 8, 'NV0001', 62, 720, 10.00, 'Active', '2025-11-17', NULL, NULL),
-(9, 9, 'NV0002', 62, 720, 10.00, 'Active', '2025-11-20', NULL, NULL);
+(7, 8, 'NV0001', 62, NULL, 10.00, 'Active', '2025-11-17', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -3293,7 +3292,31 @@ INSERT INTO `khuvuc` (`KhuVucID`, `TenKhuVuc`, `ParentKhuVucID`, `ViDo`, `KinhDo
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `lichlamviec`
+-- Table structure for table `kyc_verification`
+--
+
+CREATE TABLE `kyc_verification` (
+  `KYCVerificationID` bigint(20) NOT NULL,
+  `NguoiDungID` int(11) NOT NULL,
+  `SoCCCD` varchar(12) DEFAULT NULL,
+  `TenDayDu` varchar(255) DEFAULT NULL,
+  `NgaySinh` date DEFAULT NULL,
+  `DiaChi` varchar(255) DEFAULT NULL,
+  `NgayCapCCCD` date DEFAULT NULL,
+  `NoiCapCCCD` varchar(255) DEFAULT NULL,
+  `FaceSimilarity` decimal(5,4) DEFAULT NULL COMMENT 'Độ tương đồng khuôn mặt (0-1)',
+  `TrangThai` enum('ThanhCong','ThatBai','CanXemLai') DEFAULT 'CanXemLai',
+  `LyDoThatBai` text DEFAULT NULL,
+  `AnhCCCDMatTruoc` varchar(255) DEFAULT NULL,
+  `AnhCCCDMatSau` varchar(255) DEFAULT NULL,
+  `AnhSelfie` varchar(255) DEFAULT NULL,
+  `TaoLuc` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `lichlamviec`
 --
 
 CREATE TABLE `lichlamviec` (
@@ -3349,6 +3372,9 @@ CREATE TABLE `nguoidung` (
   `SoCCCD` varchar(12) DEFAULT NULL,
   `NgayCapCCCD` date DEFAULT NULL,
   `NoiCapCCCD` varchar(255) DEFAULT NULL,
+  `AnhCCCDMatTruoc` varchar(255) DEFAULT NULL,
+  `AnhCCCDMatSau` varchar(255) DEFAULT NULL,
+  `AnhSelfie` varchar(255) DEFAULT NULL,
   `TaoLuc` datetime DEFAULT current_timestamp(),
   `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3357,19 +3383,19 @@ CREATE TABLE `nguoidung` (
 -- Đang đổ dữ liệu cho bảng `nguoidung`
 --
 
-INSERT INTO `nguoidung` (`NguoiDungID`, `TenDayDu`, `Email`, `VaiTroHoatDongID`, `SoDienThoai`, `MatKhauHash`, `TrangThai`, `TrangThaiXacMinh`, `NgaySinh`, `DiaChi`, `SoCCCD`, `NgayCapCCCD`, `NoiCapCCCD`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, 'Nguyễn Văn Chủ Dự Án', 'chuduantest@example.com', 3, '0901234567', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-06 12:23:30'),
-(2, 'Trần Thị Khách Hàng', 'khachhangtest@example.com', NULL, '0901234568', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:47'),
-(3, 'Lê Văn Bán Hàng', 'banhangtest@example.com', 3, '0901234569', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-06 20:24:36'),
-(4, 'Phạm Thị Điều Hành', 'dieuhanhtest@example.com', NULL, '0901234570', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:58'),
-(5, 'Hoàng Văn Admin', 'admintest@example.com', NULL, '0901234571', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:34:02'),
-(6, 'Võ Nguyễn Hoành Hợp', 'hopboy553@gmail.com', 3, '0911576456', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-10-21 13:14:40', '2025-10-21 13:14:40'),
-(7, 'Lam Ngoc Giang', 'khachang@gmail.com', 1, '0911576455', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-04 21:51:51', '2025-11-04 21:51:51'),
-(8, 'Nguyễn Văn Bán Hàng', 'banhang@gmail.com', 2, '0901234123', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:20:42', '2025-11-06 14:20:42'),
-(9, 'Nguyễn Thị Điều Hành', 'dieuhanh@gmail.com', 4, '0901236486', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:38:39', '2025-11-06 14:38:39'),
-(225, 'Nguyễn Văn Hệ Thống', 'hethong@gmail.com', 5, '0901234271', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-18 21:30:34', '2025-11-18 21:30:53'),
-(226, 'Võ Hoành Chung', 'test@gmail.com', 2, '09289739877', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-18 23:51:58', '2025-11-18 23:51:58'),
-(229, 'Võ Hoành Chung', 'dieuhanh1@gmail.com', 1, '0349195618', 'c4ca4238a0b923820dcc509a6f75849b', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, '2025-11-19 15:36:35', '2025-11-19 15:36:35');
+INSERT INTO `nguoidung` (`NguoiDungID`, `TenDayDu`, `Email`, `VaiTroHoatDongID`, `SoDienThoai`, `MatKhauHash`, `TrangThai`, `TrangThaiXacMinh`, `NgaySinh`, `DiaChi`, `SoCCCD`, `NgayCapCCCD`, `NoiCapCCCD`, `AnhCCCDMatTruoc`, `AnhCCCDMatSau`, `AnhSelfie`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, 'Nguyễn Văn Chủ Dự Án', 'chuduantest@example.com', 3, '0901234567', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-06 12:23:30'),
+(2, 'Trần Thị Khách Hàng', 'khachhangtest@example.com', NULL, '0901234568', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:47'),
+(3, 'Lê Văn Bán Hàng', 'banhangtest@example.com', 3, '0901234569', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-06 20:24:36'),
+(4, 'Phạm Thị Điều Hành', 'dieuhanhtest@example.com', NULL, '0901234570', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:58'),
+(5, 'Hoàng Văn Admin', 'admintest@example.com', NULL, '0901234571', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:34:02'),
+(6, 'Võ Nguyễn Hoành Hợp', 'hopboy553@gmail.com', 3, '0911576456', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-21 13:14:40', '2025-10-21 13:14:40'),
+(7, 'Lam Ngoc Giang', 'khachang@gmail.com', 1, '0911576455', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-04 21:51:51', '2025-11-04 21:51:51'),
+(8, 'Nguyễn Văn Bán Hàng', 'banhang@gmail.com', 2, '0901234123', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:20:42', '2025-11-06 14:20:42'),
+(9, 'Nguyễn Thị Điều Hành', 'dieuhanh@gmail.com', 4, '0901236486', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:38:39', '2025-11-06 14:38:39'),
+(225, 'Nguyễn Văn Hệ Thống', 'hethong@gmail.com', 5, '0901234271', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-18 21:30:34', '2025-11-18 21:30:53'),
+(226, 'Võ Hoành Chung', 'test@gmail.com', 2, '09289739877', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-18 23:51:58', '2025-11-18 23:51:58'),
+(229, 'Võ Hoành Chung', 'dieuhanh1@gmail.com', 1, '0349195618', 'c4ca4238a0b923820dcc509a6f75849b', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-19 15:36:35', '2025-11-19 15:36:35');
 
 --
 -- Bẫy `nguoidung`
@@ -3431,33 +3457,7 @@ INSERT INTO `nguoidung_vaitro` (`NguoiDungID`, `VaiTroID`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `nhanvienbanhang_caidat`
---
-
-CREATE TABLE `nhanvienbanhang_caidat` (
-  `NguoiDungID` int(11) NOT NULL,
-  `ThongBaoUngDung` tinyint(1) NOT NULL DEFAULT 1,
-  `ThongBaoEmail` tinyint(1) NOT NULL DEFAULT 1,
-  `ThongBaoSMS` tinyint(1) NOT NULL DEFAULT 0,
-  `ThongBaoCuocHen` tinyint(1) NOT NULL DEFAULT 1,
-  `ThongBaoGiaoDich` tinyint(1) NOT NULL DEFAULT 1,
-  `BaoCaoHangNgay` tinyint(1) NOT NULL DEFAULT 0,
-  `BaoCaoHangTuan` tinyint(1) NOT NULL DEFAULT 1,
-  `BaoCaoHangThang` tinyint(1) NOT NULL DEFAULT 1,
-  `PhuongThucNhanThuNhap` enum('BankTransfer','Momo','TienMat') NOT NULL DEFAULT 'BankTransfer',
-  `TenChuTaiKhoan` varchar(255) DEFAULT NULL,
-  `SoTaiKhoan` varchar(50) DEFAULT NULL,
-  `NganHang` varchar(255) DEFAULT NULL,
-  `ChiNhanh` varchar(255) DEFAULT NULL,
-  `GhiChuThanhToan` text DEFAULT NULL,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Cấu trúc bảng cho bảng `nhatkyhethong`
+-- Table structure for table `nhatkyhethong`
 --
 
 CREATE TABLE `nhatkyhethong` (
@@ -3887,13 +3887,21 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (450, 8, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '219', '\"{\\\"NguCanhID\\\":29,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[8,15]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:32:20.885', NULL),
 (451, 1, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '219', '\"{\\\"NguCanhID\\\":29,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[1,8]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-20 10:29:47.871', NULL),
 (452, 1, 'gui_tin_nhan_socket', 'tinnhan', '2077', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-20 10:29:51.869', NULL),
-(453, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-21\",\"denNgay\":\"2025-11-20\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', '2025-11-20 12:19:19.177', NULL),
-(454, 8, 'tao_ca_lam_viec_sales', 'LichLamViec', '14', NULL, '{\"batDau\":\"2025-11-21 12:00:00\",\"ketThuc\":\"2025-11-21 20:00:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', '2025-11-20 12:30:43.567', NULL),
-(455, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '19', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', '2025-11-20 12:31:04.872', NULL),
-(456, 8, 'tao_cuoc_hoi_thoai', 'cuochoithoai', '224', '\"{\\\"NguCanhID\\\":19,\\\"NguCanhLoai\\\":\\\"CuocHen\\\",\\\"ThanhVienIDs\\\":[8,7]}\"', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', '2025-11-20 12:31:06.507', NULL),
-(457, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '20', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', '2025-11-20 12:32:50.253', NULL),
-(458, 8, 'bao_cao_ket_qua_cuoc_hen', 'CuocHen', '20', NULL, '{\"ketQua\":\"thanh_cong\",\"khachQuanTam\":true,\"slaWarning\":true}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', '2025-11-20 12:34:22.843', NULL),
-(459, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '20', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36', '2025-11-20 12:34:24.538', NULL);
+(453, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '21', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-20 11:02:42.155', NULL),
+(454, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '19', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.5845.163 Mobile Safari/537.36', '2025-11-20 11:06:13.800', NULL),
+(455, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '21', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-20 11:15:45.875', NULL),
+(456, 8, 'gui_tin_nhan_socket', 'tinnhan', '2078', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-20 11:16:05.001', NULL),
+(457, 8, 'gui_tin_nhan_socket', 'tinnhan', '2079', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-20 11:16:34.067', NULL),
+(458, 1, 'gui_tin_nhan_socket', 'tinnhan', '2080', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:41:39.800', NULL),
+(459, 1, 'gui_tin_nhan_socket', 'tinnhan', '2081', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:41:42.768', NULL),
+(460, 1, 'gui_tin_nhan_socket', 'tinnhan', '2082', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:41:44.447', NULL),
+(461, 1, 'gui_tin_nhan_socket', 'tinnhan', '2083', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:41:49.823', NULL),
+(462, 8, 'gui_tin_nhan_socket', 'tinnhan', '2084', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:41:52.975', NULL),
+(463, 1, 'gui_tin_nhan_socket', 'tinnhan', '2085', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:41:53.966', NULL),
+(464, 1, 'gui_tin_nhan_socket', 'tinnhan', '2086', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:41:59.976', NULL),
+(465, 8, 'gui_tin_nhan_socket', 'tinnhan', '2087', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:42:24.916', NULL),
+(466, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-23\",\"denNgay\":\"2025-11-22\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-22 20:47:59.042', NULL),
+(467, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-23\",\"denNgay\":\"2025-11-22\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-22 20:52:40.965', NULL);
 
 -- --------------------------------------------------------
 
@@ -4016,10 +4024,10 @@ INSERT INTO `thanhviencuochoithoai` (`CuocHoiThoaiID`, `NguoiDungID`, `ThamGiaLu
 (203, 201, '2025-11-04 19:05:27', '2025-11-04 22:05:27'),
 (204, 6, '2025-11-04 17:05:27', '2025-11-06 20:09:33'),
 (204, 203, '2025-11-04 17:05:27', '2025-11-04 21:55:27'),
-(219, 1, '2025-11-19 00:40:05', '2025-11-20 12:22:28'),
-(219, 8, '2025-11-19 00:16:56', '2025-11-19 15:32:20'),
+(219, 1, '2025-11-19 00:40:05', '2025-11-22 20:45:23'),
+(219, 8, '2025-11-19 00:16:56', '2025-11-22 20:44:28'),
 (220, 7, '2025-11-19 06:27:41', NULL),
-(220, 8, '2025-11-19 06:27:41', '2025-11-19 06:27:41'),
+(220, 8, '2025-11-19 06:27:41', '2025-11-22 20:42:44'),
 (221, 7, '2025-11-19 13:42:47', NULL),
 (221, 8, '2025-11-19 13:42:47', '2025-11-19 13:44:38'),
 (224, 7, '2025-11-20 12:31:06', NULL),
@@ -4227,7 +4235,17 @@ INSERT INTO `tinnhan` (`TinNhanID`, `CuocHoiThoaiID`, `NguoiGuiID`, `NoiDung`, `
 (2074, 219, 1, 'chào bạn', '2025-11-19 00:58:04', 0),
 (2075, 219, 1, 'Chào em', '2025-11-19 15:26:55', 0),
 (2076, 219, 1, 'kahcsh sao rồi em', '2025-11-19 15:27:11', 0),
-(2077, 219, 1, 'ey em', '2025-11-20 10:29:51', 0);
+(2077, 219, 1, 'ey em', '2025-11-20 10:29:51', 0),
+(2078, 219, 8, 'Chào anh', '2025-11-20 11:16:04', 0),
+(2079, 219, 8, 'Chào Lộc', '2025-11-20 11:16:34', 0),
+(2080, 219, 1, 'Chung', '2025-11-22 20:41:39', 0),
+(2081, 219, 1, 'Chung loz', '2025-11-22 20:41:42', 0),
+(2082, 219, 1, 'thấy k', '2025-11-22 20:41:44', 0),
+(2083, 219, 1, 'Eyyyyyy', '2025-11-22 20:41:49', 0),
+(2084, 219, 8, 'con cac tao ne', '2025-11-22 20:41:52', 0),
+(2085, 219, 1, 'đm Chung', '2025-11-22 20:41:53', 0),
+(2086, 219, 1, 'Chung ngu vl', '2025-11-22 20:41:59', 0),
+(2087, 219, 8, 'nhung hop ngu hon', '2025-11-22 20:42:24', 0);
 
 --
 -- Bẫy `tinnhan`
@@ -4508,7 +4526,14 @@ ALTER TABLE `khuvuc`
   ADD KEY `ParentKhuVucID` (`ParentKhuVucID`);
 
 --
--- Chỉ mục cho bảng `lichlamviec`
+-- Indexes for table `kyc_verification`
+--
+ALTER TABLE `kyc_verification`
+  ADD PRIMARY KEY (`KYCVerificationID`),
+  ADD KEY `NguoiDungID` (`NguoiDungID`);
+
+--
+-- Indexes for table `lichlamviec`
 --
 ALTER TABLE `lichlamviec`
   ADD PRIMARY KEY (`LichID`),
@@ -4539,13 +4564,7 @@ ALTER TABLE `nguoidung_vaitro`
   ADD KEY `VaiTroID` (`VaiTroID`);
 
 --
--- Chỉ mục cho bảng `nhanvienbanhang_caidat`
---
-ALTER TABLE `nhanvienbanhang_caidat`
-  ADD PRIMARY KEY (`NguoiDungID`);
-
---
--- Chỉ mục cho bảng `nhatkyhethong`
+-- Indexes for table `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
   ADD PRIMARY KEY (`NhatKyID`),
@@ -4728,7 +4747,13 @@ ALTER TABLE `khuvuc`
   MODIFY `KhuVucID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2778;
 
 --
--- AUTO_INCREMENT cho bảng `lichlamviec`
+-- AUTO_INCREMENT for table `kyc_verification`
+--
+ALTER TABLE `kyc_verification`
+  MODIFY `KYCVerificationID` bigint(20) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `lichlamviec`
 --
 ALTER TABLE `lichlamviec`
   MODIFY `LichID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
@@ -4749,7 +4774,7 @@ ALTER TABLE `nguoidung`
 -- AUTO_INCREMENT cho bảng `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
-  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=460;
+  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=468;
 
 --
 -- AUTO_INCREMENT cho bảng `noidunghethong`
@@ -4797,7 +4822,7 @@ ALTER TABLE `tindang`
 -- AUTO_INCREMENT cho bảng `tinnhan`
 --
 ALTER TABLE `tinnhan`
-  MODIFY `TinNhanID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2078;
+  MODIFY `TinNhanID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2088;
 
 --
 -- AUTO_INCREMENT cho bảng `vaitro`
@@ -4819,7 +4844,9 @@ ALTER TABLE `vi`
 -- Các ràng buộc cho bảng `bienbanbangiao`
 --
 ALTER TABLE `bienbanbangiao`
-  ADD CONSTRAINT `bienbanbangiao_ibfk_1` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
+  ADD CONSTRAINT `fk_bbbg_hopdong` FOREIGN KEY (`HopDongID`) REFERENCES `hopdong` (`HopDongID`),
+  ADD CONSTRAINT `fk_bbbg_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`),
+  ADD CONSTRAINT `fk_bbbg_tindang` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
 
 --
 -- Các ràng buộc cho bảng `buttoansocai`
@@ -4832,7 +4859,130 @@ ALTER TABLE `buttoansocai`
 -- Các ràng buộc cho bảng `hosonhanvien`
 --
 ALTER TABLE `hosonhanvien`
-  ADD CONSTRAINT `hosonhanvien_ibfk_1` FOREIGN KEY (`KhuVucPhuTrachID`) REFERENCES `khuvuc` (`KhuVucID`);
+  ADD CONSTRAINT `hosonhanvien_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`),
+  ADD CONSTRAINT `hosonhanvien_ibfk_2` FOREIGN KEY (`KhuVucChinhID`) REFERENCES `khuvuc` (`KhuVucID`),
+  ADD CONSTRAINT `hosonhanvien_ibfk_3` FOREIGN KEY (`KhuVucPhuTrachID`) REFERENCES `khuvuc` (`KhuVucID`);
+
+--
+-- Constraints for table `khuvuc`
+--
+ALTER TABLE `khuvuc`
+  ADD CONSTRAINT `khuvuc_ibfk_1` FOREIGN KEY (`ParentKhuVucID`) REFERENCES `khuvuc` (`KhuVucID`);
+
+--
+-- Constraints for table `kyc_verification`
+--
+ALTER TABLE `kyc_verification`
+  ADD CONSTRAINT `kyc_verification_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `lichlamviec`
+--
+ALTER TABLE `lichlamviec`
+  ADD CONSTRAINT `lichlamviec_ibfk_1` FOREIGN KEY (`NhanVienBanHangID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `mauhopdong`
+--
+ALTER TABLE `mauhopdong`
+  ADD CONSTRAINT `mauhopdong_ibfk_1` FOREIGN KEY (`TaoBoiAdminID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `nguoidung`
+--
+ALTER TABLE `nguoidung`
+  ADD CONSTRAINT `fk_nguoidung_vaitrohoatdong` FOREIGN KEY (`VaiTroHoatDongID`) REFERENCES `vaitro` (`VaiTroID`);
+
+--
+-- Constraints for table `nguoidung_vaitro`
+--
+ALTER TABLE `nguoidung_vaitro`
+  ADD CONSTRAINT `nguoidung_vaitro_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`),
+  ADD CONSTRAINT `nguoidung_vaitro_ibfk_2` FOREIGN KEY (`VaiTroID`) REFERENCES `vaitro` (`VaiTroID`);
+
+--
+-- Constraints for table `nhatkyhethong`
+--
+ALTER TABLE `nhatkyhethong`
+  ADD CONSTRAINT `nhatkyhethong_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `noidunghethong`
+--
+ALTER TABLE `noidunghethong`
+  ADD CONSTRAINT `noidunghethong_ibfk_1` FOREIGN KEY (`CapNhatBoiID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `phong`
+--
+ALTER TABLE `phong`
+  ADD CONSTRAINT `phong_ibfk_1` FOREIGN KEY (`DuAnID`) REFERENCES `duan` (`DuAnID`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `phong_tindang`
+--
+ALTER TABLE `phong_tindang`
+  ADD CONSTRAINT `phong_tindang_ibfk_1` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `phong_tindang_ibfk_2` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `thanhviencuochoithoai`
+--
+ALTER TABLE `thanhviencuochoithoai`
+  ADD CONSTRAINT `fk_thanhvien_cuochoithoai` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_thanhvien_nguoidung` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `thanhviencuochoithoai_ibfk_1` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`),
+  ADD CONSTRAINT `thanhviencuochoithoai_ibfk_2` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `thongbao`
+--
+ALTER TABLE `thongbao`
+  ADD CONSTRAINT `thongbao_ibfk_1` FOREIGN KEY (`NguoiNhanID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `thongketindang`
+--
+ALTER TABLE `thongketindang`
+  ADD CONSTRAINT `thongketindang_ibfk_1` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
+
+--
+-- Constraints for table `tindang`
+--
+ALTER TABLE `tindang`
+  ADD CONSTRAINT `fk_tindang_chinhsachcoc` FOREIGN KEY (`ChinhSachCocID`) REFERENCES `chinhsachcoc` (`ChinhSachCocID`),
+  ADD CONSTRAINT `tindang_ibfk_1` FOREIGN KEY (`DuAnID`) REFERENCES `duan` (`DuAnID`),
+  ADD CONSTRAINT `tindang_ibfk_2` FOREIGN KEY (`KhuVucID`) REFERENCES `khuvuc` (`KhuVucID`),
+  ADD CONSTRAINT `tindang_ibfk_3` FOREIGN KEY (`DuyetBoiNhanVienID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `tinnhan`
+--
+ALTER TABLE `tinnhan`
+  ADD CONSTRAINT `fk_tinnhan_cuochoithoai` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_tinnhan_nguoigui` FOREIGN KEY (`NguoiGuiID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `tinnhan_ibfk_1` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`),
+  ADD CONSTRAINT `tinnhan_ibfk_2` FOREIGN KEY (`NguoiGuiID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `vaitro_quyen`
+--
+ALTER TABLE `vaitro_quyen`
+  ADD CONSTRAINT `vaitro_quyen_ibfk_1` FOREIGN KEY (`VaiTroID`) REFERENCES `vaitro` (`VaiTroID`),
+  ADD CONSTRAINT `vaitro_quyen_ibfk_2` FOREIGN KEY (`QuyenID`) REFERENCES `quyen` (`QuyenID`);
+
+--
+-- Constraints for table `vi`
+--
+ALTER TABLE `vi`
+  ADD CONSTRAINT `vi_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
+
+--
+-- Constraints for table `yeuthich`
+--
+ALTER TABLE `yeuthich`
+  ADD CONSTRAINT `yeuthich_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`),
+  ADD CONSTRAINT `yeuthich_ibfk_2` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

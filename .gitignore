@@ -12,6 +12,21 @@ dist
 dist-ssr
 *.local
 
+# Uploads (User data - Privacy)
+server/uploads/kyc/cccd_front/*
+server/uploads/kyc/cccd_back/*
+server/uploads/kyc/selfie/*
+!server/uploads/kyc/cccd_front/.gitkeep
+!server/uploads/kyc/cccd_back/.gitkeep
+!server/uploads/kyc/selfie/.gitkeep
+!server/uploads/kyc/README.md
+
+# AI Models (Large files - Download separately)
+client/public/models/*.bin
+client/public/models/*-shard*
+client/public/tessdata/*.gz
+client/public/tessdata/*.traineddata
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

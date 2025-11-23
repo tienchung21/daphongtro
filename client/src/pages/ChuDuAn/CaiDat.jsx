@@ -28,6 +28,7 @@ import {
  * Design: Tab-based settings với form validation
  */
 function CaiDat() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('thong-tin');
   const [isEditing, setIsEditing] = useState(false);
   const [userData, setUserData] = useState({});
@@ -240,8 +241,31 @@ function CaiDat() {
             <div className="caidat-status-info">
               <div className="caidat-status-label">Xác minh</div>
               <div className="caidat-status-value">
-                {userData.TrangThaiXacMinh === 'DaXacMinh' ? 'Đã xác minh' : 'Chưa xác minh'}
+                {userData.TrangThaiXacMinh === 'DaXacMinh' ? 'Đã xác minh' : 
+                 userData.TrangThaiXacMinh === 'ChoDuyet' ? 'Đang chờ duyệt' : 'Chưa xác minh'}
               </div>
+              {userData.TrangThaiXacMinh !== 'DaXacMinh' && userData.TrangThaiXacMinh !== 'ChoDuyet' && (
+                <button 
+                  className="caidat-btn-verify"
+                  onClick={() => navigate('/xac-thuc-kyc')}
+                  style={{
+                    marginTop: '8px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    background: '#ef4444',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  Xác thực ngay
+                </button>
+              )}
             </div>
           </div>
 

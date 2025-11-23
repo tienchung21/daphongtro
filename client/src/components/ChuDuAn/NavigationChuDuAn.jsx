@@ -11,7 +11,8 @@ import {
   HiOutlineChatBubbleLeftRight,
   HiOutlineArrowTrendingUp,
   HiOutlineCog6Tooth,
-  HiOutlineArrowRightOnRectangle
+  HiOutlineArrowRightOnRectangle,
+  HiOutlineExclamationTriangle
 } from 'react-icons/hi2';
 
 /**
@@ -24,6 +25,12 @@ function NavigationChuDuAn() {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    setUser(userData);
+  }, []);
 
   const mainMenuItems = [
     {
@@ -240,7 +247,24 @@ function NavigationChuDuAn() {
           onClick={() => navigate('/cai-dat')}
           title="Cài đặt"
         >
-          <HiOutlineCog6Tooth style={{ width: '20px', height: '20px' }} />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <HiOutlineCog6Tooth style={{ width: '20px', height: '20px' }} />
+            {user.TrangThaiXacMinh !== 'DaXacMinh' && user.TrangThaiXacMinh !== 'ChoDuyet' && (
+              <HiOutlineExclamationTriangle 
+                style={{ 
+                  position: 'absolute', 
+                  top: -6, 
+                  right: -6, 
+                  color: '#ef4444', 
+                  width: '14px', 
+                  height: '14px',
+                  background: 'white',
+                  borderRadius: '50%',
+                  border: '1px solid white'
+                }} 
+              />
+            )}
+          </div>
           {!isCollapsed && <span>Cài đặt</span>}
         </button>
         <button 
