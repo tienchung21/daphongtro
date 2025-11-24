@@ -481,7 +481,6 @@ CREATE TABLE `hosonhanvien` (
   `KhuVucChinhID` int(11) DEFAULT NULL,
   `KhuVucPhuTrachID` int(11) DEFAULT NULL,
   `TyLeHoaHong` decimal(5,2) DEFAULT NULL,
-  `TrangThaiLamViec` varchar(50) DEFAULT NULL,
   `NgayBatDau` date DEFAULT NULL,
   `NgayKetThuc` date DEFAULT NULL,
   `GhiChu` text DEFAULT NULL
@@ -491,9 +490,8 @@ CREATE TABLE `hosonhanvien` (
 -- Đang đổ dữ liệu cho bảng `hosonhanvien`
 --
 
-INSERT INTO `hosonhanvien` (`HoSoID`, `NguoiDungID`, `MaNhanVien`, `KhuVucChinhID`, `KhuVucPhuTrachID`, `TyLeHoaHong`, `TrangThaiLamViec`, `NgayBatDau`, `NgayKetThuc`, `GhiChu`) VALUES
-(7, 8, 'NV0001', 62, 720, 10.00, 'Active', '2025-11-17', NULL, NULL),
-(9, 9, 'NV0002', 62, 720, 10.00, 'Active', '2025-11-20', NULL, NULL);
+INSERT INTO `hosonhanvien` (`HoSoID`, `NguoiDungID`, `MaNhanVien`, `KhuVucChinhID`, `KhuVucPhuTrachID`, `TyLeHoaHong`, `NgayBatDau`, `NgayKetThuc`, `GhiChu`) VALUES
+(7, 8, 'NV0001', 62, NULL, 10.00, '2025-11-17', NULL, NULL);
 
 -- --------------------------------------------------------
 

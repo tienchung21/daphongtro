@@ -167,6 +167,57 @@
   }
 }
 
+/* Thêm vào file QuanLyNhanVien.css */
+
+/* Container cho các nút hành động trên Header */
+.quan-ly-nhan-vien__actions-header {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+/* Nút active khi đang mở filter */
+.operator-btn--active {
+  background-color: var(--operator-primary-light, #e3f2fd);
+  color: var(--operator-primary, #1976d2);
+  border: 1px solid var(--operator-primary);
+}
+
+/* Wrapper cho vùng Filter - Tạo hiệu ứng Glass Morphism riêng */
+.quan-ly-nhan-vien__filter-wrapper {
+  overflow: hidden;
+  transition: all 0.3s ease;
+  margin-bottom: 0;
+  opacity: 0;
+  max-height: 0;
+}
+
+.quan-ly-nhan-vien__filter-wrapper.is-open {
+  margin-bottom: 1.5rem; /* Đẩy bảng xuống khi mở */
+  opacity: 1;
+  max-height: 500px; /* Đủ lớn để chứa filter */
+  
+  /* Style giống Glass Morphism để đồng bộ */
+  background: var(--operator-glass-bg, rgba(255, 255, 255, 0.7));
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--operator-glass-border, rgba(255, 255, 255, 0.5));
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--operator-shadow-sm, 0 4px 6px rgba(0,0,0,0.05));
+}
+
+/* Responsive cho nút */
+@media (max-width: 768px) {
+  .quan-ly-nhan-vien__actions-header {
+    width: 100%;
+    justify-content: space-between;
+    margin-top: 1rem;
+  }
+  
+  .quan-ly-nhan-vien__actions-header .operator-btn {
+    flex: 1;
+  }
+}
 
 
 
