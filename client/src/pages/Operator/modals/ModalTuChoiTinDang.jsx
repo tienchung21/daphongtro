@@ -11,9 +11,21 @@ import './ModalTuChoiTinDang.css';
 const ModalTuChoiTinDang = ({ tinDangId, tieuDe, onClose, onSuccess }) => {
   const [lyDoTuChoi, setLyDoTuChoi] = useState('');
   const [errors, setErrors] = useState({});
+  const [operatorId] = useState(() => {
+    try {
+      const operator = localStorage.getItem("user");
+      if (operator) {
+        const parsed = JSON.parse(operator);
+        return parsed.NguoiDungID || -1;
+      }
+    } catch (e) {
+      return -1;
+    }
+    return -1;
+  });
 
   const tuChoiMutation = useMutation({
-    mutationFn: (data) => operatorApi.tinDang.tuChoiTinDang(data.tinDangId, data.lyDoTuChoi),
+    mutationFn: (data) => operatorApi.tinDang.tuChoiTinDang(data.tinDangId, data.lyDoTuChoi, operatorId),
     onSuccess: () => {
       alert('✅ Từ chối tin đăng thành công!');
       onSuccess();

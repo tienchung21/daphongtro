@@ -20,19 +20,19 @@
   --op-primary: #7A3E2E;
   --op-primary-light: #A85A46;
   --op-primary-dark: #5B2C20;
-  
+
   --op-success: #22C55E;
   --op-success-light: rgba(34, 197, 94, 0.7);
-  
+
   --op-danger: #EF4444;
   --op-danger-light: rgba(239, 68, 68, 0.7);
-  
+
   --op-warning: #C9A227;
   --op-warning-light: rgba(201, 162, 39, 0.7);
-  
+
   --op-info: #5B5A57;
   --op-info-light: rgba(91, 90, 87, 0.7);
-  
+
   /* Liquid Glass (High) */
   --op-glass-bg: rgba(255, 255, 255, 0.85);
   --op-glass-bg-hover: rgba(255, 255, 255, 0.9);
@@ -40,29 +40,29 @@
   --op-glass-border: rgba(122, 62, 46, 0.12);
   --op-glass-shadow: 0 12px 40px rgba(122, 62, 46, 0.12);
   --op-glass-shadow-lg: 0 20px 60px rgba(122, 62, 46, 0.16);
-  
+
   /* Text (dark on light) */
   --op-text-primary: #1B1B1B;
   --op-text-secondary: #5B5A57;
   --op-text-muted: #8B8B8B;
-  
+
   /* Backdrop blur - High */
   --op-blur: 20px;
   --op-blur-lg: 30px;
-  
+
   /* Border radius */
   --op-radius-sm: 8px;
   --op-radius-md: 12px;
   --op-radius-lg: 16px;
   --op-radius-xl: 24px;
-  
+
   /* Spacing */
   --op-spacing-xs: 4px;
   --op-spacing-sm: 8px;
   --op-spacing-md: 16px;
   --op-spacing-lg: 24px;
   --op-spacing-xl: 32px;
-  
+
   /* Transitions */
   --op-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --op-transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
@@ -80,6 +80,21 @@
   --op-line-height-normal: 1.5;
   --op-letter-spacing-tight: -0.01em;
   --op-letter-spacing-normal: 0;
+
+  /* Alias legacy operator tokens to new op-* palette for backward compatibility */
+  --operator-primary: var(--op-primary);
+  --operator-primary-light: var(--op-primary-light);
+  --operator-primary-dark: var(--op-primary-dark);
+  --operator-success: var(--op-success);
+  --operator-warning: var(--op-warning);
+  --operator-danger: var(--op-danger);
+  --operator-text-primary: var(--op-text-primary);
+  --operator-text-secondary: var(--op-text-secondary);
+  --operator-text-muted: var(--op-text-muted);
+  --operator-glass-bg: var(--op-glass-bg);
+  --operator-glass-border: var(--op-glass-border);
+  --operator-shadow-md: var(--op-glass-shadow);
+  --operator-shadow-lg: var(--op-glass-shadow-lg);
 }
 
 /* ==================== BASE GLASS BLOCK ==================== */
@@ -351,7 +366,8 @@
 }
 
 .operator-modal__container {
-  background: var(--op-glass-bg);
+  position: relative;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.82));
   backdrop-filter: blur(var(--op-blur-lg));
   -webkit-backdrop-filter: blur(var(--op-blur-lg));
   border: 1px solid var(--op-glass-border);
@@ -362,6 +378,16 @@
   max-height: 90vh;
   overflow: auto;
   animation: operator-slide-up 0.3s ease;
+}
+
+.operator-modal__container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 15% 20%, rgba(122, 62, 46, 0.12), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgba(201, 162, 39, 0.12), transparent 38%);
+  pointer-events: none;
+  mix-blend-mode: screen;
 }
 
 .operator-modal__header {
@@ -574,6 +600,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -584,6 +611,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -594,6 +622,7 @@
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
@@ -601,12 +630,10 @@
 
 /* Loading shimmer effect */
 .operator-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--op-glass-bg) 0%,
-    rgba(255, 255, 255, 0.15) 50%,
-    var(--op-glass-bg) 100%
-  );
+  background: linear-gradient(90deg,
+      var(--op-glass-bg) 0%,
+      rgba(255, 255, 255, 0.15) 50%,
+      var(--op-glass-bg) 100%);
   background-size: 2000px 100%;
   animation: operator-shimmer 2s infinite linear;
 }
@@ -641,9 +668,3 @@
   white-space: nowrap;
   border-width: 0;
 }
-
-
-
-
-
-
