@@ -21,10 +21,11 @@ function TrangChu() {
   const fetchTinDangs = async (params = {}) => {
     setLoading(true);
     setError("");
-    console.log("[TrangChu] fetchTinDangs params:", params);
+    console.log("[TrangChu] 📞 fetchTinDangs params:", params);
     try {
       const res = await tinDangPublicApi.getAll(params);
-      console.log("[TrangChu] tinDangPublicApi.getAll response:", res);
+      console.log("[TrangChu] 📥 tinDangPublicApi.getAll response:", res);
+      console.log("[TrangChu] 📥 response.data:", res?.data);
 
       // Axios response structure: { data: { success, data }, status, headers }
       let raw = [];
@@ -41,20 +42,7 @@ function TrangChu() {
 
       console.log("[TrangChu] RAW LIST FROM API:", raw);
 
-      // fallback filter client-side nếu muốn
-      let data = raw;
-      if (params?.KhuVucID) {
-        const needId = Number(params.KhuVucID);
-        data = raw.filter((t) => Number(t.KhuVucID) === needId);
-        console.log(
-          "[TrangChu] client-filtered count:",
-          data.length,
-          "for KhuVucID=",
-          needId
-        );
-      }
-
-      setTindangs(data);
+      setTindangs(raw);
     } catch (err) {
       console.error(
         "Lỗi lấy tin đăng:",
@@ -67,12 +55,32 @@ function TrangChu() {
   };
 
   const handleSearchKhuVuc = (payload = {}) => {
-    console.log("[TrangChu] handleSearchKhuVuc payload:", payload); // debug
-    if (!payload?.KhuVucID) {
-      fetchTinDangs(); // load full list
-      return;
+    console.log("[TrangChu] 🔍 handleSearchKhuVuc payload:", payload); // debug
+    console.log("[TrangChu] 🔍 payload.KhuVucID:", payload?.KhuVucID);
+    console.log("[TrangChu] 🔍 payload.tenKhuVuc:", payload?.tenKhuVuc);
+    console.log("[TrangChu] 🔍 payload.path:", payload?.path);
+    console.log("[TrangChu] 🔍 payload.keyword:", payload?.keyword);
+    
+    // Xây dựng params cho API
+    const params = {};
+    
+    // Thêm khu vực nếu có
+    if (payload?.KhuVucID) {
+      const khuVucId = Number(payload.KhuVucID);
+      if (!isNaN(khuVucId) && khuVucId > 0) {
+        params.khuVucId = khuVucId;
+        console.log("[TrangChu] ✅ Lọc theo KhuVucID:", khuVucId);
+      }
     }
-    fetchTinDangs({ KhuVucID: payload.KhuVucID });
+    
+    // Thêm từ khóa nếu có
+    if (payload?.keyword && payload.keyword.trim()) {
+      params.keyword = payload.keyword.trim();
+      console.log("[TrangChu] ✅ Tìm kiếm theo từ khóa:", params.keyword);
+    }
+    
+    // Gọi API với params (có thể rỗng nếu không có filter nào)
+    fetchTinDangs(Object.keys(params).length > 0 ? params : {});
   };
 
   const formatPrice = (g) => {

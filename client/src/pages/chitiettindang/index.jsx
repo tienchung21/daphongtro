@@ -29,6 +29,9 @@ import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
 import yeuThichApi from "../../api/yeuThichApi";
 import nguoiPhuTrachDuAnApi from "../../api/nguoiPhuTrachDuAnApi"; // Thêm import
 import viApi from "../../api/viApi";
+import hopDongApi from "../../api/hopDongApi";
+import lichSuViApi from "../../api/lichSuViApi";
+import { useToast, ToastContainer } from "../../components/Toast/Toast";
 import "./chitiettindang.css";
 
 /**
@@ -85,6 +88,8 @@ const toMySqlDateTime = (input) => {
  * - Share functionality
  * - Scroll progress bar
  */
+const DEFAULT_MAU_HOP_DONG_ID = 1;
+
 const ChiTietTinDang = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -111,6 +116,14 @@ const ChiTietTinDang = () => {
   const [cocPhongId, setCocPhongId] = useState(null);
   const [soDuVi, setSoDuVi] = useState(null);
   const [checkingCoc, setCheckingCoc] = useState(false);
+  const [hopDongModalOpen, setHopDongModalOpen] = useState(false);
+  const [hopDongData, setHopDongData] = useState(null);
+  const [hopDongLoading, setHopDongLoading] = useState(false);
+  const [hopDongError, setHopDongError] = useState(null);
+  const [hopDongPhong, setHopDongPhong] = useState(null);
+
+  // Toast notification
+  const { toasts, showToast, removeToast } = useToast();
 
   // Chuẩn bị giá trị PheDuyetChuDuAn từ tin đăng (1 => ChoPheDuyet, 0 => DaPheDuyet)
   const getPheDuyetChuValue = () => {
@@ -150,21 +163,21 @@ const ChiTietTinDang = () => {
     e.preventDefault();
     const userId = getCurrentUserId();
     if (!userId) {
-      showToast("❌ Chưa đăng nhập");
+      showToast("Chưa đăng nhập", "error");
       return;
     }
     if (!henThoiGian) {
-      showToast("❌ Chưa chọn thời gian");
+      showToast("Chưa chọn thời gian", "error");
       return;
     }
     if (!henPhongId) {
-      showToast("❌ Vui lòng chọn phòng cần xem");
+      showToast("Vui lòng chọn phòng cần xem", "error");
       return;
     }
 
     const mysqlTime = toMySqlDateTime(henThoiGian);
     if (!mysqlTime) {
-      showToast("❌ Thời gian không hợp lệ");
+      showToast("Thời gian không hợp lệ", "error");
       return;
     }
 
@@ -321,7 +334,7 @@ const ChiTietTinDang = () => {
         response?.status === 201 ||
         response?.data?.success
       ) {
-        showToast("✅ Đặt lịch thành công! Người quản lý sẽ liên hệ bạn sớm.");
+        showToast("Đặt lịch thành công! Người quản lý sẽ liên hệ bạn sớm.", "success");
         setHenModalOpen(false);
         setHenPhongId(null);
         setHenThoiGian("");
@@ -336,7 +349,7 @@ const ChiTietTinDang = () => {
     } catch (error) {
       console.error("[ChiTietTinDang] Lỗi tạo cuộc hẹn:", error);
       if (error?.response?.status === 201) {
-        showToast("✅ Đặt lịch thành công!");
+        showToast("Đặt lịch thành công!", "success");
         setHenModalOpen(false);
         setHenPhongId(null);
         setHenThoiGian("");
@@ -407,6 +420,142 @@ const ChiTietTinDang = () => {
       console.error("Lỗi tải chi tiết tin đăng:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openHopDongPreview = async (phong) => {
+    if (!tinDang?.TinDangID) {
+      showToast("Không tìm thấy thông tin tin đăng", "error");
+      return;
+    }
+
+    setHopDongModalOpen(true);
+    setHopDongLoading(true);
+    setHopDongError(null);
+    setHopDongData(null);
+    setHopDongPhong(phong || null);
+
+    try {
+      const overrides = {
+        chiPhi: {
+          giaThue: phong?.Gia || tinDang?.Gia || 0,
+          giaDien: tinDang?.GiaDien || null,
+          giaNuoc: tinDang?.GiaNuoc || null,
+          giaDichVu: tinDang?.GiaDichVu || null,
+          moTaDichVu: tinDang?.MoTaGiaDichVu || "",
+          soTienCoc: phong?.Gia || tinDang?.Gia || 0,
+        },
+        batDongSan: {
+          diaChi: tinDang?.DiaChi || "",
+          dienTich: phong?.DienTich || tinDang?.DienTich,
+          tenPhong: phong?.TenPhong || null,
+        },
+      };
+
+      const response = await hopDongApi.generate({
+        tinDangId: tinDang.TinDangID,
+        mauHopDongId: DEFAULT_MAU_HOP_DONG_ID,
+        overrides,
+      });
+
+      const payload = response?.data || response;
+      if (!payload?.success) {
+        throw new Error(payload?.message || "Không thể tải hợp đồng");
+      }
+
+      setHopDongData(payload.data);
+    } catch (error) {
+      console.error("[ChiTietTinDang] Lỗi dựng hợp đồng:", error);
+      const msg =
+        error?.response?.data?.message ||
+        error.message ||
+        "Không thể tải hợp đồng";
+      setHopDongError(msg);
+    } finally {
+      setHopDongLoading(false);
+    }
+  };
+
+  const closeHopDongModal = () => {
+    setHopDongModalOpen(false);
+    setHopDongData(null);
+    setHopDongError(null);
+    setHopDongLoading(false);
+    setHopDongPhong(null);
+  };
+
+  const handleHopDongAgree = async () => {
+    if (!tinDang?.TinDangID || !hopDongData || !hopDongPhong?.PhongID) {
+      showToast("Vui lòng chọn phòng trước khi đặt cọc", "error");
+      closeHopDongModal();
+      return;
+    }
+
+    try {
+      // Tính số tiền cọc
+      const soTienCoc =
+        hopDongData?.payload?.chiPhi?.soTienCoc ||
+        hopDongPhong?.Gia ||
+        hopDongData?.payload?.chiPhi?.giaThue ||
+        0;
+
+      // Kiểm tra số dư ví trước khi trừ tiền
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const userId = user.id || user.NguoiDungID || user._id;
+
+      if (userId) {
+        const viRes = await viApi.getByUser(userId);
+        let soDu = 0;
+        if (viRes?.data?.data?.SoDu) {
+          soDu = Number(viRes.data.data.SoDu);
+        } else if (Array.isArray(viRes?.data?.data) && viRes.data.data.length > 0) {
+          soDu = Number(viRes.data.data[0].SoDu || 0);
+        }
+
+        if (soDu < Number(soTienCoc)) {
+          showToast("Số dư ví không đủ để đặt cọc!", "error");
+          closeHopDongModal();
+          return;
+        }
+
+        // Tạo giao dịch trừ tiền (rút tiền để đặt cọc)
+        const maGiaoDich = `COC_${tinDang.TinDangID}_${hopDongPhong.PhongID}_${Date.now()}`;
+        await lichSuViApi.create({
+          user_id: userId,
+          ma_giao_dich: maGiaoDich,
+          so_tien: Number(soTienCoc),
+          trang_thai: "THANH_CONG",
+          LoaiGiaoDich: "rut", // Rút tiền để đặt cọc
+        });
+
+        // Hiển thị thông báo trừ tiền
+        showToast(
+          `Đã trừ ${Number(soTienCoc).toLocaleString("vi-VN")} ₫ từ ví để đặt cọc`,
+          "success"
+        );
+      }
+
+      // Xác nhận đặt cọc
+      await hopDongApi.confirmDeposit(tinDang.TinDangID, {
+        giaoDichId: `tmp-${Date.now()}`,
+        soTien: soTienCoc,
+        noiDungSnapshot:
+          hopDongData?.renderedHtml || hopDongData?.noiDungSnapshot || "",
+        phongId: hopDongPhong?.PhongID,
+      });
+
+      showToast("Đặt cọc thành công!", "success");
+      closeHopDongModal();
+      setCocPhongId(null);
+      await layChiTietTinDang();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      console.error("[ChiTietTinDang] Lỗi xác nhận hợp đồng:", error);
+      const msg =
+        error?.response?.data?.message ||
+        error.message ||
+        "Không thể xác nhận đặt cọc";
+      showToast(msg, "error");
     }
   };
 
@@ -579,14 +728,14 @@ const ChiTietTinDang = () => {
     try {
       if (daLuu) {
         setDaLuu(false);
-        showToast("✅ Đã bỏ lưu tin");
+        showToast("Đã bỏ lưu tin", "success");
       } else {
         await yeuThichApi.add({
           NguoiDungID: userId,
           TinDangID: tinDang.TinDangID,
         });
         setDaLuu(true);
-        showToast("✅ Đã lưu tin thành công!");
+        showToast("Đã lưu tin thành công!", "success");
       }
     } catch (error) {
       console.error("Lỗi lưu tin:", error);
@@ -599,27 +748,14 @@ const ChiTietTinDang = () => {
     navigator.clipboard
       .writeText(window.location.href)
       .then(() => {
-        showToast("✅ Đã sao chép link chia sẻ!");
+        showToast("Đã sao chép link chia sẻ!", "success");
       })
       .catch(() => {
-        showToast("❌ Không thể sao chép. Vui lòng thử lại.");
+        showToast("Không thể sao chép. Vui lòng thử lại.", "error");
       });
   };
 
-  const showToast = (message) => {
-    const toast = document.createElement("div");
-    toast.className = "ctd-toast";
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    setTimeout(() => toast.classList.add("show"), 10);
-    setTimeout(() => {
-      toast.classList.remove("show");
-      setTimeout(() => {
-        if (document.body.contains(toast)) document.body.removeChild(toast);
-      }, 300);
-    }, 3000);
-  };
+  // showToast đã được thay thế bằng useToast hook
 
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
@@ -1467,7 +1603,7 @@ const ChiTietTinDang = () => {
                       (p) => p.PhongID === cocPhongId
                     );
                     if (!phong) {
-                      showToast("❌ Vui lòng chọn phòng");
+                      showToast("Vui lòng chọn phòng", "error");
                       return;
                     }
                     setCheckingCoc(true);
@@ -1484,42 +1620,86 @@ const ChiTietTinDang = () => {
                       }
                       setSoDuVi(soDu);
                       if (soDu < Number(phong.Gia)) {
-                        showToast("❌ Số dư ví không đủ để đặt cọc phòng này!");
+                        showToast("Số dư ví không đủ để đặt cọc phòng này!", "error");
                         setCheckingCoc(false);
                         return;
                       }
                     } catch (err) {
-                      showToast("❌ Lỗi kiểm tra số dư ví");
+                      showToast("Lỗi kiểm tra số dư ví", "error");
                       setCheckingCoc(false);
                       return;
                     }
                     setCheckingCoc(false);
-                    // ...existing code chuyển trang hoặc xử lý đặt cọc...
-                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
-                    const acc = tinDang?.BankAccountNumber ?? "80349195777";
-                    const bank = tinDang?.BankName ?? "TPBank";
-                    const amount = String(phong.Gia || "1000000");
-                    const des = `dk${tinId}_p${phong.PhongID}`;
                     setCocModalOpen(false);
-                    setCocPhongId(null);
-                    navigate(
-                      `/thanhtoancoc?acc=${encodeURIComponent(
-                        acc
-                      )}&bank=${encodeURIComponent(
-                        bank
-                      )}&amount=${encodeURIComponent(
-                        amount
-                      )}&des=${encodeURIComponent(
-                        des
-                      )}&tinId=${encodeURIComponent(
-                        tinId
-                      )}&phongId=${encodeURIComponent(
-                        phong.PhongID
-                      )}&order=${encodeURIComponent(tinId)}`
-                    );
+                    await openHopDongPreview(phong);
                   }}
                 >
                   Xác nhận đặt cọc
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal xem trước hợp đồng đặt cọc */}
+        {hopDongModalOpen && (
+          <div
+            className="hen-modal-overlay"
+            onClick={() => !hopDongLoading && closeHopDongModal()}
+          >
+            <div
+              className="hop-dong-modal"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="hop-dong-modal__header">
+                <h3>Hợp đồng đặt cọc</h3>
+                {hopDongPhong && (
+                  <p className="hop-dong-modal__subtitle">
+                    Phòng: {hopDongPhong.TenPhong} • {formatCurrency(hopDongPhong.Gia)}/tháng
+                  </p>
+                )}
+              </div>
+
+              {hopDongLoading && (
+                <div className="hop-dong-modal__state">Đang tải hợp đồng...</div>
+              )}
+
+              {!hopDongLoading && hopDongError && (
+                <div className="hop-dong-modal__alert">❌ {hopDongError}</div>
+              )}
+
+              {!hopDongLoading && !hopDongError && hopDongData && (
+                <div
+                  className="hop-dong-modal__preview"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      hopDongData?.renderedHtml ||
+                      hopDongData?.noiDungSnapshot ||
+                      "",
+                  }}
+                />
+              )}
+
+              <div className="hop-dong-modal__actions">
+                <button
+                  type="button"
+                  className="hen-btn secondary"
+                  onClick={closeHopDongModal}
+                  disabled={hopDongLoading}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="hen-btn primary"
+                  onClick={handleHopDongAgree}
+                  disabled={
+                    hopDongLoading || hopDongError !== null || !hopDongData
+                  }
+                >
+                  Đồng ý đặt cọc
                 </button>
               </div>
             </div>
@@ -1607,6 +1787,9 @@ const ChiTietTinDang = () => {
         )}
       </div>
       <Footer />
+      
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };

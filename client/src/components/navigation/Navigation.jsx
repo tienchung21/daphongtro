@@ -24,11 +24,32 @@ import {
  * Design: Modern sidebar với sections, badges, user profile
  * @returns {JSX.Element}
  */
+// Helper function để lấy vai trò người dùng
+const getUserRole = (user) => {
+  if (!user) return null;
+  return user.VaiTroHoatDongID || user.vaiTroId || user.role || user.VaiTroID || null;
+};
+
+// Helper function để lấy user từ localStorage
+const getCurrentUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem('user') || '{}');
+  } catch {
+    return {};
+  }
+};
+
 function Navigation({ activeTab, onTabChange }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    setUserRole(getUserRole(user));
+  }, []);
 
   const mainMenuItems = [
     {
@@ -85,6 +106,9 @@ function Navigation({ activeTab, onTabChange }) {
     },
   ];
 
+  // Hiển thị tab Hợp đồng cho Admin (role 4), Operator (role 5) hoặc Khách hàng (role 1)
+  const shouldShowHopDongTab = userRole === 4 || userRole === 5 || userRole === 1;
+
   const paymentMenuItems = [
     {
       path: "/thanhtoan",
@@ -100,6 +124,14 @@ function Navigation({ activeTab, onTabChange }) {
       icon: <HiOutlineArrowTrendingUp />,
       description: "Quản lý ví người dùng",
     },
+    // Chỉ hiển thị tab Hợp đồng cho Admin/Operator
+    ...(shouldShowHopDongTab ? [{
+      path: "/quan-ly/hop-dong",
+      tab: "hopdong",
+      title: "Hợp đồng",
+      icon: <HiOutlineDocumentText />,
+      description: "Quản lý hợp đồng",
+    }] : []),
     {
       path: "/chu-du-an/bao-cao",
       tab: "baocao",

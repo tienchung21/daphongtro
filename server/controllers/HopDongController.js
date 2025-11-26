@@ -113,6 +113,34 @@ class HopDongController {
   }
 
   /**
+   * GET /api/admin/hop-dong
+   * Lấy tất cả hợp đồng (cho Admin/Operator)
+   */
+  static async layTatCa(req, res) {
+    try {
+      const { tuNgay, denNgay, chuDuAnId } = req.query;
+
+      const danhSach = await HopDongModel.layTatCaHopDong({
+        tuNgay,
+        denNgay,
+        chuDuAnId: chuDuAnId ? Number(chuDuAnId) : null
+      });
+
+      res.json({
+        success: true,
+        data: danhSach
+      });
+
+    } catch (error) {
+      console.error('[HopDongController.layTatCa]', error);
+      res.status(500).json({
+        success: false,
+        message: 'Lỗi khi lấy danh sách hợp đồng'
+      });
+    }
+  }
+
+  /**
    * GET /api/chu-du-an/hop-dong/:id
    * Lấy chi tiết hợp đồng
    */

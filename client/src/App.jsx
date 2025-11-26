@@ -20,6 +20,7 @@ import CaiDat from "./pages/ChuDuAn/CaiDat"; // ✨ Cài đặt tài khoản Ch�
 import XacThucKYC from "./pages/XacThucKYC/XacThucKYC"; // ✨ Xác thực KYC (eKYC)
 
 import ViPage from "./pages/Vi/index"; // Ví người dùng
+import HopDongCuaToi from "./pages/hopdongcuatoi/index"; // Hợp đồng của tôi - Khách hàng
 
 // Import trang Chi Tiết Tin Đăng cho Khách hàng
 import ChiTietTinDangKhachHang from "./pages/chitiettindang"; // 🎯 Soft Tech Theme - Dành cho khách hàng

@@ -146,20 +146,20 @@ class HopDongModel {
         nd.TenDayDu as TenKhachHang,
         nd.SoDienThoai,
         p.TenPhong,
-        p.PhongID,
+        hd.PhongID,
         hd.NgayBatDau,
         hd.NgayKetThuc,
         hd.GiaThueCuoiCung,
         hd.BaoCaoLuc,
         hd.FileScanPath,
-        c.SoTien as SoTienCoc,
-        c.TrangThai as TrangThaiCoc
+        COALESCE(hd.SoTienCoc, c.SoTien, 0) as SoTienCoc,
+        COALESCE(c.TrangThai, 'HieuLuc') as TrangThaiCoc
       FROM hopdong hd
       JOIN tindang td ON hd.TinDangID = td.TinDangID
-      JOIN duan da ON td.DuAnID = da.DuAnID
+      JOIN duan da ON COALESCE(hd.DuAnID, td.DuAnID) = da.DuAnID
       JOIN nguoidung nd ON hd.KhachHangID = nd.NguoiDungID
+      LEFT JOIN phong p ON hd.PhongID = p.PhongID
       LEFT JOIN coc c ON c.HopDongID = hd.HopDongID
-      LEFT JOIN phong p ON c.PhongID = p.PhongID
       WHERE da.ChuDuAnID = ?
     `;
 
@@ -179,6 +179,136 @@ class HopDongModel {
 
     const [rows] = await db.query(query, params);
     return rows;
+  }
+
+  /**
+   * Lấy tất cả hợp đồng (cho Admin/Operator)
+   * @param {Object} filters - Filters: {tuNgay, denNgay, chuDuAnId}
+   * @returns {Promise<Array>}
+   */
+  static async layTatCaHopDong(filters = {}) {
+    let query = `
+      SELECT 
+        hd.HopDongID,
+        hd.TinDangID,
+        td.TieuDe as TenTinDang,
+        hd.KhachHangID,
+        nd.TenDayDu as TenKhachHang,
+        nd.SoDienThoai,
+        p.TenPhong,
+        hd.PhongID,
+        hd.NgayBatDau,
+        hd.NgayKetThuc,
+        hd.GiaThueCuoiCung,
+        hd.BaoCaoLuc,
+        hd.FileScanPath,
+        COALESCE(hd.noidunghopdong, hd.NoiDungSnapshot, '') as noidunghopdong,
+        COALESCE(hd.SoTienCoc, c.SoTien, 0) as SoTienCoc,
+        COALESCE(c.TrangThai, 'HieuLuc') as TrangThaiCoc,
+        da.TenDuAn,
+        da.ChuDuAnID,
+        cda.TenDayDu as TenChuDuAn
+      FROM hopdong hd
+      JOIN tindang td ON hd.TinDangID = td.TinDangID
+      JOIN duan da ON COALESCE(hd.DuAnID, td.DuAnID) = da.DuAnID
+      JOIN nguoidung nd ON hd.KhachHangID = nd.NguoiDungID
+      JOIN nguoidung cda ON da.ChuDuAnID = cda.NguoiDungID
+      LEFT JOIN phong p ON hd.PhongID = p.PhongID
+      LEFT JOIN coc c ON c.HopDongID = hd.HopDongID
+      WHERE 1=1
+    `;
+
+    const params = [];
+
+    if (filters.chuDuAnId) {
+      query += ` AND da.ChuDuAnID = ?`;
+      params.push(filters.chuDuAnId);
+    }
+
+    if (filters.tuNgay) {
+      query += ` AND (hd.NgayBatDau >= ? OR hd.BaoCaoLuc >= ?)`;
+      params.push(filters.tuNgay, filters.tuNgay);
+    }
+
+    if (filters.denNgay) {
+      query += ` AND (hd.NgayKetThuc <= ? OR hd.BaoCaoLuc <= ?)`;
+      params.push(filters.denNgay, filters.denNgay);
+    }
+
+    query += ` ORDER BY COALESCE(hd.BaoCaoLuc, hd.HopDongID) DESC`;
+
+    const [rows] = await db.query(query, params);
+    return rows;
+  }
+
+  /**
+   * Lấy danh sách hợp đồng của Khách hàng
+   * @param {number} khachHangId - ID Khách hàng
+   * @param {Object} filters - Filters: {tuNgay, denNgay}
+   * @returns {Promise<Array>}
+   */
+  static async layHopDongCuaKhachHang(khachHangId, filters = {}) {
+    let query = `
+      SELECT 
+        hd.HopDongID,
+        hd.TinDangID,
+        COALESCE(td.TieuDe, '') as TenTinDang,
+        COALESCE(da.DiaChi, '') as DiaChiTinDang,
+        COALESCE(p.TenPhong, '') as TenPhong,
+        hd.PhongID,
+        hd.NgayBatDau,
+        hd.NgayKetThuc,
+        hd.GiaThueCuoiCung,
+        hd.BaoCaoLuc,
+        hd.FileScanPath,
+        COALESCE(hd.noidunghopdong, hd.NoiDungSnapshot, '') as noidunghopdong,
+        COALESCE(hd.SoTienCoc, c.SoTien, 0) as SoTienCoc,
+        COALESCE(c.TrangThai, 'HieuLuc') as TrangThaiCoc,
+        COALESCE(da.TenDuAn, '') as TenDuAn,
+        COALESCE(da.DiaChi, '') as DiaChiDuAn,
+        COALESCE(cda.TenDayDu, '') as TenChuDuAn,
+        COALESCE(cda.SoDienThoai, '') as SDTChuDuAn
+      FROM hopdong hd
+      LEFT JOIN tindang td ON hd.TinDangID = td.TinDangID
+      LEFT JOIN duan da ON COALESCE(hd.DuAnID, td.DuAnID) = da.DuAnID
+      LEFT JOIN nguoidung cda ON da.ChuDuAnID = cda.NguoiDungID
+      LEFT JOIN phong p ON hd.PhongID = p.PhongID
+      LEFT JOIN coc c ON c.HopDongID = hd.HopDongID
+      WHERE hd.KhachHangID = ?
+    `;
+
+    const params = [khachHangId];
+
+    if (filters.tuNgay) {
+      query += ` AND (hd.NgayBatDau >= ? OR hd.BaoCaoLuc >= ?)`;
+      params.push(filters.tuNgay, filters.tuNgay);
+    }
+
+    if (filters.denNgay) {
+      query += ` AND (hd.NgayKetThuc <= ? OR hd.BaoCaoLuc <= ?)`;
+      params.push(filters.denNgay, filters.denNgay);
+    }
+
+    query += ` ORDER BY COALESCE(hd.BaoCaoLuc, hd.HopDongID) DESC`;
+
+    try {
+      const [rows] = await db.query(query, params);
+      return rows;
+    } catch (error) {
+      // Nếu lỗi do cột không tồn tại, thử lại với NoiDungSnapshot
+      if (error.message && error.message.includes('noidunghopdong')) {
+        console.warn('[HopDongModel] Cột noidunghopdong không tồn tại, dùng NoiDungSnapshot');
+        query = query.replace(
+          /COALESCE\(hd\.noidunghopdong, hd\.NoiDungSnapshot, ''\) as noidunghopdong/,
+          'COALESCE(hd.NoiDungSnapshot, \'\') as noidunghopdong'
+        );
+        const [rows] = await db.query(query, params);
+        return rows;
+      }
+      console.error('[HopDongModel.layHopDongCuaKhachHang] SQL Error:', error.message);
+      console.error('[HopDongModel.layHopDongCuaKhachHang] Query:', query);
+      throw error;
+    }
   }
 
   /**

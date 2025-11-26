@@ -47,11 +47,38 @@ class LichSuViModel {
 
     // Nếu trạng thái chuyển sang THANH_CONG và trước đó chưa phải THANH_CONG
     if (trang_thai === "THANH_CONG" && giaoDich.trang_thai !== "THANH_CONG") {
-      // Cộng tiền vào ví
-      await db.execute("UPDATE vi SET SoDu = SoDu + ? WHERE NguoiDungID = ?", [
-        giaoDich.so_tien,
-        giaoDich.user_id,
-      ]);
+      const loaiGiaoDich = giaoDich.LoaiGiaoDich || giaoDich.loai_giao_dich || "";
+      
+      // Nếu là nạp tiền: cộng tiền vào ví
+      if (loaiGiaoDich === "nap" || loaiGiaoDich === "nạp") {
+        await db.execute("UPDATE vi SET SoDu = SoDu + ? WHERE NguoiDungID = ?", [
+          giaoDich.so_tien,
+          giaoDich.user_id,
+        ]);
+      }
+      
+      // Nếu là rút tiền: trừ tiền từ ví
+      if (loaiGiaoDich === "rut" || loaiGiaoDich === "rút") {
+        // Kiểm tra số dư trước khi trừ
+        const [viRows] = await db.execute(
+          "SELECT SoDu FROM vi WHERE NguoiDungID = ?",
+          [giaoDich.user_id]
+        );
+        
+        if (viRows.length === 0) {
+          throw new Error("Không tìm thấy ví của người dùng");
+        }
+        
+        const soDuHienTai = Number(viRows[0].SoDu || 0);
+        if (soDuHienTai < giaoDich.so_tien) {
+          throw new Error("Số dư ví không đủ để rút tiền");
+        }
+        
+        await db.execute("UPDATE vi SET SoDu = SoDu - ? WHERE NguoiDungID = ?", [
+          giaoDich.so_tien,
+          giaoDich.user_id,
+        ]);
+      }
     }
 
     // Tiếp tục cập nhật các trường còn lại

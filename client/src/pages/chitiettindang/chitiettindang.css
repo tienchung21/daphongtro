@@ -1877,3 +1877,92 @@
   }
 }
 
+/* ========================================
+   📄 MODAL XEM HỢP ĐỒNG ĐẶT CỌC
+======================================== */
+.hop-dong-modal {
+  width: min(720px, 94%);
+  max-height: 88vh;
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px 26px;
+  box-shadow: 0 24px 56px -12px rgba(15, 23, 42, 0.35);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: henScale 0.25s ease;
+}
+
+.hop-dong-modal__header h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #0f172a;
+}
+
+.hop-dong-modal__subtitle {
+  margin: 4px 0 0;
+  font-size: 14px;
+  color: #475569;
+}
+
+.hop-dong-modal__state {
+  text-align: center;
+  padding: 24px 0;
+  font-weight: 600;
+  color: var(--customer-secondary);
+}
+
+.hop-dong-modal__alert {
+  padding: 16px;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  text-align: center;
+  font-weight: 600;
+}
+
+.hop-dong-modal__preview {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  background: #f8fafc;
+  box-shadow: inset 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+.hop-dong-modal__preview::-webkit-scrollbar {
+  width: 8px;
+}
+
+.hop-dong-modal__preview::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.8);
+  border-radius: 999px;
+}
+
+.hop-dong-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.hop-dong-modal__actions .hen-btn {
+  min-width: 140px;
+}
+
+@media (max-width: 600px) {
+  .hop-dong-modal {
+    padding: 18px;
+    max-height: 80vh;
+  }
+
+  .hop-dong-modal__actions {
+    flex-direction: column;
+  }
+
+  .hop-dong-modal__actions .hen-btn {
+    width: 100%;
+  }
+}
+

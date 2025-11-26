@@ -6,6 +6,7 @@ function SearchKhuVuc({ onSearch }) {
   const [tree, setTree] = useState([]); // full tree
   const [levels, setLevels] = useState([]); // array of options per level (always render all)
   const [selectedIds, setSelectedIds] = useState([]); // selected id per level
+  const [keyword, setKeyword] = useState(""); // từ khóa tìm kiếm
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -105,6 +106,7 @@ function SearchKhuVuc({ onSearch }) {
       KhuVucID: lastSelected ? Number(lastSelected) : null,
       path: selectedIds.filter(Boolean).map(Number),
       tenKhuVuc: selectedName, // ✅ Thêm tên khu vực
+      keyword: keyword.trim() || null, // ✅ Thêm từ khóa tìm kiếm
     };
 
     console.log("[SearchKhuVuc] payload:", payload); // debug
@@ -119,42 +121,62 @@ function SearchKhuVuc({ onSearch }) {
     }
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
   return (
     <div className="search-khuvuc">
       <div className="sk-row">
         {loading && <div className="sk-loading">Đang tải khu vực...</div>}
 
-        {!loading &&
-          levels.map((opts, idx) => (
-            <select
-              key={idx}
-              className="sk-select"
-              value={selectedIds[idx] ?? ""}
-              onChange={(e) => handleSelect(idx, e.target.value)}
-              disabled={
-                idx !== 0 && !selectedIds[idx - 1]
-              } /* disabled until parent chosen */
-            >
-              <option value="">
-                {idx === 0 ? "Chọn khu vực " : "Chọn..."}
-              </option>
-              {opts && opts.length
-                ? opts.map((opt) => {
-                    const id = opt.KhuVucID ?? opt.id;
-                    const label = opt.TenKhuVuc ?? opt.name;
-                    return (
-                      <option key={id} value={id}>
-                        {label}
-                      </option>
-                    );
-                  })
-                : null}
-            </select>
-          ))}
+        {!loading && (
+          <>
+            {/* Input tìm kiếm theo từ khóa */}
+            <input
+              type="text"
+              className="sk-input-keyword"
+              placeholder="Tìm kiếm theo từ khóa..."
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              onKeyPress={handleKeyPress}
+            />
 
-        <button className="sk-btn" onClick={handleSearch}>
-          Tìm
-        </button>
+            {/* Select khu vực */}
+            {levels.map((opts, idx) => (
+              <select
+                key={idx}
+                className="sk-select"
+                value={selectedIds[idx] ?? ""}
+                onChange={(e) => handleSelect(idx, e.target.value)}
+                disabled={
+                  idx !== 0 && !selectedIds[idx - 1]
+                } /* disabled until parent chosen */
+              >
+                <option value="">
+                  {idx === 0 ? "Chọn khu vực " : "Chọn..."}
+                </option>
+                {opts && opts.length
+                  ? opts.map((opt) => {
+                      const id = opt.KhuVucID ?? opt.id;
+                      const label = opt.TenKhuVuc ?? opt.name;
+                      return (
+                        <option key={id} value={id}>
+                          {label}
+                        </option>
+                      );
+                    })
+                  : null}
+              </select>
+            ))}
+
+            <button className="sk-btn" onClick={handleSearch}>
+              Tìm
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

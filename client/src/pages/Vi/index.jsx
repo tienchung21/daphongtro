@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import "./Vi.css";
 import NapTienPage from "../naptien/index";
 import viApi from "../../api/viApi";
 import lichSuViApi from "../../api/lichSuViApi";
+import { HiOutlineDocumentText } from "react-icons/hi2";
 
 function ViPage() {
   const [showNapTien, setShowNapTien] = useState(false);
@@ -69,7 +70,7 @@ function ViPage() {
   if (showNapTien) {
     return (
       <div className="vi__naptien-wrapper">
-        <NapTienPage />
+        <NapTienPage onBack={() => setShowNapTien(false)} />
         <button className="vi__back-btn" onClick={() => setShowNapTien(false)}>
           ← Quay lại Ví
         </button>
@@ -95,6 +96,12 @@ function ViPage() {
         >
           + Nạp tiền
         </button>
+      </div>
+      <div className="vi__quick-actions">
+        <Link to="/hop-dong-cua-toi" className="vi__action-btn">
+          <HiOutlineDocumentText />
+          <span>Hợp đồng của tôi</span>
+        </Link>
       </div>
       <div className="vi__history-section">
         <div className="vi__history-title">Lịch sử giao dịch</div>

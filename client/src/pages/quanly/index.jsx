@@ -9,6 +9,7 @@ import QuanLyTinDang from "../quanlytindang/index";
 import QuanLyKhuVuc from "../quanlykhuvuc/index";
 import Appointments from "../cuochencuatoi/index";
 import ViPage from "../Vi/index";
+import QuanLyHopDongAdmin from "../quanlyhopdong/index";
 
 import {
   HiOutlineUsers,
@@ -123,6 +124,8 @@ function QuanLy() {
         );
       case "vi":
         return <ViPage />;
+      case "hopdong":
+        return <QuanLyHopDongAdmin />;
       case "yeucau":
         return (
           <div className="quanly__placeholder">

@@ -40,13 +40,27 @@ const roleMiddleware = (allowedRoles = []) => {
         return next();
       }
 
-      // Lấy tất cả vai trò của người dùng
-      const [userRoles] = await db.execute(`
-        SELECT vt.TenVaiTro, nvt.VaiTroID
-        FROM nguoidung_vaitro nvt
-        INNER JOIN vaitro vt ON nvt.VaiTroID = vt.VaiTroID
-        WHERE nvt.NguoiDungID = ?
-      `, [req.user.id]);
+      let userRoles;
+      try {
+        // Lấy tất cả vai trò từ bảng mapping (nếu DB có)
+        const [rows] = await db.execute(`
+          SELECT vt.TenVaiTro, nvt.VaiTroID
+          FROM nguoidung_vaitro nvt
+          INNER JOIN vaitro vt ON nvt.VaiTroID = vt.VaiTroID
+          WHERE nvt.NguoiDungID = ?
+        `, [req.user.id]);
+        userRoles = rows;
+      } catch (dbError) {
+        if (dbError.code === 'ER_NO_SUCH_TABLE') {
+          console.warn('⚠️ [ROLE] Table nguoidung_vaitro không tồn tại. Dùng fallback theo token.');
+          userRoles = [{
+            TenVaiTro: req.user.vaiTroGoc || req.user.vaiTro || 'Unknown',
+            VaiTroID: req.user.vaiTroId || null
+          }];
+        } else {
+          throw dbError;
+        }
+      }
 
       if (userRoles.length === 0) {
         return res.status(403).json({

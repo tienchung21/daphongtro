@@ -16,6 +16,9 @@ const chinhSachCocRoutes = require('./routes/chinhSachCocRoutes'); // API Chính
 const operatorRoutes = require('./routes/operatorRoutes'); // API Operator/Admin (Banned dự án)
 const geocodingRoutes = require('./routes/geocodingRoutes'); // Geocoding API
 const chatRoutes = require('./routes/chatRoutes'); // API Chat/Messaging (UC-PROJ-05)
+const hopDongCustomerRoutes = require('./routes/hopDongCustomerRoutes'); // API hợp đồng cho Khách hàng
+const hopDongAdminRoutes = require('./routes/hopDongAdminRoutes'); // API hợp đồng cho Admin/Operator
+const mauHopDongRoutes = require('./routes/mauHopDongRoutes'); // API đọc mẫu hợp đồng
 const kycRoutes = require('./api/kyc/kycRoutes'); // API KYC (Xác thực CCCD)
 
 // Routes cho Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
@@ -143,6 +146,9 @@ app.use('/api/operator', operatorRoutes); // API Operator/Admin (UC-OPR-01, UC-O
 app.use('/api/geocode', geocodingRoutes); // Geocoding API (Nominatim)
 app.use('/api/chat', chatRoutes); // API Chat/Messaging (UC-PROJ-05)
 app.use('/api/kyc', kycRoutes); // API KYC (Xác thực CCCD)
+app.use('/api/hop-dong', hopDongCustomerRoutes); // API hợp đồng phía Khách hàng
+app.use('/api/admin', hopDongAdminRoutes); // API hợp đồng cho Admin/Operator
+app.use('/api/mau-hop-dong', mauHopDongRoutes); // API preview mẫu hợp đồng
 
 // API Operator (UC-OPER-01 đến UC-OPER-06)
 app.use('/api/operator/tin-dang', tinDangOperatorRoutes); // UC-OPER-01: Duyệt tin đăng

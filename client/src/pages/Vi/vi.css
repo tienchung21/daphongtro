@@ -46,6 +46,41 @@
   font-style: italic;
 }
 
+.vi__quick-actions {
+  padding: 16px 24px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.vi__action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid rgba(0, 198, 251, 0.3);
+  border-radius: 12px;
+  color: #005bea;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.vi__action-btn:hover {
+  background: white;
+  border-color: #00c6fb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 198, 251, 0.2);
+}
+
+.vi__action-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
 .vi__history-section {
   margin-top: 24px;
   padding: 0 24px;
