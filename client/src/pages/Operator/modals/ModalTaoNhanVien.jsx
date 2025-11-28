@@ -22,6 +22,19 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
   const [khuVucInfo, setKhuVucInfo] = useState(null);
   const [isLoadingKhuVuc, setIsLoadingKhuVuc] = useState(false);
 
+  const [operatorId, setOperatorId] = useState(() => {
+    try {
+      const operator = localStorage.getItem("user");
+      if (operator) {
+        const parsed = JSON.parse(operator);
+        return parsed.NguoiDungID || -1;
+      }
+    } catch (e) {
+      return -1;
+    }
+    return -1;
+  });
+
   // Load khu vực mặc định từ API khi component mount
   useEffect(() => {
     const loadKhuVucMacDinh = async () => {
@@ -104,6 +117,7 @@ const ModalTaoNhanVien = ({ onClose, onSuccess }) => {
       KhuVucChinhID: khuVucInfo?.KhuVucChinhID || null,
       KhuVucPhuTrachID: khuVucInfo?.KhuVucPhuTrachID || null,
       NgayBatDau: formData.ngayBatDau,
+      operatorId: operatorId
     });
   };
 

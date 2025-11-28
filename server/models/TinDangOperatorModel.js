@@ -233,6 +233,8 @@ class TinDangOperatorModel {
     try {
       await connection.beginTransaction();
 
+      // console.log('Duyệt tin đăng: ', tinDangId, nhanVienId);
+
       // Kiểm tra tin đăng và KYC
       const [tinDangRows] = await connection.execute(
         `SELECT 
@@ -263,7 +265,7 @@ class TinDangOperatorModel {
       // Cập nhật trạng thái tin đăng
       await connection.execute(
         `UPDATE tindang 
-         SET TrangThai = 'DaDang',
+         SET TrangThai = 'DaDuyet',
              DuyetBoiNhanVienID = ?,
              DuyetLuc = NOW(),
              CapNhatLuc = NOW()
@@ -282,7 +284,7 @@ class TinDangOperatorModel {
           TieuDe: tinDang.TieuDe,
           ChuDuAnID: tinDang.ChuDuAnID,
           TrangThaiCu: 'ChoDuyet',
-          TrangThaiMoi: 'DaDang'
+          TrangThaiMoi: 'DaDuyet'
         })
       });
 

@@ -42,13 +42,13 @@ export const tinDangOperatorApi = {
    * Duyệt tin đăng
    */
   duyetTin: (id) => api.put(`/api/operator/tin-dang/${id}/duyet`),
-  duyetTinDang: (id) => api.put(`/api/operator/tin-dang/${id}/duyet`), // Alias for compatibility
+  duyetTinDang: (tinDangId, operatorId) => api.put(`/api/operator/tin-dang/${tinDangId}/duyet`, {operatorId}), // Alias for compatibility
 
   /**
    * Từ chối tin đăng
    */
   tuChoiTin: (id, data) => api.put(`/api/operator/tin-dang/${id}/tu-choi`, data),
-  tuChoiTinDang: (id, data) => api.put(`/api/operator/tin-dang/${id}/tu-choi`, data), // Alias
+  tuChoiTinDang: (tinDangId, lyDo, operatorId) => api.put(`/api/operator/tin-dang/${tinDangId}/tu-choi`, {lyDo, operatorId}), // Alias
 
   /**
    * Lấy thống kê tin đăng

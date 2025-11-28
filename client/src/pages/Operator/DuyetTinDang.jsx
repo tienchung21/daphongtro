@@ -30,6 +30,18 @@ const DuyetTinDang = () => {
   const [selectedTinDang, setSelectedTinDang] = useState(null);
   const [modalChiTietOpen, setModalChiTietOpen] = useState(false);
   const [modalTuChoiOpen, setModalTuChoiOpen] = useState(false);
+  const [operatorId] = useState(() => {
+    try {
+      const operator = localStorage.getItem("user");
+      if (operator) {
+        const parsed = JSON.parse(operator);
+        return parsed.NguoiDungID || -1;
+      }
+    } catch (e) {
+      return -1;
+    }
+    return -1;
+  });
 
   // Query danh sách tin đăng chờ duyệt
   const { data: tinDangData, isLoading, error } = useQuery({
@@ -40,7 +52,7 @@ const DuyetTinDang = () => {
 
   // Mutation duyệt tin
   const duyetMutation = useMutation({
-    mutationFn: (tinDangId) => operatorApi.tinDang.duyetTinDang(tinDangId),
+    mutationFn: (tinDangId) => operatorApi.tinDang.duyetTinDang(tinDangId, operatorId),
     onSuccess: () => {
       queryClient.invalidateQueries(['tinDangChoDuyet']);
       queryClient.invalidateQueries(['dashboardOperator']);
