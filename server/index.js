@@ -32,6 +32,9 @@ const cuocHenOperatorRoutes = require('./routes/cuocHenOperatorRoutes'); // UC-O
 const hoSoNhanVienRoutes = require('./routes/hoSoNhanVienRoutes'); // UC-OPER-04&05: Quản lý NVBH
 const bienBanBanGiaoRoutes = require('./routes/bienBanBanGiaoRoutes'); // UC-OPER-06: Biên bản bàn giao
 const dashboardOperatorRoutes = require('./routes/dashboardOperatorRoutes'); // Dashboard metrics
+const noiDungHeThongRoutes = require('./routes/noiDungHeThongRoutes'); // Quản lý Nội dung Hệ thống
+const yeuCauRutTienRoutes = require('./routes/yeuCauRutTienRoutes'); // API Rút tiền
+const chatBotRoutes = require('./routes/chatBotRoutes'); // API Chatbot AI
 
 // Routes từ upstream
 const viRoutes = require('./routes/viRoutes');
@@ -158,6 +161,9 @@ app.use('/api/operator/cuoc-hen', cuocHenOperatorRoutes); // UC-OPER-03: Gán cu
 app.use('/api/operator/nhan-vien', hoSoNhanVienRoutes); // UC-OPER-04&05: Quản lý NVBH
 app.use('/api/operator/bien-ban', bienBanBanGiaoRoutes); // UC-OPER-06: Biên bản bàn giao
 app.use('/api/operator/dashboard', dashboardOperatorRoutes); // Dashboard metrics
+app.use('/api/operator/noi-dung-he-thong', noiDungHeThongRoutes); // Quản lý Nội dung Hệ thống
+app.use('/api/rut-tien', yeuCauRutTienRoutes); // API Rút tiền
+app.use('/api/chatbot', chatBotRoutes); // API Chatbot AI
 
 // API Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
 app.use('/api/nhan-vien-ban-hang', nhanVienBanHangRoutes);

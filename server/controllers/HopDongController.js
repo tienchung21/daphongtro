@@ -234,6 +234,53 @@ class HopDongController {
       });
     }
   }
+
+  /**
+   * POST /api/admin/hop-dong/:id/xac-nhan-huy
+   * Admin xác nhận hủy hợp đồng và hoàn tiền cọc
+   */
+  static async xacNhanHuy(req, res) {
+    try {
+      const hopDongID = parseInt(req.params.id, 10);
+      const adminID = req.user?.NguoiDungID || req.user?.id || req.user?.userId;
+
+      if (!adminID) {
+        return res.status(401).json({
+          success: false,
+          message: 'Không xác định được người dùng'
+        });
+      }
+
+      if (!hopDongID || isNaN(hopDongID)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID hợp đồng không hợp lệ'
+        });
+      }
+
+      await HopDongModel.xacNhanHuyHopDong(hopDongID, adminID);
+
+      // Audit log
+      await NhatKyService.ghiNhan({
+        NguoiDungID: adminID,
+        HanhDong: 'xac_nhan_huy_hop_dong',
+        DoiTuong: 'HopDong',
+        DoiTuongID: hopDongID,
+        ChiTiet: JSON.stringify({ hopDongID })
+      });
+
+      return res.json({
+        success: true,
+        message: 'Đã xác nhận hủy hợp đồng và hoàn tiền cọc thành công'
+      });
+    } catch (error) {
+      console.error('[HopDongController] Lỗi xacNhanHuy:', error);
+      return res.status(500).json({
+        success: false,
+        message: error.message || 'Lỗi khi xác nhận hủy hợp đồng'
+      });
+    }
+  }
 }
 
 module.exports = HopDongController;

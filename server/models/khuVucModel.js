@@ -4,6 +4,17 @@ exports.getAll = () => {
   return db.query('SELECT * FROM KhuVuc ORDER BY KhuVucID');
 };
 
+exports.getChildren = (parentId) => {
+  if (parentId === null) {
+    return db.query('SELECT * FROM KhuVuc WHERE ParentKhuVucID IS NULL ORDER BY TenKhuVuc ASC');
+  }
+
+  return db.query(
+    'SELECT * FROM KhuVuc WHERE ParentKhuVucID = ? ORDER BY TenKhuVuc ASC',
+    [parentId]
+  );
+};
+
 exports.getById = (id) => {
   return db.query('SELECT * FROM KhuVuc WHERE KhuVucID = ?', [id]);
 };

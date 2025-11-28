@@ -13,12 +13,19 @@ const { requireRoles } = require('../middleware/role');
 
 // Middleware: Chỉ cho phép Nhân viên Điều hành và Admin
 const operatorAuth = [auth, requireRoles(['NhanVienDieuHanh', 'QuanTriVienHeThong'])];
+const systemManagerOnly = [auth, requireRoles(['QuanTriVienHeThong'])];
 
 /**
  * GET /api/operator/du-an
  * Lấy danh sách dự án
  */
 router.get('/', operatorAuth, DuAnOperatorController.danhSachDuAn);
+
+/**
+ * POST /api/operator/du-an
+ * Quản trị viên hệ thống tạo dự án mới
+ */
+router.post('/', systemManagerOnly, DuAnOperatorController.taoMoi);
 
 /**
  * GET /api/operator/du-an/thong-ke
@@ -31,6 +38,12 @@ router.get('/thong-ke', operatorAuth, DuAnOperatorController.thongKe);
  * Lấy chi tiết dự án
  */
 router.get('/:id', operatorAuth, DuAnOperatorController.chiTiet);
+
+/**
+ * PUT /api/operator/du-an/:id
+ * Quản trị viên hệ thống cập nhật dự án
+ */
+router.put('/:id', systemManagerOnly, DuAnOperatorController.capNhat);
 
 /**
  * PUT /api/operator/du-an/:id/tam-ngung

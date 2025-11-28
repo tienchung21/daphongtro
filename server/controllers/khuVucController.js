@@ -1,4 +1,5 @@
 const KhuVuc = require('../models/khuVucModel');
+const HoSoNhanVienModel = require('../models/HoSoNhanVienModel');
 
 const mapRow = (r) => ({
   KhuVucID: r.KhuVucID,
@@ -27,6 +28,27 @@ const buildTree = (rows) => {
 
 exports.getAll = async (req, res) => {
   try {
+    const { parentId } = req.query;
+
+    if (typeof parentId !== 'undefined') {
+      let normalized = null;
+      if (
+        parentId !== '' &&
+        parentId !== 'null' &&
+        parentId !== 'root' &&
+        parentId !== null
+      ) {
+        const parsed = Number(parentId);
+        if (Number.isNaN(parsed)) {
+          return res.status(400).json({ error: 'parentId không hợp lệ' });
+        }
+        normalized = parsed;
+      }
+
+      const [rows] = await KhuVuc.getChildren(normalized);
+      return res.json(rows.map(mapRow));
+    }
+
     const [rows] = await KhuVuc.getAll();
     res.json(rows.map(mapRow));
   } catch (err) {
@@ -95,6 +117,21 @@ exports.delete = async (req, res) => {
     await KhuVuc.delete(id);
     res.status(204).send();
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getNhanVien = async (req, res) => {
+  try {
+    const khuVucId = parseInt(req.params.id, 10);
+    if (Number.isNaN(khuVucId)) {
+      return res.status(400).json({ error: 'ID khu vực không hợp lệ' });
+    }
+
+    const nhanVien = await HoSoNhanVienModel.layNhanVienTheoKhuVuc(khuVucId);
+    return res.json(nhanVien);
+  } catch (err) {
+    console.error('[khuVucController] Lỗi getNhanVien:', err);
     res.status(500).json({ error: err.message });
   }
 };

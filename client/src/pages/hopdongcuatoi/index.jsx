@@ -16,7 +16,8 @@ import {
   HiOutlineEye,
   HiOutlineHome,
   HiOutlineXMark,
-  HiOutlineArrowDownTray
+  HiOutlineArrowDownTray,
+  HiOutlineTrash
 } from 'react-icons/hi2';
 import axios from 'axios';
 import { getApiBaseUrl } from '../../config/api';
@@ -38,6 +39,7 @@ export default function HopDongCuaToi() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedHopDong, setSelectedHopDong] = useState(null);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [huyLoading, setHuyLoading] = useState(false);
 
   useEffect(() => {
     taiDanhSach();
@@ -86,6 +88,17 @@ export default function HopDongCuaToi() {
   };
 
   const getTrangThaiHopDong = (hd) => {
+    // Ưu tiên TrangThai từ database
+    if (hd.TrangThai) {
+      const trangThaiMap = {
+        'xacthuc': { label: 'Xác thực', type: 'success' },
+        'xinhuy': { label: 'Xin hủy', type: 'warning' },
+        'dahuy': { label: 'Đã hủy', type: 'danger' }
+      };
+      return trangThaiMap[hd.TrangThai] || { label: hd.TrangThai, type: 'info' };
+    }
+    
+    // Fallback logic cũ
     // Nếu có BaoCaoLuc và NgayBatDau → Đã báo cáo
     if (hd.BaoCaoLuc && hd.NgayBatDau) {
       return { label: 'Đã báo cáo', type: 'success' };
@@ -98,8 +111,10 @@ export default function HopDongCuaToi() {
   };
 
   const handleXemChiTiet = (hd) => {
+    console.log('[handleXemChiTiet] Mở modal với hợp đồng:', hd);
     setSelectedHopDong(hd);
     setModalOpen(true);
+    console.log('[handleXemChiTiet] Đã set modalOpen = true');
   };
 
   const closeModal = () => {
@@ -408,6 +423,60 @@ export default function HopDongCuaToi() {
     }
   };
 
+  // Kiểm tra xem hợp đồng có thể hủy không
+  const coTheHuy = (hopDong) => {
+    if (!hopDong) {
+      return false;
+    }
+    
+    const trangThai = hopDong.TrangThai;
+    
+    // Không cho phép hủy nếu đã bị hủy rồi
+    if (trangThai === 'xinhuy' || trangThai === 'dahuy') {
+      return false;
+    }
+    
+    // Cho phép hủy nếu:
+    // - TrangThai = null/undefined/empty (hợp đồng mới tạo)
+    // - TrangThai = 'xacthuc' (Xác thực)
+    // BỎ điều kiện 3 ngày - luôn cho phép hủy
+    return true;
+  };
+
+  // Hủy hợp đồng
+  const handleHuyHopDong = async (hopDong = null) => {
+    const hopDongToCancel = hopDong || selectedHopDong;
+    if (!hopDongToCancel) return;
+
+    if (!window.confirm('Bạn có chắc chắn muốn hủy hợp đồng này? Yêu cầu hủy sẽ được gửi đến quản trị viên để xem xét.')) {
+      return;
+    }
+
+    try {
+      setHuyLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${getApiBaseUrl()}/api/hop-dong/${hopDongToCancel.HopDongID}/xin-huy`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        alert('Đã gửi yêu cầu hủy hợp đồng thành công. Quản trị viên sẽ xem xét và phản hồi.');
+        await taiDanhSach();
+        if (modalOpen) closeModal();
+      } else {
+        alert(response.data.message || 'Không thể gửi yêu cầu hủy hợp đồng');
+      }
+    } catch (error) {
+      console.error('Lỗi hủy hợp đồng:', error);
+      const message = error.response?.data?.message || 'Không thể gửi yêu cầu hủy hợp đồng';
+      alert(message);
+    } finally {
+      setHuyLoading(false);
+    }
+  };
+
   // Tải xuống HTML
   const handleDownloadHTML = () => {
     if (!selectedHopDong || !selectedHopDong.noidunghopdong) {
@@ -614,13 +683,25 @@ export default function HopDongCuaToi() {
                       </span>
                     </td>
                     <td>
-                      <button 
-                        className="hdct-btn-action hdct-btn-view" 
-                        title="Xem chi tiết"
-                        onClick={() => handleXemChiTiet(hd)}
-                      >
-                        <HiOutlineEye />
-                      </button>
+                      <div className="hdct-actions">
+                        <button 
+                          className="hdct-btn-action hdct-btn-view" 
+                          title="Xem chi tiết"
+                          onClick={() => handleXemChiTiet(hd)}
+                        >
+                          <HiOutlineEye />
+                        </button>
+                        {coTheHuy(hd) && (
+                          <button 
+                            className="hdct-btn-action hdct-btn-danger" 
+                            title="Hủy hợp đồng"
+                            onClick={() => handleHuyHopDong(hd)}
+                            disabled={huyLoading}
+                          >
+                            <HiOutlineTrash />
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -636,6 +717,7 @@ export default function HopDongCuaToi() {
           className="hen-modal-overlay"
           onClick={closeModal}
         >
+          {console.log('[Modal Render] Modal đang được render, selectedHopDong:', selectedHopDong)}
           <div
             className="hop-dong-modal"
             onClick={(e) => e.stopPropagation()}
@@ -676,6 +758,7 @@ export default function HopDongCuaToi() {
             )}
 
             <div className="hop-dong-modal__actions">
+              <button>abcxyz</button>
               <div className="hop-dong-modal__download-group">
                 <button
                   className="hen-btn primary"
@@ -705,11 +788,47 @@ export default function HopDongCuaToi() {
                   HTML
                 </button>
               </div>
+              {/* Nút hủy hợp đồng - LUÔN HIỂN THỊ */}
+              {selectedHopDong?.TrangThai === 'xinhuy' ? (
+                <span className="hen-btn danger" style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 18px', display: 'inline-flex', alignItems: 'center', marginLeft: 'auto' }}>
+                  Đã gửi yêu cầu hủy
+                </span>
+              ) : selectedHopDong?.TrangThai === 'dahuy' ? (
+                <span className="hen-btn danger" style={{ opacity: 0.7, cursor: 'not-allowed', padding: '10px 18px', display: 'inline-flex', alignItems: 'center', marginLeft: 'auto' }}>
+                  Đã hủy
+                </span>
+              ) : (
+                <button
+                  className="hen-btn danger"
+                  onClick={() => {
+                    console.log('[Huy Button] Clicked!', selectedHopDong);
+                    handleHuyHopDong(selectedHopDong);
+                  }}
+                  disabled={huyLoading}
+                  title="Hủy hợp đồng"
+                  style={{ 
+                    display: 'inline-flex', 
+                    alignItems: 'center',
+                    padding: '10px 18px',
+                    background: '#fee2e2',
+                    color: '#dc2626',
+                    border: '1px solid #fecaca',
+                    borderRadius: '8px',
+                    cursor: huyLoading ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    marginLeft: 'auto'
+                  }}
+                >
+                  <HiOutlineTrash style={{ marginRight: '6px', width: '18px', height: '18px' }} />
+                  {huyLoading ? 'Đang xử lý...' : 'Hủy hợp đồng'}
+                </button>
+              )}
               <button
                 className="hen-btn secondary"
                 onClick={closeModal}
               >
-                Đóng
+                Đóng (TEST)
               </button>
             </div>
           </div>

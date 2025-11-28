@@ -37,7 +37,13 @@ class DuAnOperatorModel {
         limit = 20
       } = filters;
 
-      const offset = (page - 1) * limit;
+      const parsedLimit = Number(limit);
+      const safeLimit = Number.isInteger(parsedLimit) && parsedLimit > 0 ? parsedLimit : 20;
+
+      const parsedPage = Number(page);
+      const safePage = Number.isInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+
+      const offset = (safePage - 1) * safeLimit;
 
       // Build WHERE conditions
       let whereConditions = [];
@@ -96,10 +102,8 @@ class DuAnOperatorModel {
             WHEN 'LuuTru' THEN 3
           END,
           da.CapNhatLuc DESC
-        LIMIT ? OFFSET ?
+        LIMIT ${safeLimit} OFFSET ${offset}
       `;
-
-      params.push(limit, offset);
       const [rows] = await db.execute(query, params);
 
       // Query total count
@@ -110,16 +114,15 @@ class DuAnOperatorModel {
         ${whereClause}
       `;
 
-      const countParams = params.slice(0, -2);
-      const [countRows] = await db.execute(countQuery, countParams);
+      const [countRows] = await db.execute(countQuery, params);
       const total = countRows[0].total;
 
       return {
         data: rows,
         total,
-        page: parseInt(page),
-        totalPages: Math.ceil(total / limit),
-        limit: parseInt(limit)
+        page: safePage,
+        totalPages: Math.ceil(total / safeLimit),
+        limit: safeLimit
       };
     } catch (error) {
       console.error('[DuAnOperatorModel] Lỗi layDanhSachDuAn:', error);
@@ -404,6 +407,277 @@ class DuAnOperatorModel {
     } catch (error) {
       console.error('[DuAnOperatorModel] Lỗi layChiTietDuAn:', error);
       throw new Error(`Lỗi lấy chi tiết dự án: ${error.message}`);
+    }
+  }
+
+  /**
+   * Tạo dự án mới từ quản trị viên hệ thống
+   * @param {Object} data
+   * @param {number} nhanVienId
+   * @returns {Promise<Object>}
+   */
+  static async taoDuAnHeThong(data, nhanVienId) {
+    const connection = await db.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const [ownerRows] = await connection.execute(
+        `SELECT NguoiDungID, TenDayDu FROM nguoidung WHERE NguoiDungID = ?`,
+        [data.ChuDuAnID]
+      );
+
+      if (!ownerRows.length) {
+        throw new Error('Chủ dự án không tồn tại');
+      }
+
+      const [dupAddress] = await connection.execute(
+        `SELECT DuAnID FROM duan 
+         WHERE ChuDuAnID = ? AND DiaChi = ? AND TrangThai != 'LuuTru'`,
+        [data.ChuDuAnID, data.DiaChi]
+      );
+
+      if (dupAddress.length > 0) {
+        throw new Error('Địa chỉ này đã được sử dụng cho một dự án khác');
+      }
+
+      const isSuspended = data.TrangThai === 'NgungHoatDong';
+
+      const [result] = await connection.execute(
+        `INSERT INTO duan (
+          TenDuAn,
+          DiaChi,
+          ViDo,
+          KinhDo,
+          ChuDuAnID,
+          YeuCauPheDuyetChu,
+          PhuongThucVao,
+          TrangThai,
+          SoThangCocToiThieu,
+          BangHoaHong,
+          LyDoNgungHoatDong,
+          NguoiNgungHoatDongID,
+          NgungHoatDongLuc,
+          TaoLuc,
+          CapNhatLuc
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [
+          data.TenDuAn,
+          data.DiaChi,
+          data.ViDo,
+          data.KinhDo,
+          data.ChuDuAnID,
+          data.YeuCauPheDuyetChu ?? 0,
+          data.PhuongThucVao || null,
+          data.TrangThai || 'HoatDong',
+          data.SoThangCocToiThieu,
+          data.BangHoaHong,
+          isSuspended ? (data.LyDoNgungHoatDong || null) : null,
+          isSuspended ? nhanVienId : null,
+          isSuspended ? new Date() : null
+        ]
+      );
+
+      await NhatKyHeThongService.ghiNhan({
+        TacNhan: 'QuanTriVienHeThong',
+        NguoiDungID: nhanVienId,
+        HanhDong: 'TAO_DU_AN_HE_THONG',
+        DoiTuong: 'DuAn',
+        DoiTuongID: result.insertId,
+        ChiTiet: JSON.stringify({
+          TenDuAn: data.TenDuAn,
+          ChuDuAnID: data.ChuDuAnID,
+          TrangThai: data.TrangThai || 'HoatDong'
+        })
+      });
+
+      await connection.commit();
+
+      return await DuAnOperatorModel.layChiTietDuAn(result.insertId);
+    } catch (error) {
+      await connection.rollback();
+      console.error('[DuAnOperatorModel] Lỗi taoDuAnHeThong:', error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  /**
+   * Cập nhật dự án từ quản trị viên hệ thống
+   * @param {number} duAnId
+   * @param {Object} data
+   * @param {number} nhanVienId
+   * @returns {Promise<Object>}
+   */
+  static async capNhatDuAnHeThong(duAnId, data, nhanVienId) {
+    const connection = await db.getConnection();
+
+    try {
+      await connection.beginTransaction();
+
+      const [currentRows] = await connection.execute(
+        `SELECT DuAnID, TenDuAn, ChuDuAnID, DiaChi, TrangThai FROM duan WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      if (!currentRows.length) {
+        throw new Error('Dự án không tồn tại');
+      }
+
+      const current = currentRows[0];
+      const nextOwnerId = data.ChuDuAnID || current.ChuDuAnID;
+
+      if (Object.prototype.hasOwnProperty.call(data, 'ChuDuAnID') && data.ChuDuAnID !== current.ChuDuAnID) {
+        const [ownerRows] = await connection.execute(
+          `SELECT NguoiDungID FROM nguoidung WHERE NguoiDungID = ?`,
+          [data.ChuDuAnID]
+        );
+
+        if (!ownerRows.length) {
+          throw new Error('Chủ dự án không tồn tại');
+        }
+      }
+
+      if (Object.prototype.hasOwnProperty.call(data, 'DiaChi') && data.DiaChi && data.DiaChi !== current.DiaChi) {
+        const [dupRows] = await connection.execute(
+          `SELECT DuAnID FROM duan
+           WHERE ChuDuAnID = ? AND DiaChi = ? AND DuAnID != ? AND TrangThai != 'LuuTru'`,
+          [nextOwnerId, data.DiaChi, duAnId]
+        );
+
+        if (dupRows.length > 0) {
+          throw new Error('Địa chỉ này đã được sử dụng cho một dự án khác');
+        }
+      }
+
+      const updates = [];
+      const params = [];
+      const hasOwn = (field) => Object.prototype.hasOwnProperty.call(data, field);
+      let statusChanged = false;
+
+      if (hasOwn('TenDuAn')) {
+        updates.push('TenDuAn = ?');
+        params.push(data.TenDuAn);
+      }
+
+      if (hasOwn('DiaChi')) {
+        updates.push('DiaChi = ?');
+        params.push(data.DiaChi);
+      }
+
+      if (hasOwn('ViDo')) {
+        updates.push('ViDo = ?');
+        params.push(data.ViDo);
+      }
+
+      if (hasOwn('KinhDo')) {
+        updates.push('KinhDo = ?');
+        params.push(data.KinhDo);
+      }
+
+      if (hasOwn('ChuDuAnID')) {
+        updates.push('ChuDuAnID = ?');
+        params.push(data.ChuDuAnID);
+      }
+
+      if (hasOwn('YeuCauPheDuyetChu')) {
+        updates.push('YeuCauPheDuyetChu = ?');
+        params.push(data.YeuCauPheDuyetChu ?? 0);
+      }
+
+      if (hasOwn('PhuongThucVao')) {
+        updates.push('PhuongThucVao = ?');
+        params.push(data.PhuongThucVao || null);
+      }
+
+      if (hasOwn('SoThangCocToiThieu')) {
+        updates.push('SoThangCocToiThieu = ?');
+        params.push(data.SoThangCocToiThieu);
+      }
+
+      if (hasOwn('BangHoaHong')) {
+        updates.push('BangHoaHong = ?');
+        params.push(data.BangHoaHong);
+      }
+
+      const reasonProvided = hasOwn('LyDoNgungHoatDong');
+
+      if (hasOwn('TrangThai') && data.TrangThai !== current.TrangThai) {
+        statusChanged = true;
+        updates.push('TrangThai = ?');
+        params.push(data.TrangThai);
+
+        if (data.TrangThai === 'NgungHoatDong') {
+          updates.push('NguoiNgungHoatDongID = ?');
+          params.push(nhanVienId);
+          updates.push('NgungHoatDongLuc = NOW()');
+          updates.push('LyDoNgungHoatDong = ?');
+          params.push(data.LyDoNgungHoatDong || null);
+        } else {
+          updates.push('NguoiNgungHoatDongID = NULL');
+          updates.push('NgungHoatDongLuc = NULL');
+          if (!reasonProvided) {
+            updates.push('LyDoNgungHoatDong = NULL');
+          }
+        }
+      } else if (reasonProvided) {
+        updates.push('LyDoNgungHoatDong = ?');
+        params.push(data.LyDoNgungHoatDong || null);
+      }
+
+      if (!updates.length) {
+        throw new Error('Không có trường nào được cập nhật');
+      }
+
+      updates.push('CapNhatLuc = NOW()');
+
+      await connection.execute(
+        `UPDATE duan SET ${updates.join(', ')} WHERE DuAnID = ?`,
+        [...params, duAnId]
+      );
+
+      if (statusChanged) {
+        if (data.TrangThai === 'HoatDong') {
+          await connection.execute(
+            `UPDATE tindang 
+             SET TrangThai = 'DaDang', CapNhatLuc = NOW()
+             WHERE DuAnID = ? AND TrangThai = 'TamNgung'`,
+            [duAnId]
+          );
+        } else {
+          await connection.execute(
+            `UPDATE tindang 
+             SET TrangThai = 'TamNgung', CapNhatLuc = NOW()
+             WHERE DuAnID = ? AND TrangThai IN ('DaDang','DaDuyet','ChoDuyet')`,
+            [duAnId]
+          );
+        }
+      }
+
+      await NhatKyHeThongService.ghiNhan({
+        TacNhan: 'QuanTriVienHeThong',
+        NguoiDungID: nhanVienId,
+        HanhDong: 'CAP_NHAT_DU_AN_HE_THONG',
+        DoiTuong: 'DuAn',
+        DoiTuongID: duAnId,
+        ChiTiet: JSON.stringify({
+          DuAnID: duAnId,
+          Truoc: { TrangThai: current.TrangThai, ChuDuAnID: current.ChuDuAnID },
+          Sau: { TrangThai: data.TrangThai || current.TrangThai, ChuDuAnID: data.ChuDuAnID || current.ChuDuAnID }
+        })
+      });
+
+      await connection.commit();
+
+      return await DuAnOperatorModel.layChiTietDuAn(duAnId);
+    } catch (error) {
+      await connection.rollback();
+      console.error('[DuAnOperatorModel] Lỗi capNhatDuAnHeThong:', error);
+      throw error;
+    } finally {
+      connection.release();
     }
   }
 

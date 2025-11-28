@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
-import Header from "../../components/Header";
+import Header from "../../components/header";
 import Footer from "../../components/Footer";
 import "./trangchu.css";
 import tinDangPublicApi from "../../api/tinDangPublicApi";
 import SearchKhuVuc from "../../components/SearchKhuVuc";
 import yeuThichApi from "../../api/yeuThichApi";
 import { Link } from "react-router-dom";
+import { useTranslation } from "../../context/LanguageContext";
+import ChatBot from "../../components/ChatBot/ChatBot";
 
 function TrangChu() {
+  const { t } = useTranslation();
   const [tindangs, setTindangs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -166,48 +169,60 @@ function TrangChu() {
   return (
     <div className="trangchu">
       <Header />
-      {/* CHỈNH: truyền onSearch để nhận payload khi bấm Tìm */}
-      <SearchKhuVuc onSearch={handleSearchKhuVuc} />
+      
+      {/* Banner chính full màn hình */}
+      <div className="trangchu__banner">
+        <div className="trangchu__banner-overlay"></div>
+        <div className="trangchu__banner-content">
+          <h1 className="trangchu__banner-title">{t('homepage.bannerTitle')}</h1>
+          <p className="trangchu__banner-subtitle">{t('homepage.bannerSubtitle')}</p>
+        </div>
+        
+        {/* Search bar ở bottom banner */}
+        <div className="trangchu__banner-search">
+          <SearchKhuVuc onSearch={handleSearchKhuVuc} />
+        </div>
+      </div>
 
       <div className="content">
         <div className="content1">
           <div className="danhsach">
-            {loading && <div className="tindang-loading">Đang tải...</div>}
-            {error && <div className="tindang-error">{error}</div>}
+            {loading && <div className="tindang-loading">{t('homepage.loading')}</div>}
+            {error && <div className="tindang-error">{error || t('homepage.error')}</div>}
 
             {!loading && tindangs.length === 0 && (
-              <div className="tindang-empty">Chưa có tin đăng</div>
+              <div className="tindang-empty">{t('homepage.noListings')}</div>
             )}
 
-            {tindangs.map((t) => {
-              const key = t.TinDangID ?? t.id ?? t._id;
-              const imgSrc = getFirstImage(t);
+            {tindangs.map((tinDang) => {
+              const key = tinDang.TinDangID ?? tinDang.id ?? tinDang._id;
+              const imgSrc = getFirstImage(tinDang);
 
               return (
                 <div className="duan" key={key}>
                   <div className="anhduan">
                     <Link to={`/tin-dang/${key}`}>
-                      <img src={imgSrc} alt={t.TieuDe} />
+                      <img src={imgSrc} alt={tinDang.TieuDe} />
                     </Link>
                   </div>
                   <div className="thongtinduan">
                     <div className="tieude">
-                      <Link to={`/tin-dang/${key}`}>{t.TieuDe}</Link>
+                      <Link to={`/tin-dang/${key}`}>{tinDang.TieuDe}</Link>
                     </div>
-                    <div className="diachi">Địa chỉ: {t.DiaChi ?? "-"}</div>
-                    <div className="gia">{formatPrice(t.Gia)}</div>
+                    <div className="diachi">{t('homepage.address')}: {tinDang.DiaChi ?? "-"}</div>
+                    <div className="gia">{formatPrice(tinDang.Gia)}</div>
                     <div className="dientich">
-                      Diện tích: {t.DienTich ?? "-"} m2
+                      {t('homepage.area')}: {tinDang.DienTich ?? "-"} m2
                     </div>
                     {/* <div className="lienhe">Liên hệ: - </div> */}
                     <div className="thoigian">
-                      {t.TaoLuc ? new Date(t.TaoLuc).toLocaleString() : ""}
+                      {tinDang.TaoLuc ? new Date(tinDang.TaoLuc).toLocaleString() : ""}
                       <button
                         type="button"
                         className="fav-btn"
-                        onClick={() => handleAddFavorite(t)}
+                        onClick={() => handleAddFavorite(tinDang)}
                         disabled={addingFavId === key}
-                        title="Thêm vào yêu thích"
+                        title={t('homepage.addToFavorites')}
                       >
                         🩶 {addingFavId === key ? "..." : ""}
                       </button>
@@ -220,9 +235,27 @@ function TrangChu() {
         </div>
 
         <div className="content2">
+          {/* Map riêng biệt */}
+          <div className="khuvuc-map">
+            <div className="khuvuc-map__title">Bản đồ khu vực</div>
+            <div className="khuvuc-map__container">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.231407028!2d106.6296639!3d10.8230989!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752bee0b0ef9e5%3A0x5b4da59e47ee97!2zQ8O0bmcgdmnDqm4gUGjhu5cgVHJv!5e0!3m2!1svi!2s!4v1234567890"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen=""
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title={t('homepage.mapTitle')}
+              ></iframe>
+            </div>
+          </div>
+
+          {/* Box khu vực */}
           <div className="khuvuc">
             <div className="khuvuc-title">
-              Phòng trọ Cho thuê tại các khu vực
+              {t('homepage.areaTitle')}
             </div>
             <ul>
               <li>Quận Gò Vấp (6)</li>
@@ -234,7 +267,7 @@ function TrangChu() {
             </ul>
           </div>
           <div className="tintuc">
-            <div className="tintuc-title">Tin Tức Mới Nhất</div>
+            <div className="tintuc-title">{t('homepage.newsTitle')}</div>
             <div className="tintuc-baiviet">
               <div className="anhduan">
                 <img
@@ -299,6 +332,7 @@ function TrangChu() {
         </div>
       </div>
 
+      <ChatBot />
       <Footer />
     </div>
   );

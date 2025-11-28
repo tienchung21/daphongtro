@@ -378,6 +378,12 @@
 }
 
 /* Actions */
+.hdct-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .hdct-btn-action {
   width: 32px;
   height: 32px;
@@ -398,6 +404,29 @@
 .hdct-btn-view:hover {
   background: rgba(59, 130, 246, 0.2);
   transform: scale(1.05);
+}
+
+.hdct-btn-view {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.hdct-btn-view:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.hdct-btn-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.hdct-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.hdct-btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .hdct-btn-action svg {
@@ -597,11 +626,33 @@
 
 .hen-btn.secondary {
   background: #e2e8f0;
-  color: #0f172a;
+  color: #475569;
 }
 
 .hen-btn.secondary:hover {
   background: #cbd5e1;
+}
+
+.hen-btn.danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.hen-btn.danger:hover {
+  background: #fecaca;
+  border-color: #f87171;
+}
+
+.hen-btn.danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hop-dong-modal__action-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
 }
 
 .hen-btn:disabled {

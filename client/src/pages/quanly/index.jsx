@@ -10,6 +10,10 @@ import QuanLyKhuVuc from "../quanlykhuvuc/index";
 import Appointments from "../cuochencuatoi/index";
 import ViPage from "../Vi/index";
 import QuanLyHopDongAdmin from "../quanlyhopdong/index";
+import QuanLyDuAnAdmin from "./QuanLyDuAnAdmin";
+import QuanLyChinhSach from "./QuanLyChinhSach";
+import QuanLyRutTien from "./QuanLyRutTien";
+import CaiDatAdmin from "./CaiDatAdmin";
 
 import {
   HiOutlineUsers,
@@ -108,13 +112,8 @@ function QuanLy() {
         return <QuanLyKhuVuc />;
       case "cuochen":
         return <Appointments />;
-      case "duan":
-        return (
-          <div className="quanly__placeholder">
-            <h2>🏗️ Quản lý Dự án</h2>
-            <p>Chức năng đang phát triển...</p>
-          </div>
-        );
+      case "quanlyduan":
+        return <QuanLyDuAnAdmin />;
       case "thanhtoan":
         return (
           <div className="quanly__placeholder">
@@ -126,6 +125,12 @@ function QuanLy() {
         return <ViPage />;
       case "hopdong":
         return <QuanLyHopDongAdmin />;
+      case "chinhsach":
+        return <QuanLyChinhSach />;
+      case "ruttien":
+        return <QuanLyRutTien />;
+      case "caidat":
+        return <CaiDatAdmin />;
       case "yeucau":
         return (
           <div className="quanly__placeholder">

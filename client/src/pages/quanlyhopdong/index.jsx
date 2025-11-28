@@ -51,6 +51,8 @@ export default function QuanLyHopDongAdmin() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedHopDong, setSelectedHopDong] = useState(null);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
+  const [showXinHuy, setShowXinHuy] = useState(false);
+  const [xacNhanHuyLoading, setXacNhanHuyLoading] = useState(false);
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -73,6 +75,7 @@ export default function QuanLyHopDongAdmin() {
       
       // Xác định API endpoint dựa trên vai trò
       // Role 1 = KhachHang
+      // Role 3 = ChuDuAn (Chủ dự án)
       // Role 4 = QuanTriVienHeThong (Admin)
       // Role 5 = NhanVienDieuHanh (Operator)
       if (role === 4 || role === 5) {
@@ -81,6 +84,9 @@ export default function QuanLyHopDongAdmin() {
       } else if (role === 1) {
         // Khách hàng: Lấy hợp đồng của chính họ
         apiUrl = `${getApiBaseUrl()}/api/hop-dong/khach-hang?${params.toString()}`;
+      } else if (role === 3) {
+        // Chủ dự án: Lấy hợp đồng của dự án mình
+        apiUrl = `${getApiBaseUrl()}/api/chu-du-an/hop-dong?${params.toString()}`;
       } else {
         // Các vai trò khác: Không có quyền xem hợp đồng
         console.warn('Người dùng không có quyền xem hợp đồng. Vai trò:', role);
@@ -128,15 +134,93 @@ export default function QuanLyHopDongAdmin() {
   };
 
   const getTrangThaiHopDong = (hd) => {
-    // Nếu có BaoCaoLuc và NgayBatDau → Đã báo cáo
+    // Ưu tiên TrangThai từ database
+    if (hd.TrangThai) {
+      const trangThaiMap = {
+        'xacthuc': { label: 'Xác thực', type: 'success' },
+        'xinhuy': { label: 'Xin hủy', type: 'warning' },
+        'dahuy': { label: 'Đã hủy', type: 'danger' }
+      };
+      return trangThaiMap[hd.TrangThai] || { label: hd.TrangThai, type: 'info' };
+    }
+    
+    // Fallback logic cũ
     if (hd.BaoCaoLuc && hd.NgayBatDau) {
       return { label: 'Đã báo cáo', type: 'success' };
     }
-    // Nếu chỉ có noidunghopdong → Vừa tạo từ đặt cọc
     if (hd.noidunghopdong) {
       return { label: 'Vừa tạo', type: 'info' };
     }
     return { label: 'Chưa xác định', type: 'warning' };
+  };
+
+  // Xác nhận hủy hợp đồng (Admin)
+  const handleXacNhanHuy = async (hopDongID) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xác nhận hủy hợp đồng này? Tiền cọc sẽ được hoàn lại vào ví khách hàng.')) {
+      return;
+    }
+
+    try {
+      setXacNhanHuyLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${getApiBaseUrl()}/api/admin/hop-dong/${hopDongID}/xac-nhan-huy`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        alert('Đã xác nhận hủy hợp đồng và hoàn tiền cọc thành công');
+        await taiDanhSach();
+        if (modalOpen) closeModal();
+      } else {
+        alert(response.data.message || 'Không thể xác nhận hủy hợp đồng');
+      }
+    } catch (error) {
+      console.error('Lỗi xác nhận hủy hợp đồng:', error);
+      const message = error.response?.data?.message || 'Không thể xác nhận hủy hợp đồng';
+      alert(message);
+    } finally {
+      setXacNhanHuyLoading(false);
+    }
+  };
+
+  // Hủy hợp đồng (Khách hàng)
+  const handleHuyHopDong = async (hd) => {
+    // Kiểm tra trạng thái
+    if (hd.TrangThai === 'xinhuy' || hd.TrangThai === 'dahuy') {
+      return;
+    }
+
+    if (!window.confirm('Bạn có chắc chắn muốn yêu cầu hủy hợp đồng này? Yêu cầu sẽ được gửi đến quản trị viên duyệt.')) {
+      return;
+    }
+
+    try {
+      // Reuse state loading của admin cho tiện, hoặc tạo state mới nếu cần
+      setXacNhanHuyLoading(true); 
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        `${getApiBaseUrl()}/api/hop-dong/${hd.HopDongID}/xin-huy`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (response.data.success) {
+        alert('Đã gửi yêu cầu hủy hợp đồng thành công. Vui lòng chờ quản trị viên xác nhận.');
+        await taiDanhSach();
+        // Cập nhật lại selectedHopDong để modal hiển thị đúng trạng thái mới
+        setSelectedHopDong(prev => ({ ...prev, TrangThai: 'xinhuy' }));
+      } else {
+        alert(response.data.message || 'Không thể gửi yêu cầu hủy hợp đồng');
+      }
+    } catch (error) {
+      console.error('Lỗi hủy hợp đồng:', error);
+      const message = error.response?.data?.message || 'Có lỗi xảy ra khi hủy hợp đồng';
+      alert(message);
+    } finally {
+      setXacNhanHuyLoading(false);
+    }
   };
 
   const handleXemChiTiet = (hd) => {
@@ -569,15 +653,29 @@ export default function QuanLyHopDongAdmin() {
         <div className="qlhd-admin-stat-card">
           <HiOutlineCheckCircle className="qlhd-admin-stat-icon" style={{ color: '#10b981' }} />
           <div className="qlhd-admin-stat-content">
-            <h3>{hopDongs.filter(hd => hd.BaoCaoLuc).length}</h3>
-            <p>Đã báo cáo</p>
+            <h3>{hopDongs.filter(hd => hd.TrangThai === 'xacthuc' || (!hd.TrangThai && hd.BaoCaoLuc)).length}</h3>
+            <p>Xác thực</p>
           </div>
         </div>
+        {userRole !== 1 && (
+          <div 
+            className="qlhd-admin-stat-card qlhd-admin-stat-card--warning"
+            style={{ cursor: 'pointer', border: showXinHuy ? '3px solid #f59e0b' : '2px solid #f59e0b' }}
+            onClick={() => setShowXinHuy(!showXinHuy)}
+            title="Click để xem đơn xin hủy"
+          >
+            <HiOutlineXCircle className="qlhd-admin-stat-icon" style={{ color: '#f59e0b' }} />
+            <div className="qlhd-admin-stat-content">
+              <h3>{hopDongs.filter(hd => hd.TrangThai === 'xinhuy').length}</h3>
+              <p>Đơn xin hủy</p>
+            </div>
+          </div>
+        )}
         <div className="qlhd-admin-stat-card">
-          <HiOutlineXCircle className="qlhd-admin-stat-icon" style={{ color: '#3b82f6' }} />
+          <HiOutlineXCircle className="qlhd-admin-stat-icon" style={{ color: '#ef4444' }} />
           <div className="qlhd-admin-stat-content">
-            <h3>{hopDongs.filter(hd => !hd.BaoCaoLuc && hd.noidunghopdong).length}</h3>
-            <p>Vừa tạo</p>
+            <h3>{hopDongs.filter(hd => hd.TrangThai === 'dahuy').length}</h3>
+            <p>Đã hủy</p>
           </div>
         </div>
       </div>
@@ -611,7 +709,7 @@ export default function QuanLyHopDongAdmin() {
               </tr>
             </thead>
             <tbody>
-              {hopDongs.map(hd => {
+              {(showXinHuy ? hopDongs.filter(hd => hd.TrangThai === 'xinhuy') : hopDongs).map(hd => {
                 const trangThai = getTrangThaiHopDong(hd);
                 return (
                   <tr key={hd.HopDongID}>
@@ -666,13 +764,25 @@ export default function QuanLyHopDongAdmin() {
                       </span>
                     </td>
                     <td>
-                      <button 
-                        className="qlhd-admin-btn-action qlhd-admin-btn-view" 
-                        title="Xem chi tiết"
-                        onClick={() => handleXemChiTiet(hd)}
-                      >
-                        <HiOutlineEye />
-                      </button>
+                      <div className="hop-dong-admin-actions-wrapper">
+                        <button 
+                          className="hop-dong-admin-btn hop-dong-admin-btn-view" 
+                          title="Xem chi tiết"
+                          onClick={() => handleXemChiTiet(hd)}
+                        >
+                          <HiOutlineEye />
+                        </button>
+                        {userRole !== 1 && hd.TrangThai === 'xinhuy' && (
+                          <button 
+                            className="hop-dong-admin-btn hop-dong-admin-btn-danger" 
+                            title="Xác nhận hủy và hoàn tiền"
+                            onClick={() => handleXacNhanHuy(hd.HopDongID)}
+                            disabled={xacNhanHuyLoading}
+                          >
+                            {xacNhanHuyLoading ? '...' : <HiOutlineCheckCircle />}
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 );
@@ -757,6 +867,75 @@ export default function QuanLyHopDongAdmin() {
                   HTML
                 </button>
               </div>
+
+              {/* Nút Hủy hợp đồng cho Khách hàng */}
+              {userRole === 1 && (
+                selectedHopDong.TrangThai === 'xinhuy' ? (
+                  <span 
+                    className="hen-btn" 
+                    style={{ 
+                      opacity: 0.8, 
+                      cursor: 'not-allowed', 
+                      padding: '10px 18px', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      marginLeft: 'auto',
+                      background: '#fff7ed',
+                      color: '#d97706',
+                      border: '1px solid #fdba74',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    ⏳ Đã gửi yêu cầu hủy
+                  </span>
+                ) : selectedHopDong.TrangThai === 'dahuy' ? (
+                  <span 
+                    className="hen-btn" 
+                    style={{ 
+                      opacity: 0.8, 
+                      cursor: 'not-allowed', 
+                      padding: '10px 18px', 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      marginLeft: 'auto',
+                      background: '#fef2f2',
+                      color: '#dc2626',
+                      border: '1px solid #fecaca',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    ✕ Đã hủy
+                  </span>
+                ) : (
+                  <button
+                    className="hen-btn danger"
+                    onClick={() => handleHuyHopDong(selectedHopDong)}
+                    disabled={xacNhanHuyLoading}
+                    title="Hủy hợp đồng"
+                    style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center',
+                      padding: '10px 18px',
+                      background: '#fee2e2',
+                      color: '#dc2626',
+                      border: '1px solid #fecaca',
+                      borderRadius: '8px',
+                      cursor: xacNhanHuyLoading ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      marginLeft: 'auto'
+                    }}
+                  >
+                    <HiOutlineXMark style={{ marginRight: '6px', width: '18px', height: '18px' }} />
+                    {xacNhanHuyLoading ? 'Đang xử lý...' : 'Hủy hợp đồng'}
+                  </button>
+                )
+              )}
+
               <button
                 className="hen-btn secondary"
                 onClick={closeModal}

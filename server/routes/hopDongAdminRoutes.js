@@ -22,5 +22,15 @@ router.get(
   HopDongController.layTatCa
 );
 
+/**
+ * POST /api/admin/hop-dong/:id/xac-nhan-huy
+ * Admin xác nhận hủy hợp đồng và hoàn tiền cọc
+ */
+router.post(
+  '/hop-dong/:id/xac-nhan-huy',
+  adminAuth,
+  HopDongController.xacNhanHuy
+);
+
 module.exports = router;
 

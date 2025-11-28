@@ -68,13 +68,13 @@ function Login() {
         console.log('✅ Redirecting to Chủ dự án Dashboard');
         navigate('/chu-du-an/dashboard');
       } else if (vaiTroId === 4 || tenVaiTro === 'Nhân viên Điều hành' || tenVaiTro === 'DieuHanh' || tenVaiTro === 'Operator') {
-        // Điều hành → Dashboard NVDH
-        console.log('✅ Redirecting to NVDH Dashboard');
+        // Điều hành → Trang quản lý
+        console.log('✅ Redirecting to Quan Ly');
         navigate('/nvdh/dashboard');
       } else if (vaiTroId === 5 || tenVaiTro === 'Quản trị viên Hệ thống' || tenVaiTro === 'Admin') {
-        // Admin → Dashboard NVDH (hoặc tạo dashboard riêng)
-        console.log('✅ Redirecting to Admin/NVDH Dashboard');
-        navigate('/nvdh/dashboard');
+        // Admin → Trang quản lý
+        console.log('✅ Redirecting to Quan Ly');
+        navigate('/quan-ly');
       } else {
         // Khách hàng hoặc vai trò khác → Trang chủ
         console.log('✅ Redirecting to Home');

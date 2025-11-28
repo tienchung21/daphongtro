@@ -94,6 +94,16 @@ export const duAnOperatorApi = {
   getThongKe: () => api.get('/api/operator/du-an/thong-ke'),
 
   /**
+   * Quản trị viên hệ thống tạo dự án
+   */
+  taoDuAn: (data) => api.post('/api/operator/du-an', data),
+
+  /**
+   * Quản trị viên hệ thống cập nhật dự án
+   */
+  capNhatDuAn: (id, data) => api.put(`/api/operator/du-an/${id}`, data),
+
+  /**
    * Duyệt hoa hồng dự án
    */
   duyetHoaHong: (id) => api.post(`/api/operator/du-an/${id}/duyet-hoa-hong`),
@@ -247,6 +257,34 @@ export const bienBanApi = {
   getThongKe: () => api.get('/api/operator/bien-ban/thong-ke')
 };
 
+// ==================== Quản lý Nội dung Hệ thống ====================
+export const noiDungHeThongApi = {
+  /**
+   * Lấy danh sách nội dung hệ thống
+   */
+  getDanhSach: (params) => api.get('/api/operator/noi-dung-he-thong', { params }),
+
+  /**
+   * Lấy nội dung theo ID
+   */
+  getChiTiet: (id) => api.get(`/api/operator/noi-dung-he-thong/${id}`),
+
+  /**
+   * Tạo nội dung mới
+   */
+  taoMoi: (data) => api.post('/api/operator/noi-dung-he-thong', data),
+
+  /**
+   * Cập nhật nội dung
+   */
+  capNhat: (id, data) => api.put(`/api/operator/noi-dung-he-thong/${id}`, data),
+
+  /**
+   * Xóa nội dung
+   */
+  xoa: (id) => api.delete(`/api/operator/noi-dung-he-thong/${id}`)
+};
+
 // ==================== Dashboard ====================
 export const dashboardOperatorApi = {
   /**
@@ -277,6 +315,7 @@ const nvdhApi = {
   cuocHen: cuocHenOperatorApi,
   nhanVien: nhanVienApi,
   bienBan: bienBanApi,
+  noiDungHeThong: noiDungHeThongApi,
   dashboard: dashboardOperatorApi
 };
 

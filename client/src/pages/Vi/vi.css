@@ -1,5 +1,5 @@
 .vi {
-  max-width: 500px;
+  max-width: 600px;
   margin: 32px auto;
   background: linear-gradient(135deg, #f8fffa 0%, #e0f7fa 100%);
   border-radius: 24px;
@@ -44,6 +44,8 @@
 .vi__loading {
   color: #888;
   font-style: italic;
+  text-align: center;
+  padding: 12px;
 }
 
 .vi__quick-actions {
@@ -67,6 +69,7 @@
   text-decoration: none;
   transition: all 0.2s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
 }
 
 .vi__action-btn:hover {
@@ -91,6 +94,9 @@
   font-weight: 500;
   margin-bottom: 12px;
   color: #005bea;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .vi__history-list {
@@ -159,6 +165,151 @@
   padding: 16px 0;
 }
 
+/* Modal Styles */
+.vi-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.vi-modal {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 450px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.vi-modal__header {
+  padding: 16px 24px;
+  background: linear-gradient(90deg, #00c6fb 0%, #005bea 100%);
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vi-modal__close {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.vi-modal__body {
+  padding: 24px;
+}
+
+.vi-form-group {
+  margin-bottom: 16px;
+}
+
+.vi-form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.vi-form-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.vi-form-input:focus {
+  border-color: #005bea;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 91, 234, 0.1);
+}
+
+.vi-modal__footer {
+  padding: 16px 24px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.vi-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.vi-btn--secondary {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.vi-btn--secondary:hover {
+  background: #e2e8f0;
+}
+
+.vi-btn--primary {
+  background: #005bea;
+  color: white;
+}
+
+.vi-btn--primary:hover {
+  background: #0046b5;
+}
+
+.vi-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.vi-status-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.vi-status-badge--ChoXuLy {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.vi-status-badge--DaDuyet {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.vi-status-badge--TuChoi {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
 @media (max-width: 600px) {
   .vi {
     max-width: 100%;
@@ -171,6 +322,6 @@
     padding: 24px 0 12px 0;
   }
   .vi__history-section {
-    padding: 0 8px;
+    padding: 0 12px;
   }
 }

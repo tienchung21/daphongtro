@@ -151,8 +151,9 @@ class HopDongCustomerController {
             KhachHangID, 
             GiaThueCuoiCung,
             SoTienCoc,
-            noidunghopdong
-          ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            noidunghopdong,
+            TrangThai
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, 'xacthuc')
         `, [
           tinDangId,
           phongIdNum,
@@ -206,6 +207,8 @@ class HopDongCustomerController {
       const khachHangId = req.user.id || req.user.NguoiDungID;
       const { tuNgay, denNgay } = req.query;
 
+      console.log(`[HopDongCustomer] layDanhSachHopDong - KH ID: ${khachHangId}`);
+
       if (!khachHangId) {
         return res.status(401).json({
           success: false,
@@ -217,6 +220,8 @@ class HopDongCustomerController {
         tuNgay,
         denNgay
       });
+
+      console.log(`[HopDongCustomer] Tìm thấy ${danhSach.length} hợp đồng`);
 
       res.json({
         success: true,
@@ -230,6 +235,53 @@ class HopDongCustomerController {
       res.status(500).json({
         success: false,
         message: error.message || 'Lỗi khi lấy danh sách hợp đồng'
+      });
+    }
+  }
+
+  /**
+   * POST /api/hop-dong/:id/xin-huy
+   * Khách hàng xin hủy hợp đồng
+   */
+  static async xinHuy(req, res) {
+    try {
+      const hopDongID = parseInt(req.params.id, 10);
+      const khachHangID = req.user?.id || req.user?.NguoiDungID || req.user?.userId;
+
+      if (!khachHangID) {
+        return res.status(401).json({
+          success: false,
+          message: 'Không xác định được người dùng'
+        });
+      }
+
+      if (!hopDongID || isNaN(hopDongID)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID hợp đồng không hợp lệ'
+        });
+      }
+
+      await HopDongModel.xinHuyHopDong(hopDongID, khachHangID);
+
+      // Audit log
+      await NhatKyHeThongService.ghiNhan({
+        NguoiDungID: khachHangID,
+        HanhDong: 'xin_huy_hop_dong',
+        DoiTuong: 'HopDong',
+        DoiTuongID: hopDongID,
+        ChiTiet: JSON.stringify({ hopDongID })
+      });
+
+      return res.json({
+        success: true,
+        message: 'Đã gửi yêu cầu hủy hợp đồng thành công'
+      });
+    } catch (error) {
+      console.error('[HopDongCustomerController] Lỗi xinHuy:', error);
+      return res.status(500).json({
+        success: false,
+        message: error.message || 'Lỗi khi xử lý yêu cầu hủy hợp đồng'
       });
     }
   }

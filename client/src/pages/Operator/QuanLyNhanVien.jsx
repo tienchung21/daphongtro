@@ -128,12 +128,12 @@ const QuanLyNhanVien = () => {
       render: (row) => row.NgayBatDau ? new Date(row.NgayBatDau).toLocaleDateString('vi-VN') : 'N/A'
     },
     {
-      key: 'TrangThaiLamViec',
+      key: 'TrangThai',
       label: 'Trạng thái',
       width: '130px',
       render: (row) => (
         <BadgeStatusOperator
-          status={row.TrangThaiLamViec}
+          status={row.TrangThai}
           statusMap={{
             'Active': { label: 'Hoạt động', variant: 'success' },
             'Inactive': { label: 'Không hoạt động', variant: 'danger' },

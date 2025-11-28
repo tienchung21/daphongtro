@@ -484,6 +484,57 @@ const ChiTietTinDang = () => {
     setHopDongPhong(null);
   };
 
+  const handlePreDepositCheck = async (phong) => {
+    if (!phong) {
+      showToast("Vui lòng chọn phòng", "error");
+      return;
+    }
+
+    const userId = getCurrentUserId();
+    if (!userId) {
+      alert("📢 Yêu cầu đăng nhập\n\nBạn cần đăng nhập để đặt cọc.");
+      navigate("/login");
+      return;
+    }
+
+    setCheckingCoc(true);
+    try {
+      const viRes = await viApi.getByUser(userId);
+      let soDu = 0;
+      
+      // Handle response structure (Array or Object)
+      const viData = viRes?.data?.data;
+      if (Array.isArray(viData) && viData.length > 0) {
+          soDu = Number(viData[0].SoDu);
+      } else if (viData && typeof viData === 'object') {
+          soDu = Number(viData.SoDu);
+      }
+
+      setSoDuVi(soDu);
+      
+      // Giá phòng dùng để so sánh
+      const giaPhong = Number(phong.Gia || 0);
+      
+      if (soDu < giaPhong) {
+        showToast("Số dư ví không đủ để đặt cọc phòng này!", "error");
+        setCheckingCoc(false);
+        // Có thể điều hướng người dùng đi nạp tiền nếu muốn
+        // navigate("/vi"); 
+        return;
+      }
+      
+      // Nếu đủ tiền -> Mở modal hợp đồng
+      setCheckingCoc(false);
+      setCocModalOpen(false); // Đóng modal chọn phòng nếu đang mở
+      await openHopDongPreview(phong);
+      
+    } catch (err) {
+      console.error("Lỗi kiểm tra ví:", err);
+      showToast("Lỗi kiểm tra số dư ví", "error");
+      setCheckingCoc(false);
+    }
+  };
+
   const handleHopDongAgree = async () => {
     if (!tinDang?.TinDangID || !hopDongData || !hopDongPhong?.PhongID) {
       showToast("Vui lòng chọn phòng trước khi đặt cọc", "error");
@@ -1338,45 +1389,32 @@ const ChiTietTinDang = () => {
                 <button
                   className="ctd-btn-secondary ctd-btn-deposit"
                   onClick={() => {
-                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
-                    const acc = tinDang?.BankAccountNumber ?? "80349195777";
-                    const bank = tinDang?.BankName ?? "TPBank";
-
-                    // Logic chọn phòng:
-                    // 1. Nếu có nhiều phòng (> 1) → Mở modal chọn
-                    // 2. Nếu 1 phòng → Lấy giá phòng đó
-                    // 3. Nếu không có phòng → Lấy TienCoc/Gia từ tin đăng
+                    // Case 1: Có nhiều phòng (> 1) -> Mở modal chọn phòng
                     if (tinDang?.DanhSachPhong?.length > 1) {
-                      // Nhiều phòng → Mở modal chọn
                       setCocModalOpen(true);
                       return;
                     }
 
-                    let amount = "1000000"; // Default fallback
-
+                    // Case 2: Có đúng 1 phòng -> Chạy quy trình đặt cọc mới (Check ví -> Hợp đồng)
                     if (tinDang?.DanhSachPhong?.length === 1) {
-                      // 1 phòng → Lấy giá phòng
                       const phong = tinDang.DanhSachPhong[0];
-                      amount = String(phong.Gia || "1000000");
-                    } else {
-                      // Không có phòng → Lấy từ tin đăng
-                      if (tinDang?.TienCoc && tinDang.TienCoc > 0) {
-                        amount = String(tinDang.TienCoc);
-                      } else if (tinDang?.Gia && tinDang.Gia > 0) {
-                        amount = String(tinDang.Gia);
-                      }
+                      handlePreDepositCheck(phong);
+                      return;
+                    }
+
+                    // Case 3: Fallback (Không có phòng hoặc lỗi data) - Logic cũ chuyển khoản
+                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
+                    const acc = tinDang?.BankAccountNumber ?? "80349195777";
+                    const bank = tinDang?.BankName ?? "TPBank";
+                    let amount = "1000000";
+
+                    if (tinDang?.TienCoc && tinDang.TienCoc > 0) {
+                      amount = String(tinDang.TienCoc);
+                    } else if (tinDang?.Gia && tinDang.Gia > 0) {
+                      amount = String(tinDang.Gia);
                     }
 
                     const des = `dk${tinId}`;
-
-                    console.log("[Đặt cọc] Debug:", {
-                      tinId,
-                      soPhong: tinDang?.DanhSachPhong?.length || 0,
-                      amount,
-                      acc,
-                      bank,
-                    });
-
                     navigate(
                       `/thanhtoancoc?acc=${encodeURIComponent(
                         acc
@@ -1606,32 +1644,7 @@ const ChiTietTinDang = () => {
                       showToast("Vui lòng chọn phòng", "error");
                       return;
                     }
-                    setCheckingCoc(true);
-                    // Lấy số dư ví
-                    try {
-                      const user = JSON.parse(
-                        localStorage.getItem("user") || "{}"
-                      );
-                      const userId = user.id || user.NguoiDungID || user._id;
-                      const viRes = await viApi.getByUser(userId);
-                      let soDu = 0;
-                      if (viRes?.data?.data?.SoDu) {
-                        soDu = Number(viRes.data.data.SoDu);
-                      }
-                      setSoDuVi(soDu);
-                      if (soDu < Number(phong.Gia)) {
-                        showToast("Số dư ví không đủ để đặt cọc phòng này!", "error");
-                        setCheckingCoc(false);
-                        return;
-                      }
-                    } catch (err) {
-                      showToast("Lỗi kiểm tra số dư ví", "error");
-                      setCheckingCoc(false);
-                      return;
-                    }
-                    setCheckingCoc(false);
-                    setCocModalOpen(false);
-                    await openHopDongPreview(phong);
+                    await handlePreDepositCheck(phong);
                   }}
                 >
                   Xác nhận đặt cọc

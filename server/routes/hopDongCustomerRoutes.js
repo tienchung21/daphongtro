@@ -28,5 +28,13 @@ router.get(
   HopDongCustomerController.layDanhSachHopDong
 );
 
+// POST /api/hop-dong/:id/xin-huy
+router.post(
+  '/:id/xin-huy',
+  authMiddleware,
+  requireRole('KhachHang'),
+  HopDongCustomerController.xinHuy
+);
+
 module.exports = router;
 

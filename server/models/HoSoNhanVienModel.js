@@ -79,7 +79,7 @@ class HoSoNhanVienModel {
           nd.Email,
           nd.SoDienThoai,
           nd.TrangThai as TrangThaiTaiKhoan,
-           nd.TrangThai as TrangThaiLamViec,
+          nd.TrangThai as TrangThaiLamViec,
           kv.TenKhuVuc,
            kv.TenKhuVuc as KhuVucPhuTrach,
           COUNT(DISTINCT ch.CuocHenID) as TongSoCuocHen,
@@ -121,6 +121,43 @@ class HoSoNhanVienModel {
     } catch (error) {
       console.error('[HoSoNhanVienModel] Lỗi layDanhSachNhanVien:', error);
       throw new Error(`Lỗi lấy danh sách nhân viên: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy danh sách nhân viên phụ trách một khu vực cụ thể
+   * @param {number} khuVucId
+   * @returns {Promise<Array>}
+   */
+  static async layNhanVienTheoKhuVuc(khuVucId) {
+    try {
+      const query = `
+        SELECT 
+          hs.HoSoID,
+          hs.NguoiDungID,
+          hs.MaNhanVien,
+          hs.KhuVucChinhID,
+          hs.KhuVucPhuTrachID,
+          nd.TenDayDu,
+          nd.Email,
+          nd.SoDienThoai,
+          nd.TrangThai,
+          kv_chinh.TenKhuVuc AS TenKhuVucChinh,
+          kv_phu.TenKhuVuc AS TenKhuVucPhuTrach
+        FROM hosonhanvien hs
+        INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
+        LEFT JOIN khuvuc kv_chinh ON hs.KhuVucChinhID = kv_chinh.KhuVucID
+        LEFT JOIN khuvuc kv_phu ON hs.KhuVucPhuTrachID = kv_phu.KhuVucID
+        WHERE nd.TrangThai != 'XoaMem'
+          AND (hs.KhuVucChinhID = ? OR hs.KhuVucPhuTrachID = ?)
+        ORDER BY nd.TrangThai ASC, nd.TenDayDu ASC
+      `;
+
+      const [rows] = await db.execute(query, [khuVucId, khuVucId]);
+      return rows;
+    } catch (error) {
+      console.error('[HoSoNhanVienModel] Lỗi layNhanVienTheoKhuVuc:', error);
+      throw new Error(`Lỗi lấy danh sách nhân viên theo khu vực: ${error.message}`);
     }
   }
 
