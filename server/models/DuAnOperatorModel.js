@@ -33,6 +33,7 @@ class DuAnOperatorModel {
         keyword = '',
         trangThai = null,
         chuDuAnId = null,
+        operatorId = null,
         page = 1,
         limit = 20
       } = filters;
@@ -48,6 +49,54 @@ class DuAnOperatorModel {
       // Build WHERE conditions
       let whereConditions = [];
       const params = [];
+
+      // Nếu có operatorId, lọc theo khu vực phụ trách dựa trên địa chỉ dự án
+      let khuVucCondition = '';
+      if (operatorId) {
+        // Lấy khu vực phụ trách của operator cùng với tên khu vực
+        const [hsRows] = await db.query(
+          `SELECT 
+            hs.KhuVucChinhID, 
+            hs.KhuVucPhuTrachID,
+            kv_chinh.TenKhuVuc as TenKhuVucChinh,
+            kv_phu.TenKhuVuc as TenKhuVucPhuTrach
+          FROM hosonhanvien hs
+          LEFT JOIN khuvuc kv_chinh ON hs.KhuVucChinhID = kv_chinh.KhuVucID
+          LEFT JOIN khuvuc kv_phu ON hs.KhuVucPhuTrachID = kv_phu.KhuVucID
+          WHERE hs.NguoiDungID = ?`,
+          [operatorId]
+        );
+        
+        if (hsRows.length > 0 && (hsRows[0].KhuVucPhuTrachID || hsRows[0].KhuVucChinhID)) {
+          const tenKhuVucPhuTrach = hsRows[0].TenKhuVucPhuTrach;
+          const tenKhuVucChinh = hsRows[0].TenKhuVucChinh;
+          
+          // Xây dựng điều kiện lọc theo địa chỉ
+          const conditions = [];
+          
+          // Lọc theo khu vực phụ trách (quận/huyện) - ưu tiên
+          if (tenKhuVucPhuTrach) {
+            // Normalize tên: "Quận Gò Vấp" -> "Gò Vấp"
+            const normalizedPhuTrach = tenKhuVucPhuTrach
+              .replace(/^(Quận|Huyện|Thị xã|Thành phố)\s+/i, '')
+              .trim();
+            conditions.push(`da.DiaChi LIKE '%${normalizedPhuTrach}%'`);
+          }
+          
+          // Lọc theo khu vực chính (tỉnh/thành) nếu không có khu vực phụ trách
+          if (!tenKhuVucPhuTrach && tenKhuVucChinh) {
+            // Normalize tên: "TP. Hồ Chí Minh" -> "Hồ Chí Minh"
+            const normalizedChinh = tenKhuVucChinh
+              .replace(/^(TP\.|Tỉnh|Thành phố)\s*/i, '')
+              .trim();
+            conditions.push(`da.DiaChi LIKE '%${normalizedChinh}%'`);
+          }
+          
+          if (conditions.length > 0) {
+            khuVucCondition = `AND (${conditions.join(' OR ')})`;
+          }
+        }
+      }
 
       if (keyword && keyword.trim()) {
         whereConditions.push(`(da.TenDuAn LIKE ? OR da.DiaChi LIKE ?)`);
@@ -65,9 +114,10 @@ class DuAnOperatorModel {
         params.push(chuDuAnId);
       }
 
-      const whereClause = whereConditions.length > 0 
-        ? 'WHERE ' + whereConditions.join(' AND ')
-        : '';
+      // Thêm điều kiện khu vực vào whereConditions nếu có
+      let fullWhereClause = whereConditions.length > 0 
+        ? 'WHERE ' + whereConditions.join(' AND ') + ' ' + khuVucCondition
+        : khuVucCondition ? 'WHERE 1=1 ' + khuVucCondition : '';
 
       // Query danh sách
       const query = `
@@ -84,17 +134,24 @@ class DuAnOperatorModel {
           da.CapNhatLuc,
           da.BangHoaHong,
           da.SoThangCocToiThieu,
+          da.TrangThaiDuyetHoaHong,
+          da.NguoiDuyetHoaHongID,
+          da.ThoiGianDuyetHoaHong,
+          da.LyDoTuChoiHoaHong,
           nd.NguoiDungID as ChuDuAnID,
           nd.TenDayDu as TenChuDuAn,
           nd.Email as EmailChuDuAn,
           nd.SoDienThoai as SoDienThoaiChuDuAn,
           nd_ngung.TenDayDu as NguoiNgungHoatDong,
-          (SELECT COUNT(*) FROM tindang WHERE DuAnID = da.DuAnID AND TrangThai = 'DaDang') as SoTinDangDang,
-          (SELECT COUNT(*) FROM tindang WHERE DuAnID = da.DuAnID AND TrangThai = 'ChoDuyet') as SoTinDangChoDuyet
+          nd_duyet.TenDayDu as NguoiDuyetHoaHong,
+          (SELECT COUNT(*) FROM tindang WHERE DuAnID = da.DuAnID AND TrangThai = 'DaDuyet') as SoTinDangDaDuyet,
+          (SELECT COUNT(*) FROM tindang WHERE DuAnID = da.DuAnID AND TrangThai = 'ChoDuyet') as SoTinDangChoDuyet,
+          (SELECT COUNT(*) FROM tindang WHERE DuAnID = da.DuAnID) as TongSoTinDang
         FROM duan da
         INNER JOIN nguoidung nd ON da.ChuDuAnID = nd.NguoiDungID
         LEFT JOIN nguoidung nd_ngung ON da.NguoiNgungHoatDongID = nd_ngung.NguoiDungID
-        ${whereClause}
+        LEFT JOIN nguoidung nd_duyet ON da.NguoiDuyetHoaHongID = nd_duyet.NguoiDungID
+        ${fullWhereClause}
         ORDER BY 
           CASE da.TrangThai
             WHEN 'HoatDong' THEN 1
@@ -104,17 +161,17 @@ class DuAnOperatorModel {
           da.CapNhatLuc DESC
         LIMIT ${safeLimit} OFFSET ${offset}
       `;
-      const [rows] = await db.execute(query, params);
+      const [rows] = await db.query(query, params);
 
       // Query total count
       const countQuery = `
         SELECT COUNT(*) as total
         FROM duan da
         INNER JOIN nguoidung nd ON da.ChuDuAnID = nd.NguoiDungID
-        ${whereClause}
+        ${fullWhereClause}
       `;
 
-      const [countRows] = await db.execute(countQuery, params);
+      const [countRows] = await db.query(countQuery, params);
       const total = countRows[0].total;
 
       return {
@@ -682,29 +739,152 @@ class DuAnOperatorModel {
   }
 
   /**
-   * ❌ REMOVED: duyetHoaHongDuAn() - Không cần duyệt hoa hồng riêng
-   * 
-   * Lý do:
-   * - Hoa hồng là CẤU HÌNH của dự án, không phải trạng thái cần duyệt riêng
-   * - Operator chỉ cần kiểm tra và BANNED dự án nếu hoa hồng vi phạm
-   * - Sử dụng ngungHoatDongDuAn() để banned dự án do hoa hồng sai
-   * - Sử dụng xuLyYeuCauMoLai() để duyệt sau khi chủ dự án sửa hoa hồng
-   * 
-   * Migration: 06/11/2025
-   * Xem docs/HOA_HONG_SCHEMA_ANALYSIS.md để biết thêm chi tiết
+   * Duyệt hoa hồng dự án
+   * @param {number} duAnId - ID dự án
+   * @param {number} operatorId - ID operator thực hiện
+   * @returns {Promise<Object>} Thông tin dự án sau khi duyệt
    */
+  static async duyetHoaHongDuAn(duAnId, operatorId) {
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // Kiểm tra dự án tồn tại và có BangHoaHong
+      const [rows] = await connection.query(
+        `SELECT DuAnID, TenDuAn, BangHoaHong, TrangThaiDuyetHoaHong 
+         FROM duan WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      if (!rows.length) {
+        throw new Error('Dự án không tồn tại');
+      }
+
+      const duAn = rows[0];
+
+      if (!duAn.BangHoaHong) {
+        throw new Error('Dự án không có bảng hoa hồng để duyệt');
+      }
+
+      if (duAn.TrangThaiDuyetHoaHong === 'DaDuyet') {
+        throw new Error('Hoa hồng đã được duyệt trước đó');
+      }
+
+      // Cập nhật trạng thái duyệt hoa hồng
+      await connection.query(
+        `UPDATE duan SET 
+          TrangThaiDuyetHoaHong = 'DaDuyet',
+          NguoiDuyetHoaHongID = ?,
+          ThoiGianDuyetHoaHong = NOW(),
+          CapNhatLuc = NOW()
+         WHERE DuAnID = ?`,
+        [operatorId, duAnId]
+      );
+
+      // Ghi audit log
+      await NhatKyHeThongService.ghiNhan({
+        TacNhan: 'Operator',
+        NguoiDungID: operatorId,
+        HanhDong: 'DUYET_HOA_HONG_DU_AN',
+        DoiTuong: 'DuAn',
+        DoiTuongID: duAnId,
+        ChiTiet: JSON.stringify({
+          TenDuAn: duAn.TenDuAn,
+          BangHoaHong: duAn.BangHoaHong
+        })
+      });
+
+      await connection.commit();
+
+      // Trả về thông tin dự án sau khi duyệt
+      const [updated] = await db.query(
+        `SELECT * FROM duan WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      return updated[0];
+    } catch (error) {
+      await connection.rollback();
+      console.error('[DuAnOperatorModel] Lỗi duyetHoaHongDuAn:', error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
 
   /**
-   * ❌ REMOVED: tuChoiHoaHongDuAn() - Không cần từ chối hoa hồng riêng
-   * 
-   * Thay thế bằng: ngungHoatDongDuAn(duAnId, operatorId, lyDo)
-   * Ví dụ: 
-   *   await DuAnOperatorModel.ngungHoatDongDuAn(
-   *     duAnId, 
-   *     operatorId, 
-   *     'Hoa hồng 15% vượt quy định tối đa 10%'
-   *   );
+   * Từ chối hoa hồng dự án
+   * @param {number} duAnId - ID dự án
+   * @param {number} operatorId - ID operator thực hiện
+   * @param {string} lyDo - Lý do từ chối
+   * @param {string} [ghiChu] - Ghi chú thêm
+   * @returns {Promise<Object>} Thông tin dự án sau khi từ chối
    */
+  static async tuChoiHoaHongDuAn(duAnId, operatorId, lyDo, ghiChu) {
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      // Kiểm tra dự án tồn tại
+      const [rows] = await connection.query(
+        `SELECT DuAnID, TenDuAn, BangHoaHong, TrangThaiDuyetHoaHong 
+         FROM duan WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      if (!rows.length) {
+        throw new Error('Dự án không tồn tại');
+      }
+
+      const duAn = rows[0];
+
+      if (duAn.TrangThaiDuyetHoaHong === 'DaDuyet') {
+        throw new Error('Hoa hồng đã được duyệt, không thể từ chối');
+      }
+
+      // Cập nhật trạng thái từ chối
+      await connection.query(
+        `UPDATE duan SET 
+          TrangThaiDuyetHoaHong = 'TuChoi',
+          LyDoTuChoiHoaHong = ?,
+          NguoiDuyetHoaHongID = ?,
+          ThoiGianDuyetHoaHong = NOW(),
+          CapNhatLuc = NOW()
+         WHERE DuAnID = ?`,
+        [lyDo, operatorId, duAnId]
+      );
+
+      // Ghi audit log
+      await NhatKyHeThongService.ghiNhan({
+        TacNhan: 'Operator',
+        NguoiDungID: operatorId,
+        HanhDong: 'TU_CHOI_HOA_HONG_DU_AN',
+        DoiTuong: 'DuAn',
+        DoiTuongID: duAnId,
+        ChiTiet: JSON.stringify({
+          TenDuAn: duAn.TenDuAn,
+          LyDo: lyDo,
+          GhiChu: ghiChu
+        })
+      });
+
+      await connection.commit();
+
+      // Trả về thông tin dự án sau khi từ chối
+      const [updated] = await db.query(
+        `SELECT * FROM duan WHERE DuAnID = ?`,
+        [duAnId]
+      );
+
+      return updated[0];
+    } catch (error) {
+      await connection.rollback();
+      console.error('[DuAnOperatorModel] Lỗi tuChoiHoaHongDuAn:', error);
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
 }
 
 module.exports = DuAnOperatorModel;

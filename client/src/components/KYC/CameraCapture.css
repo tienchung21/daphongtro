@@ -48,8 +48,10 @@
 }
 
 .overlay-frame.card {
+  /* CCCD thực tế: 85.6mm x 53.98mm = tỉ lệ 1.586:1 */
   width: 85%;
-  aspect-ratio: 1.586; /* Credit card ratio */
+  aspect-ratio: 85.6 / 53.98; /* Tỉ lệ CCCD chính xác */
+  max-height: 90%; /* Không vượt quá container */
   border-radius: 16px;
 }
 

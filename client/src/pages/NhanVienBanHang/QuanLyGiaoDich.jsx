@@ -97,29 +97,23 @@ const QuanLyGiaoDich = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showRefundModal, setShowRefundModal] = useState(false);
 
-  const persistFilters = useCallback(
-    (nextFilters) => {
-      const params = new URLSearchParams();
-      Object.entries(nextFilters).forEach(([key, value]) => {
-        if (!value) return;
-        if ((key === 'trangThai' || key === 'loai') && value === 'all') return;
-        params.set(key, value);
-      });
-      setSearchParams(params);
-    },
-    [setSearchParams]
-  );
-
   const handleFilterChange = useCallback(
     (field, value) => {
-      setFilters((prev) => {
-        const next = { ...prev, [field]: value };
-        persistFilters(next);
-        return next;
-      });
+      setFilters((prev) => ({ ...prev, [field]: value }));
     },
-    [persistFilters]
+    []
   );
+
+  // Sync filters với URL - tách riêng để tránh lỗi "Cannot update while rendering"
+  useEffect(() => {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (!value) return;
+      if ((key === 'trangThai' || key === 'loai') && value === 'all') return;
+      params.set(key, value);
+    });
+    setSearchParams(params, { replace: true });
+  }, [filters, setSearchParams]);
 
   useEffect(() => {
     const debounceId = setTimeout(() => {

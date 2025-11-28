@@ -64,7 +64,7 @@ function Navigation({ activeTab, onTabChange }) {
       icon: <HiOutlineChartBar />,
       description: "Dashboard và thống kê",
     },
-    {
+    !isCustomer && {
       path: "/quanlytaikhoan",
       tab: "taikhoan",
       title: "Tài khoản",
@@ -357,8 +357,8 @@ function Navigation({ activeTab, onTabChange }) {
           </div>
         </nav>
 
-        {/* Quick Actions */}
-        {!isCollapsed && (
+        {/* Quick Actions - Chỉ hiển thị cho Admin/Operator */}
+        {!isCollapsed && !isCustomer && (
           <div className="navigation__actions">
             <button
               className="navigation__action-btn"

@@ -152,9 +152,11 @@ class HopDongModel {
         hd.GiaThueCuoiCung,
         hd.BaoCaoLuc,
         hd.FileScanPath,
+        COALESCE(hd.noidunghopdong, hd.NoiDungSnapshot, '') as noidunghopdong,
         COALESCE(hd.SoTienCoc, c.SoTien, 0) as SoTienCoc,
         COALESCE(c.TrangThai, 'HieuLuc') as TrangThaiCoc,
-        hd.TrangThai
+        COALESCE(hd.TrangThai, 'xacthuc') as TrangThai,
+        da.TenDuAn
       FROM hopdong hd
       JOIN tindang td ON hd.TinDangID = td.TinDangID
       JOIN duan da ON COALESCE(hd.DuAnID, td.DuAnID) = da.DuAnID
@@ -176,7 +178,7 @@ class HopDongModel {
       params.push(filters.denNgay);
     }
 
-    query += ` ORDER BY hd.BaoCaoLuc DESC`;
+    query += ` ORDER BY COALESCE(hd.BaoCaoLuc, hd.HopDongID) DESC`;
 
     const [rows] = await db.query(query, params);
     return rows;
@@ -206,7 +208,7 @@ class HopDongModel {
         COALESCE(hd.noidunghopdong, hd.NoiDungSnapshot, '') as noidunghopdong,
         COALESCE(hd.SoTienCoc, c.SoTien, 0) as SoTienCoc,
         COALESCE(c.TrangThai, 'HieuLuc') as TrangThaiCoc,
-        hd.TrangThai,
+        COALESCE(hd.TrangThai, 'xacthuc') as TrangThai,
         da.TenDuAn,
         da.ChuDuAnID,
         cda.TenDayDu as TenChuDuAn
@@ -266,7 +268,7 @@ class HopDongModel {
         COALESCE(hd.noidunghopdong, hd.NoiDungSnapshot, '') as noidunghopdong,
         COALESCE(hd.SoTienCoc, c.SoTien, 0) as SoTienCoc,
         COALESCE(c.TrangThai, 'HieuLuc') as TrangThaiCoc,
-        hd.TrangThai,
+        COALESCE(hd.TrangThai, 'xacthuc') as TrangThai,
         COALESCE(da.TenDuAn, '') as TenDuAn,
         COALESCE(da.DiaChi, '') as DiaChiDuAn,
         COALESCE(cda.TenDayDu, '') as TenChuDuAn,

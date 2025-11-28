@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { HiOutlineChatBubbleLeftRight, HiOutlineXMark, HiOutlineArrowLeft, HiOutlineVideoCamera } from "react-icons/hi2";
 import cuocHenApi from "../../api/cuocHenApi";
+import { ChatProvider, useChatContext } from "../../context/ChatContext";
+import useChat from "../../hooks/useChat";
+import useSocket from "../../hooks/useSocket";
+import MessageList from "../../components/Chat/MessageList";
+import MessageInput from "../../components/Chat/MessageInput";
 import "./cuocHenCuaToi.css";
 
 const formatDateTimeVN = (input) => {
@@ -58,7 +64,196 @@ const extractIds = (u) => {
   };
 };
 
-const Appointments = () => {
+/**
+ * Các trạng thái cuộc hẹn không được phép nhắn tin
+ * - DaYeuCau: Mới yêu cầu, chưa có nhân viên xử lý
+ * - HuyBoiHeThong: Đã bị hệ thống hủy
+ */
+const TRANG_THAI_KHONG_CHO_NHAN_TIN = ['DaYeuCau', 'HuyBoiHeThong'];
+
+/**
+ * Kiểm tra xem cuộc hẹn có được phép nhắn tin không
+ */
+const canSendMessage = (cuocHen) => {
+  if (!cuocHen?.NhanVienBanHangID) return false;
+  if (TRANG_THAI_KHONG_CHO_NHAN_TIN.includes(cuocHen?.TrangThai)) return false;
+  return true;
+};
+
+/**
+ * ChatPanel Component - Panel chat với nhân viên bán hàng
+ */
+const ChatPanel = ({ cuocHen, onClose }) => {
+  const { findOrCreateConversation, markConversationAsRead } = useChatContext();
+  const { socket, isConnected: socketConnected } = useSocket();
+  const [conversationId, setConversationId] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Lấy thông tin user hiện tại
+  let currentUserId = parseInt(localStorage.getItem('userId') || '0');
+  let currentUser = {};
+  try {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      currentUser = JSON.parse(userStr);
+      if (!currentUserId) currentUserId = currentUser.NguoiDungID || 0;
+    }
+  } catch (e) {
+    console.error('Failed to parse user from localStorage:', e);
+  }
+
+  // Xử lý gọi video
+  const handleVideoCall = () => {
+    if (!conversationId) {
+      alert('Vui lòng đợi kết nối cuộc trò chuyện');
+      return;
+    }
+
+    const currentUserName = currentUser.TenDayDu || currentUser.tenDayDu || 'Khách hàng';
+    const partnerName = cuocHen.TenNhanVien || 'Nhân viên';
+
+    // Tạo Room ID
+    const rawRoomId = `daphongtro_chat_${conversationId}`;
+    const secureRoomId = btoa(rawRoomId).replace(/=/g, '');
+
+    // Mã hóa thông tin user
+    const userInfo = {
+      username: currentUserName,
+      userid: currentUserId,
+      partner_name: partnerName,
+      timestamp: Date.now()
+    };
+    const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(userInfo))));
+    const roomUrl = `https://jbcalling.site/room/${secureRoomId}?data=${encodedData}`;
+    
+    // Emit socket event để thông báo nhân viên
+    if (socket && socketConnected) {
+      socket.emit('initiate_video_call', {
+        cuocHoiThoaiID: conversationId,
+        roomUrl
+      });
+      console.log('[ChatPanel] Emitted initiate_video_call event');
+    }
+    
+    // Mở window video call
+    const width = 1280;
+    const height = 720;
+    const left = (window.screen.width - width) / 2;
+    const top = (window.screen.height - height) / 2;
+    
+    window.open(
+      roomUrl,
+      'VideoCallWindow',
+      `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes,status=yes`
+    );
+  };
+
+  // Tạo hoặc tìm cuộc hội thoại khi mount
+  useEffect(() => {
+    const initConversation = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Tạo/tìm cuộc hội thoại với nhân viên bán hàng
+        const convId = await findOrCreateConversation({
+          NguCanhID: cuocHen.CuocHenID,
+          NguCanhLoai: 'CuocHen',
+          ThanhVienIDs: [cuocHen.NhanVienBanHangID],
+          TieuDe: `Cuộc hẹn #${cuocHen.CuocHenID} - ${cuocHen.TieuDeTinDang || 'Tin đăng'}`
+        });
+
+        setConversationId(convId);
+      } catch (err) {
+        console.error('[ChatPanel] Init conversation error:', err);
+        setError('Không thể mở cuộc trò chuyện. Vui lòng thử lại.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (cuocHen?.NhanVienBanHangID) {
+      initConversation();
+    }
+  }, [cuocHen, findOrCreateConversation]);
+
+  // Sử dụng useChat hook khi đã có conversationId
+  const {
+    messages,
+    sendMessage,
+    handleTyping,
+    markAsRead,
+    isTyping,
+    loading: messagesLoading,
+    error: chatError,
+    isConnected
+  } = useChat(conversationId);
+
+  // Đánh dấu đã đọc khi mở
+  useEffect(() => {
+    if (conversationId) {
+      markAsRead();
+      markConversationAsRead(conversationId);
+    }
+  }, [conversationId, markAsRead, markConversationAsRead]);
+
+  return (
+    <div className="appointments__chat-panel">
+      <div className="appointments__chat-header">
+        <button className="appointments__chat-back" onClick={onClose}>
+          <HiOutlineArrowLeft />
+        </button>
+        <div className="appointments__chat-info">
+          <h4>Nhắn tin với {cuocHen.TenNhanVien || 'Nhân viên'}</h4>
+          <span className="appointments__chat-status">
+            {loading ? 'Đang kết nối...' : 
+             !isConnected ? 'Đang kết nối lại...' :
+             isTyping ? 'Đang gõ...' : 'Trực tuyến'}
+          </span>
+        </div>
+        <div className="appointments__chat-actions">
+          <button 
+            className="appointments__chat-video-call"
+            onClick={handleVideoCall}
+            disabled={loading || !conversationId}
+            title="Gọi video"
+          >
+            <HiOutlineVideoCamera />
+          </button>
+          <button className="appointments__chat-close" onClick={onClose}>
+            <HiOutlineXMark />
+          </button>
+        </div>
+      </div>
+
+      <div className="appointments__chat-body">
+        {loading ? (
+          <div className="appointments__chat-loading">Đang tải cuộc trò chuyện...</div>
+        ) : error || chatError ? (
+          <div className="appointments__chat-error">{error || chatError}</div>
+        ) : (
+          <MessageList
+            messages={messages}
+            currentUserId={currentUserId}
+            isTyping={isTyping}
+            loading={messagesLoading}
+          />
+        )}
+      </div>
+
+      <div className="appointments__chat-footer">
+        <MessageInput
+          onSendMessage={sendMessage}
+          onTyping={handleTyping}
+          disabled={!isConnected || loading}
+        />
+      </div>
+    </div>
+  );
+};
+
+const AppointmentsContent = () => {
   const navigate = useNavigate();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +263,9 @@ const Appointments = () => {
   const [deleting, setDeleting] = useState({});
   const [editingStatus, setEditingStatus] = useState({});
   const [selectedStatus, setSelectedStatus] = useState({});
+  
+  // State cho chat panel
+  const [selectedCuocHen, setSelectedCuocHen] = useState(null);
 
   useEffect(() => {
     const root = document.querySelector(".appointments");
@@ -215,7 +413,7 @@ const Appointments = () => {
   ];
 
   return (
-    <div className="appointments">
+    <div className={`appointments ${selectedCuocHen ? 'appointments--chat-open' : ''}`}>
       <main className="appointments__content">
         <div className="appointments__header">
           <h2 className="appointments__title">
@@ -361,6 +559,17 @@ const Appointments = () => {
                     >
                       Xem tin
                     </button>
+                    {/* Nút nhắn tin - chỉ hiển thị khi trạng thái cho phép */}
+                    {canSendMessage(c) && (
+                      <button
+                        onClick={() => setSelectedCuocHen(c)}
+                        className="appointments__btn appointments__btn--chat"
+                        title="Nhắn tin với nhân viên bán hàng"
+                      >
+                        <HiOutlineChatBubbleLeftRight />
+                        Nhắn tin
+                      </button>
+                    )}
                     {needsApproval && (
                       <button
                         onClick={() => handleApprove(c.CuocHenID)}
@@ -388,7 +597,26 @@ const Appointments = () => {
           </div>
         )}
       </main>
+
+      {/* Chat Panel - hiển thị khi chọn cuộc hẹn để nhắn tin */}
+      {selectedCuocHen && (
+        <ChatPanel 
+          cuocHen={selectedCuocHen} 
+          onClose={() => setSelectedCuocHen(null)} 
+        />
+      )}
     </div>
+  );
+};
+
+/**
+ * Wrapper component với ChatProvider
+ */
+const Appointments = () => {
+  return (
+    <ChatProvider>
+      <AppointmentsContent />
+    </ChatProvider>
   );
 };
 

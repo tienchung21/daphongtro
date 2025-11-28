@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: localhost
--- Thời gian đã tạo: Th10 24, 2025 lúc 03:28 PM
+-- Thời gian đã tạo: Th10 28, 2025 lúc 04:06 PM
 -- Phiên bản máy phục vụ: 8.0.30
 -- Phiên bản PHP: 8.4.13
 
@@ -18,12 +18,12 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `thue_tro`
+-- Cơ sở dữ liệu: `thue_tro`
 --
 
 DELIMITER $$
 --
--- Procedures
+-- Thủ tục
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_get_phong_by_duan` (IN `p_duan_id` INT)   BEGIN
   SELECT 
@@ -76,7 +76,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `bienbanbangiao`
+-- Cấu trúc bảng cho bảng `bienbanbangiao`
 --
 
 CREATE TABLE `bienbanbangiao` (
@@ -94,7 +94,7 @@ CREATE TABLE `bienbanbangiao` (
 ) ;
 
 --
--- Triggers `bienbanbangiao`
+-- Bẫy `bienbanbangiao`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_before_insert_bienbanbangiao_check_active` BEFORE INSERT ON `bienbanbangiao` FOR EACH ROW BEGIN
@@ -121,7 +121,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `buttoansocai`
+-- Cấu trúc bảng cho bảng `buttoansocai`
 --
 
 CREATE TABLE `buttoansocai` (
@@ -134,7 +134,7 @@ CREATE TABLE `buttoansocai` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Triggers `buttoansocai`
+-- Bẫy `buttoansocai`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_buttoan_no_delete` BEFORE DELETE ON `buttoansocai` FOR EACH ROW BEGIN
@@ -152,7 +152,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `chinhsachcoc`
+-- Cấu trúc bảng cho bảng `chinhsachcoc`
 --
 
 CREATE TABLE `chinhsachcoc` (
@@ -173,16 +173,14 @@ CREATE TABLE `chinhsachcoc` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `chinhsachcoc`
+-- Đang đổ dữ liệu cho bảng `chinhsachcoc`
 --
 
-INSERT INTO `chinhsachcoc` (`ChinhSachCocID`, `ChuDuAnID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `SoTienCocGiuChoMacDinh`, `QuyTacGiaiToa`, `SoNgayGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, NULL, 'Mặc định', 'Policy mặc định hệ thống', 1, 48, 0, 1, NULL, 'BanGiao', NULL, 1, '2025-09-27 14:59:04', '2025-09-27 14:59:04'),
-(2, 1, 'Đẩy sale tháng 12', 'Chính sách cọc hỗ trợ hoa hồng cao khuyến khích các bạn sale tăng cường', 1, 72, 100, 0, NULL, 'BanGiao', NULL, 1, '2025-11-25 18:02:49', '2025-11-25 19:27:17'),
-(3, 1, 'Đẩy sale tháng 1', NULL, 1, 72, 100, 1, 500000.00, 'BanGiao', NULL, 1, '2025-11-25 19:15:58', '2025-11-25 19:15:58');
+INSERT INTO `chinhsachcoc` (`ChinhSachCocID`, `ChuDuAnID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `SoTienCocAnNinhMacDinh`, `QuyTacGiaiToa`, `SoNgayGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, NULL, 'Mặc định', 'Policy mặc định hệ thống', 1, 48, 0, 1, NULL, 'BanGiao', NULL, 1, '2025-09-27 14:59:04', '2025-09-27 14:59:04');
 
 --
--- Triggers `chinhsachcoc`
+-- Bẫy `chinhsachcoc`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_chk_tyle_policy_ins` BEFORE INSERT ON `chinhsachcoc` FOR EACH ROW BEGIN
@@ -204,7 +202,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `coc`
+-- Cấu trúc bảng cho bảng `coc`
 --
 
 CREATE TABLE `coc` (
@@ -231,7 +229,7 @@ CREATE TABLE `coc` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Triggers `coc`
+-- Bẫy `coc`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_chk_tyle_snapshot_ins` BEFORE INSERT ON `coc` FOR EACH ROW BEGIN
@@ -276,7 +274,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `cuochen`
+-- Cấu trúc bảng cho bảng `cuochen`
 --
 
 CREATE TABLE `cuochen` (
@@ -300,7 +298,7 @@ CREATE TABLE `cuochen` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `cuochen`
+-- Đang đổ dữ liệu cho bảng `cuochen`
 --
 
 INSERT INTO `cuochen` (`CuocHenID`, `KhachHangID`, `NhanVienBanHangID`, `PhongID`, `TinDangID`, `ThoiGianHen`, `TrangThai`, `PheDuyetChuDuAn`, `LyDoTuChoi`, `PhuongThucVao`, `ThoiGianPheDuyet`, `SoLanDoiLich`, `GhiChuKetQua`, `TaoLuc`, `CapNhatLuc`, `GhiChu`, `ChuDuAnID`) VALUES
@@ -310,19 +308,20 @@ INSERT INTO `cuochen` (`CuocHenID`, `KhachHangID`, `NhanVienBanHangID`, `PhongID
 (17, 7, 8, 7, 9, '2025-11-09 17:33:00', 'ChoXacNhan', 'DaPheDuyet', NULL, NULL, NULL, 0, NULL, '2025-11-09 17:03:06', '2025-11-19 05:39:20', '3432324', 0),
 (18, 7, 8, 4, 6, '2025-11-09 17:37:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, NULL, NULL, 0, NULL, '2025-11-09 17:07:39', '2025-11-19 05:39:29', '0', 0),
 (19, 7, 8, 4, 6, '2025-11-20 15:31:00', 'DaDoiLich', 'DaPheDuyet', NULL, NULL, NULL, 1, '{\"activities\":[{\"timestamp\":\"2025-11-19T08:31:26.812Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T08:31:40.342Z\",\"action\":\"doi_lich\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Theo yêu cầu\",\"oldTime\":\"2025-11-10T15:35:00.000Z\",\"newTime\":\"2025-11-20T15:31\"}]}', '2025-11-10 22:05:57', '2025-11-19 15:31:40', '0', 1),
-(20, 7, 8, 1, 4, '2025-11-10 22:36:00', 'DaXacNhan', 'DaPheDuyet', NULL, NULL, NULL, 0, '\n[2025-11-18 22:53:15] Xác nhận bởi NVBH: ', '2025-11-10 22:06:32', '2025-11-19 05:39:45', '0', 1),
+(20, 7, 8, 1, 4, '2025-11-10 22:36:00', 'HoanThanh', 'DaPheDuyet', NULL, NULL, NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-20T05:34:22.840Z\",\"action\":\"bao_cao\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Kết quả: thanh_cong\",\"ketQua\":\"thanh_cong\"}],\"oldNote\":\"\\n[2025-11-18 22:53:15] Xác nhận bởi NVBH: \",\"thoiGianBaoCao\":\"2025-11-20T05:34:22.840Z\",\"ketQua\":\"thanh_cong\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"hihi\",\"slaWarning\":\"Báo cáo muộn 229 giờ\"}', '2025-11-10 22:06:32', '2025-11-20 12:34:22', '0', 1),
 (21, 7, 8, 7, 9, '2025-11-20 13:39:00', 'DaDoiLich', 'DaPheDuyet', NULL, NULL, NULL, 1, '\n[2025-11-19 13:38:08] Xác nhận bởi NVBH: \n[2025-11-19 13:40:00] Đổi lịch bởi NVBH: Theo yêu cầu', '2025-11-10 22:06:43', '2025-11-19 13:40:00', '0', 1),
 (22, 7, 8, 5, 8, '2025-11-10 22:36:00', 'HoanThanh', 'DaPheDuyet', NULL, NULL, NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-19T06:52:43.449Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T06:53:03.138Z\",\"action\":\"bao_cao\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Kết quả: HoanThanh\",\"ketQua\":\"HoanThanh\"}],\"thoiGianBaoCao\":\"2025-11-19T06:53:03.138Z\",\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"Chắc chắn chốt\\n\",\"slaWarning\":\"Báo cáo muộn 207 giờ\"}', '2025-11-10 22:06:49', '2025-11-19 13:53:03', '0', 1),
 (25, 7, 8, 4, 5, '2025-11-20 13:52:00', 'DaDoiLich', 'ChoPheDuyet', NULL, NULL, NULL, 1, '{\"activities\":[{\"timestamp\":\"2025-11-19T06:52:05.652Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T06:52:12.552Z\",\"action\":\"doi_lich\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Theo yêu cầu\",\"oldTime\":\"2025-11-18T17:12:00.000Z\",\"newTime\":\"2025-11-20T13:52\"}]}', '2025-11-18 23:43:00', '2025-11-19 13:52:12', '0', 0),
 (26, 7, 8, 3, 6, '2025-11-19 00:23:00', 'HoanThanh', 'ChoPheDuyet', NULL, NULL, NULL, 0, '{\"thoiGianBaoCao\":\"2025-11-19T06:37:28.455Z\",\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"Tiềm năng\",\"slaWarning\":null}', '2025-11-18 23:56:55', '2025-11-19 13:37:28', '0', 0),
 (52, 7, 8, 2, 4, '2025-11-25 08:36:00', 'DaXacNhan', 'DaPheDuyet', NULL, 'mật khẩu cổng là 1234', NULL, 0, '', '2025-11-23 13:06:18', '2025-11-23 13:06:18', 'ádaDSAd', 1),
 (53, 7, 1, 3, 6, '2025-11-23 13:37:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '', '2025-11-23 13:07:28', '2025-11-23 13:07:28', 'dádasd', 1),
-(54, 7, 1, 4, 6, '2025-11-23 22:12:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '', '2025-11-23 21:42:21', '2025-11-23 21:42:21', 'dsadadas', 1);
+(54, 7, 1, 4, 6, '2025-11-23 22:12:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '', '2025-11-23 21:42:21', '2025-11-23 21:42:21', 'dsadadas', 1),
+(55, 245, 1, 5, 8, '2025-11-28 22:36:00', 'DaXacNhan', 'DaPheDuyet', NULL, 'Mật khẩu cổng là 6824', NULL, 0, '', '2025-11-28 22:07:00', '2025-11-28 22:07:00', 'đasadsa', 1);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `cuochoithoai`
+-- Cấu trúc bảng cho bảng `cuochoithoai`
 --
 
 CREATE TABLE `cuochoithoai` (
@@ -337,7 +336,7 @@ CREATE TABLE `cuochoithoai` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `cuochoithoai`
+-- Đang đổ dữ liệu cho bảng `cuochoithoai`
 --
 
 INSERT INTO `cuochoithoai` (`CuocHoiThoaiID`, `NguCanhID`, `NguCanhLoai`, `TieuDe`, `ThoiDiemTinNhanCuoi`, `DangHoatDong`, `TaoLuc`, `CapNhatLuc`) VALUES
@@ -345,14 +344,15 @@ INSERT INTO `cuochoithoai` (`CuocHoiThoaiID`, `NguCanhID`, `NguCanhLoai`, `TieuD
 (202, 1, 'CuocHen', 'Cuộc hẹn xem phòng #1 - Nhà trọ Minh Tâm', '2025-11-04 04:05:27', 1, '2025-11-03 22:05:27', '2025-11-04 22:05:27'),
 (203, 1, 'HopDong', 'Hợp đồng thuê #1 - Nhà trọ Minh Tâm', '2025-11-04 22:51:51', 1, '2025-11-04 19:05:27', '2025-11-04 22:51:51'),
 (204, 17, 'TinDang', 'Tin đăng: Nhà Trọ Hoành Hợp - Hỗ trợ tư vấn', '2025-11-04 21:05:27', 1, '2025-11-04 17:05:27', '2025-11-04 22:05:27'),
-(219, 29, 'CuocHen', 'Cuộc hẹn #29 - 102', '2025-11-25 09:57:56', 1, '2025-11-19 00:16:56', '2025-11-25 09:57:56'),
+(219, 29, 'CuocHen', 'Cuộc hẹn #29 - 102', '2025-11-28 22:19:20', 1, '2025-11-19 00:16:56', '2025-11-28 22:19:20'),
 (220, 20, 'CuocHen', 'Cuộc hẹn #20 - Lam Ngoc Giang', NULL, 1, '2025-11-19 06:27:41', '2025-11-19 06:27:41'),
-(221, 21, 'CuocHen', 'Cuộc hẹn #21 - Lam Ngoc Giang', NULL, 1, '2025-11-19 13:42:47', '2025-11-19 13:42:47');
+(221, 21, 'CuocHen', 'Cuộc hẹn #21 - Lam Ngoc Giang', NULL, 1, '2025-11-19 13:42:47', '2025-11-19 13:42:47'),
+(224, 19, 'CuocHen', 'Cuộc hẹn #19 - Lam Ngoc Giang', NULL, 1, '2025-11-20 12:31:06', '2025-11-20 12:31:06');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `duan`
+-- Cấu trúc bảng cho bảng `duan`
 --
 
 CREATE TABLE `duan` (
@@ -378,35 +378,39 @@ CREATE TABLE `duan` (
   `ThoiGianXuLyYeuCau` datetime DEFAULT NULL COMMENT 'Thời điểm Operator/Admin xử lý yêu cầu',
   `LyDoTuChoiMoLai` text COLLATE utf8mb4_general_ci COMMENT 'Lý do từ chối yêu cầu mở lại (nếu YeuCauMoLai=TuChoi)',
   `TaoLuc` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `CapNhatLuc` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `CapNhatLuc` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `TrangThaiDuyetHoaHong` enum('ChoDuyet','DaDuyet','TuChoi') COLLATE utf8mb4_general_ci DEFAULT 'ChoDuyet' COMMENT 'Trạng thái duyệt hoa hồng',
+  `NguoiDuyetHoaHongID` int DEFAULT NULL COMMENT 'ID Operator duyệt hoa hồng',
+  `ThoiGianDuyetHoaHong` datetime DEFAULT NULL COMMENT 'Thời điểm duyệt hoa hồng',
+  `LyDoTuChoiHoaHong` text COLLATE utf8mb4_general_ci COMMENT 'Lý do từ chối hoa hồng'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `duan`
+-- Đang đổ dữ liệu cho bảng `duan`
 --
 
-INSERT INTO `duan` (`DuAnID`, `TenDuAn`, `DiaChi`, `ViDo`, `KinhDo`, `ChuDuAnID`, `ChinhSachCocID`, `BangHoaHong`, `SoThangCocToiThieu`, `YeuCauPheDuyetChu`, `PhuongThucVao`, `TrangThai`, `LyDoNgungHoatDong`, `NguoiNgungHoatDongID`, `NgungHoatDongLuc`, `YeuCauMoLai`, `NoiDungGiaiTrinh`, `ThoiGianGuiYeuCau`, `NguoiXuLyYeuCauID`, `ThoiGianXuLyYeuCau`, `LyDoTuChoiMoLai`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, 'Dự án Test - Chung cư ABC', '123 Đường Test, Phường 1, Quận 1, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:03:57'),
-(2, 'Dự án Test - Nhà trọ XYZ', '456 Đường Test 2, Phường 2, Quận 2, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:10'),
-(3, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:14'),
-(4, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:18'),
-(5, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:21'),
-(6, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:25'),
-(7, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:28'),
-(8, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-19 14:59:18'),
-(9, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'LuuTru', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:31'),
-(10, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách đăng tin: Đăng tin giả mạo, thông tin sai lệch về dự án. Đã nhận 3 báo cáo từ khách hàng.', 4, '2025-09-27 14:36:46', NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:34'),
-(11, 'Dream House 1', '147 Đường số 59, Phường 15, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách thanh toán: Chủ dự án có hành vi lừa đảo, không hoàn tiền cọc cho khách hàng đúng hạn.', 5, '2025-09-27 14:36:52', 'DangXuLy', 'Tôi đã hoàn trả đầy đủ tiền cọc cho khách hàng. Xin cung cấp bằng chứng chuyển khoản đính kèm. Cam kết tuân thủ chính sách từ nay.', '2025-10-01 10:30:00', NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:38'),
-(12, 'Dream House 1', '147 Đường số 59, Phường Tân Tạo A, Quận Bình Tân, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm quy định an toàn: Dự án không đảm bảo PCCC, có nguy cơ an toàn cao sau kiểm tra của cơ quan chức năng.', 5, '2025-09-27 14:36:58', 'TuChoi', 'Dự án đã khắc phục toàn bộ vấn đề PCCC, có giấy phép từ Cảnh sát PCCC.', '2025-10-05 09:00:00', 5, '2025-10-08 14:30:00', 'Giấy phép PCCC chưa đủ điều kiện theo quy định. Cần có chứng nhận từ UBND quận/huyện.', '2025-09-24 11:38:43', '2025-11-06 12:04:40'),
-(14, 'Nhà trọ Minh Tâm', '40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8379251, 106.6581163, 1, 1, NULL, NULL, 0, 'mật khẩu cổng là 1234', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-01 16:17:33', '2025-11-06 12:04:43'),
-(15, 'Nhà Trọ Cheap Avocado', '27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng', 16.0626020, 108.1760841, 1, 1, NULL, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-03 21:00:41', '2025-11-06 12:04:46'),
-(16, 'Nhà trọ Hải Hương', '15 Hà Huy Tập, Thị trấn Chợ Lầu, Huyện Bắc Bình, Bình Thuận', 11.2239833, 108.5011375, 1, 1, NULL, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-04 03:02:48', '2025-11-06 12:04:49'),
-(17, 'Nhà Trọ Hoành Hợp', '350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8385462, 106.6744701, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', 1, 0, 'Mật khẩu cổng là 6824', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-05 17:05:39', '2025-11-19 15:09:04');
+INSERT INTO `duan` (`DuAnID`, `TenDuAn`, `DiaChi`, `ViDo`, `KinhDo`, `ChuDuAnID`, `ChinhSachCocID`, `BangHoaHong`, `SoThangCocToiThieu`, `YeuCauPheDuyetChu`, `PhuongThucVao`, `TrangThai`, `LyDoNgungHoatDong`, `NguoiNgungHoatDongID`, `NgungHoatDongLuc`, `YeuCauMoLai`, `NoiDungGiaiTrinh`, `ThoiGianGuiYeuCau`, `NguoiXuLyYeuCauID`, `ThoiGianXuLyYeuCau`, `LyDoTuChoiMoLai`, `TaoLuc`, `CapNhatLuc`, `TrangThaiDuyetHoaHong`, `NguoiDuyetHoaHongID`, `ThoiGianDuyetHoaHong`, `LyDoTuChoiHoaHong`) VALUES
+(1, 'Dự án Test - Chung cư ABC', '123 Đường Test, Phường 1, Quận 1, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":31},{\"soThang\":12,\"tyLe\":100}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-27 16:55:01', 'ChoDuyet', NULL, NULL, NULL),
+(2, 'Dự án Test - Nhà trọ XYZ', '456 Đường Test 2, Phường 2, Quận 2, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":7,\"tyLe\":40}]', 1, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-28 22:46:57', 'DaDuyet', 9, '2025-11-28 20:04:22', NULL),
+(3, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:38', 'ChoDuyet', NULL, NULL, NULL),
+(4, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:36', 'ChoDuyet', NULL, NULL, NULL),
+(5, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:32', 'ChoDuyet', NULL, NULL, NULL),
+(6, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:29', 'ChoDuyet', NULL, NULL, NULL),
+(7, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:25', 'ChoDuyet', NULL, NULL, NULL),
+(8, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:24', 'ChoDuyet', NULL, NULL, NULL),
+(9, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'LuuTru', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:19', 'ChoDuyet', NULL, NULL, NULL),
+(10, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách đăng tin: Đăng tin giả mạo, thông tin sai lệch về dự án. Đã nhận 3 báo cáo từ khách hàng.', 4, '2025-09-27 14:36:46', NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:15', 'ChoDuyet', NULL, NULL, NULL),
+(11, 'Dream House 1', '147 Đường số 59, Phường 15, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách thanh toán: Chủ dự án có hành vi lừa đảo, không hoàn tiền cọc cho khách hàng đúng hạn.', 5, '2025-09-27 14:36:52', 'DangXuLy', 'Tôi đã hoàn trả đầy đủ tiền cọc cho khách hàng. Xin cung cấp bằng chứng chuyển khoản đính kèm. Cam kết tuân thủ chính sách từ nay.', '2025-10-01 10:30:00', NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:12', 'ChoDuyet', NULL, NULL, NULL),
+(12, 'Dream House 1', '147 Đường số 59, Phường Tân Tạo A, Quận Bình Tân, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm quy định an toàn: Dự án không đảm bảo PCCC, có nguy cơ an toàn cao sau kiểm tra của cơ quan chức năng.', 5, '2025-09-27 14:36:58', 'TuChoi', 'Dự án đã khắc phục toàn bộ vấn đề PCCC, có giấy phép từ Cảnh sát PCCC.', '2025-10-05 09:00:00', 5, '2025-10-08 14:30:00', 'Giấy phép PCCC chưa đủ điều kiện theo quy định. Cần có chứng nhận từ UBND quận/huyện.', '2025-09-24 11:38:43', '2025-11-20 12:25:07', 'ChoDuyet', NULL, NULL, NULL),
+(14, 'Nhà trọ Minh Tâm', '40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8379251, 106.6581163, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, 'mật khẩu cổng là 1234', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-01 16:17:33', '2025-11-20 12:25:04', 'ChoDuyet', NULL, NULL, NULL),
+(15, 'Nhà Trọ Cheap Avocado', '27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng', 16.0626020, 108.1760841, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-03 21:00:41', '2025-11-20 12:25:00', 'ChoDuyet', NULL, NULL, NULL),
+(16, 'Nhà trọ Hải Hương', '15 Hà Huy Tập, Thị trấn Chợ Lầu, Huyện Bắc Bình, Bình Thuận', 11.2239833, 108.5011375, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-04 03:02:48', '2025-11-20 12:24:58', 'ChoDuyet', NULL, NULL, NULL),
+(17, 'Nhà Trọ Hoành Hợp', '350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8385462, 106.6744701, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', 1, 0, 'Mật khẩu cổng là 6824', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-05 17:05:39', '2025-11-19 15:09:04', 'ChoDuyet', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `giaodich`
+-- Cấu trúc bảng cho bảng `giaodich`
 --
 
 CREATE TABLE `giaodich` (
@@ -426,7 +430,7 @@ CREATE TABLE `giaodich` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Triggers `giaodich`
+-- Bẫy `giaodich`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_validate_ledger_on_giaodich` AFTER UPDATE ON `giaodich` FOR EACH ROW BEGIN
@@ -455,31 +459,54 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `hopdong`
+-- Cấu trúc bảng cho bảng `hopdong`
 --
 
 CREATE TABLE `hopdong` (
   `HopDongID` int NOT NULL,
   `TinDangID` int DEFAULT NULL,
+  `PhongID` int DEFAULT NULL COMMENT 'ID phòng được đặt cọc',
+  `DuAnID` int DEFAULT NULL COMMENT 'ID dự án',
   `KhachHangID` int DEFAULT NULL,
   `NgayBatDau` date DEFAULT NULL,
   `NgayKetThuc` date DEFAULT NULL,
   `GiaThueCuoiCung` decimal(15,2) DEFAULT NULL,
+  `SoTienCoc` decimal(15,2) DEFAULT NULL COMMENT 'Số tiền cọc',
   `BaoCaoLuc` datetime DEFAULT NULL,
   `MauHopDongID` int DEFAULT NULL,
   `NoiDungSnapshot` text COLLATE utf8mb4_general_ci,
-  `FileScanPath` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Đường dẫn file scan hợp đồng (PDF/Image)'
+  `FileScanPath` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Đường dẫn file scan hợp đồng (PDF/Image)',
+  `noidunghopdong` text COLLATE utf8mb4_general_ci NOT NULL,
+  `TrangThai` enum('xacthuc','xinhuy','dahuy') COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Trạng thái hợp đồng: xacthuc (Xác thực), xinhuy (Xin hủy), dahuy (Đã hủy)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `hopdong`
+--
+
+INSERT INTO `hopdong` (`HopDongID`, `TinDangID`, `PhongID`, `DuAnID`, `KhachHangID`, `NgayBatDau`, `NgayKetThuc`, `GiaThueCuoiCung`, `SoTienCoc`, `BaoCaoLuc`, `MauHopDongID`, `NoiDungSnapshot`, `FileScanPath`, `noidunghopdong`, `TrangThai`) VALUES
+(1, 6, NULL, NULL, 7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\r\n\r\n    <div style=\"text-align: center; margin-bottom: 20px;\">\r\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\r\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\r\n    </div>\r\n\r\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\r\n        .........., ngày .... tháng .... năm ....\r\n    </p>\r\n\r\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\r\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\r\n    </h1>\r\n\r\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\r\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\r\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\r\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\r\n    </div>\r\n\r\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\r\n        <div style=\"margin-left: 20px;\">\r\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): <strong>Nguyễn Văn Chủ Dự Án</strong></p>\r\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\r\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\r\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong></p>\r\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0901234567</strong></p>\r\n        </div>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\r\n        <div style=\"margin-left: 20px;\">\r\n            <p style=\"margin: 5px 0;\">Họ và tên: <strong>Lam Ngoc Giang</strong></p>\r\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\r\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>1111111</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\r\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>nghean</strong></p>\r\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0911576455</strong></p>\r\n        </div>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 30px;\">\r\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\r\n        <div style=\"margin-left: 20px;\">\r\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\r\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\r\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\r\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\r\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\r\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\r\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\r\n                <li>Ngân hàng: ………………………………</li>\r\n                <li>Số tài khoản: …………………………</li>\r\n                <li>Chủ tài khoản: …………………………</li>\r\n            </ul>\r\n        </div>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\r\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong></p>\r\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: <strong>50 m²</strong></p>\r\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\r\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\r\n            <li>Giường: ………</li>\r\n            <li>Tủ quần áo: ………</li>\r\n            <li>Bàn ghế: ………</li>\r\n            <li>Máy lạnh / quạt: ………</li>\r\n            <li>Khác (liệt kê): ………………………</li>\r\n        </ul>\r\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\r\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\r\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\r\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\r\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\r\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: 10.000 đồng) ngay khi ký hợp đồng này.</p>\r\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\r\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\r\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\r\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\r\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\r\n        </ul>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\r\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: …………………………)</p>\r\n        <p style=\"margin: 5px 0;\">Chi phí điện: <strong>3.500 VNĐ/kWh</strong> (hoặc theo thỏa thuận / bảng bậc).</p>\r\n        <p style=\"margin: 5px 0;\">Chi phí nước: <strong>20.000 VNĐ/m³</strong> (hoặc theo thỏa thuận).</p>\r\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: <strong>200.000 VNĐ/tháng</strong></p>\r\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\r\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\r\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\r\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\r\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\r\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\r\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\r\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\r\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\r\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\r\n        </ul>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\r\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\r\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\r\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\r\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\r\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\r\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\r\n        </ul>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\r\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\r\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\r\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\r\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\r\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\r\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\r\n        </ul>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\r\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\r\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\r\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\r\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\r\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\r\n        </ul>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 15px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\r\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\r\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\r\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\r\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\r\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\r\n        </ul>\r\n    </div>\r\n\r\n    <div style=\"margin-bottom: 30px;\">\r\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\r\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\r\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\r\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\r\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\r\n        </ul>\r\n    </div>\r\n\r\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\r\n        <tr>\r\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\r\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\r\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\r\n                <br><br><br><br><br>\r\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\r\n                <p>.......................................</p>\r\n            </td>\r\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\r\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\r\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\r\n                <br><br><br><br><br>\r\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\r\n                <p>.......................................</p>\r\n            </td>\r\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\r\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\r\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\r\n                <br><br><br><br><br>\r\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\r\n                <p>.......................................</p>\r\n            </td>\r\n        </tr>\r\n    </table>\r\n\r\n</div>', NULL),
+(2, 6, NULL, NULL, 7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\n\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\n    </div>\n\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\n        .........., ngày .... tháng .... năm ....\n    </p>\n\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\n    </h1>\n\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\n    </div>\n\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): <strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0901234567</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên: <strong>Lam Ngoc Giang</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>1111111</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>nghean</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0911576455</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\n                <li>Ngân hàng: ………………………………</li>\n                <li>Số tài khoản: …………………………</li>\n                <li>Chủ tài khoản: …………………………</li>\n            </ul>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong> / số phòng: <strong>102</strong></p>\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: <strong>50 m²</strong></p>\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\n            <li>Giường: ………</li>\n            <li>Tủ quần áo: ………</li>\n            <li>Bàn ghế: ………</li>\n            <li>Máy lạnh / quạt: ………</li>\n            <li>Khác (liệt kê): ………………………</li>\n        </ul>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: 10.000 đồng) ngay khi ký hợp đồng này.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: …………………………)</p>\n        <p style=\"margin: 5px 0;\">Chi phí điện: <strong>3.500 VNĐ/kWh</strong> (hoặc theo thỏa thuận / bảng bậc).</p>\n        <p style=\"margin: 5px 0;\">Chi phí nước: <strong>20.000 VNĐ/m³</strong> (hoặc theo thỏa thuận).</p>\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: <strong>200.000 VNĐ/tháng</strong></p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\n        </ul>\n    </div>\n\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\n        <tr>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukichutro\"><strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukibenb\"><strong>Lam Ngoc Giang</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p>Nguyễn Tiến Chung</p>\n            </td>\n        </tr>\n    </table>\n\n</div>', NULL),
+(3, 6, NULL, NULL, 7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\n\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\n    </div>\n\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\n        .........., ngày .... tháng .... năm ....\n    </p>\n\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\n    </h1>\n\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\n    </div>\n\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): <strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0901234567</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên: <strong>Lam Ngoc Giang</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>1111111</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>nghean</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0911576455</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\n                <li>Ngân hàng: ………………………………</li>\n                <li>Số tài khoản: …………………………</li>\n                <li>Chủ tài khoản: …………………………</li>\n            </ul>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong> / số phòng: <strong>102</strong></p>\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: <strong>50 m²</strong></p>\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\n            <li>Giường: ………</li>\n            <li>Tủ quần áo: ………</li>\n            <li>Bàn ghế: ………</li>\n            <li>Máy lạnh / quạt: ………</li>\n            <li>Khác (liệt kê): ………………………</li>\n        </ul>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: 10.000 đồng) ngay khi ký hợp đồng này.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: …………………………)</p>\n        <p style=\"margin: 5px 0;\">Chi phí điện: <strong>3.500 VNĐ/kWh</strong> (hoặc theo thỏa thuận / bảng bậc).</p>\n        <p style=\"margin: 5px 0;\">Chi phí nước: <strong>20.000 VNĐ/m³</strong> (hoặc theo thỏa thuận).</p>\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: <strong>200.000 VNĐ/tháng</strong></p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\n        </ul>\n    </div>\n\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\n        <tr>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukichutro\"><strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukibenb\"><strong>Lam Ngoc Giang</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p>Nguyễn Tiến Chung</p>\n            </td>\n        </tr>\n    </table>\n\n</div>', NULL);
+INSERT INTO `hopdong` (`HopDongID`, `TinDangID`, `PhongID`, `DuAnID`, `KhachHangID`, `NgayBatDau`, `NgayKetThuc`, `GiaThueCuoiCung`, `SoTienCoc`, `BaoCaoLuc`, `MauHopDongID`, `NoiDungSnapshot`, `FileScanPath`, `noidunghopdong`, `TrangThai`) VALUES
+(4, 6, NULL, NULL, 7, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\n\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\n    </div>\n\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\n        .........., ngày .... tháng .... năm ....\n    </p>\n\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\n    </h1>\n\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\n    </div>\n\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): <strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0901234567</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên: <strong>Lam Ngoc Giang</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>1111111</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>nghean</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0911576455</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\n                <li>Ngân hàng: ………………………………</li>\n                <li>Số tài khoản: …………………………</li>\n                <li>Chủ tài khoản: …………………………</li>\n            </ul>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong> / số phòng: <strong>102</strong></p>\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: <strong>50 m²</strong></p>\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\n            <li>Giường: ………</li>\n            <li>Tủ quần áo: ………</li>\n            <li>Bàn ghế: ………</li>\n            <li>Máy lạnh / quạt: ………</li>\n            <li>Khác (liệt kê): ………………………</li>\n        </ul>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: 10.000 đồng) ngay khi ký hợp đồng này.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: …………………………)</p>\n        <p style=\"margin: 5px 0;\">Chi phí điện: <strong>3.500 VNĐ/kWh</strong> (hoặc theo thỏa thuận / bảng bậc).</p>\n        <p style=\"margin: 5px 0;\">Chi phí nước: <strong>20.000 VNĐ/m³</strong> (hoặc theo thỏa thuận).</p>\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: <strong>200.000 VNĐ/tháng</strong></p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\n        </ul>\n    </div>\n\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\n        <tr>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukichutro\"><strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukibenb\"><strong>Lam Ngoc Giang</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p>Nguyễn Tiến Chung</p>\n            </td>\n        </tr>\n    </table>\n\n</div>', NULL),
+(5, 6, 4, 15, 7, NULL, NULL, 10000.00, 10000.00, NULL, NULL, NULL, NULL, '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\n\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\n    </div>\n\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\n        .........., ngày .... tháng .... năm ....\n    </p>\n\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\n    </h1>\n\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\n    </div>\n\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): <strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0901234567</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên: <strong>Lam Ngoc Giang</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>1111111</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>nghean</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0911576455</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\n                <li>Ngân hàng: ………………………………</li>\n                <li>Số tài khoản: …………………………</li>\n                <li>Chủ tài khoản: …………………………</li>\n            </ul>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong> / số phòng: <strong>102</strong></p>\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: <strong>50 m²</strong></p>\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\n            <li>Giường: ………</li>\n            <li>Tủ quần áo: ………</li>\n            <li>Bàn ghế: ………</li>\n            <li>Máy lạnh / quạt: ………</li>\n            <li>Khác (liệt kê): ………………………</li>\n        </ul>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: 10.000 đồng) ngay khi ký hợp đồng này.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: …………………………)</p>\n        <p style=\"margin: 5px 0;\">Chi phí điện: <strong>3.500 VNĐ/kWh</strong> (hoặc theo thỏa thuận / bảng bậc).</p>\n        <p style=\"margin: 5px 0;\">Chi phí nước: <strong>20.000 VNĐ/m³</strong> (hoặc theo thỏa thuận).</p>\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: <strong>200.000 VNĐ/tháng</strong></p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\n        </ul>\n    </div>\n\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\n        <tr>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukichutro\"><strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukibenb\"><strong>Lam Ngoc Giang</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p>Nguyễn Tiến Chung</p>\n            </td>\n        </tr>\n    </table>\n\n</div>', 'xacthuc'),
+(6, 6, 4, 15, 7, NULL, NULL, 10000.00, 10000.00, NULL, NULL, NULL, NULL, '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\n\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\n    </div>\n\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\n        .........., ngày .... tháng .... năm ....\n    </p>\n\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\n    </h1>\n\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\n    </div>\n\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): <strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0901234567</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên: <strong>Lam Ngoc Giang</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>1111111</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>nghean</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0911576455</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\n                <li>Ngân hàng: ………………………………</li>\n                <li>Số tài khoản: …………………………</li>\n                <li>Chủ tài khoản: …………………………</li>\n            </ul>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong> / số phòng: <strong>102</strong></p>\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: <strong>50 m²</strong></p>\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\n            <li>Giường: ………</li>\n            <li>Tủ quần áo: ………</li>\n            <li>Bàn ghế: ………</li>\n            <li>Máy lạnh / quạt: ………</li>\n            <li>Khác (liệt kê): ………………………</li>\n        </ul>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: 10.000 đồng) ngay khi ký hợp đồng này.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: …………………………)</p>\n        <p style=\"margin: 5px 0;\">Chi phí điện: <strong>3.500 VNĐ/kWh</strong> (hoặc theo thỏa thuận / bảng bậc).</p>\n        <p style=\"margin: 5px 0;\">Chi phí nước: <strong>20.000 VNĐ/m³</strong> (hoặc theo thỏa thuận).</p>\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: <strong>200.000 VNĐ/tháng</strong></p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\n        </ul>\n    </div>\n\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\n        <tr>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukichutro\"><strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukibenb\"><strong>Lam Ngoc Giang</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p>Nguyễn Tiến Chung</p>\n            </td>\n        </tr>\n    </table>\n\n</div>', 'dahuy');
+INSERT INTO `hopdong` (`HopDongID`, `TinDangID`, `PhongID`, `DuAnID`, `KhachHangID`, `NgayBatDau`, `NgayKetThuc`, `GiaThueCuoiCung`, `SoTienCoc`, `BaoCaoLuc`, `MauHopDongID`, `NoiDungSnapshot`, `FileScanPath`, `noidunghopdong`, `TrangThai`) VALUES
+(7, 8, 5, 17, 245, NULL, NULL, 3000000.00, 3000000.00, NULL, NULL, NULL, NULL, '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\n\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\n    </div>\n\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\n        .........., ngày .... tháng .... năm ....\n    </p>\n\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\n    </h1>\n\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\n    </div>\n\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): <strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0901234567</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên: <strong>kiên mặt lợn</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0908878473</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\n                <li>Ngân hàng: ………………………………</li>\n                <li>Số tài khoản: …………………………</li>\n                <li>Chủ tài khoản: …………………………</li>\n            </ul>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: <strong>350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh</strong> / số phòng: <strong>006</strong></p>\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: <strong>30 m²</strong></p>\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\n            <li>Giường: ………</li>\n            <li>Tủ quần áo: ………</li>\n            <li>Bàn ghế: ………</li>\n            <li>Máy lạnh / quạt: ………</li>\n            <li>Khác (liệt kê): ………………………</li>\n        </ul>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>3.000.000 VNĐ/tháng</strong> (bằng chữ: 3.000.000 đồng) ngay khi ký hợp đồng này.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>3.000.000 VNĐ/tháng</strong> (bằng chữ: …………………………)</p>\n        <p style=\"margin: 5px 0;\">Chi phí điện: <strong>3.000 VNĐ/kWh</strong> (hoặc theo thỏa thuận / bảng bậc).</p>\n        <p style=\"margin: 5px 0;\">Chi phí nước: <strong>20.000 VNĐ/m³</strong> (hoặc theo thỏa thuận).</p>\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: <strong>150.000 VNĐ/tháng</strong></p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\n        </ul>\n    </div>\n\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\n        <tr>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukichutro\"><strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukibenb\"><strong>kiên mặt lợn</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p>Nguyễn Tiến Chung</p>\n            </td>\n        </tr>\n    </table>\n\n</div>', 'xacthuc'),
+(8, 9, 7, 14, 245, NULL, NULL, 7700000.00, 7700000.00, NULL, NULL, NULL, NULL, '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\n\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\n    </div>\n\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\n        .........., ngày .... tháng .... năm ....\n    </p>\n\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\n    </h1>\n\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\n    </div>\n\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): <strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0901234567</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên: <strong>kiên mặt lợn</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0908878473</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\n                <li>Ngân hàng: ………………………………</li>\n                <li>Số tài khoản: …………………………</li>\n                <li>Chủ tài khoản: …………………………</li>\n            </ul>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: <strong>40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh</strong> / số phòng: <strong>202</strong></p>\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: <strong>55 m²</strong></p>\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\n            <li>Giường: ………</li>\n            <li>Tủ quần áo: ………</li>\n            <li>Bàn ghế: ………</li>\n            <li>Máy lạnh / quạt: ………</li>\n            <li>Khác (liệt kê): ………………………</li>\n        </ul>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>7.700.000 VNĐ/tháng</strong> (bằng chữ: 7.700.000 đồng) ngay khi ký hợp đồng này.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>7.700.000 VNĐ/tháng</strong> (bằng chữ: …………………………)</p>\n        <p style=\"margin: 5px 0;\">Chi phí điện: <strong>3.500 VNĐ/kWh</strong> (hoặc theo thỏa thuận / bảng bậc).</p>\n        <p style=\"margin: 5px 0;\">Chi phí nước: <strong>20.000 VNĐ/m³</strong> (hoặc theo thỏa thuận).</p>\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: <strong>150.000 VNĐ/tháng</strong></p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\n        </ul>\n    </div>\n\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\n        <tr>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukichutro\"><strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukibenb\"><strong>kiên mặt lợn</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p>Nguyễn Tiến Chung</p>\n            </td>\n        </tr>\n    </table>\n\n</div>', 'xacthuc'),
+(9, 5, 4, 15, 7, NULL, NULL, 10000.00, 10000.00, NULL, NULL, NULL, NULL, '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\n\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\n    </div>\n\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\n        .........., ngày .... tháng .... năm ....\n    </p>\n\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\n    </h1>\n\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\n    </div>\n\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): <strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>Đang cập nhật</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0901234567</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên: <strong>Lam Ngoc Giang</strong></p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: <strong>1111111</strong> Ngày cấp: <strong>Đang cập nhật</strong> Nơi cấp: <strong>Đang cập nhật</strong></p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: <strong>nghean</strong></p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: <strong>0911576455</strong></p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\n                <li>Ngân hàng: ………………………………</li>\n                <li>Số tài khoản: …………………………</li>\n                <li>Chủ tài khoản: …………………………</li>\n            </ul>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: <strong>27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng</strong> / số phòng: <strong>102</strong></p>\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: <strong>50 m²</strong></p>\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\n            <li>Giường: ………</li>\n            <li>Tủ quần áo: ………</li>\n            <li>Bàn ghế: ………</li>\n            <li>Máy lạnh / quạt: ………</li>\n            <li>Khác (liệt kê): ………………………</li>\n        </ul>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: 10.000 đồng) ngay khi ký hợp đồng này.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>10.000 VNĐ/tháng</strong> (bằng chữ: …………………………)</p>\n        <p style=\"margin: 5px 0;\">Chi phí điện: <strong>3.000 VNĐ/kWh</strong> (hoặc theo thỏa thuận / bảng bậc).</p>\n        <p style=\"margin: 5px 0;\">Chi phí nước: <strong>18.000 VNĐ/m³</strong> (hoặc theo thỏa thuận).</p>\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: <strong>200.000 VNĐ/tháng</strong></p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\n        </ul>\n    </div>\n\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\n        <tr>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukichutro\"><strong>Nguyễn Văn Chủ Dự Án</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukibenb\"><strong>Lam Ngoc Giang</strong></p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p>Nguyễn Tiến Chung</p>\n            </td>\n        </tr>\n    </table>\n\n</div>', 'dahuy');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `hosonhanvien`
+-- Cấu trúc bảng cho bảng `hosonhanvien`
 --
 
 CREATE TABLE `hosonhanvien` (
   `HoSoID` int NOT NULL,
   `NguoiDungID` int DEFAULT NULL,
+  `QuanLyID` int DEFAULT NULL,
   `MaNhanVien` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `KhuVucChinhID` int DEFAULT NULL,
   `KhuVucPhuTrachID` int DEFAULT NULL,
@@ -490,17 +517,18 @@ CREATE TABLE `hosonhanvien` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `hosonhanvien`
+-- Đang đổ dữ liệu cho bảng `hosonhanvien`
 --
 
-INSERT INTO `hosonhanvien` (`HoSoID`, `NguoiDungID`, `MaNhanVien`, `KhuVucChinhID`, `KhuVucPhuTrachID`, `TyLeHoaHong`, `NgayBatDau`, `NgayKetThuc`, `GhiChu`) VALUES
-(7, 8, 'NV0001', 62, 720, 10.00, '2025-11-17', NULL, NULL),
-(9, 9, 'NV002', 62, 720, 10.00, '2025-11-23', '0000-00-00', NULL);
+INSERT INTO `hosonhanvien` (`HoSoID`, `NguoiDungID`, `QuanLyID`, `MaNhanVien`, `KhuVucChinhID`, `KhuVucPhuTrachID`, `TyLeHoaHong`, `NgayBatDau`, `NgayKetThuc`, `GhiChu`) VALUES
+(7, 8, 9, 'NV0001', 941, NULL, 50.00, '2025-11-17', NULL, NULL),
+(11, 230, NULL, '230', 720, NULL, 10.00, '2025-11-01', '2029-11-15', NULL),
+(12, 9, NULL, 'NV0002', 62, 720, 10.00, '2025-11-28', NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `khuvuc`
+-- Cấu trúc bảng cho bảng `khuvuc`
 --
 
 CREATE TABLE `khuvuc` (
@@ -512,7 +540,7 @@ CREATE TABLE `khuvuc` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `khuvuc`
+-- Đang đổ dữ liệu cho bảng `khuvuc`
 --
 
 INSERT INTO `khuvuc` (`KhuVucID`, `TenKhuVuc`, `ParentKhuVucID`, `ViDo`, `KinhDo`) VALUES
@@ -3290,7 +3318,8 @@ INSERT INTO `khuvuc` (`KhuVucID`, `TenKhuVuc`, `ParentKhuVucID`, `ViDo`, `KinhDo
 (2774, 'Xã Tam Lập', 148, NULL, NULL),
 (2775, 'Xã Tân Hiệp', 148, NULL, NULL),
 (2776, 'Xã Tân Long', 148, NULL, NULL),
-(2777, 'Xã Vĩnh Hòa', 148, NULL, NULL);
+(2777, 'Xã Vĩnh Hòa', 148, NULL, NULL),
+(2778, 'phường tối thượng', 720, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -3306,7 +3335,6 @@ CREATE TABLE `kyc_verification` (
   `NgaySinh` date DEFAULT NULL,
   `DiaChi` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `NgayCapCCCD` date DEFAULT NULL,
-  `NoiCapCCCD` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `FaceSimilarity` decimal(5,4) DEFAULT NULL COMMENT 'Độ tương đồng khuôn mặt (0-1)',
   `TrangThai` enum('ThanhCong','ThatBai','CanXemLai') COLLATE utf8mb4_general_ci DEFAULT 'CanXemLai',
   `LyDoThatBai` text COLLATE utf8mb4_general_ci,
@@ -3330,7 +3358,7 @@ CREATE TABLE `lichlamviec` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `lichlamviec`
+-- Đang đổ dữ liệu cho bảng `lichlamviec`
 --
 
 INSERT INTO `lichlamviec` (`LichID`, `NhanVienBanHangID`, `BatDau`, `KetThuc`) VALUES
@@ -3366,27 +3394,25 @@ INSERT INTO `lich_su_vi` (`id`, `user_id`, `ma_giao_dich`, `so_tien`, `trang_tha
 (7, 1, 'GD123456789', 50000.00, 'THANH_CONG', '2025-11-23 12:27:33', 'nap'),
 (8, 1, 'GD1234567899', 50000.00, 'THANH_CONG', '2025-11-23 12:29:13', 'nap'),
 (9, 1, 'GD12345628', 50000.00, 'THANH_CONG', '2025-11-23 12:30:44', 'nap'),
-(10, 1, 'GD123445628', 50000.00, 'THANH_CONG', '2025-11-23 12:31:58', 'rut');
+(10, 1, 'GD123445628', 50000.00, 'THANH_CONG', '2025-11-23 12:31:58', 'rut'),
+(11, 7, 'NAP_7_1764161436846', 10000.00, 'THANH_CONG', '2025-11-26 12:50:37', 'nap'),
+(12, 7, 'COC_6_4_1764162117665', 10000.00, 'THANH_CONG', '2025-11-26 13:01:57', 'rut'),
+(13, 7, 'COC_6_4_1764165433619', 10000.00, 'THANH_CONG', '2025-11-26 13:57:13', 'rut'),
+(14, 7, 'COC_6_4_1764167149181', 10000.00, 'THANH_CONG', '2025-11-26 14:25:49', 'rut'),
+(15, 7, 'HOAN_COC_HD_6_1764317500702', 10000.00, 'THANH_CONG', '2025-11-28 08:11:40', 'hoan_coc'),
+(16, 7, 'RUT_1_1764318779765', 10000.00, 'THANH_CONG', '2025-11-28 08:32:59', 'rut_tien'),
+(17, 245, 'NAP_245_1764319172821', 3000000000.00, 'THANH_CONG', '2025-11-28 08:39:32', 'nap'),
+(18, 245, 'COC_8_5_1764319343156', 3000000.00, 'THANH_CONG', '2025-11-28 08:42:23', 'rut'),
+(19, 245, 'COC_9_7_1764319972798', 7700000.00, 'THANH_CONG', '2025-11-28 08:52:52', 'rut'),
+(20, 7, 'NAP_7_1764340927092', 10000.00, 'THANH_CONG', '2025-11-28 14:42:07', 'nap'),
+(21, 7, 'RUT_2_1764340960572', 10000.00, 'THANH_CONG', '2025-11-28 14:42:40', 'rut_tien'),
+(22, 7, 'COC_5_4_1764341359998', 10000.00, 'THANH_CONG', '2025-11-28 14:49:20', 'rut'),
+(23, 7, 'HOAN_COC_HD_9_1764342018899', 10000.00, 'THANH_CONG', '2025-11-28 15:00:18', 'hoan_coc');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `lich_su_vi`
---
-
-CREATE TABLE `lich_su_vi` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `ma_giao_dich` varchar(50) NOT NULL,
-  `so_tien` decimal(18,2) NOT NULL,
-  `trang_thai` enum('THANH_CONG','CHO_XU_LY') NOT NULL DEFAULT 'CHO_XU_LY',
-  `thoi_gian` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `mauhopdong`
+-- Cấu trúc bảng cho bảng `mauhopdong`
 --
 
 CREATE TABLE `mauhopdong` (
@@ -3401,10 +3427,17 @@ CREATE TABLE `mauhopdong` (
   `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `mauhopdong`
+--
+
+INSERT INTO `mauhopdong` (`MauHopDongID`, `TieuDe`, `NoiDungMau`, `FileURL`, `PhienBan`, `TrangThai`, `TaoBoiAdminID`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, 'Hợp đồng cọc', '<div style=\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\">\n\n    <div style=\"text-align: center; margin-bottom: 20px;\">\n        <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\n        <p style=\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\">Độc lập - Tự do - Hạnh phúc</p>\n    </div>\n\n    <p style=\"text-align: right; margin-bottom: 30px; font-style: italic;\">\n        .........., ngày .... tháng .... năm ....\n    </p>\n\n    <h1 style=\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\">\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\n    </h1>\n\n    <div style=\"margin-bottom: 20px; font-style: italic;\">\n        <p style=\"margin: 5px 0;\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức Sở Hữu Trí Tuệ Thế Giới+1</p>\n        <p style=\"margin: 5px 0;\">Căn cứ Luật Thương mại số 36/2005/QH11 ngày 14/06/2005;</p>\n        <p style=\"margin: 5px 0;\">Căn cứ vào nhu cầu và sự thỏa thuận của các bên tham gia Hợp đồng;</p>\n    </div>\n\n    <p style=\"margin-bottom: 20px;\">Hôm nay, ngày ……. tháng ……. năm ……, các Bên gồm:</p>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN CHO THUÊ (Bên A):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên (chủ trọ): ………………………………………</p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: …../…../….</p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: ………………… Ngày cấp: ……… Nơi cấp: ……………</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN THUÊ (Bên B):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Họ và tên: ………………………………………</p>\n            <p style=\"margin: 5px 0;\">Ngày sinh: …../…../….</p>\n            <p style=\"margin: 5px 0;\">CCCD / CMND số: ………………… Ngày cấp: ……… Nơi cấp: …………</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ thường trú: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <strong style=\"text-transform: uppercase;\">BÊN GIỮ CỌC (Bên C – Hommy):</strong>\n        <div style=\"margin-left: 20px;\">\n            <p style=\"margin: 5px 0;\">Tên công ty: <strong>Hommy</strong></p>\n            <p style=\"margin: 5px 0;\">Mã số doanh nghiệp: ………………………………</p>\n            <p style=\"margin: 5px 0;\">Đại diện: ………………………….. (tên + chức vụ)</p>\n            <p style=\"margin: 5px 0;\">Địa chỉ trụ sở: …………………………………………………</p>\n            <p style=\"margin: 5px 0;\">Số điện thoại: ……………………………</p>\n            <p style=\"margin: 5px 0; font-style: italic; text-decoration: underline;\">Tài khoản ngân hàng để nhận cọc:</p>\n            <ul style=\"margin: 5px 0 0 20px; list-style-type: none; padding: 0;\">\n                <li>Ngân hàng: ………………………………</li>\n                <li>Số tài khoản: …………………………</li>\n                <li>Chủ tài khoản: …………………………</li>\n            </ul>\n        </div>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 1. Nhà ở & Tài sản kèm theo</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A đồng ý cho Bên B thuê và Bên B thuê quyền sử dụng một căn nhà / phòng tại địa chỉ: …………………………….. / số phòng: .....</p>\n        <p style=\"margin: 5px 0;\">Diện tích nhà / phòng: ……… m²</p>\n        <p style=\"margin: 5px 0;\">Nội thất, trang thiết bị và đồ đạc bàn giao kèm (nếu có):</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc;\">\n            <li>Giường: ………</li>\n            <li>Tủ quần áo: ………</li>\n            <li>Bàn ghế: ………</li>\n            <li>Máy lạnh / quạt: ………</li>\n            <li>Khác (liệt kê): ………………………</li>\n        </ul>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên A cam kết quyền sở hữu / quyền sử dụng hợp pháp căn nhà / phòng cho thuê.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 2. Bàn giao & sử dụng</p>\n        <p style=\"margin: 5px 0;\">Thời điểm bàn giao tài sản cho Bên B: ngày ……. tháng ……. năm …….</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Kể từ khi bàn giao, Bên B được sử dụng toàn quyền phần tài sản thuê theo mục đích thỏa thuận (chỉ để ở, v.v.).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 3. Thời hạn thuê</p>\n        <p style=\"margin: 5px 0;\">Thời hạn thuê: ……… năm / ……. tháng kể từ ngày bàn giao.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Khi hết hạn thuê nếu Bên B muốn tiếp tục, Bên A có trách nhiệm ưu tiên cho Bên B thuê lại nếu thỏa thuận được hai bên chấp nhận.</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 4. Đặt cọc an ninh</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B đặt cọc cho Bên A qua Bên C (Hommy) số tiền: <strong>…….. VNĐ</strong> (bằng chữ: …………………………) ngay khi ký hợp đồng này.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Mục đích đặt cọc: đảm bảo việc Bên B thực hiện hợp đồng thuê (trả tiền thuê, chi phí điện nước, giữ gìn tài sản, trả phòng đúng điều kiện khi kết thúc).</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nếu Bên B đơn phương chấm dứt mà không báo trước: Bên A có thể giữ toàn bộ / một phần cọc (theo thỏa thuận) để bù đắp thiệt hại.</li>\n            <li>Nếu Bên A đơn phương chấm dứt mà không báo trước: Bên A hoàn trả cọc + bồi thường bằng số tiền đặt cọc (theo thỏa thuận hai bên).</li>\n            <li>Nếu có thiệt hại (nội thất, đồ đạc …) sau khi Bên B sử dụng: Bên A được quyền khấu trừ chi phí sửa chữa từ cọc, theo biên bản kiểm kê do các bên lập khi bàn giao / trả phòng.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 5. Giá thuê & Chi phí điện – nước – Phụ phí</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà: <strong>…….. VNĐ / tháng</strong> (bằng chữ: …………………………)</p>\n        <p style=\"margin: 5px 0;\">Chi phí điện: …….. VNĐ / kWh (hoặc theo thỏa thuận / bảng bậc).</p>\n        <p style=\"margin: 5px 0;\">Chi phí nước: …….. VNĐ / m³ (hoặc theo thỏa thuận).</p>\n        <p style=\"margin: 5px 0;\">Chi phí phụ (nếu có): ví dụ giữ xe, rác, vệ sinh, wifi, v.v.: …….. VNĐ / tháng</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Bên B thanh toán các chi phí điện, nước, phụ phí theo mức sử dụng thực tế hàng tháng (hoặc theo hóa đơn / phiếu chi phí do Bên A / đơn vị quản lý cung cấp).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 6. Thanh toán</p>\n        <p style=\"margin: 5px 0;\">Tiền thuê nhà được thanh toán mỗi tháng, vào ngày … hàng tháng.</p>\n        <p style=\"margin: 5px 0;\">Hình thức thanh toán: Tiền mặt / Chuyển khoản đến tài khoản Bên A / tài khoản do Bên A chỉ định.</p>\n        <p style=\"margin: 5px 0; text-align: justify;\">Chi phí điện, nước, phụ phí sẽ được Bên B thanh toán trực tiếp cho đơn vị cung cấp (nếu Bên A ủy quyền) hoặc thanh toán cho Bên A (nếu thỏa thuận).</p>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 7. Quyền & Nghĩa vụ của Bên A (Chủ trọ)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Bàn giao nhà / phòng, đồ đạc, nội thất đúng như mô tả.</li>\n            <li>Đảm bảo quyền sở hữu / quyền cho thuê hợp pháp.</li>\n            <li>Sửa chữa các hỏng hóc do lỗi của Bên A hoặc lỗi hệ thống (theo thỏa thuận).</li>\n            <li>Không xâm phạm vào tài sản của Bên B trong thời gian thuê nếu không có lý do hợp pháp.</li>\n            <li>Bồi thường nếu vi phạm hợp đồng hoặc gây thiệt hại cho Bên B.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 8. Quyền & Nghĩa vụ của Bên B (Người thuê)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Sử dụng tài sản thuê đúng mục đích (ở, không làm điều trái phép).</li>\n            <li>Trả tiền thuê, điện, nước, phụ phí đúng hạn và đầy đủ.</li>\n            <li>Giữ gìn đồ đạc, nội thất, báo cáo hỏng hóc kịp thời nếu có.</li>\n            <li>Khi muốn chấm dứt hợp đồng trước hạn: thông báo bằng văn bản cho Bên A tối thiểu 30 ngày trước (hoặc theo thỏa thuận).</li>\n            <li>Khi hết thời hạn thuê hoặc chấm dứt: trả lại phòng / nhà, nội thất ở trạng thái thỏa thuận (cho phép hao mòn hợp lý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 9. Vai trò & Nghĩa vụ của Bên C (Hommy)</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Nhận và giữ cọc từ Bên B như là bên trung gian trung thực (depositary) theo quy định của Bộ luật Dân sự 2015 (Điều 328).</li>\n            <li>Khi nhận cọc, Bên C lập biên nhận / biên lai, gửi cho Bên B và Bên A.</li>\n            <li>Khi chấm dứt hoặc khi có điều kiện trả cọc, Bên C lập biên bản trừ hoặc trả cọc rõ lý do, số tiền, ký xác nhận giữa các bên.</li>\n            <li>Nếu có chi phí quản lý cọc (nếu thỏa thuận): Bên C được trừ chi phí từ số tiền cọc trước khi trả phần còn lại, và thông báo rõ cho Bên A và Bên B.</li>\n            <li>Lưu trữ hồ sơ liên quan: biên nhận cọc, biên bản trừ / trả cọc tối thiểu … năm (theo thỏa thuận) để đảm bảo minh bạch và giải quyết tranh chấp nếu có.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 10. Chấm dứt hợp đồng & Trả cọc</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Khi hợp đồng thuê kết thúc theo thời hạn hoặc bởi chấm dứt trước hạn: các bên thực hiện bàn giao tài sản, kiểm kê đồ đạc, nội thất, chi phí điện / nước chưa thanh toán.</li>\n            <li>Sau khi bàn giao, Bên C sẽ thực hiện trả cọc hoặc trừ cọc theo biên bản kiểm kê (nếu có).</li>\n            <li>Thời gian trả cọc hoặc trừ cọc: trong vòng … ngày kể từ khi bên A, B và C ký biên bản bàn giao / trừ cọc.</li>\n            <li>Nếu có tranh chấp về số tiền trừ hoặc việc trả cọc: trước tiên các bên hòa giải; nếu không được, các bên có thể khởi kiện tại Tòa án nhân dân có thẩm quyền hoặc theo cơ chế trọng tài nếu thỏa thuận.</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 15px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 11. Hiệu lực & Điều khoản chung</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Hợp đồng có hiệu lực kể từ ngày ký.</li>\n            <li>Mọi sửa đổi, bổ sung hợp đồng phải được lập bằng văn bản và ký bởi cả Ba Bên.</li>\n            <li>Hợp đồng lập thành 03 bản, mỗi bên giữ 1 bản: Bên A, Bên B, Bên C; đều có giá trị pháp lý như nhau.</li>\n            <li>Mọi thông báo, thư từ liên quan Hợp đồng: gửi bằng văn bản (có thể email nếu các bên đồng ý).</li>\n        </ul>\n    </div>\n\n    <div style=\"margin-bottom: 30px;\">\n        <p style=\"font-weight: bold; margin-bottom: 5px;\">Điều 12. Cam kết</p>\n        <ul style=\"margin: 5px 0 10px 40px; list-style-type: disc; text-align: justify;\">\n            <li>Ba bên cam kết cung cấp thông tin trung thực (họ tên, ngày sinh, CCCD, …).</li>\n            <li>Ba bên cam kết thực hiện đúng các điều khoản của hợp đồng.</li>\n            <li>Khi ký, cả ba bên đã đọc, hiểu và đồng ý toàn bộ nội dung hợp đồng này.</li>\n        </ul>\n    </div>\n\n    <table style=\"width: 100%; margin-top: 50px; border-collapse: collapse;\">\n        <tr>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN A</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Chủ trọ)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukichutro\">.......................................</p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN B</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Người thuê)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p id=\"chukibenb\">.......................................</p>\n            </td>\n            <td style=\"width: 33%; text-align: center; vertical-align: top;\">\n                <p style=\"margin: 0; font-weight: bold; text-transform: uppercase;\">ĐẠI DIỆN BÊN C</p>\n                <p style=\"margin: 5px 0; font-style: italic;\">(Hommy)</p>\n                <br><br><br><br><br>\n                <p style=\"margin: 0;\">(Ký và ghi rõ họ tên)</p>\n                <p>Nguyễn Tiến Chung</p>\n            </td>\n        </tr>\n    </table>\n\n</div>', NULL, '1', 'xacthuc', 225, '2025-11-25 15:59:00', '2025-11-25 17:47:36');
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `nguoidung`
+-- Cấu trúc bảng cho bảng `nguoidung`
 --
 
 CREATE TABLE `nguoidung` (
@@ -3420,7 +3453,6 @@ CREATE TABLE `nguoidung` (
   `DiaChi` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `SoCCCD` varchar(12) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `NgayCapCCCD` date DEFAULT NULL,
-  `NoiCapCCCD` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `AnhCCCDMatTruoc` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `AnhCCCDMatSau` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `AnhSelfie` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -3429,84 +3461,30 @@ CREATE TABLE `nguoidung` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `nguoidung`
+-- Đang đổ dữ liệu cho bảng `nguoidung`
 --
 
-INSERT INTO `nguoidung` (`NguoiDungID`, `TenDayDu`, `Email`, `VaiTroHoatDongID`, `SoDienThoai`, `MatKhauHash`, `TrangThai`, `TrangThaiXacMinh`, `NgaySinh`, `DiaChi`, `SoCCCD`, `NgayCapCCCD`, `NoiCapCCCD`, `AnhCCCDMatTruoc`, `AnhCCCDMatSau`, `AnhSelfie`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, 'Nguyễn Văn Chủ Dự Án', 'chuduantest@example.com', 3, '0901234567', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-06 12:23:30'),
-(2, 'Trần Thị Khách Hàng', 'khachhangtest@example.com', NULL, '0901234568', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:47'),
-(3, 'Lê Văn Bán Hàng', 'banhangtest@example.com', 3, '0901234569', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-06 20:24:36'),
-(4, 'Phạm Thị Điều Hành', 'dieuhanhtest@example.com', NULL, '0901234570', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:58'),
-(5, 'Hoàng Văn Admin', 'admintest@example.com', NULL, '0901234571', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:34:02'),
-(6, 'Võ Nguyễn Hoành Hợp', 'hopboy553@gmail.com', 3, '0911576456', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-21 13:14:40', '2025-10-21 13:14:40'),
-(7, 'Lam Ngoc Giang', 'khachang@gmail.com', 1, '0911576455', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-04 21:51:51', '2025-11-04 21:51:51'),
-(8, 'Nguyễn Văn Bán Hàng', 'banhang@gmail.com', 2, '0901234123', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:20:42', '2025-11-06 14:20:42'),
-(9, 'Nguyễn Thị Điều Hành', 'dieuhanh@gmail.com', 4, '0901236486', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:38:39', '2025-11-06 14:38:39'),
-(225, 'Nguyễn Văn Hệ Thống', 'hethong@gmail.com', 5, '0901234271', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-18 21:30:34', '2025-11-18 21:30:53'),
-(226, 'Võ Hoành Chung', 'test@gmail.com', 2, '09289739877', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-18 23:51:58', '2025-11-18 23:51:58'),
-(229, 'Võ Hoành Chung', 'dieuhanh1@gmail.com', 1, '0349195618', 'c4ca4238a0b923820dcc509a6f75849b', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-19 15:36:35', '2025-11-19 15:36:35');
-
---
--- Triggers `nguoidung`
---
-DELIMITER $$
-CREATE TRIGGER `trg_sync_nguoidung_vaitro_on_insert` AFTER INSERT ON `nguoidung` FOR EACH ROW BEGIN
-  
-  IF NEW.VaiTroHoatDongID IS NOT NULL THEN
-    INSERT IGNORE INTO nguoidung_vaitro (NguoiDungID, VaiTroID)
-    VALUES (NEW.NguoiDungID, NEW.VaiTroHoatDongID);
-  END IF;
-END
-$$
-DELIMITER ;
-DELIMITER $$
-CREATE TRIGGER `trg_sync_nguoidung_vaitro_on_update` AFTER UPDATE ON `nguoidung` FOR EACH ROW BEGIN
-  
-  IF OLD.VaiTroHoatDongID IS NOT NULL AND OLD.VaiTroHoatDongID != NEW.VaiTroHoatDongID THEN
-    DELETE FROM nguoidung_vaitro 
-    WHERE NguoiDungID = NEW.NguoiDungID 
-      AND VaiTroID = OLD.VaiTroHoatDongID;
-  END IF;
-  
-  
-  IF NEW.VaiTroHoatDongID IS NOT NULL THEN
-    INSERT IGNORE INTO nguoidung_vaitro (NguoiDungID, VaiTroID)
-    VALUES (NEW.NguoiDungID, NEW.VaiTroHoatDongID);
-  END IF;
-END
-$$
-DELIMITER ;
+INSERT INTO `nguoidung` (`NguoiDungID`, `TenDayDu`, `Email`, `VaiTroHoatDongID`, `SoDienThoai`, `MatKhauHash`, `TrangThai`, `TrangThaiXacMinh`, `NgaySinh`, `DiaChi`, `SoCCCD`, `NgayCapCCCD`, `AnhCCCDMatTruoc`, `AnhCCCDMatSau`, `AnhSelfie`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, 'Nguyễn Văn Chủ Dự Án', 'chuduantest@example.com', 3, '0901234567', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-28 22:29:44'),
+(2, 'Trần Thị Khách Hàng', 'khachhangtest@example.com', NULL, '0901234568', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:47'),
+(3, 'Lê Văn Bán Hàng', 'banhangtest@example.com', 3, '0901234569', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-11-06 20:24:36'),
+(4, 'Phạm Thị Điều Hành', 'dieuhanhtest@example.com', NULL, '0901234570', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:33:58'),
+(5, 'Hoàng Văn Admin', 'admintest@example.com', NULL, '0901234571', '$2b$10$K7L/8Y3QxqhkqWTF4qHxJeBZkG1rXvT2n3pM4sL8qWkF9qHxJeBZk', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-20 03:28:26', '2025-09-27 14:34:02'),
+(6, 'Võ Nguyễn Hoành Hợp', 'hopboy553@gmail.com', 3, '0911576456', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-21 13:14:40', '2025-10-21 13:14:40'),
+(7, 'Lam Ngoc Giang', 'khachang@gmail.com', 1, '0911576455', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, 'nghean', '1111111', NULL, NULL, NULL, NULL, '2025-11-04 21:51:51', '2025-11-25 17:01:26'),
+(8, 'Nguyễn Văn Bán Hàng', 'banhang@gmail.com', 2, '0901234123', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:20:42', '2025-11-06 14:20:42'),
+(9, 'Nguyễn Thị Điều Hành', 'dieuhanh@gmail.com', 4, '0901236486', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-06 14:38:39', '2025-11-06 14:38:39'),
+(225, 'Nguyễn Văn Hệ Thống', 'hethong@gmail.com', 5, '0901234271', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-18 21:30:34', '2025-11-18 21:30:53'),
+(226, 'Võ Hoành Chung', 'test@gmail.com', 2, '09289739877', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-18 23:51:58', '2025-11-18 23:51:58'),
+(229, 'Võ Hoành Chung', 'dieuhanh1@gmail.com', 1, '0349195618', 'c4ca4238a0b923820dcc509a6f75849b', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-19 15:36:35', '2025-11-19 15:36:35'),
+(230, 'bán hàng 2', 'banhang2@gmail.com', 2, '0349195611', 'c4ca4238a0b923820dcc509a6f75849b', 'HoatDong', 'DaXacMinh', '2018-11-09', 'sdaddasdasd', '454354343', NULL, 'sfđsfds', 'sdffds', 'sfsdfdfs', '2025-11-23 11:20:02', '2025-11-23 11:20:02'),
+(242, 'Nguyễn Văn d', 'nguyenvanb@exampl13.com', 2, '0987654324', '1a24b2c4b17016486c67773b974181bc', 'TamKhoa', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-23 17:12:25', '2025-11-23 17:28:09'),
+(245, 'kiên mặt lợn', 'kienml@gmail.com', 1, '0908878473', 'e10adc3949ba59abbe56e057f20f883e', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-28 15:39:06', '2025-11-28 15:39:06');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `nguoidung_vaitro`
---
-
-CREATE TABLE `nguoidung_vaitro` (
-  `NguoiDungID` int(11) NOT NULL,
-  `VaiTroID` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `nguoidung_vaitro`
---
-
-INSERT INTO `nguoidung_vaitro` (`NguoiDungID`, `VaiTroID`) VALUES
-(1, 3),
-(3, 3),
-(6, 3),
-(7, 1),
-(8, 2),
-(9, 4),
-(225, 5),
-(226, 2),
-(229, 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `nhatkyhethong`
+-- Cấu trúc bảng cho bảng `nhatkyhethong`
 --
 
 CREATE TABLE `nhatkyhethong` (
@@ -3524,7 +3502,7 @@ CREATE TABLE `nhatkyhethong` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `nhatkyhethong`
+-- Đang đổ dữ liệu cho bảng `nhatkyhethong`
 --
 
 INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
@@ -3616,25 +3594,25 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (86, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:25:02.215', NULL),
 (87, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:25:34.278', NULL),
 (88, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:32:38.586', NULL),
-(89, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":350000,\"GiaNuoc\":2000000,\"GiaDichVu\":15000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:33:49.406', NULL),
-(90, 1, 'gui_duyet_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":350000,\"GiaNuoc\":2000000,\"GiaDichVu\":15000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:37:25.671', NULL),
+(89, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":350000,\"GiaNuoc\":2000000,\"GiaDichVu\":15000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:33:49.406', NULL),
+(90, 1, 'gui_duyet_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":350000,\"GiaNuoc\":2000000,\"GiaDichVu\":15000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:37:25.671', NULL),
 (91, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:40:17.837', NULL),
-(92, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":35000000,\"GiaNuoc\":200000000,\"GiaDichVu\":1500000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:40:25.092', NULL),
+(92, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":35000000,\"GiaNuoc\":200000000,\"GiaDichVu\":1500000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:40:25.092', NULL),
 (93, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:40:36.618', NULL),
 (94, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:41:22.279', NULL),
-(95, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:42:48.086', NULL),
+(95, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:42:48.086', NULL),
 (96, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:42:50.169', NULL),
 (97, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:04.265', NULL),
 (98, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:23.692', NULL),
-(99, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:44.128', NULL),
+(99, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:44.128', NULL),
 (100, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:46.233', NULL),
 (101, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:46:05.333', NULL),
 (102, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:00:09.030', NULL),
-(103, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:00:17.803', NULL),
+(103, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:00:17.803', NULL),
 (104, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:00:19.524', NULL),
 (105, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:02:48.434', NULL),
 (106, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:20.605', NULL),
-(107, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":3500000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":4000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:30.663', NULL),
+(107, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":3500000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":4000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:30.663', NULL),
 (108, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:32.368', NULL),
 (109, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '2', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:53.348', NULL),
 (110, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '2', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:09:30.461', NULL),
@@ -3676,13 +3654,13 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (146, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:19:03.387', NULL),
 (147, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:20:03.357', NULL),
 (148, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:21:08.064', NULL),
-(149, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:22:33.216', NULL),
+(149, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:22:33.216', NULL);
+INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
 (150, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:23:33.419', NULL),
 (151, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:24:33.411', NULL),
 (152, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:25:33.487', NULL),
 (153, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:26:33.458', NULL),
-(154, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:27:33.118', NULL);
-INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
+(154, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:27:33.118', NULL),
 (155, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:28:38.981', NULL),
 (156, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:30:07.090', NULL),
 (157, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:31:33.418', NULL),
@@ -3748,18 +3726,18 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (217, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:43:35.347', NULL),
 (218, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:43:39.799', NULL),
 (219, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:01.145', NULL),
-(220, 1, 'gui_duyet_tin_dang', 'TinDang', '7', NULL, '{\"DuAnID\":16,\"TieuDe\":\"Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng\",\"MoTa\":\"Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.\",\"KhuVucID\":1751,\"URL\":[\"/uploads/1759523405890.jpg\",\"/uploads/1759523405900.jpg\",\"/uploads/1759523405909.jpg\",\"/uploads/1759523405923.jpg\",\"/uploads/1759523405939.jpg\",\"/uploads/1759523405943.jpg\"],\"TienIch\":[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy\",\"DiaChi\":\"15 Hà Huy Tập\",\"ViDo\":11.2239833,\"KinhDo\":108.5011375,\"PhongIDs\":[{\"PhongID\":8,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":\"/uploads/1760107455301.jpg\",\"ThuTuHienThi\":0}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:15.414', NULL),
+(220, 1, 'gui_duyet_tin_dang', 'TinDang', '7', NULL, '{\"DuAnID\":16,\"TieuDe\":\"Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng\",\"MoTa\":\"Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.\",\"KhuVucID\":1751,\"URL\":[\"http://localhost:5000/uploads/1759523405890.jpg\",\"http://localhost:5000/uploads/1759523405900.jpg\",\"http://localhost:5000/uploads/1759523405909.jpg\",\"http://localhost:5000/uploads/1759523405923.jpg\",\"http://localhost:5000/uploads/1759523405939.jpg\",\"http://localhost:5000/uploads/1759523405943.jpg\"],\"TienIch\":[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy\",\"DiaChi\":\"15 Hà Huy Tập\",\"ViDo\":11.2239833,\"KinhDo\":108.5011375,\"PhongIDs\":[{\"PhongID\":8,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":\"/uploads/1760107455301.jpg\",\"ThuTuHienThi\":0}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:15.414', NULL),
 (221, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:24.197', NULL),
 (222, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:35.780', NULL),
-(223, 1, 'gui_duyet_tin_dang', 'TinDang', '5', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ nhận nữ\",\"KhuVucID\":1689,\"URL\":[\"/uploads/1759500198783.jpg\",\"/uploads/1759500198803.jpg\",\"/uploads/1759500198838.jpg\",\"/uploads/1759500198843.jpg\",\"/uploads/1759500198858.jpg\",\"/uploads/1759500198873.jpg\",\"/uploads/1759500198896.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":4,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:52.565', NULL),
+(223, 1, 'gui_duyet_tin_dang', 'TinDang', '5', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ nhận nữ\",\"KhuVucID\":1689,\"URL\":[\"http://localhost:5000/uploads/1759500198783.jpg\",\"http://localhost:5000/uploads/1759500198803.jpg\",\"http://localhost:5000/uploads/1759500198838.jpg\",\"http://localhost:5000/uploads/1759500198843.jpg\",\"http://localhost:5000/uploads/1759500198858.jpg\",\"http://localhost:5000/uploads/1759500198873.jpg\",\"http://localhost:5000/uploads/1759500198896.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":4,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:52.565', NULL),
 (224, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-10\",\"denNgay\":\"2025-10-10\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:46:05.575', NULL),
 (225, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:47:18.433', NULL),
-(226, 1, 'gui_duyet_tin_dang', 'TinDang', '7', NULL, '{\"DuAnID\":16,\"TieuDe\":\"Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng\",\"MoTa\":\"Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.\",\"KhuVucID\":1751,\"URL\":[\"/uploads/1759523405890.jpg\",\"/uploads/1759523405900.jpg\",\"/uploads/1759523405909.jpg\",\"/uploads/1759523405923.jpg\",\"/uploads/1759523405939.jpg\",\"/uploads/1759523405943.jpg\"],\"TienIch\":[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy\",\"DiaChi\":\"15 Hà Huy Tập\",\"ViDo\":11.2239833,\"KinhDo\":108.5011375,\"PhongIDs\":[{\"PhongID\":8,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":\"/uploads/1760107658795.jpg\",\"ThuTuHienThi\":0}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:47:38.881', NULL),
+(226, 1, 'gui_duyet_tin_dang', 'TinDang', '7', NULL, '{\"DuAnID\":16,\"TieuDe\":\"Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng\",\"MoTa\":\"Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.\",\"KhuVucID\":1751,\"URL\":[\"http://localhost:5000/uploads/1759523405890.jpg\",\"http://localhost:5000/uploads/1759523405900.jpg\",\"http://localhost:5000/uploads/1759523405909.jpg\",\"http://localhost:5000/uploads/1759523405923.jpg\",\"http://localhost:5000/uploads/1759523405939.jpg\",\"http://localhost:5000/uploads/1759523405943.jpg\"],\"TienIch\":[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy\",\"DiaChi\":\"15 Hà Huy Tập\",\"ViDo\":11.2239833,\"KinhDo\":108.5011375,\"PhongIDs\":[{\"PhongID\":8,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":\"/uploads/1760107658795.jpg\",\"ThuTuHienThi\":0}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:47:38.881', NULL),
 (227, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:47:44.710', NULL),
 (228, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-10\",\"denNgay\":\"2025-10-10\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:01:43.595', NULL),
 (229, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-10\",\"denNgay\":\"2025-10-10\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:01:47.011', NULL),
 (230, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:04.938', NULL),
-(231, 1, 'luu_nhap_tin_dang', 'TinDang', '5', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ nhận nữ\",\"KhuVucID\":1689,\"URL\":[\"/uploads/1759500198783.jpg\",\"/uploads/1759500198803.jpg\",\"/uploads/1759500198838.jpg\",\"/uploads/1759500198843.jpg\",\"/uploads/1759500198858.jpg\",\"/uploads/1759500198873.jpg\",\"/uploads/1759500198896.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":4,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:20.075', NULL),
+(231, 1, 'luu_nhap_tin_dang', 'TinDang', '5', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ nhận nữ\",\"KhuVucID\":1689,\"URL\":[\"http://localhost:5000/uploads/1759500198783.jpg\",\"http://localhost:5000/uploads/1759500198803.jpg\",\"http://localhost:5000/uploads/1759500198838.jpg\",\"http://localhost:5000/uploads/1759500198843.jpg\",\"http://localhost:5000/uploads/1759500198858.jpg\",\"http://localhost:5000/uploads/1759500198873.jpg\",\"http://localhost:5000/uploads/1759500198896.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":4,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:20.075', NULL),
 (232, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:21.557', NULL),
 (233, 1, 'gui_tin_dang_de_duyet', 'TinDang', '5', '{\"trangThai\":\"Nhap\"}', '{\"trangThai\":\"ChoDuyet\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:30.335', NULL),
 (234, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:16:09.842', NULL),
@@ -3843,7 +3821,8 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (358, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '20', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:18:09.323', NULL),
 (359, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '21', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:18:15.955', NULL),
 (360, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:38:26.720', NULL),
-(361, 7, 'tao_cuoc_hen', 'CuocHen', '25', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-19 00:12:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:43:00.103', NULL),
+(361, 7, 'tao_cuoc_hen', 'CuocHen', '25', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-19 00:12:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:43:00.103', NULL);
+INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
 (362, 7, 'tao_cuoc_hen', 'CuocHen', '26', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-19 00:23:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:56:55.927', NULL),
 (363, 7, 'tao_cuoc_hen', 'CuocHen', '27', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-20 00:32:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 00:02:48.416', NULL),
 (364, 7, 'tao_cuoc_hen', 'CuocHen', '28', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-21 00:42:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 00:08:31.217', NULL),
@@ -3853,8 +3832,7 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (368, 1, 'gui_tin_nhan_socket', 'tinnhan', '2069', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:40:30.589', NULL),
 (369, 8, 'gui_tin_nhan_socket', 'tinnhan', '2070', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:41:12.545', NULL),
 (370, 1, 'gui_tin_nhan_socket', 'tinnhan', '2071', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:43:26.806', NULL),
-(371, 8, 'gui_tin_nhan_socket', 'tinnhan', '2072', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:43:34.253', NULL);
-INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
+(371, 8, 'gui_tin_nhan_socket', 'tinnhan', '2072', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:43:34.253', NULL),
 (372, 1, 'gui_tin_nhan_socket', 'tinnhan', '2073', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:54:58.288', NULL),
 (373, 1, 'gui_tin_nhan_socket', 'tinnhan', '2074', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:58:04.980', NULL),
 (374, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-20\",\"denNgay\":\"2025-11-19\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 00:59:58.126', NULL),
@@ -3915,7 +3893,7 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (429, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '22', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 14:13:56.773', NULL),
 (430, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:44:44.540', NULL),
 (431, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '6', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:48:51.666', NULL),
-(432, 1, 'gui_duyet_tin_dang', 'TinDang', '6', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ cho nam thuê\",\"KhuVucID\":1689,\"URL\":[\"/uploads/1759501859354.jpg\",\"/uploads/1759501859374.jpg\",\"/uploads/1759501859408.jpg\",\"/uploads/1759501859434.jpg\",\"/uploads/1759501859459.jpg\",\"/uploads/1759501859470.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Tiền điện + nước sinh hoạt chung\\nRác\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":4,\"GiaTinDang\":10000,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:49:08.769', NULL),
+(432, 1, 'gui_duyet_tin_dang', 'TinDang', '6', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ cho nam thuê\",\"KhuVucID\":1689,\"URL\":[\"http://localhost:5000/uploads/1759501859354.jpg\",\"http://localhost:5000/uploads/1759501859374.jpg\",\"http://localhost:5000/uploads/1759501859408.jpg\",\"http://localhost:5000/uploads/1759501859434.jpg\",\"http://localhost:5000/uploads/1759501859459.jpg\",\"http://localhost:5000/uploads/1759501859470.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Tiền điện + nước sinh hoạt chung\\nRác\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":4,\"GiaTinDang\":10000,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:49:08.769', NULL),
 (433, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:58:49.523', NULL),
 (434, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:00:44.392', NULL),
 (435, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\",\"BangHoaHong\":[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}],\"SoThangCocToiThieu\":1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:02:55.691', NULL),
@@ -3951,161 +3929,64 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (465, 8, 'gui_tin_nhan_socket', 'tinnhan', '2087', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:42:24.916', NULL),
 (466, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-23\",\"denNgay\":\"2025-11-22\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-22 20:47:59.042', NULL),
 (467, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-23\",\"denNgay\":\"2025-11-22\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-22 20:52:40.965', NULL),
-(468, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-23\",\"denNgay\":\"2025-11-22\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-22 23:02:52.049', NULL),
-(469, 7, 'tao_cuoc_hen', 'CuocHen', '33', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-28 11:10:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:40:31.587', NULL),
-(470, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '33', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:40:49.507', NULL),
-(471, 7, 'tao_cuoc_hen', 'CuocHen', '34', NULL, '{\"PhongID\":6,\"ThoiGianHen\":\"2025-11-28 11:12:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:43:07.285', NULL),
-(472, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-24\",\"denNgay\":\"2025-11-23\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:45:18.265', NULL),
-(473, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-24\",\"denNgay\":\"2025-11-23\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:47:34.130', NULL),
-(474, 7, 'tao_cuoc_hen', 'CuocHen', '35', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-25 04:28:00\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-25 04:27:23.367', NULL),
-(475, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '35', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:27:45.498', NULL),
-(476, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:27:47.878', NULL),
-(477, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:33:55.780', NULL),
-(478, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:35:12.445', NULL),
-(479, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:39:13.137', NULL),
-(480, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:39:46.106', NULL),
-(481, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:40:04.021', NULL),
-(482, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:43:17.949', NULL),
-(483, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:43:53.063', NULL),
-(484, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:45:00.159', NULL),
-(485, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:45:15.993', NULL),
-(486, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:48:49.834', NULL),
-(487, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:51:21.219', NULL),
-(488, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:51:23.814', NULL),
-(489, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:53:42.675', NULL),
-(490, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:57:31.202', NULL),
-(491, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:04:25.026', NULL),
-(492, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:05:46.068', NULL),
-(493, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:07:23.280', NULL),
-(494, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:10:54.169', NULL),
-(495, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:12:48.335', NULL),
-(496, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:13:31.238', NULL),
-(497, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:14:05.011', NULL),
-(498, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:14:05.585', NULL),
-(499, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:15:37.160', NULL),
-(500, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:15:40.584', NULL),
-(501, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:15:52.708', NULL),
-(502, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:15:59.954', NULL),
-(503, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:16:14.710', NULL),
-(504, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:16:37.727', NULL),
-(505, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 05:17:01.160', NULL),
-(506, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:17:45.631', NULL),
-(507, 7, 'tao_cuoc_hen', 'CuocHen', '36', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-25 05:21:00\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 05:20:14.766', NULL),
-(508, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '36', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:20:29.029', NULL),
-(509, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '36', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:20:31.872', NULL),
-(510, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '36', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:23:45.954', NULL),
-(511, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:02:46.921', NULL),
-(512, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:03:42.383', NULL),
-(513, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:07:05.967', NULL),
-(514, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:11:08.341', NULL),
-(515, 8, 'tao_cuoc_hen_tu_qr', 'CuocHen', '37', NULL, '{\"qrCode\":\"hSsfpakwkB9v\",\"cuocHenGoc\":34,\"tinDangId\":4,\"phongId\":2,\"khachHangID\":7}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 07:11:47.248', NULL),
-(516, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '36', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:18:12.156', NULL),
-(517, 8, 'tao_cuoc_hen_tu_qr', 'CuocHen', '38', NULL, '{\"qrCode\":\"8k9MCoirCVmf\",\"cuocHenGoc\":36,\"tinDangId\":9,\"phongId\":7,\"khachHangID\":7}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 07:18:49.716', NULL),
-(518, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:19:07.539', NULL),
-(519, 8, 'bao_cao_ket_qua_cuoc_hen', 'CuocHen', '38', NULL, '{\"ketQua\":\"thanh_cong\",\"khachQuanTam\":true,\"slaWarning\":false}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:20:04.080', NULL),
-(520, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:20:05.944', NULL),
-(521, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:22:52.495', NULL),
-(522, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:22:54.108', NULL),
-(523, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:23:01.905', NULL),
-(524, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:25:09.729', NULL),
-(525, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:26:42.407', NULL),
-(526, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:31:37.797', NULL),
-(527, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:32:15.315', NULL),
-(528, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:32:57.018', NULL),
-(529, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:34:42.454', NULL),
-(530, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:34:46.039', NULL),
-(531, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:35:03.468', NULL),
-(532, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:35:14.307', NULL),
-(533, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:35:33.348', NULL),
-(534, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:35:52.230', NULL),
-(535, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:36:27.301', NULL),
-(536, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:36:31.918', NULL),
-(537, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:36:39.653', NULL),
-(538, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:36:51.639', NULL),
-(539, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:37:07.955', NULL),
-(540, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:37:16.027', NULL),
-(541, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:38:22.310', NULL),
-(542, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:38:35.511', NULL),
-(543, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:41:48.918', NULL),
-(544, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:41:56.928', NULL),
-(545, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:41:57.832', NULL),
-(546, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:42:06.783', NULL),
-(547, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:43:17.299', NULL),
-(548, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:43:24.749', NULL),
-(549, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:43:31.996', NULL),
-(550, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:45:38.744', NULL),
-(551, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:45:52.967', NULL),
-(552, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:47:03.508', NULL),
-(553, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:47:15.914', NULL),
-(554, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:47:28.130', NULL),
-(555, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:48:31.038', NULL),
-(556, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:49:32.779', NULL),
-(557, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:49:36.884', NULL),
-(558, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:50:05.309', NULL),
-(559, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:50:26.137', NULL),
-(560, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:50:37.269', NULL),
-(561, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:51:53.958', NULL),
-(562, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:51:54.517', NULL),
-(563, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:52:09.132', NULL),
-(564, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:52:12.010', NULL),
-(565, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:52:29.671', NULL),
-(566, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:52:56.424', NULL),
-(567, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:53:41.661', NULL);
+(468, 8, 'tao_ca_lam_viec_sales', 'LichLamViec', '15', NULL, '{\"batDau\":\"2025-11-25 07:00:00\",\"ketThuc\":\"2025-11-25 15:00:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 11:15:21.401', NULL),
+(469, 230, 'tao_ca_lam_viec_sales', 'LichLamViec', '16', NULL, '{\"batDau\":\"2025-11-28 07:00:00\",\"ketThuc\":\"2025-11-28 15:00:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 11:21:09.179', NULL),
+(470, 230, 'tao_ca_lam_viec_sales', 'LichLamViec', '17', NULL, '{\"batDau\":\"2025-11-26 07:00:00\",\"ketThuc\":\"2025-11-26 15:00:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 11:21:16.538', NULL),
+(471, 7, 'tao_cuoc_hen', 'CuocHen', '33', NULL, '{\"PhongID\":8,\"ThoiGianHen\":\"2025-11-23 12:38:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:08:27.284', NULL),
+(472, 7, 'tao_cuoc_hen', 'CuocHen', '34', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 09:39:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:09:44.504', NULL),
+(473, 7, 'tao_cuoc_hen', 'CuocHen', '35', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 12:40:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:11:16.993', NULL),
+(474, 7, 'tao_cuoc_hen', 'CuocHen', '36', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-25 12:43:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:13:13.565', NULL),
+(475, 7, 'tao_cuoc_hen', 'CuocHen', '37', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 21:48:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:19:22.091', NULL),
+(476, 7, 'tao_cuoc_hen', 'CuocHen', '38', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 21:50:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:21:03.623', NULL),
+(477, 7, 'tao_cuoc_hen', 'CuocHen', '39', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-25 09:52:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:22:51.497', NULL),
+(478, 7, 'tao_cuoc_hen', 'CuocHen', '40', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 09:54:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:24:47.293', NULL),
+(479, 7, 'tao_cuoc_hen', 'CuocHen', '41', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-25 09:57:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:27:52.091', NULL),
+(480, 7, 'tao_cuoc_hen', 'CuocHen', '42', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 09:08:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:38:36.522', NULL),
+(481, 7, 'tao_cuoc_hen', 'CuocHen', '43', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-25 09:10:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:40:59.713', NULL),
+(482, 7, 'tao_cuoc_hen', 'CuocHen', '44', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 08:14:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:44:18.684', NULL),
+(483, 7, 'tao_cuoc_hen', 'CuocHen', '45', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-25 09:14:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:45:01.304', NULL),
+(484, 7, 'tao_cuoc_hen', 'CuocHen', '46', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 09:17:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:47:25.386', NULL),
+(485, 7, 'tao_cuoc_hen', 'CuocHen', '47', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-23 13:22:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:52:52.920', NULL),
+(486, 7, 'tao_cuoc_hen', 'CuocHen', '48', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 08:23:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:53:59.374', NULL),
+(487, 7, 'tao_cuoc_hen', 'CuocHen', '49', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 08:26:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:56:22.740', NULL),
+(488, 7, 'tao_cuoc_hen', 'CuocHen', '50', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-25 08:29:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 12:59:18.257', NULL),
+(489, 7, 'tao_cuoc_hen', 'CuocHen', '51', NULL, '{\"PhongID\":1,\"ThoiGianHen\":\"2025-11-25 08:33:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 13:04:11.757', NULL),
+(490, 7, 'tao_cuoc_hen', 'CuocHen', '52', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-25 08:36:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 13:06:19.400', NULL),
+(491, 7, 'tao_cuoc_hen', 'CuocHen', '53', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-23 13:37:00\"}', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-23 13:07:29.182', NULL),
+(492, 7, 'tao_cuoc_hen', 'CuocHen', '54', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-23 22:12:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 21:42:21.073', NULL),
+(493, 7, 'dat_coc_giu_cho', 'TinDang', '6', '{\"giaoDichId\":\"tmp-1764066656350\",\"soTien\":\"10000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 17:30:56.384', NULL),
+(494, 7, 'dat_coc_giu_cho', 'TinDang', '6', '{\"giaoDichId\":\"tmp-1764067682873\",\"soTien\":\"10000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 17:48:02.926', NULL),
+(495, 7, 'dat_coc_giu_cho', 'TinDang', '6', '{\"giaoDichId\":\"tmp-1764067838042\",\"soTien\":\"10000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\r\\n\\r\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\r\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\r\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\r\\n    </div>\\r\\n\\r\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\r\\n        .........., ngày .... tháng .... năm ....\\r\\n    </p>\\r\\n\\r\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\r\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\r\\n    </h1>\\r\\n\\r\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\r\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11\"}', NULL, '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-25 17:50:38.122', NULL),
+(496, 7, 'dat_coc_giu_cho', 'TinDang', '6', '{\"giaoDichId\":\"tmp-1764067885791\",\"soTien\":\"10000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 17:51:25.808', NULL),
+(497, 7, 'dat_coc_giu_cho', 'TinDang', '6', '{\"giaoDichId\":\"tmp-1764068564586\",\"soTien\":\"10000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 18:02:44.624', NULL),
+(498, 7, 'dat_coc_giu_cho', 'TinDang', '6', '{\"giaoDichId\":\"tmp-1764162117686\",\"soTien\":\"10000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-26 20:01:57.720', NULL),
+(499, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-27\",\"denNgay\":\"2025-11-26\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-26 20:10:30.956', NULL),
+(500, 7, 'dat_coc_giu_cho', 'TinDang', '6', '{\"giaoDichId\":\"tmp-1764165433643\",\"soTien\":\"10000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-26 20:57:13.685', NULL),
+(501, 7, 'dat_coc_giu_cho', 'TinDang', '6', '{\"giaoDichId\":\"tmp-1764167149206\",\"soTien\":\"10000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-26 21:25:49.247', NULL),
+(502, 225, 'cap_nhat_noi_dung_he_thong', 'NoiDungHeThong', '1', '\"{\\\"LoaiNoiDung\\\":\\\"POLICY_PRIVACY\\\",\\\"TieuDe\\\":\\\"Chính sách bảo mật thông tin\\\",\\\"NoiDung\\\":\\\"Chúng tôi cam kết bảo mật tuyệt đối thông tin cá nhân của người dùng. Dữ liệu chỉ được sử dụng cho mục đích xác thực danh tính và giao dịch thuê phòng.\\\",\\\"PhienBan\\\":\\\"1.0\\\"}\"', '\"{\\\"LoaiNoiDung\\\":\\\"POLICY_PRIVACY\\\",\\\"TieuDe\\\":\\\"Chính sách bảo mật thông tin\\\",\\\"NoiDung\\\":\\\"Chúng tôi cam kết bảo mật tuyệt đối thông tin cá nhân của người dùng. Dữ liệu chỉ được sử dụng cho mục đích xác thực danh tính và giao dịch thuê phòng.1\\\",\\\"PhienBan\\\":\\\"1.0\\\"}\"', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-27 22:33:36.207', NULL),
+(503, 225, 'tao_noi_dung_he_thong', 'NoiDungHeThong', '5', NULL, '\"{\\\"LoaiNoiDung\\\":\\\"POLICY_PRIVACY\\\",\\\"TieuDe\\\":\\\"dsdad\\\"}\"', '::1', 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36 Edg/142.0.0.0', '2025-11-27 22:33:50.397', NULL),
+(504, 7, 'xin_huy_hop_dong', 'HopDong', '6', '\"{\\\"hopDongID\\\":6}\"', NULL, '', '', '2025-11-28 15:06:38.689', NULL),
+(505, 225, 'xac_nhan_huy_hop_dong', 'HopDong', '6', '\"{\\\"hopDongID\\\":6}\"', NULL, '', '', '2025-11-28 15:11:40.720', NULL),
+(506, 245, 'dat_coc_giu_cho', 'TinDang', '8', '{\"giaoDichId\":\"tmp-1764319343193\",\"soTien\":\"3000000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-28 15:42:23.247', NULL);
 INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
-(568, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:53:42.795', NULL),
-(569, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:00.954', NULL),
-(570, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:05.588', NULL),
-(571, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:08.802', NULL),
-(572, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:41.682', NULL),
-(573, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:51.826', NULL),
-(574, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:57:50.569', NULL),
-(575, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:58:18.059', NULL),
-(576, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:58:40.888', NULL),
-(577, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:58:41.574', NULL),
-(578, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:58:59.405', NULL),
-(579, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:59:29.788', NULL),
-(580, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:59:33.675', NULL),
-(581, 1, 'gui_tin_nhan_socket', 'tinnhan', '2088', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:34:18.782', NULL),
-(582, 1, 'gui_tin_nhan_socket', 'tinnhan', '2089', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:34:26.118', NULL),
-(583, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-26\",\"denNgay\":\"2025-11-25\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 08:36:08.424', NULL),
-(584, 1, 'gui_tin_nhan_socket', 'tinnhan', '2090', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:41:18.801', NULL),
-(585, 1, 'gui_tin_nhan_socket', 'tinnhan', '2091', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:42:27.157', NULL),
-(586, 1, 'gui_tin_nhan_socket', 'tinnhan', '2092', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:43:46.394', NULL),
-(587, 1, 'gui_tin_nhan_socket', 'tinnhan', '2093', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:43:59.723', NULL),
-(588, 1, 'gui_tin_nhan_socket', 'tinnhan', '2094', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:45:50.337', NULL),
-(589, 1, 'gui_tin_nhan_socket', 'tinnhan', '2095', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:45:56.917', NULL),
-(590, 1, 'gui_tin_nhan_socket', 'tinnhan', '2096', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:51:22.164', NULL),
-(591, 1, 'gui_tin_nhan_socket', 'tinnhan', '2097', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:51:32.941', NULL),
-(592, 1, 'gui_tin_nhan_socket', 'tinnhan', '2098', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:52:19.381', NULL),
-(593, 1, 'gui_tin_nhan_socket', 'tinnhan', '2099', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:52:23.737', NULL),
-(594, 1, 'gui_tin_nhan_socket', 'tinnhan', '2100', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:52:31.510', NULL),
-(595, 1, 'gui_tin_nhan_socket', 'tinnhan', '2101', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:52:42.463', NULL),
-(596, 1, 'gui_tin_nhan_socket', 'tinnhan', '2102', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:54:57.956', NULL),
-(597, 1, 'gui_tin_nhan_socket', 'tinnhan', '2103', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:55:04.292', NULL),
-(598, 1, 'gui_tin_nhan_socket', 'tinnhan', '2104', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:56:52.188', NULL),
-(599, 1, 'gui_tin_nhan_socket', 'tinnhan', '2105', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:57:01.517', NULL),
-(600, 1, 'gui_tin_nhan_socket', 'tinnhan', '2106', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:57:10.509', NULL),
-(601, 7, 'tao_cuoc_hen', 'CuocHen', '39', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-25 09:27:00\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 08:58:07.529', NULL),
-(602, 1, 'gui_tin_nhan_socket', 'tinnhan', '2107', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:05.782', NULL),
-(603, 1, 'gui_tin_nhan_socket', 'tinnhan', '2108', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:10.569', NULL),
-(604, 1, 'gui_tin_nhan_socket', 'tinnhan', '2109', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:20.704', NULL),
-(605, 8, 'gui_tin_nhan_socket', 'tinnhan', '2110', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:26.789', NULL),
-(606, 8, 'gui_tin_nhan_socket', 'tinnhan', '2111', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:36.984', NULL),
-(607, 8, 'gui_tin_nhan_socket', 'tinnhan', '2112', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:39.408', NULL),
-(608, 1, 'gui_tin_nhan_socket', 'tinnhan', '2113', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:55.379', NULL),
-(609, 1, 'gui_tin_nhan_socket', 'tinnhan', '2114', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:13.840', NULL),
-(610, 1, 'gui_tin_nhan_socket', 'tinnhan', '2115', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:20.102', NULL),
-(611, 1, 'gui_tin_nhan_socket', 'tinnhan', '2116', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:22.319', NULL),
-(612, 1, 'gui_tin_nhan_socket', 'tinnhan', '2117', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:40.175', NULL),
-(613, 1, 'gui_tin_nhan_socket', 'tinnhan', '2118', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:45.476', NULL),
-(614, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '39', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 09:06:22.069', NULL),
-(615, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-26\",\"denNgay\":\"2025-11-25\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 17:12:58.220', NULL),
-(616, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 17:14:11.731', NULL);
+(507, 245, 'dat_coc_giu_cho', 'TinDang', '9', '{\"giaoDichId\":\"tmp-1764319972825\",\"soTien\":\"7700000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-28 15:52:52.866', NULL),
+(508, 9, 'DUYET_HOA_HONG_DU_AN', 'DuAn', '2', '\"{\\\"TenDuAn\\\":\\\"Dự án Test - Nhà trọ XYZ\\\",\\\"BangHoaHong\\\":\\\"[{\\\\\\\"soThang\\\\\\\":6,\\\\\\\"tyLe\\\\\\\":30},{\\\\\\\"soThang\\\\\\\":12,\\\\\\\"tyLe\\\\\\\":70}]\\\"}\"', NULL, '', '', '2025-11-28 20:04:22.747', NULL),
+(509, 9, 'DUYET_TIN_DANG', 'TinDang', '5', '\"{\\\"TieuDe\\\":\\\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\\\",\\\"ChuDuAnID\\\":1,\\\"TrangThaiCu\\\":\\\"ChoDuyet\\\",\\\"TrangThaiMoi\\\":\\\"DaDuyet\\\"}\"', NULL, '', '', '2025-11-28 20:09:11.925', NULL),
+(510, 7, 'dat_coc_giu_cho', 'TinDang', '5', '{\"giaoDichId\":\"tmp-1764341360577\",\"soTien\":\"10000.00\",\"noiDungSnapshotPreview\":\"<div style=\\\"max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 40px 50px; box-shadow: 0 0 15px rgba(0,0,0,0.1); font-family: \'Times New Roman\', Times, serif; font-size: 13pt; line-height: 1.5; color: #000;\\\">\\n\\n    <div style=\\\"text-align: center; margin-bottom: 20px;\\\">\\n        <p style=\\\"margin: 0; font-weight: bold; text-transform: uppercase;\\\">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</p>\\n        <p style=\\\"margin: 5px 0 0 0; font-weight: bold; text-decoration: underline;\\\">Độc lập - Tự do - Hạnh phúc</p>\\n    </div>\\n\\n    <p style=\\\"text-align: right; margin-bottom: 30px; font-style: italic;\\\">\\n        .........., ngày .... tháng .... năm ....\\n    </p>\\n\\n    <h1 style=\\\"text-align: center; font-size: 18pt; font-weight: bold; text-transform: uppercase; margin-bottom: 30px;\\\">\\n        HỢP ĐỒNG THUÊ NHÀ & ĐẶT CỌC AN NINH\\n    </h1>\\n\\n    <div style=\\\"margin-bottom: 20px; font-style: italic;\\\">\\n        <p style=\\\"margin: 5px 0;\\\">Căn cứ Bộ luật Dân sự số 91/2015/QH13 ngày 24/11/2015; Tổ Chức S\"}', NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-28 21:49:20.865', NULL),
+(511, 7, 'xin_huy_hop_dong', 'HopDong', '9', '\"{\\\"hopDongID\\\":9}\"', NULL, '', '', '2025-11-28 21:50:37.047', NULL),
+(512, 225, 'xac_nhan_huy_hop_dong', 'HopDong', '9', '\"{\\\"hopDongID\\\":9}\"', NULL, '', '', '2025-11-28 22:00:19.308', NULL),
+(513, 245, 'tao_cuoc_hen', 'CuocHen', '55', NULL, '{\"PhongID\":5,\"ThoiGianHen\":\"2025-11-28 22:36:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-28 22:07:00.459', NULL),
+(514, 1, 'gui_tin_nhan_socket', 'tinnhan', '2088', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-28 22:18:58.374', NULL),
+(515, 1, 'gui_tin_nhan_socket', 'tinnhan', '2089', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-28 22:18:58.384', NULL),
+(516, 1, 'gui_tin_nhan_socket', 'tinnhan', '2090', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-28 22:19:02.957', NULL),
+(517, 1, 'gui_tin_nhan_socket', 'tinnhan', '2091', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-28 22:19:08.202', NULL),
+(518, 1, 'gui_tin_nhan_socket', 'tinnhan', '2092', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-28 22:19:20.792', NULL),
+(519, 1, 'cap_nhat_du_an', 'DuAn', '2', NULL, '{\"TenDuAn\":\"Dự án Test - Nhà trọ XYZ\",\"DiaChi\":\"456 Đường Test 2, Phường 2, Quận 2, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":1,\"PhuongThucVao\":null,\"TrangThai\":\"HoatDong\",\"BangHoaHong\":[{\"soThang\":7,\"tyLe\":40}],\"SoThangCocToiThieu\":1}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-28 22:46:57.461', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `noidunghethong`
+-- Cấu trúc bảng cho bảng `noidunghethong`
 --
 
 CREATE TABLE `noidunghethong` (
@@ -4118,10 +3999,21 @@ CREATE TABLE `noidunghethong` (
   `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Đang đổ dữ liệu cho bảng `noidunghethong`
+--
+
+INSERT INTO `noidunghethong` (`NoiDungID`, `LoaiNoiDung`, `TieuDe`, `NoiDung`, `PhienBan`, `CapNhatBoiID`, `CapNhatLuc`) VALUES
+(1, 'POLICY_PRIVACY', 'Chính sách bảo mật thông tin', 'Chúng tôi cam kết bảo mật tuyệt đối thông tin cá nhân của người dùng. Dữ liệu chỉ được sử dụng cho mục đích xác thực danh tính và giao dịch thuê phòng.1', '1.0', 225, '2025-11-27 22:33:36'),
+(2, 'TERMS_USAGE', 'Điều khoản sử dụng dịch vụ', 'Người dùng cam kết cung cấp thông tin trung thực. Nghiêm cấm đăng tin sai sự thật, lừa đảo. Tài khoản vi phạm sẽ bị khóa.', '1.0', 1, '2025-11-27 22:08:34'),
+(3, 'POLICY_PAYMENT', 'Chính sách Đặt cọc và Hoàn tiền', 'Tiền cọc được giữ bởi hệ thống/chủ trọ. Hủy trước 7 ngày hoàn 50%, hủy sau đó không hoàn lại. Chủ nhà hủy hoàn 100%.', '1.1', 1, '2025-11-27 22:08:34'),
+(4, 'GUIDE_BOOKING', 'Hướng dẫn quy trình thuê phòng', 'Bước 1: Tìm phòng và xem chi tiết. Bước 2: Liên hệ chủ trọ hoặc đặt lịch xem. Bước 3: Đặt cọc online để giữ chỗ. Bước 4: Ký hợp đồng và nhận phòng.', '1.0', 1, '2025-11-27 22:08:34'),
+(5, 'POLICY_PRIVACY', 'dsdad', 'dấdas', '1.0', 225, '2025-11-27 22:33:50');
+
 -- --------------------------------------------------------
 
 --
--- Table structure for table `phong`
+-- Cấu trúc bảng cho bảng `phong`
 --
 
 CREATE TABLE `phong` (
@@ -4138,23 +4030,23 @@ CREATE TABLE `phong` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Bảng phòng Master - Thuộc Dự án (1 phòng vật lý = 1 bản ghi)';
 
 --
--- Dumping data for table `phong`
+-- Đang đổ dữ liệu cho bảng `phong`
 --
 
 INSERT INTO `phong` (`PhongID`, `DuAnID`, `TenPhong`, `TrangThai`, `GiaChuan`, `DienTichChuan`, `MoTaPhong`, `HinhAnhPhong`, `TaoLuc`, `CapNhatLuc`) VALUES
 (1, 14, '006', 'Trong', 3500000.00, 25.00, NULL, '/uploads/1759483387245.jpg', '2025-10-03 16:23:07', '2025-10-09 17:12:35'),
 (2, 14, '1006', 'Trong', 4000000.00, 25.00, NULL, '/uploads/1759483387258.jpg', '2025-10-03 16:23:07', '2025-10-09 17:12:35'),
 (3, 15, '101', 'Trong', 3000000.00, 25.00, NULL, '/uploads/1759501859518.jpg', '2025-10-03 21:30:59', '2025-10-09 17:12:35'),
-(4, 15, '102', 'Trong', 10000.00, 50.00, NULL, '/uploads/1759501859521.jpg', '2025-10-03 21:30:59', '2025-11-19 14:26:16'),
-(5, 17, '006', 'Trong', 3000000.00, 30.00, NULL, '/uploads/1759658857264.jpg', '2025-10-05 17:07:37', '2025-10-09 17:12:35'),
+(4, 15, '102', 'Trong', 10000.00, 50.00, NULL, '/uploads/1759501859521.jpg', '2025-10-03 21:30:59', '2025-11-28 22:00:18'),
+(5, 17, '006', 'Trong', 3000000.00, 30.00, NULL, '/uploads/1759658857264.jpg', '2025-10-05 17:07:37', '2025-11-28 15:47:26'),
 (6, 17, '006A', 'Trong', 3500000.00, 30.00, NULL, '/uploads/1759658857272.jpg', '2025-10-05 17:07:37', '2025-10-09 17:12:35'),
-(7, 14, '202', 'Trong', 7700000.00, 55.00, 'Đây là căn 2 phòng ngủ full nội thất', NULL, '2025-10-10 18:52:58', '2025-11-19 14:24:52'),
+(7, 14, '202', 'GiuCho', 7700000.00, 55.00, 'Đây là căn 2 phòng ngủ full nội thất', NULL, '2025-10-10 18:52:58', '2025-11-28 15:52:52'),
 (8, 16, '101', 'Trong', 4000000.00, 25.00, 'Phòng có đầy đủ nội thất cơ bản nhưng không có bếp\n', NULL, '2025-10-10 21:34:35', '2025-10-10 21:34:35');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `phong_tindang`
+-- Cấu trúc bảng cho bảng `phong_tindang`
 --
 
 CREATE TABLE `phong_tindang` (
@@ -4170,7 +4062,7 @@ CREATE TABLE `phong_tindang` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Mapping N-N giữa Phòng và Tin đăng (lưu metadata riêng cho mỗi tin)';
 
 --
--- Dumping data for table `phong_tindang`
+-- Đang đổ dữ liệu cho bảng `phong_tindang`
 --
 
 INSERT INTO `phong_tindang` (`PhongTinDangID`, `PhongID`, `TinDangID`, `GiaTinDang`, `DienTichTinDang`, `MoTaTinDang`, `HinhAnhTinDang`, `ThuTuHienThi`, `TaoLuc`) VALUES
@@ -4188,7 +4080,7 @@ INSERT INTO `phong_tindang` (`PhongTinDangID`, `PhongID`, `TinDangID`, `GiaTinDa
 -- --------------------------------------------------------
 
 --
--- Table structure for table `quyen`
+-- Cấu trúc bảng cho bảng `quyen`
 --
 
 CREATE TABLE `quyen` (
@@ -4200,7 +4092,7 @@ CREATE TABLE `quyen` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `thanhviencuochoithoai`
+-- Cấu trúc bảng cho bảng `thanhviencuochoithoai`
 --
 
 CREATE TABLE `thanhviencuochoithoai` (
@@ -4211,7 +4103,7 @@ CREATE TABLE `thanhviencuochoithoai` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `thanhviencuochoithoai`
+-- Đang đổ dữ liệu cho bảng `thanhviencuochoithoai`
 --
 
 INSERT INTO `thanhviencuochoithoai` (`CuocHoiThoaiID`, `NguoiDungID`, `ThamGiaLuc`, `TinNhanCuoiDocLuc`) VALUES
@@ -4223,17 +4115,19 @@ INSERT INTO `thanhviencuochoithoai` (`CuocHoiThoaiID`, `NguoiDungID`, `ThamGiaLu
 (203, 201, '2025-11-04 19:05:27', '2025-11-04 22:05:27'),
 (204, 6, '2025-11-04 17:05:27', '2025-11-06 20:09:33'),
 (204, 203, '2025-11-04 17:05:27', '2025-11-04 21:55:27'),
-(219, 1, '2025-11-19 00:40:05', '2025-11-25 17:56:32'),
-(219, 8, '2025-11-19 00:16:56', '2025-11-25 17:13:59'),
+(219, 1, '2025-11-19 00:40:05', '2025-11-28 22:30:50'),
+(219, 8, '2025-11-19 00:16:56', '2025-11-28 22:26:46'),
 (220, 7, '2025-11-19 06:27:41', NULL),
 (220, 8, '2025-11-19 06:27:41', '2025-11-22 20:42:44'),
 (221, 7, '2025-11-19 13:42:47', NULL),
-(221, 8, '2025-11-19 13:42:47', '2025-11-19 13:44:38');
+(221, 8, '2025-11-19 13:42:47', '2025-11-19 13:44:38'),
+(224, 7, '2025-11-20 12:31:06', NULL),
+(224, 8, '2025-11-20 12:31:06', '2025-11-20 12:31:06');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `thongbao`
+-- Cấu trúc bảng cho bảng `thongbao`
 --
 
 CREATE TABLE `thongbao` (
@@ -4250,50 +4144,26 @@ CREATE TABLE `thongbao` (
 ) ;
 
 --
--- Dumping data for table `thongbao`
+-- Đang đổ dữ liệu cho bảng `thongbao`
 --
 
 INSERT INTO `thongbao` (`ThongBaoID`, `NguoiNhanID`, `Kenh`, `TieuDe`, `NoiDung`, `Payload`, `TrangThai`, `SoLanThu`, `TaoLuc`, `GuiLuc`) VALUES
-(1, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hello', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2088,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hello\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:34:18', '2025-11-25 08:34:18'),
-(2, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Em giai', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2089,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Em giai\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:34:26', '2025-11-25 08:34:26'),
-(3, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Alo', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2090,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Alo\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:41:18', '2025-11-25 08:41:18'),
-(4, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hello', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2091,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hello\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:42:27', '2025-11-25 08:42:27'),
-(5, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Em giai', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2092,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Em giai\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:43:46', '2025-11-25 08:43:46'),
-(6, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Sao k thấy tb nhỉ :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2093,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Sao k thấy tb nhỉ :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:43:59', '2025-11-25 08:43:59'),
-(7, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hello', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2094,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hello\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:45:50', '2025-11-25 08:45:50'),
-(8, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Tb như cc :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2095,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Tb như cc :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:45:56', '2025-11-25 08:45:56'),
-(9, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hihi', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2096,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hihi\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:51:22', '2025-11-25 08:51:22'),
-(10, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Mà vẫn k nghe', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2097,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Mà vẫn k nghe\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:51:32', '2025-11-25 08:51:32'),
-(11, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hú', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2098,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hú\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:52:19', '2025-11-25 08:52:19'),
-(12, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Test tb', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2099,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Test tb\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:52:23', '2025-11-25 08:52:23'),
-(13, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: 5 6 7', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2100,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"5 6 7\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:52:31', '2025-11-25 08:52:31'),
-(14, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: 1 2 3', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2101,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"1 2 3\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:52:42', '2025-11-25 08:52:42'),
-(15, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Tets lại', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2102,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Tets lại\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:54:57', '2025-11-25 08:54:57'),
-(16, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Vẫn k tb :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2103,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Vẫn k tb :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:55:04', '2025-11-25 08:55:04'),
-(17, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hehe', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2104,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hehe\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:56:52', '2025-11-25 08:56:52'),
-(18, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Tb đâu :)??', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2105,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Tb đâu :)??\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:57:01', '2025-11-25 08:57:01'),
-(19, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Tin nahwns k có tiêbsf à', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2106,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Tin nahwns k có tiêbsf à\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:57:10', '2025-11-25 08:57:10'),
-(20, 8, 'in-app', 'Cuộc hẹn mới được phân công', 'Bạn có cuộc hẹn mới với Lam Ngoc Giang vào 09:27:00 25/11/2025 tại 40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', '{\"type\":\"cuoc_hen_moi\",\"CuocHenID\":39,\"ThoiGianHen\":\"2025-11-25T02:27:00.000Z\",\"TenKhachHang\":\"Lam Ngoc Giang\",\"TenPhong\":\"1006\",\"TieuDeTinDang\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\"}', 'DaDoc', 0, '2025-11-25 08:58:07', '2025-11-25 08:58:07'),
-(21, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hennho', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2107,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hennho\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:00:05', '2025-11-25 09:00:05'),
-(22, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Vcl :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2108,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Vcl :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:00:10', '2025-11-25 09:00:10'),
-(23, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hài vãi :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2109,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hài vãi :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:00:20', '2025-11-25 09:00:20'),
-(24, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hú', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2113,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hú\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:00:55', '2025-11-25 09:00:55'),
-(25, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hú', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2114,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hú\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:13', '2025-11-25 09:01:13'),
-(26, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Nè', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2115,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Nè\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:20', '2025-11-25 09:01:20'),
-(27, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Nghe k', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2116,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Nghe k\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:22', '2025-11-25 09:01:22'),
-(28, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Nghe k', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2117,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Nghe k\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:40', '2025-11-25 09:01:40'),
-(29, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Gần như real time', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2118,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Gần như real time\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:45', '2025-11-25 09:01:45'),
-(30, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzODIxMzIwM30=\"}', 'DaDoc', 0, '2025-11-25 09:36:52', '2025-11-25 09:36:52'),
-(31, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzODY0NjAyNn0=\"}', 'DaDoc', 0, '2025-11-25 09:44:04', '2025-11-25 09:44:04'),
-(32, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzODY2NjMyOX0=\"}', 'DaDoc', 0, '2025-11-25 09:44:25', '2025-11-25 09:44:25'),
-(33, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzODY4NTI3Mn0=\"}', 'DaDoc', 0, '2025-11-25 09:44:44', '2025-11-25 09:44:44'),
-(34, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzOTM4MzY0NX0=\"}', 'DaDoc', 0, '2025-11-25 09:56:22', '2025-11-25 09:56:22'),
-(35, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzOTQxNzY3OH0=\"}', 'DaDoc', 0, '2025-11-25 09:56:56', '2025-11-25 09:56:56');
+(1, 1, 'in-app', 'Cuộc hẹn mới được phân công', 'Bạn có cuộc hẹn mới với kiên mặt lợn vào 22:36:00 28/11/2025 tại 350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh', '{\"type\":\"cuoc_hen_moi\",\"CuocHenID\":55,\"ThoiGianHen\":\"2025-11-28T15:36:00.000Z\",\"TenKhachHang\":\"kiên mặt lợn\",\"TenPhong\":\"006\",\"TieuDeTinDang\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\"}', 'ChuaDoc', 0, '2025-11-28 22:07:00', '2025-11-28 22:07:00'),
+(2, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Ali', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2088,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Ali\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-28 22:18:58', '2025-11-28 22:18:58'),
+(3, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Alo', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2089,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Alo\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-28 22:18:58', '2025-11-28 22:18:58'),
+(4, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Alo', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2090,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Alo\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-28 22:19:02', '2025-11-28 22:19:02'),
+(5, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Alo', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2091,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Alo\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-28 22:19:08', '2025-11-28 22:19:08'),
+(6, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Alo', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2092,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Alo\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-28 22:19:20', '2025-11-28 22:19:20'),
+(7, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDM0MzE2NDc5MH0=\"}', 'DaDoc', 0, '2025-11-28 22:19:24', '2025-11-28 22:19:24'),
+(8, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDM0MzE5MjkzMn0=\"}', 'DaDoc', 0, '2025-11-28 22:19:53', '2025-11-28 22:19:53'),
+(9, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDM0MzMxOTUzM30=\"}', 'DaDoc', 0, '2025-11-28 22:21:59', '2025-11-28 22:21:59'),
+(10, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDM0MzQ1NTUxMX0=\"}', 'DaDoc', 0, '2025-11-28 22:24:15', '2025-11-28 22:24:15'),
+(11, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDM0MzQ4NDc1Nn0=\"}', 'DaDoc', 0, '2025-11-28 22:24:44', '2025-11-28 22:24:44');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `thongketindang`
+-- Cấu trúc bảng cho bảng `thongketindang`
 --
 
 CREATE TABLE `thongketindang` (
@@ -4310,7 +4180,7 @@ CREATE TABLE `thongketindang` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tindang`
+-- Cấu trúc bảng cho bảng `tindang`
 --
 
 CREATE TABLE `tindang` (
@@ -4335,22 +4205,22 @@ CREATE TABLE `tindang` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `tindang`
+-- Đang đổ dữ liệu cho bảng `tindang`
 --
 
 INSERT INTO `tindang` (`TinDangID`, `DuAnID`, `KhuVucID`, `ChinhSachCocID`, `TieuDe`, `URL`, `MoTa`, `TienIch`, `GiaDien`, `GiaNuoc`, `GiaDichVu`, `MoTaGiaDichVu`, `TrangThai`, `LyDoTuChoi`, `DuyetBoiNhanVienID`, `TaoLuc`, `CapNhatLuc`, `DuyetLuc`) VALUES
-(1, 5, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Báo Cáo Phân Tích Chuyên Sâu: 3 Mô Hình Kinh Doanh Tối Ưu Cho Mặt Bằng Thị Trấn Bình Thuận\n\n\nLời Mở Đầu: Bối Cảnh và Phương Pháp Luận', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'Nhap', NULL, NULL, '2025-09-20 06:29:59', '2025-11-25 19:30:44', NULL),
-(2, 6, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'vhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhv', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'LuuTru', 'Chủ dự án tự xóa', NULL, '2025-09-20 22:31:23', '2025-11-25 19:30:44', NULL),
-(3, 4, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"]', 'fdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsa', NULL, NULL, NULL, NULL, NULL, 'Nhap', NULL, NULL, '2025-09-20 22:32:57', '2025-11-25 19:30:44', NULL),
-(4, 14, 941, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"]', 'Chỉ cho nữ thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"]', 3500.00, 20000.00, 150000.00, 'Bảo dưỡng + rác', 'DaDuyet', NULL, NULL, '2025-10-03 16:23:07', '2025-11-25 19:30:44', NULL),
-(5, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"/uploads/1759500198783.jpg\",\"/uploads/1759500198803.jpg\",\"/uploads/1759500198838.jpg\",\"/uploads/1759500198843.jpg\",\"/uploads/1759500198858.jpg\",\"/uploads/1759500198873.jpg\",\"/uploads/1759500198896.jpg\"]', 'Chỉ nhận nữ', '[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 18000.00, 200000.00, 'Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt', 'DaDuyet', NULL, NULL, '2025-10-03 21:03:18', '2025-11-25 19:30:44', NULL),
-(6, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"/uploads/1759501859354.jpg\",\"/uploads/1759501859374.jpg\",\"/uploads/1759501859408.jpg\",\"/uploads/1759501859434.jpg\",\"/uploads/1759501859459.jpg\",\"/uploads/1759501859470.jpg\"]', 'Chỉ cho nam thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3500.00, 20000.00, 200000.00, 'Tiền điện + nước sinh hoạt chung\nRác', 'DaDuyet', NULL, NULL, '2025-10-03 21:30:59', '2025-11-25 19:30:44', NULL),
-(7, 16, 1751, 1, 'Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng', '[\"/uploads/1759523405890.jpg\",\"/uploads/1759523405900.jpg\",\"/uploads/1759523405909.jpg\",\"/uploads/1759523405923.jpg\",\"/uploads/1759523405939.jpg\",\"/uploads/1759523405943.jpg\"]', 'Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"]', 3000.00, 18000.00, 150000.00, 'Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy', 'DaDuyet', NULL, NULL, '2025-10-04 03:30:05', '2025-11-25 19:30:44', NULL),
-(8, 17, 946, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Miễn Phí 2 tuần đầu dọn vào', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 20000.00, 150000.00, 'Bao gồm phí giữ xe', 'DaDuyet', NULL, NULL, '2025-10-05 17:07:37', '2025-11-25 19:30:44', NULL),
-(9, 14, 941, 1, 'Cuối tháng 10 trống duy nhất 1 căn 2 phòng ngủ cao cấp ở tối đa 4 người', '[\"/uploads/1760102566417.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566419.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566422.jpg\",\"/uploads/1760102566423.jpg\",\"/uploads/1760102566424.jpg\",\"/uploads/1760102566425.jpg\"]', '2 phòng ngủ full nội thất, có thang, khóa cửa vân tay, cách IUH 3,7km', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Bếp\",\"Chỗ để xe\",\"Giường\"]', 3500.00, 20000.00, 150000.00, 'Phí giữ xe + rác sinh hoạt + điện nước khu vực chung + bảo dưỡng nội thất', 'DaDuyet', NULL, NULL, '2025-10-10 20:22:46', '2025-11-25 19:30:44', NULL);
+(1, 5, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Báo Cáo Phân Tích Chuyên Sâu: 3 Mô Hình Kinh Doanh Tối Ưu Cho Mặt Bằng Thị Trấn Bình Thuận\n\n\nLời Mở Đầu: Bối Cảnh và Phương Pháp Luận', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'DaDuyet', NULL, NULL, '2025-09-20 06:29:59', '2025-11-28 22:42:36', NULL),
+(2, 6, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'vhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhv', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'LuuTru', 'Chủ dự án tự xóa', NULL, '2025-09-20 22:31:23', '2025-11-28 22:42:36', NULL),
+(3, 4, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"]', 'fdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsa', NULL, NULL, NULL, NULL, NULL, 'DaDuyet', NULL, NULL, '2025-09-20 22:32:57', '2025-11-28 22:42:36', NULL),
+(4, 14, 941, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"]', 'Chỉ cho nữ thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"]', 3500.00, 20000.00, 150000.00, 'Bảo dưỡng + rác', 'DaDuyet', NULL, NULL, '2025-10-03 16:23:07', '2025-11-28 22:42:36', NULL),
+(5, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"/uploads/1759500198783.jpg\",\"/uploads/1759500198803.jpg\",\"/uploads/1759500198838.jpg\",\"/uploads/1759500198843.jpg\",\"/uploads/1759500198858.jpg\",\"/uploads/1759500198873.jpg\",\"/uploads/1759500198896.jpg\"]', 'Chỉ nhận nữ', '[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 18000.00, 200000.00, 'Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt', 'DaDuyet', NULL, 9, '2025-10-03 21:03:18', '2025-11-28 22:42:36', '2025-11-28 20:09:11'),
+(6, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"/uploads/1759501859354.jpg\",\"/uploads/1759501859374.jpg\",\"/uploads/1759501859408.jpg\",\"/uploads/1759501859434.jpg\",\"/uploads/1759501859459.jpg\",\"/uploads/1759501859470.jpg\"]', 'Chỉ cho nam thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3500.00, 20000.00, 200000.00, 'Tiền điện + nước sinh hoạt chung\nRác', 'DaDuyet', NULL, NULL, '2025-10-03 21:30:59', '2025-11-28 22:42:36', NULL),
+(7, 16, 1751, 1, 'Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng', '[\"/uploads/1759523405890.jpg\",\"/uploads/1759523405900.jpg\",\"/uploads/1759523405909.jpg\",\"/uploads/1759523405923.jpg\",\"/uploads/1759523405939.jpg\",\"/uploads/1759523405943.jpg\"]', 'Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"]', 3000.00, 18000.00, 150000.00, 'Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy', 'ChoDuyet', NULL, NULL, '2025-10-04 03:30:05', '2025-11-28 22:42:36', NULL),
+(8, 17, 946, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Miễn Phí 2 tuần đầu dọn vào', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 20000.00, 150000.00, 'Bao gồm phí giữ xe', 'DaDuyet', NULL, NULL, '2025-10-05 17:07:37', '2025-11-28 22:42:36', NULL),
+(9, 14, 941, 1, 'Cuối tháng 10 trống duy nhất 1 căn 2 phòng ngủ cao cấp ở tối đa 4 người', '[\"/uploads/1760102566417.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566419.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566422.jpg\",\"/uploads/1760102566423.jpg\",\"/uploads/1760102566424.jpg\",\"/uploads/1760102566425.jpg\"]', '2 phòng ngủ full nội thất, có thang, khóa cửa vân tay, cách IUH 3,7km', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Bếp\",\"Chỗ để xe\",\"Giường\"]', 3500.00, 20000.00, 150000.00, 'Phí giữ xe + rác sinh hoạt + điện nước khu vực chung + bảo dưỡng nội thất', 'DaDuyet', NULL, NULL, '2025-10-10 20:22:46', '2025-11-28 22:42:36', NULL);
 
 --
--- Triggers `tindang`
+-- Bẫy `tindang`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_tindang_pre_publish` BEFORE UPDATE ON `tindang` FOR EACH ROW BEGIN
@@ -4386,7 +4256,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `tinnhan`
+-- Cấu trúc bảng cho bảng `tinnhan`
 --
 
 CREATE TABLE `tinnhan` (
@@ -4399,7 +4269,7 @@ CREATE TABLE `tinnhan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `tinnhan`
+-- Đang đổ dữ liệu cho bảng `tinnhan`
 --
 
 INSERT INTO `tinnhan` (`TinNhanID`, `CuocHoiThoaiID`, `NguoiGuiID`, `NoiDung`, `ThoiGian`, `DaXoa`) VALUES
@@ -4484,41 +4354,14 @@ INSERT INTO `tinnhan` (`TinNhanID`, `CuocHoiThoaiID`, `NguoiGuiID`, `NoiDung`, `
 (2085, 219, 1, 'đm Chung', '2025-11-22 20:41:53', 0),
 (2086, 219, 1, 'Chung ngu vl', '2025-11-22 20:41:59', 0),
 (2087, 219, 8, 'nhung hop ngu hon', '2025-11-22 20:42:24', 0),
-(2088, 219, 1, 'Hello', '2025-11-25 08:34:18', 0),
-(2089, 219, 1, 'Em giai', '2025-11-25 08:34:26', 0),
-(2090, 219, 1, 'Alo', '2025-11-25 08:41:18', 0),
-(2091, 219, 1, 'Hello', '2025-11-25 08:42:27', 0),
-(2092, 219, 1, 'Em giai', '2025-11-25 08:43:46', 0),
-(2093, 219, 1, 'Sao k thấy tb nhỉ :))', '2025-11-25 08:43:59', 0),
-(2094, 219, 1, 'Hello', '2025-11-25 08:45:50', 0),
-(2095, 219, 1, 'Tb như cc :))', '2025-11-25 08:45:56', 0),
-(2096, 219, 1, 'Hihi', '2025-11-25 08:51:22', 0),
-(2097, 219, 1, 'Mà vẫn k nghe', '2025-11-25 08:51:32', 0),
-(2098, 219, 1, 'Hú', '2025-11-25 08:52:19', 0),
-(2099, 219, 1, 'Test tb', '2025-11-25 08:52:23', 0),
-(2100, 219, 1, '5 6 7', '2025-11-25 08:52:31', 0),
-(2101, 219, 1, '1 2 3', '2025-11-25 08:52:42', 0),
-(2102, 219, 1, 'Tets lại', '2025-11-25 08:54:57', 0),
-(2103, 219, 1, 'Vẫn k tb :))', '2025-11-25 08:55:04', 0),
-(2104, 219, 1, 'Hehe', '2025-11-25 08:56:52', 0),
-(2105, 219, 1, 'Tb đâu :)??', '2025-11-25 08:57:01', 0),
-(2106, 219, 1, 'Tin nahwns k có tiêbsf à', '2025-11-25 08:57:10', 0),
-(2107, 219, 1, 'Hennho', '2025-11-25 09:00:05', 0),
-(2108, 219, 1, 'Vcl :))', '2025-11-25 09:00:10', 0),
-(2109, 219, 1, 'Hài vãi :))', '2025-11-25 09:00:20', 0),
-(2110, 219, 8, 'vãi hài', '2025-11-25 09:00:26', 0),
-(2111, 219, 8, 'vãi hài', '2025-11-25 09:00:36', 0),
-(2112, 219, 8, 'hài vãi', '2025-11-25 09:00:39', 0),
-(2113, 219, 1, 'Hú', '2025-11-25 09:00:55', 0),
-(2114, 219, 1, 'Hú', '2025-11-25 09:01:13', 0),
-(2115, 219, 1, 'Nè', '2025-11-25 09:01:20', 0),
-(2116, 219, 1, 'Nghe k', '2025-11-25 09:01:22', 0),
-(2117, 219, 1, 'Nghe k', '2025-11-25 09:01:40', 0),
-(2118, 219, 1, 'Gần như real time', '2025-11-25 09:01:45', 0),
-(2119, 219, 8, '{\"type\":\"video_call_missed\",\"nguoiGoiID\":1,\"nguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"timestamp\":\"2025-11-25T02:56:56.498Z\",\"roomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzOTQxNzY3OH0=\"}', '2025-11-25 09:57:56', 0);
+(2088, 219, 1, 'Ali', '2025-11-28 22:18:58', 0),
+(2089, 219, 1, 'Alo', '2025-11-28 22:18:58', 0),
+(2090, 219, 1, 'Alo', '2025-11-28 22:19:02', 0),
+(2091, 219, 1, 'Alo', '2025-11-28 22:19:08', 0),
+(2092, 219, 1, 'Alo', '2025-11-28 22:19:20', 0);
 
 --
--- Triggers `tinnhan`
+-- Bẫy `tinnhan`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_after_insert_tinnhan` AFTER INSERT ON `tinnhan` FOR EACH ROW BEGIN
@@ -4532,7 +4375,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Table structure for table `transactions`
+-- Cấu trúc bảng cho bảng `transactions`
 --
 
 CREATE TABLE `transactions` (
@@ -4554,7 +4397,7 @@ CREATE TABLE `transactions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `transactions`
+-- Đang đổ dữ liệu cho bảng `transactions`
 --
 
 INSERT INTO `transactions` (`id`, `user_id`, `bank_name`, `account_number`, `amount_in`, `transaction_content`, `transaction_date`, `reference_number`, `sepay_id`, `bank_brand_name`, `amount_out`, `accumulated`, `code`, `sub_account`, `bank_account_id`) VALUES
@@ -4583,13 +4426,12 @@ INSERT INTO `transactions` (`id`, `user_id`, `bank_name`, `account_number`, `amo
 (0, NULL, 'TPBank', '80349195777', 5000.00, 'DK1008860', '2025-10-28 15:52:16', '668ITC125301A9SS', '28078900', 'TPBank', 0.00, 26000.00, NULL, NULL, '29190'),
 (0, NULL, 'TPBank', '80349195777', 5000.00, 'DK10', '2025-10-28 15:36:38', '668ITC125301A9MZ', '28077574', 'TPBank', 0.00, 21000.00, NULL, NULL, '29190'),
 (0, NULL, 'TPBank', '80349195777', 10000.00, 'dk922845', '2025-11-18 16:48:43', '668ITC1253230759', '31244881', 'TPBank', 0.00, 96000.00, NULL, NULL, '29190'),
-(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk971184', '2025-11-19 08:25:08', '668ITC125323A2EA', '31326537', 'TPBank', 0.00, 106000.00, NULL, NULL, '29190'),
-(0, NULL, 'TPBank', '80349195777', 3.00, 'TRA LAI TIEN GUI TK: 80349195777', '2025-11-24 15:27:49', '668DDBBVND000002', '32198322', 'TPBank', 0.00, 106003.00, NULL, NULL, '29190');
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk971184', '2025-11-19 08:25:08', '668ITC125323A2EA', '31326537', 'TPBank', 0.00, 106000.00, NULL, NULL, '29190');
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `vaitro`
+-- Cấu trúc bảng cho bảng `vaitro`
 --
 
 CREATE TABLE `vaitro` (
@@ -4599,7 +4441,7 @@ CREATE TABLE `vaitro` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `vaitro`
+-- Đang đổ dữ liệu cho bảng `vaitro`
 --
 
 INSERT INTO `vaitro` (`VaiTroID`, `TenVaiTro`, `MoTa`) VALUES
@@ -4612,7 +4454,7 @@ INSERT INTO `vaitro` (`VaiTroID`, `TenVaiTro`, `MoTa`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `vaitro_quyen`
+-- Cấu trúc bảng cho bảng `vaitro_quyen`
 --
 
 CREATE TABLE `vaitro_quyen` (
@@ -4623,7 +4465,7 @@ CREATE TABLE `vaitro_quyen` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `vi`
+-- Cấu trúc bảng cho bảng `vi`
 --
 
 CREATE TABLE `vi` (
@@ -4637,30 +4479,58 @@ CREATE TABLE `vi` (
 --
 
 INSERT INTO `vi` (`ViID`, `NguoiDungID`, `SoDu`) VALUES
-(1, 7, 50000.00);
+(1, 7, 30000.00),
+(2, 245, 29989300000.00);
 
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `v_phong_full_info`
+-- Cấu trúc đóng vai cho view `v_phong_full_info`
 -- (See below for the actual view)
 --
 CREATE TABLE `v_phong_full_info` (
-`PhongID` int
+`ChiTietTinDang` text
+,`DienTichChuan` decimal(5,2)
 ,`DuAnID` int
+,`GiaChuan` decimal(15,2)
+,`PhongID` int
+,`SoTinDangDangDung` bigint
 ,`TenDuAn` varchar(255)
 ,`TenPhong` varchar(100)
 ,`TrangThai` enum('Trong','GiuCho','DaThue','DonDep')
-,`GiaChuan` decimal(15,2)
-,`DienTichChuan` decimal(5,2)
-,`SoTinDangDangDung` bigint
-,`ChiTietTinDang` text
 );
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `yeuthich`
+-- Cấu trúc bảng cho bảng `yeucauruttien`
+--
+
+CREATE TABLE `yeucauruttien` (
+  `YeuCauID` int NOT NULL,
+  `NguoiDungID` int NOT NULL,
+  `SoTien` decimal(15,2) NOT NULL COMMENT 'Số tiền muốn rút',
+  `NganHang` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Tên ngân hàng',
+  `SoTaiKhoan` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Số tài khoản nhận tiền',
+  `TenChuTaiKhoan` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Tên chủ tài khoản',
+  `TrangThai` enum('ChoXuLy','DaDuyet','TuChoi') COLLATE utf8mb4_unicode_ci DEFAULT 'ChoXuLy',
+  `GhiChu` text COLLATE utf8mb4_unicode_ci COMMENT 'Ghi chú từ admin hoặc người dùng',
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `yeucauruttien`
+--
+
+INSERT INTO `yeucauruttien` (`YeuCauID`, `NguoiDungID`, `SoTien`, `NganHang`, `SoTaiKhoan`, `TenChuTaiKhoan`, `TrangThai`, `GhiChu`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, 7, 10000.00, 'mbbank', '123323423', 'chung', 'DaDuyet', 'Đã chuyển khoản thành công', '2025-11-28 15:32:59', '2025-11-28 15:36:21'),
+(2, 7, 10000.00, 'sdsadds', 'đasadasdsad', 'đasadasdas', 'DaDuyet', 'Đã chuyển khoản thành công', '2025-11-28 21:42:40', '2025-11-28 21:43:04');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `yeuthich`
 --
 
 CREATE TABLE `yeuthich` (
@@ -4669,27 +4539,19 @@ CREATE TABLE `yeuthich` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `yeuthich`
+-- Đang đổ dữ liệu cho bảng `yeuthich`
 --
 
 INSERT INTO `yeuthich` (`NguoiDungID`, `TinDangID`) VALUES
-(6, 5);
-
--- --------------------------------------------------------
-
---
--- Structure for view `v_phong_full_info`
---
-DROP TABLE IF EXISTS `v_phong_full_info`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_phong_full_info`  AS SELECT `p`.`PhongID` AS `PhongID`, `p`.`DuAnID` AS `DuAnID`, `d`.`TenDuAn` AS `TenDuAn`, `p`.`TenPhong` AS `TenPhong`, `p`.`TrangThai` AS `TrangThai`, `p`.`GiaChuan` AS `GiaChuan`, `p`.`DienTichChuan` AS `DienTichChuan`, count(`pt`.`TinDangID`) AS `SoTinDangDangDung`, group_concat(concat('TinDang #',`pt`.`TinDangID`,': ',coalesce(`pt`.`GiaTinDang`,`p`.`GiaChuan`),'đ') separator ' | ') AS `ChiTietTinDang` FROM (((`phong` `p` join `duan` `d` on(`p`.`DuAnID` = `d`.`DuAnID`)) left join `phong_tindang` `pt` on(`p`.`PhongID` = `pt`.`PhongID`)) left join `tindang` `td` on(`pt`.`TinDangID` = `td`.`TinDangID` and `td`.`TrangThai` in ('ChoDuyet','DaDuyet','DaDang'))) GROUP BY `p`.`PhongID`, `p`.`DuAnID`, `d`.`TenDuAn`, `p`.`TenPhong`, `p`.`TrangThai`, `p`.`GiaChuan`, `p`.`DienTichChuan` ;
+(6, 5),
+(7, 6);
 
 --
--- Indexes for dumped tables
+-- Chỉ mục cho các bảng đã đổ
 --
 
 --
--- Indexes for table `bienbanbangiao`
+-- Chỉ mục cho bảng `bienbanbangiao`
 --
 ALTER TABLE `bienbanbangiao`
   ADD PRIMARY KEY (`BienBanBanGiaoID`),
@@ -4698,7 +4560,7 @@ ALTER TABLE `bienbanbangiao`
   ADD KEY `fk_bbbg_tindang` (`TinDangID`);
 
 --
--- Indexes for table `buttoansocai`
+-- Chỉ mục cho bảng `buttoansocai`
 --
 ALTER TABLE `buttoansocai`
   ADD PRIMARY KEY (`ButToanID`),
@@ -4706,14 +4568,14 @@ ALTER TABLE `buttoansocai`
   ADD KEY `ViID` (`ViID`);
 
 --
--- Indexes for table `chinhsachcoc`
+-- Chỉ mục cho bảng `chinhsachcoc`
 --
 ALTER TABLE `chinhsachcoc`
   ADD PRIMARY KEY (`ChinhSachCocID`),
   ADD KEY `idx_chu_du_an` (`ChuDuAnID`);
 
 --
--- Indexes for table `coc`
+-- Chỉ mục cho bảng `coc`
 --
 ALTER TABLE `coc`
   ADD PRIMARY KEY (`CocID`),
@@ -4729,7 +4591,7 @@ ALTER TABLE `coc`
   ADD KEY `idx_coc_hopdong` (`HopDongID`);
 
 --
--- Indexes for table `cuochen`
+-- Chỉ mục cho bảng `cuochen`
 --
 ALTER TABLE `cuochen`
   ADD PRIMARY KEY (`CuocHenID`),
@@ -4746,7 +4608,7 @@ ALTER TABLE `cuochen`
   ADD KEY `TinDangID` (`TinDangID`);
 
 --
--- Indexes for table `cuochoithoai`
+-- Chỉ mục cho bảng `cuochoithoai`
 --
 ALTER TABLE `cuochoithoai`
   ADD PRIMARY KEY (`CuocHoiThoaiID`),
@@ -4754,7 +4616,7 @@ ALTER TABLE `cuochoithoai`
   ADD KEY `idx_cuochoithoai_thoidiemtinnhan` (`ThoiDiemTinNhanCuoi`);
 
 --
--- Indexes for table `duan`
+-- Chỉ mục cho bảng `duan`
 --
 ALTER TABLE `duan`
   ADD PRIMARY KEY (`DuAnID`),
@@ -4766,7 +4628,7 @@ ALTER TABLE `duan`
   ADD KEY `idx_duan_chinhsachcoc` (`ChinhSachCocID`);
 
 --
--- Indexes for table `giaodich`
+-- Chỉ mục cho bảng `giaodich`
 --
 ALTER TABLE `giaodich`
   ADD PRIMARY KEY (`GiaoDichID`),
@@ -4777,7 +4639,7 @@ ALTER TABLE `giaodich`
   ADD KEY `fk_gd_thamchieu` (`GiaoDichThamChieuID`);
 
 --
--- Indexes for table `hopdong`
+-- Chỉ mục cho bảng `hopdong`
 --
 ALTER TABLE `hopdong`
   ADD PRIMARY KEY (`HopDongID`),
@@ -4785,19 +4647,22 @@ ALTER TABLE `hopdong`
   ADD KEY `KhachHangID` (`KhachHangID`),
   ADD KEY `MauHopDongID` (`MauHopDongID`),
   ADD KEY `idx_hd_tindang` (`TinDangID`),
-  ADD KEY `idx_hd_khachhang` (`KhachHangID`);
+  ADD KEY `idx_hd_khachhang` (`KhachHangID`),
+  ADD KEY `idx_hd_phong` (`PhongID`),
+  ADD KEY `idx_hd_duan` (`DuAnID`);
 
 --
--- Indexes for table `hosonhanvien`
+-- Chỉ mục cho bảng `hosonhanvien`
 --
 ALTER TABLE `hosonhanvien`
   ADD PRIMARY KEY (`HoSoID`),
   ADD KEY `NguoiDungID` (`NguoiDungID`),
   ADD KEY `KhuVucChinhID` (`KhuVucChinhID`),
-  ADD KEY `KhuVucPhuTrachID` (`KhuVucPhuTrachID`);
+  ADD KEY `KhuVucPhuTrachID` (`KhuVucPhuTrachID`),
+  ADD KEY `QuanLyID` (`QuanLyID`);
 
 --
--- Indexes for table `khuvuc`
+-- Chỉ mục cho bảng `khuvuc`
 --
 ALTER TABLE `khuvuc`
   ADD PRIMARY KEY (`KhuVucID`),
@@ -4818,7 +4683,7 @@ ALTER TABLE `lichlamviec`
   ADD KEY `NhanVienBanHangID` (`NhanVienBanHangID`);
 
 --
--- Indexes for table `lich_su_vi`
+-- Chỉ mục cho bảng `lich_su_vi`
 --
 ALTER TABLE `lich_su_vi`
   ADD PRIMARY KEY (`id`),
@@ -4826,14 +4691,14 @@ ALTER TABLE `lich_su_vi`
   ADD KEY `idx_user` (`user_id`);
 
 --
--- Indexes for table `mauhopdong`
+-- Chỉ mục cho bảng `mauhopdong`
 --
 ALTER TABLE `mauhopdong`
   ADD PRIMARY KEY (`MauHopDongID`),
   ADD KEY `TaoBoiAdminID` (`TaoBoiAdminID`);
 
 --
--- Indexes for table `nguoidung`
+-- Chỉ mục cho bảng `nguoidung`
 --
 ALTER TABLE `nguoidung`
   ADD PRIMARY KEY (`NguoiDungID`),
@@ -4843,28 +4708,21 @@ ALTER TABLE `nguoidung`
   ADD KEY `fk_nguoidung_vaitrohoatdong` (`VaiTroHoatDongID`);
 
 --
--- Indexes for table `nguoidung_vaitro`
---
-ALTER TABLE `nguoidung_vaitro`
-  ADD PRIMARY KEY (`NguoiDungID`,`VaiTroID`),
-  ADD KEY `VaiTroID` (`VaiTroID`);
-
---
--- Indexes for table `nhatkyhethong`
+-- Chỉ mục cho bảng `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
   ADD PRIMARY KEY (`NhatKyID`),
   ADD KEY `NguoiDungID` (`NguoiDungID`);
 
 --
--- Indexes for table `noidunghethong`
+-- Chỉ mục cho bảng `noidunghethong`
 --
 ALTER TABLE `noidunghethong`
   ADD PRIMARY KEY (`NoiDungID`),
   ADD KEY `CapNhatBoiID` (`CapNhatBoiID`);
 
 --
--- Indexes for table `phong`
+-- Chỉ mục cho bảng `phong`
 --
 ALTER TABLE `phong`
   ADD PRIMARY KEY (`PhongID`),
@@ -4872,7 +4730,7 @@ ALTER TABLE `phong`
   ADD KEY `idx_phong_duan_trangthai` (`DuAnID`,`TrangThai`);
 
 --
--- Indexes for table `phong_tindang`
+-- Chỉ mục cho bảng `phong_tindang`
 --
 ALTER TABLE `phong_tindang`
   ADD PRIMARY KEY (`PhongTinDangID`),
@@ -4881,14 +4739,14 @@ ALTER TABLE `phong_tindang`
   ADD KEY `idx_phong_tindang_tindang` (`TinDangID`);
 
 --
--- Indexes for table `quyen`
+-- Chỉ mục cho bảng `quyen`
 --
 ALTER TABLE `quyen`
   ADD PRIMARY KEY (`QuyenID`),
   ADD UNIQUE KEY `MaQuyen` (`MaQuyen`);
 
 --
--- Indexes for table `thanhviencuochoithoai`
+-- Chỉ mục cho bảng `thanhviencuochoithoai`
 --
 ALTER TABLE `thanhviencuochoithoai`
   ADD PRIMARY KEY (`CuocHoiThoaiID`,`NguoiDungID`),
@@ -4896,14 +4754,14 @@ ALTER TABLE `thanhviencuochoithoai`
   ADD KEY `idx_thanhvien_nguoidung` (`NguoiDungID`,`ThamGiaLuc`);
 
 --
--- Indexes for table `thongbao`
+-- Chỉ mục cho bảng `thongbao`
 --
 ALTER TABLE `thongbao`
   ADD PRIMARY KEY (`ThongBaoID`),
   ADD KEY `NguoiNhanID` (`NguoiNhanID`);
 
 --
--- Indexes for table `thongketindang`
+-- Chỉ mục cho bảng `thongketindang`
 --
 ALTER TABLE `thongketindang`
   ADD PRIMARY KEY (`ThongKeID`),
@@ -4912,7 +4770,7 @@ ALTER TABLE `thongketindang`
   ADD KEY `idx_thongketindang_ky` (`Ky`);
 
 --
--- Indexes for table `tindang`
+-- Chỉ mục cho bảng `tindang`
 --
 ALTER TABLE `tindang`
   ADD PRIMARY KEY (`TinDangID`),
@@ -4925,7 +4783,7 @@ ALTER TABLE `tindang`
   ADD KEY `idx_tindang_duan_trangthai_taoluc` (`DuAnID`,`TrangThai`,`TaoLuc`);
 
 --
--- Indexes for table `tinnhan`
+-- Chỉ mục cho bảng `tinnhan`
 --
 ALTER TABLE `tinnhan`
   ADD PRIMARY KEY (`TinNhanID`),
@@ -4936,101 +4794,108 @@ ALTER TABLE `tinnhan`
   ADD KEY `idx_tinnhan_daxoa` (`DaXoa`,`CuocHoiThoaiID`);
 
 --
--- Indexes for table `vaitro`
+-- Chỉ mục cho bảng `vaitro`
 --
 ALTER TABLE `vaitro`
   ADD PRIMARY KEY (`VaiTroID`);
 
 --
--- Indexes for table `vaitro_quyen`
+-- Chỉ mục cho bảng `vaitro_quyen`
 --
 ALTER TABLE `vaitro_quyen`
   ADD PRIMARY KEY (`VaiTroID`,`QuyenID`),
   ADD KEY `QuyenID` (`QuyenID`);
 
 --
--- Indexes for table `vi`
+-- Chỉ mục cho bảng `vi`
 --
 ALTER TABLE `vi`
   ADD PRIMARY KEY (`ViID`),
   ADD UNIQUE KEY `NguoiDungID` (`NguoiDungID`);
 
 --
--- Indexes for table `yeuthich`
+-- Chỉ mục cho bảng `yeucauruttien`
+--
+ALTER TABLE `yeucauruttien`
+  ADD PRIMARY KEY (`YeuCauID`),
+  ADD KEY `idx_nguoidung_yeucau` (`NguoiDungID`);
+
+--
+-- Chỉ mục cho bảng `yeuthich`
 --
 ALTER TABLE `yeuthich`
   ADD PRIMARY KEY (`NguoiDungID`,`TinDangID`),
   ADD KEY `TinDangID` (`TinDangID`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT cho các bảng đã đổ
 --
 
 --
--- AUTO_INCREMENT for table `bienbanbangiao`
+-- AUTO_INCREMENT cho bảng `bienbanbangiao`
 --
 ALTER TABLE `bienbanbangiao`
   MODIFY `BienBanBanGiaoID` bigint NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `buttoansocai`
+-- AUTO_INCREMENT cho bảng `buttoansocai`
 --
 ALTER TABLE `buttoansocai`
   MODIFY `ButToanID` bigint NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `chinhsachcoc`
+-- AUTO_INCREMENT cho bảng `chinhsachcoc`
 --
 ALTER TABLE `chinhsachcoc`
-  MODIFY `ChinhSachCocID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `ChinhSachCocID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `coc`
+-- AUTO_INCREMENT cho bảng `coc`
 --
 ALTER TABLE `coc`
   MODIFY `CocID` bigint NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `cuochen`
+-- AUTO_INCREMENT cho bảng `cuochen`
 --
 ALTER TABLE `cuochen`
-  MODIFY `CuocHenID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
+  MODIFY `CuocHenID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
--- AUTO_INCREMENT for table `cuochoithoai`
+-- AUTO_INCREMENT cho bảng `cuochoithoai`
 --
 ALTER TABLE `cuochoithoai`
-  MODIFY `CuocHoiThoaiID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=224;
+  MODIFY `CuocHoiThoaiID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=225;
 
 --
--- AUTO_INCREMENT for table `duan`
+-- AUTO_INCREMENT cho bảng `duan`
 --
 ALTER TABLE `duan`
   MODIFY `DuAnID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
--- AUTO_INCREMENT for table `giaodich`
+-- AUTO_INCREMENT cho bảng `giaodich`
 --
 ALTER TABLE `giaodich`
   MODIFY `GiaoDichID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `hopdong`
+-- AUTO_INCREMENT cho bảng `hopdong`
 --
 ALTER TABLE `hopdong`
-  MODIFY `HopDongID` int NOT NULL AUTO_INCREMENT;
+  MODIFY `HopDongID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT for table `hosonhanvien`
+-- AUTO_INCREMENT cho bảng `hosonhanvien`
 --
 ALTER TABLE `hosonhanvien`
-  MODIFY `HoSoID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `HoSoID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT for table `khuvuc`
+-- AUTO_INCREMENT cho bảng `khuvuc`
 --
 ALTER TABLE `khuvuc`
-  MODIFY `KhuVucID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2778;
+  MODIFY `KhuVucID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2779;
 
 --
 -- AUTO_INCREMENT cho bảng `kyc_verification`
@@ -5042,91 +4907,97 @@ ALTER TABLE `kyc_verification`
 -- AUTO_INCREMENT cho bảng `lichlamviec`
 --
 ALTER TABLE `lichlamviec`
-  MODIFY `LichID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `LichID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
--- AUTO_INCREMENT for table `lich_su_vi`
+-- AUTO_INCREMENT cho bảng `lich_su_vi`
 --
 ALTER TABLE `lich_su_vi`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
--- AUTO_INCREMENT for table `mauhopdong`
+-- AUTO_INCREMENT cho bảng `mauhopdong`
 --
 ALTER TABLE `mauhopdong`
-  MODIFY `MauHopDongID` int NOT NULL AUTO_INCREMENT;
+  MODIFY `MauHopDongID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `nguoidung`
+-- AUTO_INCREMENT cho bảng `nguoidung`
 --
 ALTER TABLE `nguoidung`
-  MODIFY `NguoiDungID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=245;
+  MODIFY `NguoiDungID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=247;
 
 --
--- AUTO_INCREMENT for table `nhatkyhethong`
+-- AUTO_INCREMENT cho bảng `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
-  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=617;
+  MODIFY `NhatKyID` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=520;
 
 --
--- AUTO_INCREMENT for table `noidunghethong`
+-- AUTO_INCREMENT cho bảng `noidunghethong`
 --
 ALTER TABLE `noidunghethong`
-  MODIFY `NoiDungID` int NOT NULL AUTO_INCREMENT;
+  MODIFY `NoiDungID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `phong`
+-- AUTO_INCREMENT cho bảng `phong`
 --
 ALTER TABLE `phong`
   MODIFY `PhongID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
--- AUTO_INCREMENT for table `phong_tindang`
+-- AUTO_INCREMENT cho bảng `phong_tindang`
 --
 ALTER TABLE `phong_tindang`
   MODIFY `PhongTinDangID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
--- AUTO_INCREMENT for table `quyen`
+-- AUTO_INCREMENT cho bảng `quyen`
 --
 ALTER TABLE `quyen`
   MODIFY `QuyenID` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `thongbao`
+-- AUTO_INCREMENT cho bảng `thongbao`
 --
 ALTER TABLE `thongbao`
-  MODIFY `ThongBaoID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `ThongBaoID` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `thongketindang`
+-- AUTO_INCREMENT cho bảng `thongketindang`
 --
 ALTER TABLE `thongketindang`
   MODIFY `ThongKeID` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `tindang`
+-- AUTO_INCREMENT cho bảng `tindang`
 --
 ALTER TABLE `tindang`
   MODIFY `TinDangID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT for table `tinnhan`
+-- AUTO_INCREMENT cho bảng `tinnhan`
 --
 ALTER TABLE `tinnhan`
-  MODIFY `TinNhanID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2120;
+  MODIFY `TinNhanID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2093;
 
 --
--- AUTO_INCREMENT for table `vaitro`
+-- AUTO_INCREMENT cho bảng `vaitro`
 --
 ALTER TABLE `vaitro`
   MODIFY `VaiTroID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
--- AUTO_INCREMENT for table `vi`
+-- AUTO_INCREMENT cho bảng `vi`
 --
 ALTER TABLE `vi`
-  MODIFY `ViID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `ViID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT cho bảng `yeucauruttien`
+--
+ALTER TABLE `yeucauruttien`
+  MODIFY `YeuCauID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 -- --------------------------------------------------------
 
@@ -5138,11 +5009,11 @@ DROP TABLE IF EXISTS `v_phong_full_info`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_phong_full_info`  AS SELECT `p`.`PhongID` AS `PhongID`, `p`.`DuAnID` AS `DuAnID`, `d`.`TenDuAn` AS `TenDuAn`, `p`.`TenPhong` AS `TenPhong`, `p`.`TrangThai` AS `TrangThai`, `p`.`GiaChuan` AS `GiaChuan`, `p`.`DienTichChuan` AS `DienTichChuan`, count(`pt`.`TinDangID`) AS `SoTinDangDangDung`, group_concat(concat('TinDang #',`pt`.`TinDangID`,': ',coalesce(`pt`.`GiaTinDang`,`p`.`GiaChuan`),'đ') separator ' | ') AS `ChiTietTinDang` FROM (((`phong` `p` join `duan` `d` on((`p`.`DuAnID` = `d`.`DuAnID`))) left join `phong_tindang` `pt` on((`p`.`PhongID` = `pt`.`PhongID`))) left join `tindang` `td` on(((`pt`.`TinDangID` = `td`.`TinDangID`) and (`td`.`TrangThai` in ('ChoDuyet','DaDuyet','DaDang'))))) GROUP BY `p`.`PhongID`, `p`.`DuAnID`, `d`.`TenDuAn`, `p`.`TenPhong`, `p`.`TrangThai`, `p`.`GiaChuan`, `p`.`DienTichChuan` ;
 
 --
--- Constraints for dumped tables
+-- Ràng buộc đối với các bảng kết xuất
 --
 
 --
--- Constraints for table `bienbanbangiao`
+-- Ràng buộc cho bảng `bienbanbangiao`
 --
 ALTER TABLE `bienbanbangiao`
   ADD CONSTRAINT `fk_bbbg_hopdong` FOREIGN KEY (`HopDongID`) REFERENCES `hopdong` (`HopDongID`),
@@ -5150,67 +5021,20 @@ ALTER TABLE `bienbanbangiao`
   ADD CONSTRAINT `fk_bbbg_tindang` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
 
 --
--- Constraints for table `buttoansocai`
+-- Ràng buộc cho bảng `buttoansocai`
 --
 ALTER TABLE `buttoansocai`
   ADD CONSTRAINT `buttoansocai_ibfk_1` FOREIGN KEY (`GiaoDichID`) REFERENCES `giaodich` (`GiaoDichID`),
   ADD CONSTRAINT `buttoansocai_ibfk_2` FOREIGN KEY (`ViID`) REFERENCES `vi` (`ViID`);
 
 --
--- Constraints for table `chinhsachcoc`
---
-ALTER TABLE `chinhsachcoc`
-  ADD CONSTRAINT `fk_chinhsachcoc_chuduan` FOREIGN KEY (`ChuDuAnID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE ON UPDATE CASCADE;
-
---
--- Constraints for table `coc`
---
-ALTER TABLE `coc`
-  ADD CONSTRAINT `coc_ibfk_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`),
-  ADD CONSTRAINT `fk_coc_bbbg` FOREIGN KEY (`BienBanBanGiaoID`) REFERENCES `bienbanbangiao` (`BienBanBanGiaoID`),
-  ADD CONSTRAINT `fk_coc_giaodich` FOREIGN KEY (`GiaoDichID`) REFERENCES `giaodich` (`GiaoDichID`),
-  ADD CONSTRAINT `fk_coc_tindang` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
-
---
--- Constraints for table `cuochen`
---
-ALTER TABLE `cuochen`
-  ADD CONSTRAINT `cuochen_ibfk_2` FOREIGN KEY (`NhanVienBanHangID`) REFERENCES `nguoidung` (`NguoiDungID`),
-  ADD CONSTRAINT `cuochen_ibfk_3` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`),
-  ADD CONSTRAINT `cuochen_ibfk_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`);
-
---
--- Constraints for table `duan`
---
-ALTER TABLE `duan`
-  ADD CONSTRAINT `duan_ibfk_1` FOREIGN KEY (`ChuDuAnID`) REFERENCES `nguoidung` (`NguoiDungID`),
-  ADD CONSTRAINT `fk_duan_chinhsachcoc` FOREIGN KEY (`ChinhSachCocID`) REFERENCES `chinhsachcoc` (`ChinhSachCocID`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_duan_nguoi_ngung_hoat_dong` FOREIGN KEY (`NguoiNgungHoatDongID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_duan_nguoi_xu_ly_yeu_cau` FOREIGN KEY (`NguoiXuLyYeuCauID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Constraints for table `giaodich`
---
-ALTER TABLE `giaodich`
-  ADD CONSTRAINT `fk_gd_thamchieu` FOREIGN KEY (`GiaoDichThamChieuID`) REFERENCES `giaodich` (`GiaoDichID`),
-  ADD CONSTRAINT `giaodich_ibfk_1` FOREIGN KEY (`ViID`) REFERENCES `vi` (`ViID`),
-  ADD CONSTRAINT `giaodich_ibfk_2` FOREIGN KEY (`TinDangLienQuanID`) REFERENCES `tindang` (`TinDangID`);
-
---
--- Constraints for table `hopdong`
---
-ALTER TABLE `hopdong`
-  ADD CONSTRAINT `hopdong_ibfk_1` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`),
-  ADD CONSTRAINT `hopdong_ibfk_2` FOREIGN KEY (`KhachHangID`) REFERENCES `nguoidung` (`NguoiDungID`),
-  ADD CONSTRAINT `hopdong_ibfk_3` FOREIGN KEY (`MauHopDongID`) REFERENCES `mauhopdong` (`MauHopDongID`);
-
---
--- Constraints for table `hosonhanvien`
+-- Ràng buộc cho bảng `hosonhanvien`
 --
 ALTER TABLE `hosonhanvien`
   ADD CONSTRAINT `hosonhanvien_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`),
   ADD CONSTRAINT `hosonhanvien_ibfk_2` FOREIGN KEY (`KhuVucChinhID`) REFERENCES `khuvuc` (`KhuVucID`),
-  ADD CONSTRAINT `hosonhanvien_ibfk_3` FOREIGN KEY (`KhuVucPhuTrachID`) REFERENCES `khuvuc` (`KhuVucID`);
+  ADD CONSTRAINT `hosonhanvien_ibfk_3` FOREIGN KEY (`KhuVucPhuTrachID`) REFERENCES `khuvuc` (`KhuVucID`),
+  ADD CONSTRAINT `hosonhanvien_ibfk_4` FOREIGN KEY (`QuanLyID`) REFERENCES `hosonhanvien` (`NguoiDungID`) ON DELETE RESTRICT ON UPDATE RESTRICT;
 
 --
 -- Ràng buộc cho bảng `khuvuc`
@@ -5241,6 +5065,12 @@ ALTER TABLE `mauhopdong`
 --
 ALTER TABLE `nguoidung`
   ADD CONSTRAINT `fk_nguoidung_vaitrohoatdong` FOREIGN KEY (`VaiTroHoatDongID`) REFERENCES `vaitro` (`VaiTroID`);
+
+--
+-- Ràng buộc cho bảng `yeucauruttien`
+--
+ALTER TABLE `yeucauruttien`
+  ADD CONSTRAINT `fk_yeucauruttien_nguoidung` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

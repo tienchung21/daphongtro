@@ -44,7 +44,10 @@ class TinDangOperatorModel {
         limit = 20
       } = filters;
 
-      const offset = (page - 1) * limit;
+      // Parse số nguyên để tránh lỗi prepared statement với LIMIT/OFFSET
+      const pageInt = parseInt(page, 10) || 1;
+      const limitInt = parseInt(limit, 10) || 20;
+      const offset = (pageInt - 1) * limitInt;
 
       // Build WHERE conditions
       let whereConditions = [`td.TrangThai = 'ChoDuyet'`];
@@ -107,10 +110,12 @@ class TinDangOperatorModel {
         LIMIT ? OFFSET ?
       `;
 
-      params.push(limit, offset);
-      const [rows] = await db.execute(query, params);
+      // Đảm bảo limit và offset là số nguyên cho LIMIT/OFFSET
+      params.push(limitInt, offset);
+      // Dùng db.query() cho query động (WHERE clause thay đổi) - best practice
+      const [rows] = await db.query(query, params);
 
-      // Query total count
+      // Query total count (không cần LIMIT/OFFSET)
       const countQuery = `
         SELECT COUNT(*) as total
         FROM tindang td
@@ -120,15 +125,15 @@ class TinDangOperatorModel {
       `;
 
       const countParams = params.slice(0, -2); // Remove limit and offset
-      const [countRows] = await db.execute(countQuery, countParams);
+      const [countRows] = await db.query(countQuery, countParams);
       const total = countRows[0].total;
 
       return {
         data: rows,
         total,
-        page: parseInt(page),
-        totalPages: Math.ceil(total / limit),
-        limit: parseInt(limit)
+        page: pageInt,
+        totalPages: Math.ceil(total / limitInt),
+        limit: limitInt
       };
     } catch (error) {
       console.error('[TinDangOperatorModel] Lỗi layDanhSachTinDangChoDuyet:', error);
@@ -196,6 +201,17 @@ class TinDangOperatorModel {
       tinDang.DanhSachPhong = phongRows;
 
       // Checklist KYC
+      // Parse URL an toàn với try-catch
+      let hasImages = false;
+      if (tinDang.URL) {
+        try {
+          const urlArray = JSON.parse(tinDang.URL);
+          hasImages = Array.isArray(urlArray) && urlArray.length > 0;
+        } catch (e) {
+          hasImages = false;
+        }
+      }
+      
       tinDang.ChecklistKYC = {
         coTaiKhoan: !!tinDang.ChuDuAnID,
         coHoTen: !!tinDang.TenChuDuAn,
@@ -203,7 +219,7 @@ class TinDangOperatorModel {
         coSoDienThoai: !!tinDang.SoDienThoaiChuDuAn,
         coSoCCCD: !!tinDang.SoCCCD,
         daXacMinhKYC: tinDang.TrangThaiKYC === 'DaXacMinh',
-        coItNhat1Anh: tinDang.URL && JSON.parse(tinDang.URL || '[]').length > 0,
+        coItNhat1Anh: hasImages,
         coDiaChi: !!tinDang.DiaChiDuAn,
         coGia: phongRows.every(p => p.Gia > 0),
         coDienTich: phongRows.every(p => p.DienTich > 0)

@@ -15,14 +15,20 @@ class NguoiPhuTrachDuAnModel {
    */
   static async layDanhSachNhanVienPhuTrach(khuVucId) {
     // Lấy nhân viên có KhuVucChinhID = khuVucId
+    // Join với nguoidung để lấy TrangThai (HoatDong, TamKhoa, etc.)
     const [nvRows] = await db.execute(
       `SELECT 
         hs.NguoiDungID,
         hs.KhuVucChinhID,
         hs.TyLeHoaHong,
-        hs.TrangThaiLamViec
+        hs.MaNhanVien,
+        nd.TenDayDu,
+        nd.SoDienThoai,
+        nd.TrangThai
       FROM hosonhanvien hs
-      WHERE hs.KhuVucChinhID = ?`,
+      INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
+      WHERE hs.KhuVucChinhID = ?
+        AND nd.TrangThai = 'HoatDong'`,
       [khuVucId]
     );
 

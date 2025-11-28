@@ -227,10 +227,19 @@ async function baoCaoPhongTrungLap(duAnID = null) {
   const params = duAnID ? [duAnID] : [];
   const [rows] = await db.query(query, params);
   
-  return rows.map(row => ({
-    ...row,
-    ChiTietPhong: JSON.parse(row.ChiTietPhong)
-  }));
+  return rows.map(row => {
+    let chiTietPhong = null;
+    try {
+      chiTietPhong = row.ChiTietPhong ? JSON.parse(row.ChiTietPhong) : null;
+    } catch (e) {
+      console.error('[phongValidation] Lỗi parse ChiTietPhong:', e);
+      chiTietPhong = null;
+    }
+    return {
+      ...row,
+      ChiTietPhong: chiTietPhong
+    };
+  });
 }
 
 module.exports = {

@@ -180,8 +180,10 @@ class GoiYTinDangModel {
 
       // Sắp xếp theo số phòng trống giảm dần
       query += ' ORDER BY SoPhongTrong DESC, td.CapNhatLuc DESC';
-      query += ' LIMIT ?';
-      params.push(parseInt(limit));
+      
+      // Sử dụng string interpolation an toàn cho LIMIT (tránh lỗi với prepared statement)
+      const safeLimit = Math.max(1, Math.min(100, parseInt(limit) || 20));
+      query += ` LIMIT ${safeLimit}`;
 
       console.log('[GoiYTinDangModel] Query:', query);
       console.log('[GoiYTinDangModel] Params:', params);

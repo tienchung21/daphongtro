@@ -15,7 +15,7 @@ class HopDongController {
    */
   static async baoCao(req, res) {
     try {
-      const chuDuAnId = req.user.NguoiDungID;
+      const chuDuAnId = req.user.id || req.user.NguoiDungID;
       const {
         TinDangID,
         KhachHangID,
@@ -90,7 +90,8 @@ class HopDongController {
    */
   static async layDanhSach(req, res) {
     try {
-      const chuDuAnId = req.user.NguoiDungID;
+      // Lấy ID từ req.user.id hoặc req.user.NguoiDungID (tùy cấu trúc token)
+      const chuDuAnId = req.user.id || req.user.NguoiDungID;
       const { tuNgay, denNgay } = req.query;
 
       const danhSach = await HopDongModel.layDanhSach(chuDuAnId, {
@@ -146,7 +147,7 @@ class HopDongController {
    */
   static async layChiTiet(req, res) {
     try {
-      const chuDuAnId = req.user.NguoiDungID;
+      const chuDuAnId = req.user.id || req.user.NguoiDungID;
       const { id } = req.params;
 
       const hopDong = await HopDongModel.layChiTiet(id, chuDuAnId);
@@ -178,7 +179,7 @@ class HopDongController {
    */
   static async uploadFileScan(req, res) {
     try {
-      const chuDuAnId = req.user.NguoiDungID;
+      const chuDuAnId = req.user.id || req.user.NguoiDungID;
       const { id } = req.params;
 
       if (!req.file) {

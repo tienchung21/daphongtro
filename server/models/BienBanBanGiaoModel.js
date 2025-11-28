@@ -28,7 +28,10 @@ class BienBanBanGiaoModel {
         limit = 20
       } = filters;
 
-      const offset = (page - 1) * limit;
+      // Parse số nguyên để tránh lỗi prepared statement với LIMIT/OFFSET
+      const pageInt = parseInt(page, 10) || 1;
+      const limitInt = parseInt(limit, 10) || 20;
+      const offset = (pageInt - 1) * limitInt;
 
       let whereConditions = [];
       const params = [];
@@ -81,10 +84,12 @@ class BienBanBanGiaoModel {
         LIMIT ? OFFSET ?
       `;
 
-      params.push(limit, offset);
-      const [rows] = await db.execute(query, params);
+      // Đảm bảo limit và offset là số nguyên cho LIMIT/OFFSET
+      params.push(limitInt, offset);
+      // Dùng db.query() cho query động (WHERE clause thay đổi) - best practice
+      const [rows] = await db.query(query, params);
 
-      // Query total count
+      // Query total count (không cần LIMIT/OFFSET)
       const countQuery = `
         SELECT COUNT(*) as total
         FROM bienbanbangiao bb
@@ -97,15 +102,15 @@ class BienBanBanGiaoModel {
       `;
 
       const countParams = params.slice(0, -2);
-      const [countRows] = await db.execute(countQuery, countParams);
+      const [countRows] = await db.query(countQuery, countParams);
       const total = countRows[0].total;
 
       return {
         data: rows,
         total,
-        page: parseInt(page),
-        totalPages: Math.ceil(total / limit),
-        limit: parseInt(limit)
+        page: pageInt,
+        totalPages: Math.ceil(total / limitInt),
+        limit: limitInt
       };
     } catch (error) {
       console.error('[BienBanBanGiaoModel] Lỗi layDanhSachBienBan:', error);

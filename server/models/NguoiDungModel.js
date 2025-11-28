@@ -26,8 +26,7 @@ class NguoiDungModel {
             DiaChi,
             NgaySinh,
             SoCCCD,
-            NgayCapCCCD,
-            NoiCapCCCD
+            NgayCapCCCD
           FROM nguoidung
           WHERE NguoiDungID = ? AND TrangThai = 'HoatDong'
         `,

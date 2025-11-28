@@ -122,6 +122,7 @@ const ChiTietTinDang = () => {
   const [hopDongLoading, setHopDongLoading] = useState(false);
   const [hopDongError, setHopDongError] = useState(null);
   const [hopDongPhong, setHopDongPhong] = useState(null);
+  const [ngayChuyenVao, setNgayChuyenVao] = useState(""); // Ngày muốn chuyển vào
 
   // Toast notification
   const { toasts, showToast, removeToast } = useToast();
@@ -435,6 +436,11 @@ const ChiTietTinDang = () => {
     setHopDongError(null);
     setHopDongData(null);
     setHopDongPhong(phong || null);
+    
+    // Set ngày chuyển vào mặc định là ngày mai
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setNgayChuyenVao(tomorrow.toISOString().split('T')[0]);
 
     try {
       const overrides = {
@@ -483,6 +489,7 @@ const ChiTietTinDang = () => {
     setHopDongError(null);
     setHopDongLoading(false);
     setHopDongPhong(null);
+    setNgayChuyenVao("");
   };
 
   const handlePreDepositCheck = async (phong) => {
@@ -587,6 +594,12 @@ const ChiTietTinDang = () => {
         );
       }
 
+      // Validate ngày chuyển vào
+      if (!ngayChuyenVao) {
+        showToast("Vui lòng chọn ngày muốn chuyển vào", "error");
+        return;
+      }
+
       // Xác nhận đặt cọc
       await hopDongApi.confirmDeposit(tinDang.TinDangID, {
         giaoDichId: `tmp-${Date.now()}`,
@@ -594,6 +607,7 @@ const ChiTietTinDang = () => {
         noiDungSnapshot:
           hopDongData?.renderedHtml || hopDongData?.noiDungSnapshot || "",
         phongId: hopDongPhong?.PhongID,
+        ngayBatDau: ngayChuyenVao, // Ngày muốn chuyển vào
       });
 
       showToast("Đặt cọc thành công!", "success");
@@ -1685,15 +1699,36 @@ const ChiTietTinDang = () => {
               )}
 
               {!hopDongLoading && !hopDongError && hopDongData && (
-                <div
-                  className="hop-dong-modal__preview"
-                  dangerouslySetInnerHTML={{
-                    __html:
-                      hopDongData?.renderedHtml ||
-                      hopDongData?.noiDungSnapshot ||
-                      "",
-                  }}
-                />
+                <>
+                  {/* Input chọn ngày chuyển vào */}
+                  <div className="hop-dong-modal__date-picker">
+                    <label htmlFor="ngayChuyenVao">
+                      <span className="date-picker-icon">📅</span>
+                      Ngày muốn chuyển vào <span className="required">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      id="ngayChuyenVao"
+                      value={ngayChuyenVao}
+                      onChange={(e) => setNgayChuyenVao(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      required
+                    />
+                    <p className="date-picker-hint">
+                      Chọn ngày bạn dự kiến chuyển vào ở. Ngày này sẽ được ghi nhận làm ngày bắt đầu hợp đồng.
+                    </p>
+                  </div>
+
+                  <div
+                    className="hop-dong-modal__preview"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        hopDongData?.renderedHtml ||
+                        hopDongData?.noiDungSnapshot ||
+                        "",
+                    }}
+                  />
+                </>
               )}
 
               <div className="hop-dong-modal__actions">

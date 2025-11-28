@@ -144,7 +144,7 @@ function ModalChonChinhSachCoc({ isOpen, onClose, duAn, onSuccess, onOpenCreateM
       TTL_CocGiuCho_Gio: policy.TTL_CocGiuCho_Gio || '',
       TyLePhat_CocGiuCho: policy.TyLePhat_CocGiuCho || '',
       ChoPhepCocAnNinh: policy.ChoPhepCocAnNinh === 1,
-      SoTienCocGiuChoMacDinh: policy.SoTienCocGiuChoMacDinh || '',
+      SoTienCocAnNinhMacDinh: policy.SoTienCocAnNinhMacDinh || '',
       QuyTacGiaiToa: policy.QuyTacGiaiToa || 'BanGiao',
       HieuLuc: policy.HieuLuc === 1
     });
@@ -197,7 +197,7 @@ function ModalChonChinhSachCoc({ isOpen, onClose, duAn, onSuccess, onOpenCreateM
         TTL_CocGiuCho_Gio: editFormData.ChoPhepCocGiuCho ? parseInt(editFormData.TTL_CocGiuCho_Gio) : null,
         TyLePhat_CocGiuCho: editFormData.ChoPhepCocGiuCho ? parseFloat(editFormData.TyLePhat_CocGiuCho) : null,
         ChoPhepCocAnNinh: editFormData.ChoPhepCocAnNinh ? 1 : 0,
-        SoTienCocGiuChoMacDinh: editFormData.SoTienCocGiuChoMacDinh ? parseFloat(editFormData.SoTienCocGiuChoMacDinh) : null,
+        SoTienCocAnNinhMacDinh: editFormData.SoTienCocAnNinhMacDinh ? parseFloat(editFormData.SoTienCocAnNinhMacDinh) : null,
         QuyTacGiaiToa: editFormData.QuyTacGiaiToa,
         HieuLuc: editFormData.HieuLuc ? 1 : 0
       };
@@ -417,7 +417,7 @@ function ModalChonChinhSachCoc({ isOpen, onClose, duAn, onSuccess, onOpenCreateM
                                 Số tiền giữ chỗ mặc định
                               </span>
                               <span className="modal-chon-chinh-sach-coc__info-value modal-chon-chinh-sach-coc__info-value--money">
-                                {formatCurrency(selectedPolicy.SoTienCocGiuChoMacDinh)}
+                                {formatCurrency(selectedPolicy.SoTienCocAnNinhMacDinh)}
                               </span>
                             </div>
                           </>
@@ -606,8 +606,8 @@ function ModalChonChinhSachCoc({ isOpen, onClose, duAn, onSuccess, onOpenCreateM
                       <input
                         type="number"
                         className="modal-chon-chinh-sach-coc__form-input"
-                        value={editFormData.SoTienCocGiuChoMacDinh}
-                        onChange={(e) => handleEditFormChange('SoTienCocGiuChoMacDinh', e.target.value)}
+                        value={editFormData.SoTienCocAnNinhMacDinh}
+                        onChange={(e) => handleEditFormChange('SoTienCocAnNinhMacDinh', e.target.value)}
                         min="0"
                         placeholder="0"
                       />
@@ -692,7 +692,7 @@ function ModalChonChinhSachCoc({ isOpen, onClose, duAn, onSuccess, onOpenCreateM
                             <HiOutlineCurrencyDollar className="modal-chon-chinh-sach-coc__preview-icon" />
                             Số tiền giữ chỗ
                           </span>
-                          <span className="modal-chon-chinh-sach-coc__preview-value">{formatCurrency(editFormData.SoTienCocGiuChoMacDinh)}</span>
+                          <span className="modal-chon-chinh-sach-coc__preview-value">{formatCurrency(editFormData.SoTienCocAnNinhMacDinh)}</span>
                         </div>
                       </>
                     )}

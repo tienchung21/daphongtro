@@ -86,6 +86,11 @@ class ThongBaoModel {
         limit = 20
       } = filters;
 
+      // Đảm bảo limit và offset là số nguyên hợp lệ
+      const safeLimit = Math.max(1, Math.min(100, parseInt(limit) || 20));
+      const safePage = Math.max(1, parseInt(page) || 1);
+      const safeOffset = (safePage - 1) * safeLimit;
+
       let query = `
         SELECT 
           ThongBaoID, NguoiNhanID, Kenh, TieuDe, NoiDung, 
@@ -101,18 +106,19 @@ class ThongBaoModel {
         params.push(trangThai);
       }
 
-      // Count total
-      const countQuery = query.replace(
-        'SELECT ThongBaoID, NguoiNhanID, Kenh, TieuDe, NoiDung, Payload, TrangThai, SoLanThu, TaoLuc, GuiLuc',
-        'SELECT COUNT(*) as total'
-      ).replace('ORDER BY', '').split('ORDER BY')[0];
+      // Count total - dùng query riêng để đếm
+      const countQuery = `
+        SELECT COUNT(*) as total
+        FROM thongbao
+        WHERE NguoiNhanID = ? AND TrangThai != 'DaXoa'
+        ${trangThai ? 'AND TrangThai = ?' : ''}
+      `;
 
       const [countResult] = await db.execute(countQuery, params);
       const total = countResult[0]?.total || 0;
 
-      // Add pagination
-      query += ' ORDER BY TaoLuc DESC LIMIT ? OFFSET ?';
-      params.push(limit, (page - 1) * limit);
+      // Add pagination - sử dụng string interpolation an toàn cho LIMIT/OFFSET
+      query += ` ORDER BY TaoLuc DESC LIMIT ${safeLimit} OFFSET ${safeOffset}`;
 
       const [rows] = await db.execute(query, params);
 
@@ -132,8 +138,8 @@ class ThongBaoModel {
       return {
         data: filteredData,
         total: loai ? filteredData.length : total,
-        page: parseInt(page),
-        limit: parseInt(limit)
+        page: safePage,
+        limit: safeLimit
       };
     } catch (error) {
       console.error('[ThongBaoModel] Lỗi lấy danh sách thông báo:', error);

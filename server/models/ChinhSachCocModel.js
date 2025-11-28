@@ -26,7 +26,7 @@ class ChinhSachCocModel {
           csc.TTL_CocGiuCho_Gio,
           csc.TyLePhat_CocGiuCho,
           csc.ChoPhepCocAnNinh,
-          csc.SoTienCocGiuChoMacDinh,
+          csc.SoTienCocAnNinhMacDinh,
           csc.QuyTacGiaiToa,
           csc.HieuLuc,
           csc.TaoLuc,
@@ -123,7 +123,7 @@ class ChinhSachCocModel {
           TTL_CocGiuCho_Gio,
           TyLePhat_CocGiuCho,
           ChoPhepCocAnNinh,
-          SoTienCocGiuChoMacDinh,
+          SoTienCocAnNinhMacDinh,
           QuyTacGiaiToa,
           HieuLuc
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -137,7 +137,7 @@ class ChinhSachCocModel {
         data.TTL_CocGiuCho_Gio || 48,
         data.TyLePhat_CocGiuCho || 0.00,
         data.ChoPhepCocAnNinh !== undefined ? data.ChoPhepCocAnNinh : 1,
-        data.SoTienCocGiuChoMacDinh ?? null,
+        data.SoTienCocAnNinhMacDinh ?? null,
         data.QuyTacGiaiToa || 'BanGiao',
         data.HieuLuc !== undefined ? data.HieuLuc : 1
       ];
@@ -197,9 +197,9 @@ class ChinhSachCocModel {
         updateFields.push('ChoPhepCocAnNinh = ?');
         params.push(data.ChoPhepCocAnNinh ? 1 : 0);
       }
-      if (data.SoTienCocGiuChoMacDinh !== undefined) {
-        updateFields.push('SoTienCocGiuChoMacDinh = ?');
-        params.push(data.SoTienCocGiuChoMacDinh);
+      if (data.SoTienCocAnNinhMacDinh !== undefined) {
+        updateFields.push('SoTienCocAnNinhMacDinh = ?');
+        params.push(data.SoTienCocAnNinhMacDinh);
       }
       if (data.QuyTacGiaiToa !== undefined) {
         updateFields.push('QuyTacGiaiToa = ?');

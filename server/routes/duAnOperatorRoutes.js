@@ -73,8 +73,7 @@ router.put('/:id/xu-ly-yeu-cau', operatorAuth, OperatorController.xuLyYeuCauMoLa
  * POST /api/operator/du-an/:id/duyet-hoa-hong
  * Duyệt hoa hồng dự án
  */
-// ❌ REMOVED: POST /:id/duyet-hoa-hong - Không cần duyệt hoa hồng riêng
-// Dùng ngungHoatDongDuAn() hoặc xuLyYeuCauMoLai() thay thế
+router.post('/:id/duyet-hoa-hong', operatorAuth, DuAnOperatorController.duyetHoaHong);
 
 /**
  * POST /api/operator/du-an/:id/tu-choi-hoa-hong

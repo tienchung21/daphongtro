@@ -176,6 +176,40 @@
   flex-shrink: 0;
 }
 
+/* Video Call Button */
+.conversation-item-video-call {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.conversation-item:hover .conversation-item-video-call {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.conversation-item-video-call:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  transform: scale(1.1) !important;
+}
+
+.conversation-item-video-call svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* Scrollbar */
 .conversation-list-items::-webkit-scrollbar {
   width: 6px;

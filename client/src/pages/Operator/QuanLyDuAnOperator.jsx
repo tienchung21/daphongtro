@@ -123,7 +123,7 @@ const QuanLyDuAnOperator = () => {
     {
       key: 'HoaHong',
       label: 'Hoa hồng',
-      width: '180px',
+      width: '220px',
       render: (row) => {
         if (!row.BangHoaHong) {
           return (
@@ -139,22 +139,48 @@ const QuanLyDuAnOperator = () => {
           'TuChoi': { label: 'Từ chối', variant: 'danger' }
         };
         
+        // Parse BangHoaHong từ JSON
+        let bangHoaHongArray = [];
+        try {
+          if (typeof row.BangHoaHong === 'string') {
+            bangHoaHongArray = JSON.parse(row.BangHoaHong);
+          } else if (Array.isArray(row.BangHoaHong)) {
+            bangHoaHongArray = row.BangHoaHong;
+          }
+        } catch {
+          // Nếu không parse được, hiển thị raw
+          bangHoaHongArray = null;
+        }
+        
         return (
           <div className="quan-ly-du-an__hoa-hong">
             <BadgeStatusOperator
               status={row.TrangThaiDuyetHoaHong || 'ChoDuyet'}
               statusMap={trangThaiMap}
             />
-            <div className="quan-ly-du-an__hoa-hong-info">
-              <span className="quan-ly-du-an__hoa-hong-value">
-                {row.BangHoaHong}%
-              </span>
-              {row.SoThangCocToiThieu && (
-                <span className="quan-ly-du-an__hoa-hong-thang">
-                  ({row.SoThangCocToiThieu} tháng)
+            <div className="quan-ly-du-an__hoa-hong-list">
+              {Array.isArray(bangHoaHongArray) && bangHoaHongArray.length > 0 ? (
+                bangHoaHongArray.map((muc, idx) => (
+                  <div key={idx} className="quan-ly-du-an__hoa-hong-item">
+                    <span className="quan-ly-du-an__hoa-hong-thang">
+                      {muc.soThang || muc.SoThang} tháng:
+                    </span>
+                    <span className="quan-ly-du-an__hoa-hong-value">
+                      {muc.tyLe || muc.TyLe}%
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <span className="quan-ly-du-an__hoa-hong-value">
+                  {row.BangHoaHong}
                 </span>
               )}
             </div>
+            {row.SoThangCocToiThieu && (
+              <div className="quan-ly-du-an__hoa-hong-coc">
+                Cọc tối thiểu: {row.SoThangCocToiThieu} tháng
+              </div>
+            )}
           </div>
         );
       }
@@ -181,9 +207,28 @@ const QuanLyDuAnOperator = () => {
     {
       key: 'actions',
       label: 'Thao tác',
-      width: '250px',
+      width: '280px',
       render: (row) => (
         <div className="quan-ly-du-an__actions">
+          {/* Nút duyệt hoa hồng - hiển thị nếu có BangHoaHong và chưa duyệt */}
+          {row.BangHoaHong && (!row.TrangThaiDuyetHoaHong || row.TrangThaiDuyetHoaHong === 'ChoDuyet') && (
+            <button
+              className="operator-btn operator-btn--sm operator-btn--success quan-ly-du-an__btn-duyet"
+              onClick={() => handleDuyetHoaHong(row)}
+            >
+              💰 Duyệt hoa hồng
+            </button>
+          )}
+          {/* Nút xem lại hoa hồng đã duyệt */}
+          {row.BangHoaHong && row.TrangThaiDuyetHoaHong === 'DaDuyet' && (
+            <button
+              className="operator-btn operator-btn--sm operator-btn--outline-success"
+              onClick={() => handleDuyetHoaHong(row)}
+              title="Xem lại thông tin hoa hồng đã duyệt"
+            >
+              ✅ Đã duyệt
+            </button>
+          )}
           {row.TrangThai === 'HoatDong' && (
             <button
               className="operator-btn operator-btn--sm operator-btn--warning"
@@ -198,14 +243,6 @@ const QuanLyDuAnOperator = () => {
               onClick={() => handleXuLyYeuCau(row.DuAnID)}
             >
               📋 Xử lý yêu cầu
-            </button>
-          )}
-          {row.BangHoaHong && row.TrangThaiDuyetHoaHong === 'ChoDuyet' && (
-            <button
-              className="operator-btn operator-btn--sm operator-btn--success"
-              onClick={() => handleDuyetHoaHong(row)}
-            >
-              ✅ Duyệt hoa hồng
             </button>
           )}
           <button

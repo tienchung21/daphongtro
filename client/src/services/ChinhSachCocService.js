@@ -46,7 +46,7 @@ const ChinhSachCocService = {
    * @param {number} data.TTL_CocGiuCho_Gio - TTL cọc giữ chỗ (1-168 giờ)
    * @param {number} data.TyLePhat_CocGiuCho - Tỷ lệ phạt cọc giữ chỗ (0-100%)
    * @param {boolean} data.ChoPhepCocAnNinh - Cho phép cọc an ninh (default: false)
-   * @param {number} data.SoTienCocGiuChoMacDinh - Số tiền cọc giữ chỗ (>= 0)
+   * @param {number} data.SoTienCocAnNinhMacDinh - Số tiền cọc giữ chỗ (>= 0)
    * @param {string} data.QuyTacGiaiToa - Quy tắc giải tỏa ('BanGiao', 'TheoNgay', 'Khac')
    * @returns {Promise<Object>} Chính sách cọc vừa tạo
    */

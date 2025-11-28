@@ -207,12 +207,11 @@ class NhanVienBanHangController {
         ${filters.trangThai ? 'AND ch.TrangThai = ?' : ''}
         ${filters.tuNgay && filters.denNgay ? 'AND ch.ThoiGianHen BETWEEN ? AND ?' : ''}
         ORDER BY ch.ThoiGianHen DESC
-        LIMIT ?
+        LIMIT ${Math.max(1, Math.min(100, parseInt(filters.limit) || 20))}
       `, [
         nhanVienId,
         ...(filters.trangThai ? [filters.trangThai] : []),
-        ...(filters.tuNgay && filters.denNgay ? [filters.tuNgay, filters.denNgay] : []),
-        parseInt(filters.limit)
+        ...(filters.tuNgay && filters.denNgay ? [filters.tuNgay, filters.denNgay] : [])
       ]);
 
       res.json({
@@ -480,13 +479,12 @@ class NhanVienBanHangController {
         ${filters.trangThai ? 'AND gd.TrangThai = ?' : ''}
         ${filters.tuNgay && filters.denNgay ? 'AND gd.ThoiGian BETWEEN ? AND ?' : ''}
         ORDER BY gd.ThoiGian DESC
-        LIMIT ?
+        LIMIT ${Math.max(1, Math.min(100, parseInt(filters.limit) || 20))}
       `, [
         nhanVienId,
         ...(filters.loai ? [filters.loai] : []),
         ...(filters.trangThai ? [filters.trangThai] : []),
-        ...(filters.tuNgay && filters.denNgay ? [filters.tuNgay, filters.denNgay] : []),
-        parseInt(filters.limit)
+        ...(filters.tuNgay && filters.denNgay ? [filters.tuNgay, filters.denNgay] : [])
       ]);
 
       res.json({

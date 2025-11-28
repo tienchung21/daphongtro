@@ -96,9 +96,10 @@ class ChuDuAnModel {
       
       query += ' ORDER BY td.CapNhatLuc DESC';
       
+      // Sử dụng string interpolation an toàn cho LIMIT (tránh lỗi với prepared statement)
       if (filters.limit) {
-        query += ' LIMIT ?';
-        params.push(parseInt(filters.limit));
+        const safeLimit = Math.max(1, Math.min(100, parseInt(filters.limit) || 20));
+        query += ` LIMIT ${safeLimit}`;
       }
       
       const [rows] = await db.execute(query, params);
@@ -469,9 +470,10 @@ class ChuDuAnModel {
       
       query += ' ORDER BY ch.ThoiGianHen DESC';
       
+      // Sử dụng string interpolation an toàn cho LIMIT (tránh lỗi với prepared statement)
       if (filters.limit) {
-        query += ' LIMIT ?';
-        params.push(parseInt(filters.limit));
+        const safeLimit = Math.max(1, Math.min(100, parseInt(filters.limit) || 20));
+        query += ` LIMIT ${safeLimit}`;
       }
       
       const [rows] = await db.execute(query, params);

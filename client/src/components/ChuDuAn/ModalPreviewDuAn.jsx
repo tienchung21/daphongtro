@@ -328,7 +328,7 @@ function ModalPreviewDuAn({
                               </span>
                               <span className="policy-tag tag-secondary">
                                 <HiOutlineCurrencyDollar className="tag-icon" />
-                                {formatCurrency(policy.SoTienCocGiuChoMacDinh)}
+                                {formatCurrency(policy.SoTienCocAnNinhMacDinh)}
                               </span>
                             </>
                           )}

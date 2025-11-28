@@ -146,6 +146,7 @@ class DuAnOperatorController {
   /**
    * GET /api/operator/du-an
    * Lấy danh sách dự án với bộ lọc và phân trang
+   * Lọc theo khu vực phụ trách của nhân viên điều hành
    */
   static async danhSachDuAn(req, res) {
     try {
@@ -157,10 +158,14 @@ class DuAnOperatorController {
         limit
       } = req.query;
 
+      // Lấy operatorId từ req.user để lọc theo khu vực phụ trách
+      const operatorId = req.user?.NguoiDungID || null;
+
       const filters = {
         keyword,
         trangThai,
         chuDuAnId: chuDuAnId ? parseInt(chuDuAnId) : null,
+        operatorId, // Thêm operatorId để lọc theo khu vực
         page: page ? parseInt(page) : 1,
         limit: limit ? parseInt(limit) : 20
       };
@@ -465,14 +470,52 @@ class DuAnOperatorController {
   }
 
   /**
-   * ❌ REMOVED: duyetHoaHong() - Không cần endpoint duyệt hoa hồng riêng
-   * 
-   * Thay thế:
-   * - Nếu hoa hồng vi phạm → Dùng ngungHoatDongDuAn() để banned
-   * - Nếu chủ dự án sửa và yêu cầu mở lại → Dùng xuLyYeuCauMoLai()
-   * 
-   * Xem docs/HOA_HONG_SCHEMA_ANALYSIS.md
+   * POST /api/operator/du-an/:id/duyet-hoa-hong
+   * Duyệt hoa hồng dự án
    */
+  static async duyetHoaHong(req, res) {
+    try {
+      const duAnId = parseInt(req.params.id);
+      const operatorId = req.user.NguoiDungID;
+
+      if (!duAnId || isNaN(duAnId)) {
+        return res.status(400).json({
+          success: false,
+          message: 'ID dự án không hợp lệ'
+        });
+      }
+
+      const duAn = await DuAnOperatorModel.duyetHoaHongDuAn(duAnId, operatorId);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Duyệt hoa hồng dự án thành công',
+        data: duAn
+      });
+    } catch (error) {
+      console.error('[DuAnOperatorController] Lỗi duyetHoaHong:', error);
+      
+      if (error.message === 'Dự án không tồn tại') {
+        return res.status(404).json({
+          success: false,
+          message: error.message
+        });
+      }
+
+      if (error.message.includes('không có') || error.message.includes('đã')) {
+        return res.status(400).json({
+          success: false,
+          message: error.message
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: 'Lỗi server khi duyệt hoa hồng',
+        error: error.message
+      });
+    }
+  }
 
   /**
    * POST /api/operator/du-an/:id/tu-choi-hoa-hong

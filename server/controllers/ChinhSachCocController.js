@@ -113,7 +113,7 @@ class ChinhSachCocController {
         TTL_CocGiuCho_Gio,
         TyLePhat_CocGiuCho,
         ChoPhepCocAnNinh,
-        SoTienCocGiuChoMacDinh,
+        SoTienCocAnNinhMacDinh,
         QuyTacGiaiToa,
         HieuLuc
       } = req.body;
@@ -147,8 +147,8 @@ class ChinhSachCocController {
         errors.push('Quy tắc giải tỏa không hợp lệ (BanGiao/TheoNgay/Khac)');
       }
 
-      if (SoTienCocGiuChoMacDinh !== undefined && SoTienCocGiuChoMacDinh !== null) {
-        const soTienGiuCho = parseFloat(SoTienCocGiuChoMacDinh);
+      if (SoTienCocAnNinhMacDinh !== undefined && SoTienCocAnNinhMacDinh !== null) {
+        const soTienGiuCho = parseFloat(SoTienCocAnNinhMacDinh);
         if (isNaN(soTienGiuCho) || soTienGiuCho < 0) {
           errors.push('Số tiền cọc giữ chỗ phải lớn hơn hoặc bằng 0');
         }
@@ -170,7 +170,7 @@ class ChinhSachCocController {
         TTL_CocGiuCho_Gio,
         TyLePhat_CocGiuCho,
         ChoPhepCocAnNinh,
-        SoTienCocGiuChoMacDinh,
+        SoTienCocAnNinhMacDinh,
         QuyTacGiaiToa,
         HieuLuc
       });
@@ -242,7 +242,7 @@ class ChinhSachCocController {
         TTL_CocGiuCho_Gio,
         TyLePhat_CocGiuCho,
         ChoPhepCocAnNinh,
-        SoTienCocGiuChoMacDinh,
+        SoTienCocAnNinhMacDinh,
         QuyTacGiaiToa,
         HieuLuc
       } = req.body;
@@ -278,8 +278,8 @@ class ChinhSachCocController {
         errors.push('Quy tắc giải tỏa không hợp lệ (BanGiao/TheoNgay/Khac)');
       }
 
-      if (SoTienCocGiuChoMacDinh !== undefined && SoTienCocGiuChoMacDinh !== null) {
-        const soTienGiuCho = parseFloat(SoTienCocGiuChoMacDinh);
+      if (SoTienCocAnNinhMacDinh !== undefined && SoTienCocAnNinhMacDinh !== null) {
+        const soTienGiuCho = parseFloat(SoTienCocAnNinhMacDinh);
         if (isNaN(soTienGiuCho) || soTienGiuCho < 0) {
           errors.push('Số tiền cọc giữ chỗ phải lớn hơn hoặc bằng 0');
         }
@@ -301,7 +301,7 @@ class ChinhSachCocController {
       if (TTL_CocGiuCho_Gio !== undefined) dataUpdate.TTL_CocGiuCho_Gio = TTL_CocGiuCho_Gio;
       if (TyLePhat_CocGiuCho !== undefined) dataUpdate.TyLePhat_CocGiuCho = TyLePhat_CocGiuCho;
       if (ChoPhepCocAnNinh !== undefined) dataUpdate.ChoPhepCocAnNinh = ChoPhepCocAnNinh;
-      if (SoTienCocGiuChoMacDinh !== undefined) dataUpdate.SoTienCocGiuChoMacDinh = SoTienCocGiuChoMacDinh;
+      if (SoTienCocAnNinhMacDinh !== undefined) dataUpdate.SoTienCocAnNinhMacDinh = SoTienCocAnNinhMacDinh;
       if (QuyTacGiaiToa !== undefined) dataUpdate.QuyTacGiaiToa = QuyTacGiaiToa;
       if (HieuLuc !== undefined) dataUpdate.HieuLuc = HieuLuc;
 

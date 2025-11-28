@@ -151,6 +151,17 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
+.qlhd-admin-stat-card--active {
+  border: 2px solid #3b82f6 !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+}
+
+.qlhd-admin-stat-card--warning.qlhd-admin-stat-card--active {
+  border: 2px solid #f59e0b !important;
+  background: rgba(245, 158, 11, 0.1) !important;
+}
+
 .qlhd-admin-stat-icon {
   width: 40px;
   height: 40px;
@@ -386,6 +397,21 @@
 .hop-dong-admin-btn-danger:hover {
   background: #fee2e2 !important;
   color: #dc2626 !important;
+}
+
+.hop-dong-admin-btn-success {
+  background: #10b981 !important; /* green-500 */
+  color: #ffffff !important;
+  border: 1px solid #059669 !important; /* green-600 */
+  padding: 6px 12px !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+}
+
+.hop-dong-admin-btn-success:hover {
+  background: #059669 !important;
+  color: #ffffff !important;
 }
 
 .hop-dong-admin-btn svg {

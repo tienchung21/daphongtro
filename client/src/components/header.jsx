@@ -142,6 +142,8 @@ function Header() {
     const firstCandidate = normalizeCandidates(value).find(Boolean);
     if (!firstCandidate || typeof firstCandidate !== "string") return null;
     return getStaticUrl(firstCandidate);
+  };
+
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
   };
@@ -247,14 +249,11 @@ function Header() {
                     tin?.TinDangID ?? tin?.TinDangId ?? tin?.id ?? tin?._id;
                   const title = tin?.TieuDe ?? tin?.title ?? "Không có tiêu đề";
 
+                  // Sử dụng getStaticUrl() để tự động xử lý URL theo môi trường
                   const imgSrc = tin?.Img
-                    ? typeof tin.Img === "string" && tin.Img.startsWith("http")
-                      ? tin.Img
-                      : `http://localhost:5000${tin.Img}`
+                    ? getStaticUrl(tin.Img)
                     : tin?.URL
-                    ? typeof tin.URL === "string" && tin.URL.startsWith("http")
-                      ? tin.URL
-                      : `http://localhost:5000${tin.URL}`
+                    ? getStaticUrl(tin.URL)
                     : "https://via.placeholder.com/80x60?text=No+Img";
 
                   return (

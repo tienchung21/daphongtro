@@ -87,7 +87,8 @@ class LichLamViecOperatorModel {
 
       params.push(parsedLimit, offset);
 
-      const [rows] = await db.execute(query, params);
+      // Dùng db.query() cho query động (WHERE clause thay đổi) - best practice
+      const [rows] = await db.query(query, params);
 
       // Query tổng số bản ghi
       const countQuery = `
@@ -102,7 +103,7 @@ class LichLamViecOperatorModel {
       `;
 
       const countParams = params.slice(0, -2);
-      const [countRows] = await db.execute(countQuery, countParams);
+      const [countRows] = await db.query(countQuery, countParams);
       const total = countRows[0]?.total || 0;
 
       return {
@@ -174,7 +175,7 @@ class LichLamViecOperatorModel {
           hs.MaNhanVien,
           hs.KhuVucChinhID,
           kv.TenKhuVuc,
-         nd.TrangThai as TrangThaiLamViec,
+          nd.TrangThai as TrangThaiLamViec,
           COUNT(ch.CuocHenID) as SoCuocHen,
           COUNT(CASE WHEN ch.TrangThai = 'DaXacNhan' THEN 1 END) as SoCuocHenDaXacNhan
         FROM lichlamviec ll
@@ -184,11 +185,14 @@ class LichLamViecOperatorModel {
         LEFT JOIN cuochen ch ON ll.NhanVienBanHangID = ch.NhanVienBanHangID
           AND ch.ThoiGianHen BETWEEN ll.BatDau AND ll.KetThuc
         ${whereClause}
-        GROUP BY ll.LichID
+        GROUP BY ll.LichID, ll.NhanVienBanHangID, ll.BatDau, ll.KetThuc, 
+                 nd.TenDayDu, nd.SoDienThoai, nd.TrangThai,
+                 hs.MaNhanVien, hs.KhuVucChinhID, kv.TenKhuVuc
         ORDER BY ll.BatDau ASC
       `;
 
-      const [rows] = await db.execute(query, params);
+      // Dùng db.query() cho query động
+      const [rows] = await db.query(query, params);
       return rows;
     } catch (error) {
       console.error('[LichLamViecOperatorModel] Lỗi layLichTongHop:', error);

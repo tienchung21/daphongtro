@@ -54,7 +54,9 @@ class HopDongCustomerController {
   static async confirmDeposit(req, res) {
     try {
       const tinDangId = Number(req.params.tinDangId);
-      const { giaoDichId, soTien, noiDungSnapshot, phongId } = req.body || {};
+      const { giaoDichId, soTien, noiDungSnapshot, phongId, ngayBatDau } = req.body || {};
+
+      console.log('[confirmDeposit] Request body:', { tinDangId, phongId, ngayBatDau, soTien });
 
       if (!tinDangId || Number.isNaN(tinDangId)) {
         return res.status(400).json({
@@ -75,6 +77,20 @@ class HopDongCustomerController {
           success: false,
           message: 'Phòng không hợp lệ',
         });
+      }
+
+      // Validate ngày bắt đầu (ngày muốn chuyển vào)
+      let ngayBatDauFormatted = null;
+      if (ngayBatDau) {
+        const parsedDate = new Date(ngayBatDau);
+        if (isNaN(parsedDate.getTime())) {
+          return res.status(400).json({
+            success: false,
+            message: 'Ngày chuyển vào không hợp lệ',
+          });
+        }
+        // Format thành YYYY-MM-DD
+        ngayBatDauFormatted = parsedDate.toISOString().split('T')[0];
       }
 
       const phongIdNum = Number(phongId);
@@ -152,8 +168,9 @@ class HopDongCustomerController {
             GiaThueCuoiCung,
             SoTienCoc,
             noidunghopdong,
+            NgayBatDau,
             TrangThai
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, 'xacthuc')
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'xacthuc')
         `, [
           tinDangId,
           phongIdNum,
@@ -161,10 +178,13 @@ class HopDongCustomerController {
           req.user.id,
           giaPhong,
           Number(soTien),
-          noiDungSnapshot
+          noiDungSnapshot,
+          ngayBatDauFormatted
         ]);
 
         const hopDongId = hopDongResult.insertId;
+
+        console.log('[confirmDeposit] Đã tạo hợp đồng:', { hopDongId, ngayBatDau: ngayBatDauFormatted });
 
         return res.json({
           success: true,
@@ -175,6 +195,7 @@ class HopDongCustomerController {
             soTien,
             phongId: phongIdNum,
             hopDongId,
+            ngayBatDau: ngayBatDauFormatted,
           },
         });
       }

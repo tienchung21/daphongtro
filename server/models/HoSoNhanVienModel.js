@@ -29,9 +29,10 @@ class HoSoNhanVienModel {
         operatorId = -1
       } = filters;
 
-      // console.log('Lấy danh sách nhân viên: ',filters);
-
-      const offset = (page - 1) * limit;
+      // Parse số nguyên để tránh lỗi prepared statement với LIMIT/OFFSET
+      const pageInt = parseInt(page, 10) || 1;
+      const limitInt = parseInt(limit, 10) || 20;
+      const offset = (pageInt - 1) * limitInt;
 
       let whereConditions = [];
       const params = [];
@@ -94,12 +95,12 @@ class HoSoNhanVienModel {
         LIMIT ? OFFSET ?
       `;
 
-      params.push(limit, offset);
-      const [rows] = await db.execute(query, params);
+      // Đảm bảo limit và offset là số nguyên cho LIMIT/OFFSET
+      params.push(limitInt, offset);
+      // Dùng db.query() cho query động (WHERE clause thay đổi) - best practice
+      const [rows] = await db.query(query, params);
 
-      // Không cần map, dùng trạng thái DB trực tiếp (HoatDong/TamKhoa/VoHieuHoa)
-
-      // Query total count
+      // Query total count (không cần LIMIT/OFFSET)
       const countQuery = `
         SELECT COUNT(*) as total
         FROM hosonhanvien hs
@@ -108,15 +109,15 @@ class HoSoNhanVienModel {
       `;
 
       const countParams = params.slice(0, -2);
-      const [countRows] = await db.execute(countQuery, countParams);
+      const [countRows] = await db.query(countQuery, countParams);
       const total = countRows[0].total;
 
       return {
         data: rows,
         total,
-        page: parseInt(page),
-        totalPages: Math.ceil(total / limit),
-        limit: parseInt(limit)
+        page: pageInt,
+        totalPages: Math.ceil(total / limitInt),
+        limit: limitInt
       };
     } catch (error) {
       console.error('[HoSoNhanVienModel] Lỗi layDanhSachNhanVien:', error);
@@ -431,26 +432,31 @@ class HoSoNhanVienModel {
 
       // Lấy ID vai trò NhanVienBanHang
       const [vaiTroRows] = await connection.execute(
-        `SELECT VaiTroID FROM vaitro WHERE TenVaiTro = 'NhanVienBanHang' LIMIT 1`
+        `SELECT VaiTroID FROM vaitro WHERE TenVaiTro = 'Nhân viên Bán hàng' OR TenVaiTro = 'NhanVienBanHang' LIMIT 1`
       );
 
       if (!vaiTroRows.length) {
-        throw new Error('Vai trò NhanVienBanHang chưa được tạo trong hệ thống');
+        throw new Error('Vai trò Nhân viên Bán hàng chưa được tạo trong hệ thống');
       }
 
       const vaiTroId = vaiTroRows[0].VaiTroID;
 
-      // Gán vai trò
-      await connection.execute(
-        `INSERT INTO nguoidung_vaitro (NguoiDungID, VaiTroID) VALUES (?, ?)`,
-        [userId, vaiTroId]
-      );
-
-      // Cập nhật VaiTroHoatDongID
+      // Cập nhật VaiTroHoatDongID trước (bảng nguoidung chắc chắn tồn tại)
       await connection.execute(
         `UPDATE nguoidung SET VaiTroHoatDongID = ? WHERE NguoiDungID = ?`,
         [vaiTroId, userId]
       );
+
+      // Gán vai trò vào bảng nguoidung_vaitro (nếu bảng tồn tại)
+      try {
+        await connection.execute(
+          `INSERT IGNORE INTO nguoidung_vaitro (NguoiDungID, VaiTroID) VALUES (?, ?)`,
+          [userId, vaiTroId]
+        );
+      } catch (roleTableError) {
+        // Bảng nguoidung_vaitro có thể không tồn tại - bỏ qua vì đã có VaiTroHoatDongID
+        console.warn('[HoSoNhanVienModel] Bảng nguoidung_vaitro không tồn tại, dùng VaiTroHoatDongID:', roleTableError.message);
+      }
 
       // Tạo mã nhân viên
       const maNhanVien = await this._generateNextMaNhanVien(connection);

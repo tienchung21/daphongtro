@@ -26,7 +26,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
     TTL_CocGiuCho_Gio: 72, // Default 3 ngày
     TyLePhat_CocGiuCho: 100, // Default 100%
     ChoPhepCocAnNinh: false,
-    SoTienCocGiuChoMacDinh: 0,
+    SoTienCocAnNinhMacDinh: 0,
     QuyTacGiaiToa: 'BanGiao',
     SoNgayGiaiToa: null, // Số ngày giải tỏa (chỉ dùng khi QuyTacGiaiToa='TheoNgay')
   });
@@ -69,7 +69,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
         TTL_CocGiuCho_Gio: chinhSachCoc.TTL_CocGiuCho_Gio || 72,
         TyLePhat_CocGiuCho: chinhSachCoc.TyLePhat_CocGiuCho || 100,
         ChoPhepCocAnNinh: chinhSachCoc.ChoPhepCocAnNinh === 1,
-        SoTienCocGiuChoMacDinh: chinhSachCoc.SoTienCocGiuChoMacDinh || 0,
+        SoTienCocAnNinhMacDinh: chinhSachCoc.SoTienCocAnNinhMacDinh || 0,
         QuyTacGiaiToa: chinhSachCoc.QuyTacGiaiToa || 'BanGiao',
         SoNgayGiaiToa: chinhSachCoc.SoNgayGiaiToa || null,
       });
@@ -110,9 +110,9 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
         newErrors.TyLePhat_CocGiuCho = 'Tỷ lệ phạt phải từ 0-100%';
       }
 
-      const soTienGiuCho = parseFloat(formData.SoTienCocGiuChoMacDinh);
+      const soTienGiuCho = parseFloat(formData.SoTienCocAnNinhMacDinh);
       if (isNaN(soTienGiuCho) || soTienGiuCho < 0) {
-        newErrors.SoTienCocGiuChoMacDinh = 'Số tiền cọc giữ chỗ phải >= 0';
+        newErrors.SoTienCocAnNinhMacDinh = 'Số tiền cọc giữ chỗ phải >= 0';
       }
     }
 
@@ -144,7 +144,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
 
     try {
       // Prepare data
-      const parsedSoTienCocGiuCho = parseFloat(formData.SoTienCocGiuChoMacDinh);
+      const parsedSoTienCocGiuCho = parseFloat(formData.SoTienCocAnNinhMacDinh);
 
       const submitData = {
         TenChinhSach: formData.TenChinhSach.trim(),
@@ -153,7 +153,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
         TTL_CocGiuCho_Gio: parseInt(formData.TTL_CocGiuCho_Gio),
         TyLePhat_CocGiuCho: parseFloat(formData.TyLePhat_CocGiuCho),
         ChoPhepCocAnNinh: formData.ChoPhepCocAnNinh,
-        SoTienCocGiuChoMacDinh: formData.ChoPhepCocGiuCho
+        SoTienCocAnNinhMacDinh: formData.ChoPhepCocGiuCho
           ? (isNaN(parsedSoTienCocGiuCho) ? null : parsedSoTienCocGiuCho)
           : null,
         QuyTacGiaiToa: formData.QuyTacGiaiToa,
@@ -301,16 +301,16 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
                     <label className="form-label">Số tiền cọc giữ chỗ mặc định (VNĐ)</label>
                     <input
                       type="number"
-                      name="SoTienCocGiuChoMacDinh"
-                      className={`form-input ${errors.SoTienCocGiuChoMacDinh ? 'error' : ''}`}
-                      value={formData.SoTienCocGiuChoMacDinh}
+                      name="SoTienCocAnNinhMacDinh"
+                      className={`form-input ${errors.SoTienCocAnNinhMacDinh ? 'error' : ''}`}
+                      value={formData.SoTienCocAnNinhMacDinh}
                       onChange={handleChange}
                       min="0"
                       step="50000"
                       placeholder="Ví dụ: 500000"
                     />
-                    {errors.SoTienCocGiuChoMacDinh && (
-                      <span className="error-text">{errors.SoTienCocGiuChoMacDinh}</span>
+                    {errors.SoTienCocAnNinhMacDinh && (
+                      <span className="error-text">{errors.SoTienCocAnNinhMacDinh}</span>
                     )}
                   </div>
                 </>
@@ -428,7 +428,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
                         Số tiền giữ chỗ
                       </span>
                       <span className="modal-csc__preview-value">
-                        {formatCurrency(formData.SoTienCocGiuChoMacDinh)}
+                        {formatCurrency(formData.SoTienCocAnNinhMacDinh)}
                       </span>
                     </div>
                   </>

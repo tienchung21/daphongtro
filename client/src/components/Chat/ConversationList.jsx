@@ -4,10 +4,10 @@
  */
 
 import React from 'react';
-import { HiOutlineChatBubbleLeftRight, HiOutlineUserGroup } from 'react-icons/hi2';
+import { HiOutlineChatBubbleLeftRight, HiOutlineUserGroup, HiOutlineVideoCamera } from 'react-icons/hi2';
 import './ConversationList.css';
 
-export const ConversationList = ({ conversations, activeId, onSelect, loading = false }) => {
+export const ConversationList = ({ conversations, activeId, onSelect, onVideoCall, loading = false }) => {
   const formatTime = (timestamp) => {
     if (!timestamp) return '';
     
@@ -93,6 +93,20 @@ export const ConversationList = ({ conversations, activeId, onSelect, loading = 
                   )}
                 </div>
               </div>
+
+              {/* Nút Video Call */}
+              {onVideoCall && (
+                <button
+                  className="conversation-item-video-call"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onVideoCall(conv);
+                  }}
+                  title="Gọi video"
+                >
+                  <HiOutlineVideoCamera />
+                </button>
+              )}
             </div>
           ))}
         </div>

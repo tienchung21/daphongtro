@@ -180,6 +180,31 @@
   flex-wrap: wrap;
 }
 
+.quan-ly-du-an__btn-duyet {
+  animation: pulse-green 2s infinite;
+}
+
+@keyframes pulse-green {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+  }
+}
+
+/* Outline success button */
+.operator-btn--outline-success {
+  background: transparent;
+  border: 1px solid var(--operator-success);
+  color: var(--operator-success);
+}
+
+.operator-btn--outline-success:hover {
+  background: var(--operator-success);
+  color: white;
+}
+
 /* ===== Hoa Hong ===== */
 .quan-ly-du-an__hoa-hong {
   display: flex;
@@ -193,6 +218,23 @@
   font-style: italic;
 }
 
+.quan-ly-du-an__hoa-hong-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.quan-ly-du-an__hoa-hong-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(139, 92, 246, 0.1);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
 .quan-ly-du-an__hoa-hong-info {
   display: flex;
   align-items: center;
@@ -201,14 +243,24 @@
 }
 
 .quan-ly-du-an__hoa-hong-value {
-  font-weight: 600;
+  font-weight: 700;
   color: var(--operator-primary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
 .quan-ly-du-an__hoa-hong-thang {
   font-size: 0.8rem;
   color: var(--operator-text-secondary);
+  font-weight: 500;
+}
+
+.quan-ly-du-an__hoa-hong-coc {
+  font-size: 0.75rem;
+  color: var(--operator-text-secondary);
+  background: rgba(100, 116, 139, 0.1);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  margin-top: 0.25rem;
 }
 
 /* ===== Responsive ===== */

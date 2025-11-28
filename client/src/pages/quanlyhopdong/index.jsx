@@ -3,7 +3,7 @@
  * @component QuanLyHopDongAdmin
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   HiOutlineDocumentText,
   HiOutlineCalendar,
@@ -51,8 +51,25 @@ export default function QuanLyHopDongAdmin() {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedHopDong, setSelectedHopDong] = useState(null);
   const [downloadingPDF, setDownloadingPDF] = useState(false);
-  const [showXinHuy, setShowXinHuy] = useState(false);
+  const [filterTrangThai, setFilterTrangThai] = useState('all'); // 'all', 'xacthuc', 'xinhuy', 'dahuy'
   const [xacNhanHuyLoading, setXacNhanHuyLoading] = useState(false);
+
+  // Memoized stats để tránh re-calculate mỗi lần render
+  const stats = useMemo(() => ({
+    total: hopDongs.length,
+    xacThuc: hopDongs.filter(hd => hd.TrangThai === 'xacthuc' || hd.TrangThai?.toLowerCase() === 'xacthuc').length,
+    xinHuy: hopDongs.filter(hd => hd.TrangThai === 'xinhuy' || hd.TrangThai?.toLowerCase() === 'xinhuy').length,
+    daHuy: hopDongs.filter(hd => hd.TrangThai === 'dahuy' || hd.TrangThai?.toLowerCase() === 'dahuy').length
+  }), [hopDongs]);
+
+  // Memoized filtered list
+  const filteredHopDongs = useMemo(() => {
+    if (filterTrangThai === 'all') return hopDongs;
+    return hopDongs.filter(hd => 
+      hd.TrangThai === filterTrangThai || 
+      hd.TrangThai?.toLowerCase() === filterTrangThai
+    );
+  }, [hopDongs, filterTrangThai]);
 
   useEffect(() => {
     const user = getCurrentUser();
@@ -641,40 +658,55 @@ export default function QuanLyHopDongAdmin() {
         </button>
       </div>
 
-      {/* Stats */}
+      {/* Stats - click để filter */}
       <div className="qlhd-admin-stats">
-        <div className="qlhd-admin-stat-card">
+        <div 
+          className={`qlhd-admin-stat-card ${filterTrangThai === 'all' ? 'qlhd-admin-stat-card--active' : ''}`}
+          style={{ cursor: 'pointer' }}
+          onClick={() => setFilterTrangThai('all')}
+          title="Xem tất cả"
+        >
           <HiOutlineDocumentText className="qlhd-admin-stat-icon" />
           <div className="qlhd-admin-stat-content">
-            <h3>{hopDongs.length}</h3>
+            <h3>{stats.total}</h3>
             <p>Tổng hợp đồng</p>
           </div>
         </div>
-        <div className="qlhd-admin-stat-card">
+        <div 
+          className={`qlhd-admin-stat-card ${filterTrangThai === 'xacthuc' ? 'qlhd-admin-stat-card--active' : ''}`}
+          style={{ cursor: 'pointer' }}
+          onClick={() => setFilterTrangThai(filterTrangThai === 'xacthuc' ? 'all' : 'xacthuc')}
+          title="Click để lọc"
+        >
           <HiOutlineCheckCircle className="qlhd-admin-stat-icon" style={{ color: '#10b981' }} />
           <div className="qlhd-admin-stat-content">
-            <h3>{hopDongs.filter(hd => hd.TrangThai === 'xacthuc' || (!hd.TrangThai && hd.BaoCaoLuc)).length}</h3>
+            <h3>{stats.xacThuc}</h3>
             <p>Xác thực</p>
           </div>
         </div>
         {userRole !== 1 && (
           <div 
-            className="qlhd-admin-stat-card qlhd-admin-stat-card--warning"
-            style={{ cursor: 'pointer', border: showXinHuy ? '3px solid #f59e0b' : '2px solid #f59e0b' }}
-            onClick={() => setShowXinHuy(!showXinHuy)}
-            title="Click để xem đơn xin hủy"
+            className={`qlhd-admin-stat-card qlhd-admin-stat-card--warning ${filterTrangThai === 'xinhuy' ? 'qlhd-admin-stat-card--active' : ''}`}
+            style={{ cursor: 'pointer' }}
+            onClick={() => setFilterTrangThai(filterTrangThai === 'xinhuy' ? 'all' : 'xinhuy')}
+            title="Click để lọc đơn xin hủy"
           >
             <HiOutlineXCircle className="qlhd-admin-stat-icon" style={{ color: '#f59e0b' }} />
             <div className="qlhd-admin-stat-content">
-              <h3>{hopDongs.filter(hd => hd.TrangThai === 'xinhuy').length}</h3>
+              <h3>{stats.xinHuy}</h3>
               <p>Đơn xin hủy</p>
             </div>
           </div>
         )}
-        <div className="qlhd-admin-stat-card">
+        <div 
+          className={`qlhd-admin-stat-card ${filterTrangThai === 'dahuy' ? 'qlhd-admin-stat-card--active' : ''}`}
+          style={{ cursor: 'pointer' }}
+          onClick={() => setFilterTrangThai(filterTrangThai === 'dahuy' ? 'all' : 'dahuy')}
+          title="Click để lọc"
+        >
           <HiOutlineXCircle className="qlhd-admin-stat-icon" style={{ color: '#ef4444' }} />
           <div className="qlhd-admin-stat-content">
-            <h3>{hopDongs.filter(hd => hd.TrangThai === 'dahuy').length}</h3>
+            <h3>{stats.daHuy}</h3>
             <p>Đã hủy</p>
           </div>
         </div>
@@ -709,7 +741,7 @@ export default function QuanLyHopDongAdmin() {
               </tr>
             </thead>
             <tbody>
-              {(showXinHuy ? hopDongs.filter(hd => hd.TrangThai === 'xinhuy') : hopDongs).map(hd => {
+              {filteredHopDongs.map(hd => {
                 const trangThai = getTrangThaiHopDong(hd);
                 return (
                   <tr key={hd.HopDongID}>
@@ -772,14 +804,14 @@ export default function QuanLyHopDongAdmin() {
                         >
                           <HiOutlineEye />
                         </button>
-                        {userRole !== 1 && hd.TrangThai === 'xinhuy' && (
+                        {userRole !== 1 && (hd.TrangThai === 'xinhuy' || hd.TrangThai?.toLowerCase() === 'xinhuy') && (
                           <button 
-                            className="hop-dong-admin-btn hop-dong-admin-btn-danger" 
-                            title="Xác nhận hủy và hoàn tiền"
+                            className="hop-dong-admin-btn hop-dong-admin-btn-success" 
+                            title="Duyệt hủy và hoàn tiền cọc"
                             onClick={() => handleXacNhanHuy(hd.HopDongID)}
                             disabled={xacNhanHuyLoading}
                           >
-                            {xacNhanHuyLoading ? '...' : <HiOutlineCheckCircle />}
+                            {xacNhanHuyLoading ? '...' : '✓ Duyệt hủy'}
                           </button>
                         )}
                       </div>

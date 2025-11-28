@@ -1,13 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { HiChatBubbleLeftRight, HiXMark, HiPaperAirplane } from 'react-icons/hi2';
-import { getApiBaseUrl } from '../../config/api'; // Helper để lấy URL API (nếu có)
+import { buildApiUrl } from '../../config/api';
 import axios from 'axios';
 import './ChatBot.css';
 
 // Fallback nếu không có hàm getApiBaseUrl
-const API_URL = typeof getApiBaseUrl === 'function' 
-    ? `${getApiBaseUrl()}/api/chatbot` 
-    : 'http://localhost:5000/api/chatbot';
+// Sử dụng buildApiUrl() để tự động xử lý URL theo môi trường
+const API_URL = buildApiUrl('/api/chatbot');
 
 const ChatBot = () => {
     const [isOpen, setIsOpen] = useState(false);

@@ -50,17 +50,20 @@ class OperatorService {
         ? 'WHERE ' + conditions.join(' AND ')
         : '';
 
-      // Count total
+      // Count total - dùng db.query() cho query động
       const countSql = `
         SELECT COUNT(*) as total
         FROM cuochen ch
         ${whereClause}
       `;
-      const [countResult] = await db.execute(countSql, params);
+      const [countResult] = await db.query(countSql, params);
       const total = countResult[0].total;
 
-      // Get paginated data
-      const offset = (parseInt(page) - 1) * parseInt(limit);
+      // Get paginated data - đảm bảo limit/offset là số nguyên
+      const limitInt = parseInt(limit, 10) || 20;
+      const pageInt = parseInt(page, 10) || 1;
+      const offset = (pageInt - 1) * limitInt;
+      
       const dataSql = `
         SELECT 
           ch.CuocHenID,
@@ -100,16 +103,17 @@ class OperatorService {
         LIMIT ? OFFSET ?
       `;
 
-      const dataParams = [...params, parseInt(limit), offset];
-      const [rows] = await db.execute(dataSql, dataParams);
+      const dataParams = [...params, limitInt, offset];
+      // Dùng db.query() cho query động
+      const [rows] = await db.query(dataSql, dataParams);
 
       return {
         cuocHens: rows,
         pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
+          page: pageInt,
+          limit: limitInt,
           total,
-          totalPages: Math.ceil(total / parseInt(limit))
+          totalPages: Math.ceil(total / limitInt)
         }
       };
     } catch (error) {
