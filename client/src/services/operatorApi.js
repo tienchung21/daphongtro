@@ -42,13 +42,13 @@ export const tinDangOperatorApi = {
    * Duyệt tin đăng
    */
   duyetTin: (id) => api.put(`/api/operator/tin-dang/${id}/duyet`),
-  duyetTinDang: (id) => api.put(`/api/operator/tin-dang/${id}/duyet`), // Alias for compatibility
+  duyetTinDang: (tinDangId, operatorId) => api.put(`/api/operator/tin-dang/${tinDangId}/duyet`, {operatorId}), // Alias for compatibility
 
   /**
    * Từ chối tin đăng
    */
   tuChoiTin: (id, data) => api.put(`/api/operator/tin-dang/${id}/tu-choi`, data),
-  tuChoiTinDang: (id, data) => api.put(`/api/operator/tin-dang/${id}/tu-choi`, data), // Alias
+  tuChoiTinDang: (tinDangId, lyDo, operatorId) => api.put(`/api/operator/tin-dang/${tinDangId}/tu-choi`, {lyDo, operatorId}), // Alias
 
   /**
    * Lấy thống kê tin đăng
@@ -92,6 +92,16 @@ export const duAnOperatorApi = {
    * Lấy thống kê dự án
    */
   getThongKe: () => api.get('/api/operator/du-an/thong-ke'),
+
+  /**
+   * Quản trị viên hệ thống tạo dự án
+   */
+  taoDuAn: (data) => api.post('/api/operator/du-an', data),
+
+  /**
+   * Quản trị viên hệ thống cập nhật dự án
+   */
+  capNhatDuAn: (id, data) => api.put(`/api/operator/du-an/${id}`, data),
 
   /**
    * Duyệt hoa hồng dự án
@@ -247,6 +257,34 @@ export const bienBanApi = {
   getThongKe: () => api.get('/api/operator/bien-ban/thong-ke')
 };
 
+// ==================== Quản lý Nội dung Hệ thống ====================
+export const noiDungHeThongApi = {
+  /**
+   * Lấy danh sách nội dung hệ thống
+   */
+  getDanhSach: (params) => api.get('/api/operator/noi-dung-he-thong', { params }),
+
+  /**
+   * Lấy nội dung theo ID
+   */
+  getChiTiet: (id) => api.get(`/api/operator/noi-dung-he-thong/${id}`),
+
+  /**
+   * Tạo nội dung mới
+   */
+  taoMoi: (data) => api.post('/api/operator/noi-dung-he-thong', data),
+
+  /**
+   * Cập nhật nội dung
+   */
+  capNhat: (id, data) => api.put(`/api/operator/noi-dung-he-thong/${id}`, data),
+
+  /**
+   * Xóa nội dung
+   */
+  xoa: (id) => api.delete(`/api/operator/noi-dung-he-thong/${id}`)
+};
+
 // ==================== Dashboard ====================
 export const dashboardOperatorApi = {
   /**
@@ -277,6 +315,7 @@ const nvdhApi = {
   cuocHen: cuocHenOperatorApi,
   nhanVien: nhanVienApi,
   bienBan: bienBanApi,
+  noiDungHeThong: noiDungHeThongApi,
   dashboard: dashboardOperatorApi
 };
 

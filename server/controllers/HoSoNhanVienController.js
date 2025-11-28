@@ -17,7 +17,8 @@ class HoSoNhanVienController {
         trangThai,
         khuVucId,
         page,
-        limit
+        limit,
+        operatorId
       } = req.query;
 
       const filters = {
@@ -25,22 +26,23 @@ class HoSoNhanVienController {
         trangThai,
         khuVucId: khuVucId ? parseInt(khuVucId) : null,
         page: page ? parseInt(page) : 1,
-        limit: limit ? parseInt(limit) : 20
+        limit: limit ? parseInt(limit) : 20,
+        operatorId: operatorId ? parseInt(operatorId) : null
       };
+
+      // console.log('📊 [HoSoNhanVienController] Filters:', filters);
 
       const result = await HoSoNhanVienModel.layDanhSachNhanVien(filters);
 
-      // Lấy thống kê tổng thể
-      const stats = await HoSoNhanVienModel.layThongKeNhanVien();
+      console.log('HoSoNhanVienController - danhsach: ', result.data);
 
-      console.log('📊 [HoSoNhanVienController] Raw stats from DB:', stats);
-      console.log('📊 [HoSoNhanVienController] Result data count:', result.data.length);
-      console.log('📊 [HoSoNhanVienController] Sample data:', result.data[0]);
+      // Lấy thống kê tổng thể
+      const stats = await HoSoNhanVienModel.layThongKeNhanVien(filters.operatorId);
 
       return res.status(200).json({
         success: true,
         message: 'Lấy danh sách nhân viên thành công',
-        ...result,
+         ...result,
         stats: {
           hoatDong: stats.HoatDong || 0,
           tamKhoa: stats.TamKhoa || 0,
@@ -206,15 +208,17 @@ class HoSoNhanVienController {
    */
   static async taoMoi(req, res) {
     try {
-      const operatorId = req.user.id;
       const {
         Email,
         TenDayDu,
         SoDienThoai,
         KhuVucChinhID,
         KhuVucPhuTrachID,
-        TyLeHoaHong
+        NgayBatDau,
+        operatorId
       } = req.body;
+
+      // console.log('Tao nhan vien moi: ', req.body);
 
       // Validation cơ bản
       if (!Email || !TenDayDu || !SoDienThoai || !KhuVucChinhID) {
@@ -230,10 +234,11 @@ class HoSoNhanVienController {
         SoDienThoai,
         KhuVucChinhID: parseInt(KhuVucChinhID),
         KhuVucPhuTrachID: KhuVucPhuTrachID ? parseInt(KhuVucPhuTrachID) : parseInt(KhuVucChinhID),
-        TyLeHoaHong: TyLeHoaHong ? parseFloat(TyLeHoaHong) : 5
+        NgayBatDau,
+        operatorId
       };
 
-      const result = await HoSoNhanVienModel.taoTaiKhoanNhanVien(data, operatorId);
+      const result = await HoSoNhanVienModel.taoTaiKhoanNhanVien(data);
 
       // TODO: Gửi email thiết lập mật khẩu (sẽ implement trong EmailService)
       // await EmailService.guiEmailThietLapMatKhau(result.userId, result.email, result.setupToken);
@@ -430,9 +435,3 @@ class HoSoNhanVienController {
 }
 
 module.exports = HoSoNhanVienController;
-
-
-
-
-
-

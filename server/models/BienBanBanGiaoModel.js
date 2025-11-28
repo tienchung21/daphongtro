@@ -41,7 +41,8 @@ class BienBanBanGiaoModel {
       }
 
       if (nhanVienId) {
-        whereConditions.push(`ch.NhanVienBanHangID = ?`);
+        // Lọc biên bản theo nhân viên bán hàng (người có cuộc hẹn chốt phòng)
+        whereConditions.push(`EXISTS (SELECT 1 FROM cuochen ch WHERE ch.PhongID = bb.PhongID AND ch.NhanVienBanHangID = ?)`);
         params.push(nhanVienId);
       }
 
@@ -91,9 +92,7 @@ class BienBanBanGiaoModel {
         INNER JOIN hopdong hd ON bb.HopDongID = hd.HopDongID
         INNER JOIN nguoidung kh ON hd.KhachHangID = kh.NguoiDungID
         ${whereConditions.length > 0 
-          ? 'WHERE ' + whereConditions
-              .map(cond => cond.replace('ch.NhanVienBanHangID = ?', `EXISTS (SELECT 1 FROM cuochen ch WHERE ch.PhongID = bb.PhongID AND ch.NhanVienBanHangID = ?)`))
-              .join(' AND ')
+          ? 'WHERE ' + whereConditions.join(' AND ')
           : ''}
       `;
 

@@ -4,6 +4,7 @@ const kv = require('../controllers/khuVucController');
 
 router.get('/', kv.getAll);         // list flat
 router.get('/tree', kv.getTree);   // hierarchical tree
+router.get('/:id/nhan-vien', kv.getNhanVien);
 router.get('/:id', kv.getById);
 router.post('/', kv.create);
 router.put('/:id', kv.update);

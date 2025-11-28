@@ -7,6 +7,21 @@
   max-width: 640px;
   margin: 0;
 }
+.sk-input-keyword {
+  padding: 6px 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 13px;
+  min-width: 200px;
+  flex: 1;
+  max-width: 300px;
+  box-sizing: border-box;
+}
+.sk-input-keyword:focus {
+  outline: 2px solid #cce4ff;
+  border-color: #1976d2;
+}
 .sk-select {
   padding: 6px 8px;
   border: 1px solid #ddd;
@@ -34,6 +49,7 @@
 /* responsive: nếu header chật, selects sẽ scroll horizontally */
 @media (max-width: 520px) {
   .sk-row { overflow-x: auto; padding-bottom: 6px; }
+  .sk-input-keyword { min-width: 150px; max-width: 200px; }
   .sk-select { min-width: 120px; }
   .sk-btn { flex: 0 0 auto; }
 }

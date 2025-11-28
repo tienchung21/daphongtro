@@ -10,6 +10,8 @@ class PublicTinDangController {
         duAnId: req.query.duAnId,
         keyword: req.query.keyword,
         limit: req.query.limit,
+        diaChi: req.query.diaChi,
+        khuVucId: req.query.khuVucId || req.query.KhuVucID, // Hỗ trợ cả 2 format
       };
       const data = await PublicTinDangModel.layTatCaTinDang(filters);
       return res.json({ success: true, data });

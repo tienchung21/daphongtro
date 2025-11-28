@@ -1,46 +1,49 @@
-import { Routes, Route } from 'react-router-dom';
-import './App.css';
-import TrangChu from './pages/trangchu';
-import Login from './pages/login';
-import Dangky from './pages/dangky';
+import { Routes, Route } from "react-router-dom";
+import "./App.css";
+import TrangChu from "./pages/trangchu";
+import Login from "./pages/login";
+import Dangky from "./pages/dangky";
 
 // Import các components cho Chủ dự án
-import DashboardChuDuAn from './pages/ChuDuAn/Dashboard'; // ✨ Light Glass Morphism với Dashboard mới
-import QuanLyTinDangChuDuAn from './pages/ChuDuAn/QuanLyTinDang'; // Alias để tránh conflict
-import ChiTietTinDang from './pages/ChuDuAn/ChiTietTinDang'; // ✨ Light Glass Morphism Theme
-import BaoCaoHieuSuat from './pages/ChuDuAn/BaoCaoHieuSuat';
-import TaoTinDang from './pages/ChuDuAn/TaoTinDang';
-import ChinhSuaTinDang from './pages/ChuDuAn/ChinhSuaTinDang';
-import QuanLyDuAn from './pages/ChuDuAn/QuanLyDuAn'; // ✨ Quản lý dự án (UC-PROJ-01 utilities)
-import QuanLyCuocHen from './pages/ChuDuAn/QuanLyCuocHen'; // ✨ UC-PROJ-02: Quản lý cuộc hẹn
-import QuanLyHopDong from './pages/ChuDuAn/QuanLyHopDong'; // ✨ UC-PROJ-04: Quản lý hợp đồng
-import TinNhan from './pages/ChuDuAn/TinNhan'; // ✨ UC-PROJ-05: Tin nhắn Chủ dự án
-import ChiTietTinNhan from './pages/ChuDuAn/ChiTietTinNhan'; // ✨ Chi tiết cuộc hội thoại
-import CaiDat from './pages/ChuDuAn/CaiDat'; // ✨ Cài đặt tài khoản Chủ dự án
-import XacThucKYC from './pages/XacThucKYC/XacThucKYC'; // ✨ Xác thực KYC (eKYC)
+import DashboardChuDuAn from "./pages/ChuDuAn/Dashboard"; // ✨ Light Glass Morphism với Dashboard mới
+import QuanLyTinDangChuDuAn from "./pages/ChuDuAn/QuanLyTinDang"; // Alias để tránh conflict
+import ChiTietTinDang from "./pages/ChuDuAn/ChiTietTinDang"; // ✨ Light Glass Morphism Theme
+import BaoCaoHieuSuat from "./pages/ChuDuAn/BaoCaoHieuSuat";
+import TaoTinDang from "./pages/ChuDuAn/TaoTinDang";
+import ChinhSuaTinDang from "./pages/ChuDuAn/ChinhSuaTinDang";
+import QuanLyDuAn from "./pages/ChuDuAn/QuanLyDuAn"; // ✨ Quản lý dự án (UC-PROJ-01 utilities)
+import QuanLyCuocHen from "./pages/ChuDuAn/QuanLyCuocHen"; // ✨ UC-PROJ-02: Quản lý cuộc hẹn
+import QuanLyHopDong from "./pages/ChuDuAn/QuanLyHopDong"; // ✨ UC-PROJ-04: Quản lý hợp đồng
+import TinNhan from "./pages/ChuDuAn/TinNhan"; // ✨ UC-PROJ-05: Tin nhắn Chủ dự án
+import ChiTietTinNhan from "./pages/ChuDuAn/ChiTietTinNhan"; // ✨ Chi tiết cuộc hội thoại
+import CaiDat from "./pages/ChuDuAn/CaiDat"; // ✨ Cài đặt tài khoản Chủ dự án
+import XacThucKYC from "./pages/XacThucKYC/XacThucKYC"; // ✨ Xác thực KYC (eKYC)
+
+import ViPage from "./pages/Vi/index"; // Ví người dùng
+import HopDongCuaToi from "./pages/hopdongcuatoi/index"; // Hợp đồng của tôi - Khách hàng
 
 // Import trang Chi Tiết Tin Đăng cho Khách hàng
-import ChiTietTinDangKhachHang from './pages/chitiettindang'; // 🎯 Soft Tech Theme - Dành cho khách hàng
+import ChiTietTinDangKhachHang from "./pages/chitiettindang"; // 🎯 Soft Tech Theme - Dành cho khách hàng
 
 // Import cho Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
-import LayoutNhanVienBanHang from './components/NhanVienBanHang/LayoutNhanVienBanHang';
-import DashboardNVBH from './pages/NhanVienBanHang/Dashboard';
-import LichLamViec from './pages/NhanVienBanHang/LichLamViec';
-import QuanLyCuocHenNVBH from './pages/NhanVienBanHang/QuanLyCuocHen';
-import ChiTietCuocHenNVBH from './pages/NhanVienBanHang/ChiTietCuocHen';
-import QuanLyGiaoDich from './pages/NhanVienBanHang/QuanLyGiaoDich';
-import BaoCaoThuNhap from './pages/NhanVienBanHang/BaoCaoThuNhap';
-import TinNhanNVBH from './pages/NhanVienBanHang/TinNhan';
-import ChiTietTinNhanNVBH from './pages/NhanVienBanHang/ChiTietTinNhan';
-import CaiDatNhanVienBanHang from './pages/NhanVienBanHang/CaiDat';
+import LayoutNhanVienBanHang from "./components/NhanVienBanHang/LayoutNhanVienBanHang";
+import DashboardNVBH from "./pages/NhanVienBanHang/Dashboard";
+import LichLamViec from "./pages/NhanVienBanHang/LichLamViec";
+import QuanLyCuocHenNVBH from "./pages/NhanVienBanHang/QuanLyCuocHen";
+import ChiTietCuocHenNVBH from "./pages/NhanVienBanHang/ChiTietCuocHen";
+import QuanLyGiaoDich from "./pages/NhanVienBanHang/QuanLyGiaoDich";
+import BaoCaoThuNhap from "./pages/NhanVienBanHang/BaoCaoThuNhap";
+import TinNhanNVBH from "./pages/NhanVienBanHang/TinNhan";
+import ChiTietTinNhanNVBH from "./pages/NhanVienBanHang/ChiTietTinNhan";
+import CaiDatNhanVienBanHang from "./pages/NhanVienBanHang/CaiDat";
 
 // Import cho Operator (UC-OPER-01 đến UC-OPER-06)
-import DashboardOperator from './pages/Operator/DashboardOperator';
-import DuyetTinDang from './pages/Operator/DuyetTinDang';
-import QuanLyDuAnOperator from './pages/Operator/QuanLyDuAnOperator';
-import QuanLyLichNVBH from './pages/Operator/QuanLyLichNVBH';
-import QuanLyNhanVien from './pages/Operator/QuanLyNhanVien';
-import QuanLyBienBan from './pages/Operator/QuanLyBienBan';
+import DashboardOperator from "./pages/Operator/DashboardOperator";
+import DuyetTinDang from "./pages/Operator/DuyetTinDang";
+import QuanLyDuAnOperator from "./pages/Operator/QuanLyDuAnOperator";
+import QuanLyLichNVBH from "./pages/Operator/QuanLyLichNVBH";
+import QuanLyNhanVien from "./pages/Operator/QuanLyNhanVien";
+import QuanLyBienBan from "./pages/Operator/QuanLyBienBan";
 
 // Import trang Xem Ngay (Public) cho Gợi ý Tin đăng
 import XemNgayConfirm from './pages/XemNgay/XemNgayConfirm';
@@ -120,13 +123,11 @@ function App() {
         <Route path="/thanhtoan" element={<ThanhToan />} />
         <Route path="/thanhtoancoc" element={<ThanhToanCoc />} />
         <Route path="/cuochencuatoi" element={<Appointments />} />
-
-
+        <Route path="/vi" element={<ViPage />} />
         <Route path="/quan-ly" element={<QuanLy />} />
       </Routes>
     </div>
-
-  )
+  );
 }
 
-export default App
+export default App;

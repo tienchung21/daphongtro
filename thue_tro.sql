@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Nov 25, 2025 at 01:32 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.0.30
+-- Máy chủ: localhost
+-- Thời gian đã tạo: Th10 24, 2025 lúc 03:28 PM
+-- Phiên bản máy phục vụ: 8.0.30
+-- Phiên bản PHP: 8.4.13
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -80,18 +80,18 @@ DELIMITER ;
 --
 
 CREATE TABLE `bienbanbangiao` (
-  `BienBanBanGiaoID` bigint(20) NOT NULL,
-  `HopDongID` int(11) NOT NULL,
-  `TinDangID` int(11) NOT NULL,
-  `PhongID` int(11) NOT NULL,
-  `TrangThai` enum('ChuaBanGiao','DangBanGiao','DaBanGiao') NOT NULL DEFAULT 'ChuaBanGiao',
-  `ChiSoDien` int(11) DEFAULT NULL,
-  `ChiSoNuoc` int(11) DEFAULT NULL,
-  `HienTrangJSON` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`HienTrangJSON`)),
-  `ChuKySo` varchar(255) DEFAULT NULL,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `BienBanBanGiaoID` bigint NOT NULL,
+  `HopDongID` int NOT NULL,
+  `TinDangID` int NOT NULL,
+  `PhongID` int NOT NULL,
+  `TrangThai` enum('ChuaBanGiao','DangBanGiao','DaBanGiao') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'ChuaBanGiao',
+  `ChiSoDien` int DEFAULT NULL,
+  `ChiSoNuoc` int DEFAULT NULL,
+  `HienTrangJSON` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  `ChuKySo` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ;
 
 --
 -- Triggers `bienbanbangiao`
@@ -125,12 +125,12 @@ DELIMITER ;
 --
 
 CREATE TABLE `buttoansocai` (
-  `ButToanID` bigint(20) NOT NULL,
-  `GiaoDichID` int(11) NOT NULL,
-  `ViID` int(11) NOT NULL,
+  `ButToanID` bigint NOT NULL,
+  `GiaoDichID` int NOT NULL,
+  `ViID` int NOT NULL,
   `SoTien` decimal(15,2) NOT NULL,
-  `LoaiButToan` enum('ghi_no','ghi_co') NOT NULL,
-  `ThoiGian` datetime(3) NOT NULL DEFAULT current_timestamp(3)
+  `LoaiButToan` enum('ghi_no','ghi_co') COLLATE utf8mb4_general_ci NOT NULL,
+  `ThoiGian` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -156,20 +156,20 @@ DELIMITER ;
 --
 
 CREATE TABLE `chinhsachcoc` (
-  `ChinhSachCocID` int(11) NOT NULL,
-  `ChuDuAnID` int(11) DEFAULT NULL COMMENT 'ID Chủ dự án sở hữu chính sách (NULL = hệ thống)',
-  `TenChinhSach` varchar(255) NOT NULL,
-  `MoTa` text DEFAULT NULL,
-  `ChoPhepCocGiuCho` tinyint(1) NOT NULL DEFAULT 1,
-  `TTL_CocGiuCho_Gio` int(11) NOT NULL DEFAULT 48,
-  `TyLePhat_CocGiuCho` tinyint(3) UNSIGNED DEFAULT NULL,
-  `ChoPhepCocAnNinh` tinyint(1) NOT NULL DEFAULT 1,
-  `SoTienCocGiuChoMacDinh` decimal(15,2) DEFAULT NULL,
-  `QuyTacGiaiToa` enum('BanGiao','TheoNgay','Khac') NOT NULL DEFAULT 'BanGiao',
-  `SoNgayGiaiToa` int(11) DEFAULT NULL,
-  `HieuLuc` tinyint(1) NOT NULL DEFAULT 1,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `ChinhSachCocID` int NOT NULL,
+  `ChuDuAnID` int DEFAULT NULL COMMENT 'ID Chủ dự án sở hữu chính sách (NULL = hệ thống)',
+  `TenChinhSach` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `MoTa` text COLLATE utf8mb4_general_ci,
+  `ChoPhepCocGiuCho` tinyint(1) NOT NULL DEFAULT '1',
+  `TTL_CocGiuCho_Gio` int NOT NULL DEFAULT '48',
+  `TyLePhat_CocGiuCho` tinyint UNSIGNED DEFAULT NULL,
+  `ChoPhepCocAnNinh` tinyint(1) NOT NULL DEFAULT '1',
+  `SoTienCocAnNinhMacDinh` decimal(15,2) DEFAULT NULL,
+  `QuyTacGiaiToa` enum('BanGiao','TheoNgay','Khac') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'BanGiao',
+  `SoNgayGiaiToa` int DEFAULT NULL,
+  `HieuLuc` tinyint(1) NOT NULL DEFAULT '1',
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -208,26 +208,26 @@ DELIMITER ;
 --
 
 CREATE TABLE `coc` (
-  `CocID` bigint(20) NOT NULL,
-  `GiaoDichID` int(11) NOT NULL,
-  `TinDangID` int(11) NOT NULL,
-  `PhongID` int(11) NOT NULL,
-  `Loai` enum('CocGiuCho','CocAnNinh') NOT NULL,
+  `CocID` bigint NOT NULL,
+  `GiaoDichID` int NOT NULL,
+  `TinDangID` int NOT NULL,
+  `PhongID` int NOT NULL,
+  `Loai` enum('CocGiuCho','CocAnNinh') COLLATE utf8mb4_general_ci NOT NULL,
   `SoTien` decimal(15,2) NOT NULL,
-  `TTL_Gio` int(11) DEFAULT NULL,
+  `TTL_Gio` int DEFAULT NULL,
   `HetHanLuc` datetime DEFAULT NULL,
-  `TrangThai` enum('HieuLuc','HetHan','DaGiaiToa','DaDoiTru') NOT NULL DEFAULT 'HieuLuc',
-  `BienBanBanGiaoID` bigint(20) DEFAULT NULL,
-  `GhiChu` text DEFAULT NULL,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `ChinhSachCocID` int(11) DEFAULT NULL,
-  `QuyTacGiaiToaSnapshot` enum('BanGiao','TheoNgay','Khac') DEFAULT NULL,
-  `TyLePhatCocGiuChoSnapshot` tinyint(3) UNSIGNED DEFAULT NULL,
-  `SoNgayGiaiToaSnapshot` int(11) DEFAULT NULL,
-  `HopDongID` int(11) DEFAULT NULL,
-  `LyDoGiaiToa` text DEFAULT NULL,
-  `LyDoKhauTru` text DEFAULT NULL
+  `TrangThai` enum('HieuLuc','HetHan','DaGiaiToa','DaDoiTru') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'HieuLuc',
+  `BienBanBanGiaoID` bigint DEFAULT NULL,
+  `GhiChu` text COLLATE utf8mb4_general_ci,
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `ChinhSachCocID` int DEFAULT NULL,
+  `QuyTacGiaiToaSnapshot` enum('BanGiao','TheoNgay','Khac') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TyLePhatCocGiuChoSnapshot` tinyint UNSIGNED DEFAULT NULL,
+  `SoNgayGiaiToaSnapshot` int DEFAULT NULL,
+  `HopDongID` int DEFAULT NULL,
+  `LyDoGiaiToa` text COLLATE utf8mb4_general_ci,
+  `LyDoKhauTru` text COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -280,23 +280,23 @@ DELIMITER ;
 --
 
 CREATE TABLE `cuochen` (
-  `CuocHenID` int(11) NOT NULL,
-  `KhachHangID` int(11) DEFAULT NULL,
-  `NhanVienBanHangID` int(11) DEFAULT NULL,
-  `PhongID` int(11) NOT NULL,
-  `TinDangID` int(11) NOT NULL,
+  `CuocHenID` int NOT NULL,
+  `KhachHangID` int DEFAULT NULL,
+  `NhanVienBanHangID` int DEFAULT NULL,
+  `PhongID` int NOT NULL,
+  `TinDangID` int NOT NULL,
   `ThoiGianHen` datetime DEFAULT NULL,
-  `TrangThai` enum('DaYeuCau','ChoXacNhan','DaXacNhan','DaDoiLich','HuyBoiKhach','HuyBoiHeThong','KhachKhongDen','HoanThanh') DEFAULT NULL,
-  `PheDuyetChuDuAn` enum('ChoPheDuyet','DaPheDuyet','TuChoi') DEFAULT NULL COMMENT 'Trạng thái phê duyệt từ chủ dự án (NULL nếu dự án không yêu cầu phê duyệt)',
-  `LyDoTuChoi` text DEFAULT NULL COMMENT 'Lý do từ chối cuộc hẹn (nếu PheDuyetChuDuAn = TuChoi)',
-  `PhuongThucVao` text DEFAULT NULL COMMENT 'Phương thức vào dự án cho cuộc hẹn này (ghi đè PhuongThucVao của duan nếu có)',
+  `TrangThai` enum('DaYeuCau','ChoXacNhan','DaXacNhan','DaDoiLich','HuyBoiKhach','HuyBoiHeThong','KhachKhongDen','HoanThanh') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `PheDuyetChuDuAn` enum('ChoPheDuyet','DaPheDuyet','TuChoi') COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Trạng thái phê duyệt từ chủ dự án (NULL nếu dự án không yêu cầu phê duyệt)',
+  `LyDoTuChoi` text COLLATE utf8mb4_general_ci COMMENT 'Lý do từ chối cuộc hẹn (nếu PheDuyetChuDuAn = TuChoi)',
+  `PhuongThucVao` text COLLATE utf8mb4_general_ci COMMENT 'Phương thức vào dự án cho cuộc hẹn này (ghi đè PhuongThucVao của duan nếu có)',
   `ThoiGianPheDuyet` datetime DEFAULT NULL COMMENT 'Thời điểm chủ dự án phê duyệt/từ chối cuộc hẹn',
-  `SoLanDoiLich` int(11) NOT NULL DEFAULT 0,
-  `GhiChuKetQua` text DEFAULT NULL,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `GhiChu` text NOT NULL,
-  `ChuDuAnID` int(11) NOT NULL
+  `SoLanDoiLich` int NOT NULL DEFAULT '0',
+  `GhiChuKetQua` text COLLATE utf8mb4_general_ci,
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `GhiChu` text COLLATE utf8mb4_general_ci NOT NULL,
+  `ChuDuAnID` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -315,14 +315,9 @@ INSERT INTO `cuochen` (`CuocHenID`, `KhachHangID`, `NhanVienBanHangID`, `PhongID
 (22, 7, 8, 5, 8, '2025-11-10 22:36:00', 'HoanThanh', 'DaPheDuyet', NULL, NULL, NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-19T06:52:43.449Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T06:53:03.138Z\",\"action\":\"bao_cao\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Kết quả: HoanThanh\",\"ketQua\":\"HoanThanh\"}],\"thoiGianBaoCao\":\"2025-11-19T06:53:03.138Z\",\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"Chắc chắn chốt\\n\",\"slaWarning\":\"Báo cáo muộn 207 giờ\"}', '2025-11-10 22:06:49', '2025-11-19 13:53:03', '0', 1),
 (25, 7, 8, 4, 5, '2025-11-20 13:52:00', 'DaDoiLich', 'ChoPheDuyet', NULL, NULL, NULL, 1, '{\"activities\":[{\"timestamp\":\"2025-11-19T06:52:05.652Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T06:52:12.552Z\",\"action\":\"doi_lich\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Theo yêu cầu\",\"oldTime\":\"2025-11-18T17:12:00.000Z\",\"newTime\":\"2025-11-20T13:52\"}]}', '2025-11-18 23:43:00', '2025-11-19 13:52:12', '0', 0),
 (26, 7, 8, 3, 6, '2025-11-19 00:23:00', 'HoanThanh', 'ChoPheDuyet', NULL, NULL, NULL, 0, '{\"thoiGianBaoCao\":\"2025-11-19T06:37:28.455Z\",\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"Tiềm năng\",\"slaWarning\":null}', '2025-11-18 23:56:55', '2025-11-19 13:37:28', '0', 0),
-(29, 7, 8, 4, 5, '2025-11-21 00:41:00', 'HoanThanh', 'DaPheDuyet', NULL, '1234', '2025-11-19 15:26:25', 0, '\n[2025-11-19 06:34:36] Xác nhận bởi NVBH: \n[2025-11-18T23:40:04.640Z] Báo cáo kết quả:\n- Kết quả: HoanThanh\n- Khách hàng quan tâm: Có\n\n- Kế hoạch follow-up: Khả năng chốt: TrungBinh\n- Ghi chú: ha ha\n      \n[Phê duyệt bởi chủ dự án lúc 2025-11-19 15:26:25]', '2025-11-19 00:11:41', '2025-11-19 15:26:25', '0', 0),
-(33, 7, 8, 3, 6, '2025-11-28 11:10:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '', '2025-11-23 10:40:31', '2025-11-23 10:40:31', '', 1),
-(34, 7, 8, 6, 8, '2025-11-28 11:12:00', 'DaXacNhan', 'DaPheDuyet', NULL, 'Mật khẩu cổng là 6824', NULL, 0, '', '2025-11-23 10:43:07', '2025-11-23 10:43:07', '', 1),
-(35, 7, 8, 3, 6, '2025-11-25 04:28:00', 'DaXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-24T21:27:45.486Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"}]}', '2025-11-25 04:27:23', '2025-11-25 04:27:45', '', 1),
-(36, 7, 8, 4, 6, '2025-11-25 05:21:00', 'DaXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-24T22:20:29.023Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"}]}', '2025-11-25 05:20:14', '2025-11-25 05:20:29', '', 1),
-(37, 7, 8, 2, 4, '2025-11-25 00:11:47', 'DaXacNhan', 'DaPheDuyet', NULL, 'mật khẩu cổng là 1234', NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-25T00:11:47.237Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Khách hàng đồng ý xem phòng qua QR gợi ý. Cuộc hẹn được tạo tự động.\",\"qrCode\":\"hSsfpakwkB9v\",\"cuocHenGoc\":34}]}', '2025-11-25 07:11:47', '2025-11-25 07:11:47', 'Cuộc hẹn được tạo tự động từ QR gợi ý (hSsfpakwkB9v). Cuộc hẹn gốc: #34', 1),
-(38, 7, 8, 7, 9, '2025-11-25 07:18:50', 'HoanThanh', 'DaPheDuyet', NULL, 'mật khẩu cổng là 1234', NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-25T00:18:49.705Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Khách hàng đồng ý xem phòng qua QR gợi ý. Cuộc hẹn được tạo tự động.\",\"qrCode\":\"8k9MCoirCVmf\",\"cuocHenGoc\":36},{\"timestamp\":\"2025-11-25T00:20:04.073Z\",\"action\":\"bao_cao\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Kết quả: thanh_cong\",\"ketQua\":\"thanh_cong\"}],\"thoiGianBaoCao\":\"2025-11-25T00:20:04.073Z\",\"ketQua\":\"thanh_cong\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"chắc chắn chốt\",\"slaWarning\":null}', '2025-11-25 07:18:49', '2025-11-25 07:20:04', 'Cuộc hẹn được tạo tự động từ QR gợi ý (8k9MCoirCVmf). Cuộc hẹn gốc: #36', 1),
-(39, 7, 8, 2, 4, '2025-11-25 09:27:00', 'DaXacNhan', 'DaPheDuyet', NULL, 'mật khẩu cổng là 1234', NULL, 0, '', '2025-11-25 08:58:07', '2025-11-25 08:58:07', '', 1);
+(52, 7, 8, 2, 4, '2025-11-25 08:36:00', 'DaXacNhan', 'DaPheDuyet', NULL, 'mật khẩu cổng là 1234', NULL, 0, '', '2025-11-23 13:06:18', '2025-11-23 13:06:18', 'ádaDSAd', 1),
+(53, 7, 1, 3, 6, '2025-11-23 13:37:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '', '2025-11-23 13:07:28', '2025-11-23 13:07:28', 'dádasd', 1),
+(54, 7, 1, 4, 6, '2025-11-23 22:12:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '', '2025-11-23 21:42:21', '2025-11-23 21:42:21', 'dsadadas', 1);
 
 -- --------------------------------------------------------
 
@@ -331,14 +326,14 @@ INSERT INTO `cuochen` (`CuocHenID`, `KhachHangID`, `NhanVienBanHangID`, `PhongID
 --
 
 CREATE TABLE `cuochoithoai` (
-  `CuocHoiThoaiID` int(11) NOT NULL,
-  `NguCanhID` int(11) DEFAULT NULL,
-  `NguCanhLoai` enum('TinDang','CuocHen','HopDong','HeThong') NOT NULL COMMENT 'Loại ngữ cảnh của cuộc hội thoại',
-  `TieuDe` varchar(255) DEFAULT NULL,
+  `CuocHoiThoaiID` int NOT NULL,
+  `NguCanhID` int DEFAULT NULL,
+  `NguCanhLoai` enum('TinDang','CuocHen','HopDong','HeThong') COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Loại ngữ cảnh của cuộc hội thoại',
+  `TieuDe` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `ThoiDiemTinNhanCuoi` datetime DEFAULT NULL,
-  `DangHoatDong` tinyint(1) DEFAULT 1,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `DangHoatDong` tinyint(1) DEFAULT '1',
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -361,29 +356,29 @@ INSERT INTO `cuochoithoai` (`CuocHoiThoaiID`, `NguCanhID`, `NguCanhLoai`, `TieuD
 --
 
 CREATE TABLE `duan` (
-  `DuAnID` int(11) NOT NULL,
-  `TenDuAn` varchar(255) NOT NULL,
-  `DiaChi` varchar(255) DEFAULT NULL,
+  `DuAnID` int NOT NULL,
+  `TenDuAn` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `DiaChi` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `ViDo` decimal(10,7) DEFAULT NULL COMMENT 'Vĩ độ (Latitude) - Geocoded từ địa chỉ',
   `KinhDo` decimal(10,7) DEFAULT NULL COMMENT 'Kinh độ (Longitude) - Geocoded từ địa chỉ',
-  `ChuDuAnID` int(11) DEFAULT NULL,
-  `ChinhSachCocID` int(11) DEFAULT NULL COMMENT 'ID chính sách cọc áp dụng cho dự án (NULL = dùng mặc định hệ thống)',
-  `BangHoaHong` text DEFAULT NULL COMMENT 'Bảng hoa hồng (JSON array): [{soThang: 6, tyLe: 30}, {soThang: 12, tyLe: 50}] - Tỷ lệ hoa hồng theo số tháng cọc',
-  `SoThangCocToiThieu` int(11) DEFAULT NULL COMMENT 'Số tháng cọc tối thiểu để được áp dụng hoa hồng (nếu có bảng hoa hồng)',
-  `YeuCauPheDuyetChu` tinyint(1) DEFAULT 0,
-  `PhuongThucVao` text DEFAULT NULL COMMENT 'Phương thức vào dự án khi không cần phê duyệt (mật khẩu cửa, vị trí lấy chìa khóa, v.v.)',
-  `TrangThai` enum('HoatDong','NgungHoatDong','LuuTru') DEFAULT 'HoatDong',
-  `LyDoNgungHoatDong` text DEFAULT NULL COMMENT 'Lý do dự án bị ngưng hoạt động (banned) do vi phạm chính sách',
-  `NguoiNgungHoatDongID` int(11) DEFAULT NULL COMMENT 'ID Operator/Admin thực hiện banned dự án',
+  `ChuDuAnID` int DEFAULT NULL,
+  `ChinhSachCocID` int DEFAULT NULL COMMENT 'ID chính sách cọc áp dụng cho dự án (NULL = dùng mặc định hệ thống)',
+  `BangHoaHong` text COLLATE utf8mb4_general_ci COMMENT 'Bảng hoa hồng (JSON array): [{soThang: 6, tyLe: 30}, {soThang: 12, tyLe: 50}] - Tỷ lệ hoa hồng theo số tháng cọc',
+  `SoThangCocToiThieu` int DEFAULT NULL COMMENT 'Số tháng cọc tối thiểu để được áp dụng hoa hồng (nếu có bảng hoa hồng)',
+  `YeuCauPheDuyetChu` tinyint(1) DEFAULT '0',
+  `PhuongThucVao` text COLLATE utf8mb4_general_ci COMMENT 'Phương thức vào dự án khi không cần phê duyệt (mật khẩu cửa, vị trí lấy chìa khóa, v.v.)',
+  `TrangThai` enum('HoatDong','NgungHoatDong','LuuTru') COLLATE utf8mb4_general_ci DEFAULT 'HoatDong',
+  `LyDoNgungHoatDong` text COLLATE utf8mb4_general_ci COMMENT 'Lý do dự án bị ngưng hoạt động (banned) do vi phạm chính sách',
+  `NguoiNgungHoatDongID` int DEFAULT NULL COMMENT 'ID Operator/Admin thực hiện banned dự án',
   `NgungHoatDongLuc` datetime DEFAULT NULL COMMENT 'Thời điểm dự án bị ngưng hoạt động',
-  `YeuCauMoLai` enum('ChuaGui','DangXuLy','ChapNhan','TuChoi') DEFAULT NULL COMMENT 'Trạng thái yêu cầu mở lại dự án sau khi bị banned',
-  `NoiDungGiaiTrinh` text DEFAULT NULL COMMENT 'Nội dung giải trình của Chủ dự án khi yêu cầu mở lại',
+  `YeuCauMoLai` enum('ChuaGui','DangXuLy','ChapNhan','TuChoi') COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Trạng thái yêu cầu mở lại dự án sau khi bị banned',
+  `NoiDungGiaiTrinh` text COLLATE utf8mb4_general_ci COMMENT 'Nội dung giải trình của Chủ dự án khi yêu cầu mở lại',
   `ThoiGianGuiYeuCau` datetime DEFAULT NULL COMMENT 'Thời điểm Chủ dự án gửi yêu cầu mở lại',
-  `NguoiXuLyYeuCauID` int(11) DEFAULT NULL COMMENT 'ID Operator/Admin xử lý yêu cầu mở lại',
+  `NguoiXuLyYeuCauID` int DEFAULT NULL COMMENT 'ID Operator/Admin xử lý yêu cầu mở lại',
   `ThoiGianXuLyYeuCau` datetime DEFAULT NULL COMMENT 'Thời điểm Operator/Admin xử lý yêu cầu',
-  `LyDoTuChoiMoLai` text DEFAULT NULL COMMENT 'Lý do từ chối yêu cầu mở lại (nếu YeuCauMoLai=TuChoi)',
-  `TaoLuc` datetime NOT NULL DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `LyDoTuChoiMoLai` text COLLATE utf8mb4_general_ci COMMENT 'Lý do từ chối yêu cầu mở lại (nếu YeuCauMoLai=TuChoi)',
+  `TaoLuc` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -415,19 +410,19 @@ INSERT INTO `duan` (`DuAnID`, `TenDuAn`, `DiaChi`, `ViDo`, `KinhDo`, `ChuDuAnID`
 --
 
 CREATE TABLE `giaodich` (
-  `GiaoDichID` int(11) NOT NULL,
-  `ViID` int(11) DEFAULT NULL,
+  `GiaoDichID` int NOT NULL,
+  `ViID` int DEFAULT NULL,
   `SoTien` decimal(15,2) DEFAULT NULL,
-  `Loai` enum('NAP_TIEN','COC_GIU_CHO','COC_AN_NINH','THANH_TOAN_KY_DAU','PHI_NEN_TANG','HOAN_COC_GIU_CHO','HOAN_COC_AN_NINH','GIAI_TOA_COC_AN_NINH','RUT_TIEN') NOT NULL,
-  `TrangThai` enum('KhoiTao','DaUyQuyen','DaGhiNhan','DaThanhToan','DaHoanTien','DaDaoNguoc') DEFAULT NULL,
-  `KhoaDinhDanh` char(36) NOT NULL,
-  `TinDangLienQuanID` int(11) DEFAULT NULL,
-  `GiaoDichThamChieuID` int(11) DEFAULT NULL,
-  `ThoiGian` datetime DEFAULT current_timestamp(),
-  `KenhThanhToan` enum('CHUYEN_KHOAN','VI_DIEN_TU','TIEN_MAT') DEFAULT NULL,
-  `MaGiaoDichNCC` varchar(128) DEFAULT NULL,
-  `ChungTuDinhKemURL` text DEFAULT NULL,
-  `HoaDonDT_ID` varchar(64) DEFAULT NULL
+  `Loai` enum('NAP_TIEN','COC_GIU_CHO','COC_AN_NINH','THANH_TOAN_KY_DAU','PHI_NEN_TANG','HOAN_COC_GIU_CHO','HOAN_COC_AN_NINH','GIAI_TOA_COC_AN_NINH','RUT_TIEN') COLLATE utf8mb4_general_ci NOT NULL,
+  `TrangThai` enum('KhoiTao','DaUyQuyen','DaGhiNhan','DaThanhToan','DaHoanTien','DaDaoNguoc') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `KhoaDinhDanh` char(36) COLLATE utf8mb4_general_ci NOT NULL,
+  `TinDangLienQuanID` int DEFAULT NULL,
+  `GiaoDichThamChieuID` int DEFAULT NULL,
+  `ThoiGian` datetime DEFAULT CURRENT_TIMESTAMP,
+  `KenhThanhToan` enum('CHUYEN_KHOAN','VI_DIEN_TU','TIEN_MAT') COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `MaGiaoDichNCC` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `ChungTuDinhKemURL` text COLLATE utf8mb4_general_ci,
+  `HoaDonDT_ID` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -464,17 +459,16 @@ DELIMITER ;
 --
 
 CREATE TABLE `hopdong` (
-  `HopDongID` int(11) NOT NULL,
-  `TinDangID` int(11) DEFAULT NULL,
-  `KhachHangID` int(11) DEFAULT NULL,
+  `HopDongID` int NOT NULL,
+  `TinDangID` int DEFAULT NULL,
+  `KhachHangID` int DEFAULT NULL,
   `NgayBatDau` date DEFAULT NULL,
   `NgayKetThuc` date DEFAULT NULL,
   `GiaThueCuoiCung` decimal(15,2) DEFAULT NULL,
   `BaoCaoLuc` datetime DEFAULT NULL,
-  `MauHopDongID` int(11) DEFAULT NULL,
-  `NoiDungSnapshot` text DEFAULT NULL,
-  `FileScanPath` varchar(500) DEFAULT NULL COMMENT 'Đường dẫn file scan hợp đồng (PDF/Image)',
-  `noidunghopdong` text NOT NULL
+  `MauHopDongID` int DEFAULT NULL,
+  `NoiDungSnapshot` text COLLATE utf8mb4_general_ci,
+  `FileScanPath` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Đường dẫn file scan hợp đồng (PDF/Image)'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -484,15 +478,15 @@ CREATE TABLE `hopdong` (
 --
 
 CREATE TABLE `hosonhanvien` (
-  `HoSoID` int(11) NOT NULL,
-  `NguoiDungID` int(11) DEFAULT NULL,
-  `MaNhanVien` varchar(100) DEFAULT NULL,
-  `KhuVucChinhID` int(11) DEFAULT NULL,
-  `KhuVucPhuTrachID` int(11) DEFAULT NULL,
+  `HoSoID` int NOT NULL,
+  `NguoiDungID` int DEFAULT NULL,
+  `MaNhanVien` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `KhuVucChinhID` int DEFAULT NULL,
+  `KhuVucPhuTrachID` int DEFAULT NULL,
   `TyLeHoaHong` decimal(5,2) DEFAULT NULL,
   `NgayBatDau` date DEFAULT NULL,
   `NgayKetThuc` date DEFAULT NULL,
-  `GhiChu` text DEFAULT NULL
+  `GhiChu` text COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -510,9 +504,9 @@ INSERT INTO `hosonhanvien` (`HoSoID`, `NguoiDungID`, `MaNhanVien`, `KhuVucChinhI
 --
 
 CREATE TABLE `khuvuc` (
-  `KhuVucID` int(11) NOT NULL,
-  `TenKhuVuc` varchar(255) NOT NULL,
-  `ParentKhuVucID` int(11) DEFAULT NULL,
+  `KhuVucID` int NOT NULL,
+  `TenKhuVuc` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `ParentKhuVucID` int DEFAULT NULL,
   `ViDo` decimal(10,6) DEFAULT NULL,
   `KinhDo` decimal(10,6) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3301,36 +3295,36 @@ INSERT INTO `khuvuc` (`KhuVucID`, `TenKhuVuc`, `ParentKhuVucID`, `ViDo`, `KinhDo
 -- --------------------------------------------------------
 
 --
--- Table structure for table `kyc_verification`
+-- Cấu trúc bảng cho bảng `kyc_verification`
 --
 
 CREATE TABLE `kyc_verification` (
-  `KYCVerificationID` bigint(20) NOT NULL,
-  `NguoiDungID` int(11) NOT NULL,
-  `SoCCCD` varchar(12) DEFAULT NULL,
-  `TenDayDu` varchar(255) DEFAULT NULL,
+  `KYCVerificationID` bigint NOT NULL,
+  `NguoiDungID` int NOT NULL,
+  `SoCCCD` varchar(12) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TenDayDu` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `NgaySinh` date DEFAULT NULL,
-  `DiaChi` varchar(255) DEFAULT NULL,
+  `DiaChi` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `NgayCapCCCD` date DEFAULT NULL,
-  `NoiCapCCCD` varchar(255) DEFAULT NULL,
+  `NoiCapCCCD` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `FaceSimilarity` decimal(5,4) DEFAULT NULL COMMENT 'Độ tương đồng khuôn mặt (0-1)',
-  `TrangThai` enum('ThanhCong','ThatBai','CanXemLai') DEFAULT 'CanXemLai',
-  `LyDoThatBai` text DEFAULT NULL,
-  `AnhCCCDMatTruoc` varchar(255) DEFAULT NULL,
-  `AnhCCCDMatSau` varchar(255) DEFAULT NULL,
-  `AnhSelfie` varchar(255) DEFAULT NULL,
-  `TaoLuc` datetime DEFAULT current_timestamp()
+  `TrangThai` enum('ThanhCong','ThatBai','CanXemLai') COLLATE utf8mb4_general_ci DEFAULT 'CanXemLai',
+  `LyDoThatBai` text COLLATE utf8mb4_general_ci,
+  `AnhCCCDMatTruoc` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `AnhCCCDMatSau` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `AnhSelfie` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `lichlamviec`
+-- Cấu trúc bảng cho bảng `lichlamviec`
 --
 
 CREATE TABLE `lichlamviec` (
-  `LichID` int(11) NOT NULL,
-  `NhanVienBanHangID` int(11) DEFAULT NULL,
+  `LichID` int NOT NULL,
+  `NhanVienBanHangID` int DEFAULT NULL,
   `BatDau` datetime DEFAULT NULL,
   `KetThuc` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -3340,7 +3334,39 @@ CREATE TABLE `lichlamviec` (
 --
 
 INSERT INTO `lichlamviec` (`LichID`, `NhanVienBanHangID`, `BatDau`, `KetThuc`) VALUES
-(11, 8, '2025-11-18 07:00:00', '2025-11-18 15:00:00');
+(11, 8, '2025-11-18 07:00:00', '2025-11-18 15:00:00'),
+(14, 8, '2025-11-21 12:00:00', '2025-11-21 20:00:00'),
+(15, 8, '2025-11-25 07:00:00', '2025-11-25 15:00:00'),
+(16, 230, '2025-11-28 07:00:00', '2025-11-28 15:00:00'),
+(17, 230, '2025-11-26 07:00:00', '2025-11-26 15:00:00');
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc bảng cho bảng `lich_su_vi`
+--
+
+CREATE TABLE `lich_su_vi` (
+  `id` bigint UNSIGNED NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `ma_giao_dich` varchar(50) NOT NULL,
+  `so_tien` decimal(18,2) NOT NULL,
+  `trang_thai` enum('THANH_CONG','CHO_XU_LY') NOT NULL DEFAULT 'CHO_XU_LY',
+  `thoi_gian` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `LoaiGiaoDich` text NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+
+--
+-- Đang đổ dữ liệu cho bảng `lich_su_vi`
+--
+
+INSERT INTO `lich_su_vi` (`id`, `user_id`, `ma_giao_dich`, `so_tien`, `trang_thai`, `thoi_gian`, `LoaiGiaoDich`) VALUES
+(4, 1, 'GD1234567', 100000.00, 'THANH_CONG', '2025-11-23 12:18:11', 'nap'),
+(5, 1, 'GD12345678', 50000.00, 'THANH_CONG', '2025-11-23 12:26:09', 'nap'),
+(7, 1, 'GD123456789', 50000.00, 'THANH_CONG', '2025-11-23 12:27:33', 'nap'),
+(8, 1, 'GD1234567899', 50000.00, 'THANH_CONG', '2025-11-23 12:29:13', 'nap'),
+(9, 1, 'GD12345628', 50000.00, 'THANH_CONG', '2025-11-23 12:30:44', 'nap'),
+(10, 1, 'GD123445628', 50000.00, 'THANH_CONG', '2025-11-23 12:31:58', 'rut');
 
 -- --------------------------------------------------------
 
@@ -3364,15 +3390,15 @@ CREATE TABLE `lich_su_vi` (
 --
 
 CREATE TABLE `mauhopdong` (
-  `MauHopDongID` int(11) NOT NULL,
-  `TieuDe` varchar(255) DEFAULT NULL,
-  `NoiDungMau` text DEFAULT NULL,
-  `FileURL` varchar(255) DEFAULT NULL,
-  `PhienBan` varchar(50) DEFAULT NULL,
-  `TrangThai` varchar(50) DEFAULT NULL,
-  `TaoBoiAdminID` int(11) DEFAULT NULL,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `MauHopDongID` int NOT NULL,
+  `TieuDe` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `NoiDungMau` text COLLATE utf8mb4_general_ci,
+  `FileURL` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `PhienBan` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TrangThai` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TaoBoiAdminID` int DEFAULT NULL,
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -3382,24 +3408,24 @@ CREATE TABLE `mauhopdong` (
 --
 
 CREATE TABLE `nguoidung` (
-  `NguoiDungID` int(11) NOT NULL,
-  `TenDayDu` varchar(255) NOT NULL,
-  `Email` varchar(255) NOT NULL,
-  `VaiTroHoatDongID` int(11) DEFAULT NULL,
-  `SoDienThoai` varchar(20) DEFAULT NULL,
-  `MatKhauHash` varchar(255) NOT NULL,
-  `TrangThai` enum('HoatDong','TamKhoa','VoHieuHoa','XoaMem') NOT NULL DEFAULT 'HoatDong' COMMENT 'Trạng thái tài khoản: Hoạt động/Tạm khóa/Vô hiệu hóa/Xóa mềm',
-  `TrangThaiXacMinh` enum('ChuaXacMinh','ChoDuyet','DaXacMinh','TuChoi') NOT NULL DEFAULT 'ChuaXacMinh',
+  `NguoiDungID` int NOT NULL,
+  `TenDayDu` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `Email` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `VaiTroHoatDongID` int DEFAULT NULL,
+  `SoDienThoai` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `MatKhauHash` varchar(255) COLLATE utf8mb4_general_ci NOT NULL,
+  `TrangThai` enum('HoatDong','TamKhoa','VoHieuHoa','XoaMem') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'HoatDong' COMMENT 'Trạng thái tài khoản: Hoạt động/Tạm khóa/Vô hiệu hóa/Xóa mềm',
+  `TrangThaiXacMinh` enum('ChuaXacMinh','ChoDuyet','DaXacMinh','TuChoi') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'ChuaXacMinh',
   `NgaySinh` date DEFAULT NULL,
-  `DiaChi` varchar(255) DEFAULT NULL,
-  `SoCCCD` varchar(12) DEFAULT NULL,
+  `DiaChi` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `SoCCCD` varchar(12) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `NgayCapCCCD` date DEFAULT NULL,
-  `NoiCapCCCD` varchar(255) DEFAULT NULL,
-  `AnhCCCDMatTruoc` varchar(255) DEFAULT NULL,
-  `AnhCCCDMatSau` varchar(255) DEFAULT NULL,
-  `AnhSelfie` varchar(255) DEFAULT NULL,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `NoiCapCCCD` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `AnhCCCDMatTruoc` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `AnhCCCDMatSau` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `AnhSelfie` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -3484,17 +3510,17 @@ INSERT INTO `nguoidung_vaitro` (`NguoiDungID`, `VaiTroID`) VALUES
 --
 
 CREATE TABLE `nhatkyhethong` (
-  `NhatKyID` bigint(20) NOT NULL,
-  `NguoiDungID` int(11) DEFAULT NULL,
-  `HanhDong` varchar(100) NOT NULL,
-  `DoiTuong` varchar(100) DEFAULT NULL,
-  `DoiTuongID` varchar(255) DEFAULT NULL,
-  `GiaTriTruoc` text DEFAULT NULL,
-  `GiaTriSau` text DEFAULT NULL,
-  `DiaChiIP` varchar(45) DEFAULT NULL,
-  `TrinhDuyet` text DEFAULT NULL,
-  `ThoiGian` datetime(3) NOT NULL DEFAULT current_timestamp(3),
-  `ChuKy` varchar(255) DEFAULT NULL
+  `NhatKyID` bigint NOT NULL,
+  `NguoiDungID` int DEFAULT NULL,
+  `HanhDong` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `DoiTuong` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `DoiTuongID` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `GiaTriTruoc` text COLLATE utf8mb4_general_ci,
+  `GiaTriSau` text COLLATE utf8mb4_general_ci,
+  `DiaChiIP` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TrinhDuyet` text COLLATE utf8mb4_general_ci,
+  `ThoiGian` datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  `ChuKy` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -4083,13 +4109,13 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 --
 
 CREATE TABLE `noidunghethong` (
-  `NoiDungID` int(11) NOT NULL,
-  `LoaiNoiDung` varchar(50) DEFAULT NULL,
-  `TieuDe` varchar(255) DEFAULT NULL,
-  `NoiDung` text DEFAULT NULL,
-  `PhienBan` varchar(50) DEFAULT NULL,
-  `CapNhatBoiID` int(11) DEFAULT NULL,
-  `CapNhatLuc` datetime DEFAULT current_timestamp()
+  `NoiDungID` int NOT NULL,
+  `LoaiNoiDung` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TieuDe` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `NoiDung` text COLLATE utf8mb4_general_ci,
+  `PhienBan` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `CapNhatBoiID` int DEFAULT NULL,
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -4099,16 +4125,16 @@ CREATE TABLE `noidunghethong` (
 --
 
 CREATE TABLE `phong` (
-  `PhongID` int(11) NOT NULL,
-  `DuAnID` int(11) NOT NULL COMMENT 'Phòng thuộc dự án nào',
-  `TenPhong` varchar(100) NOT NULL COMMENT 'Tên/Số phòng (VD: 101, A01, ...)',
-  `TrangThai` enum('Trong','GiuCho','DaThue','DonDep') NOT NULL DEFAULT 'Trong' COMMENT 'Trạng thái duy nhất của phòng',
+  `PhongID` int NOT NULL,
+  `DuAnID` int NOT NULL COMMENT 'Phòng thuộc dự án nào',
+  `TenPhong` varchar(100) COLLATE utf8mb4_general_ci NOT NULL COMMENT 'Tên/Số phòng (VD: 101, A01, ...)',
+  `TrangThai` enum('Trong','GiuCho','DaThue','DonDep') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Trong' COMMENT 'Trạng thái duy nhất của phòng',
   `GiaChuan` decimal(15,2) DEFAULT NULL COMMENT 'Giá chuẩn (VNĐ/tháng)',
   `DienTichChuan` decimal(5,2) DEFAULT NULL COMMENT 'Diện tích chuẩn (m²)',
-  `MoTaPhong` text DEFAULT NULL COMMENT 'Đặc điểm: tầng, hướng, view, nội thất...',
-  `HinhAnhPhong` varchar(500) DEFAULT NULL COMMENT 'Hình đại diện phòng (1 hình)',
-  `TaoLuc` datetime NOT NULL DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `MoTaPhong` text COLLATE utf8mb4_general_ci COMMENT 'Đặc điểm: tầng, hướng, view, nội thất...',
+  `HinhAnhPhong` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Hình đại diện phòng (1 hình)',
+  `TaoLuc` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Bảng phòng Master - Thuộc Dự án (1 phòng vật lý = 1 bản ghi)';
 
 --
@@ -4132,15 +4158,15 @@ INSERT INTO `phong` (`PhongID`, `DuAnID`, `TenPhong`, `TrangThai`, `GiaChuan`, `
 --
 
 CREATE TABLE `phong_tindang` (
-  `PhongTinDangID` int(11) NOT NULL,
-  `PhongID` int(11) NOT NULL COMMENT 'FK đến bảng phong',
-  `TinDangID` int(11) NOT NULL COMMENT 'FK đến bảng tindang',
+  `PhongTinDangID` int NOT NULL,
+  `PhongID` int NOT NULL COMMENT 'FK đến bảng phong',
+  `TinDangID` int NOT NULL COMMENT 'FK đến bảng tindang',
   `GiaTinDang` decimal(15,2) DEFAULT NULL COMMENT 'Giá riêng cho tin này (NULL = dùng GiaChuan)',
   `DienTichTinDang` decimal(5,2) DEFAULT NULL COMMENT 'Diện tích riêng (NULL = dùng DienTichChuan)',
-  `MoTaTinDang` text DEFAULT NULL COMMENT 'Mô tả marketing riêng (VD: "Ưu đãi SV", "Tặng 1 tháng")',
-  `HinhAnhTinDang` varchar(500) DEFAULT NULL COMMENT 'Hình riêng (NULL = dùng HinhAnhPhong)',
-  `ThuTuHienThi` int(11) NOT NULL DEFAULT 0 COMMENT 'Thứ tự hiển thị trong tin đăng',
-  `TaoLuc` datetime NOT NULL DEFAULT current_timestamp()
+  `MoTaTinDang` text COLLATE utf8mb4_general_ci COMMENT 'Mô tả marketing riêng (VD: "Ưu đãi SV", "Tặng 1 tháng")',
+  `HinhAnhTinDang` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Hình riêng (NULL = dùng HinhAnhPhong)',
+  `ThuTuHienThi` int NOT NULL DEFAULT '0' COMMENT 'Thứ tự hiển thị trong tin đăng',
+  `TaoLuc` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Mapping N-N giữa Phòng và Tin đăng (lưu metadata riêng cho mỗi tin)';
 
 --
@@ -4166,9 +4192,9 @@ INSERT INTO `phong_tindang` (`PhongTinDangID`, `PhongID`, `TinDangID`, `GiaTinDa
 --
 
 CREATE TABLE `quyen` (
-  `QuyenID` int(11) NOT NULL,
-  `MaQuyen` varchar(100) NOT NULL,
-  `MoTa` text DEFAULT NULL
+  `QuyenID` int NOT NULL,
+  `MaQuyen` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `MoTa` text COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -4178,9 +4204,9 @@ CREATE TABLE `quyen` (
 --
 
 CREATE TABLE `thanhviencuochoithoai` (
-  `CuocHoiThoaiID` int(11) NOT NULL,
-  `NguoiDungID` int(11) NOT NULL,
-  `ThamGiaLuc` datetime DEFAULT current_timestamp(),
+  `CuocHoiThoaiID` int NOT NULL,
+  `NguoiDungID` int NOT NULL,
+  `ThamGiaLuc` datetime DEFAULT CURRENT_TIMESTAMP,
   `TinNhanCuoiDocLuc` datetime DEFAULT NULL COMMENT 'Thời điểm tin nhắn cuối được đọc bởi thành viên'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -4211,17 +4237,17 @@ INSERT INTO `thanhviencuochoithoai` (`CuocHoiThoaiID`, `NguoiDungID`, `ThamGiaLu
 --
 
 CREATE TABLE `thongbao` (
-  `ThongBaoID` int(11) NOT NULL,
-  `NguoiNhanID` int(11) DEFAULT NULL,
-  `Kenh` varchar(50) DEFAULT NULL,
-  `TieuDe` varchar(255) DEFAULT NULL,
-  `NoiDung` text DEFAULT NULL,
-  `Payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`Payload`)),
-  `TrangThai` varchar(50) DEFAULT NULL,
-  `SoLanThu` int(11) DEFAULT 0,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
+  `ThongBaoID` int NOT NULL,
+  `NguoiNhanID` int DEFAULT NULL,
+  `Kenh` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `TieuDe` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `NoiDung` text COLLATE utf8mb4_general_ci,
+  `Payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  `TrangThai` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `SoLanThu` int DEFAULT '0',
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
   `GuiLuc` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
 
 --
 -- Dumping data for table `thongbao`
@@ -4271,14 +4297,14 @@ INSERT INTO `thongbao` (`ThongBaoID`, `NguoiNhanID`, `Kenh`, `TieuDe`, `NoiDung`
 --
 
 CREATE TABLE `thongketindang` (
-  `ThongKeID` int(11) NOT NULL,
-  `TinDangID` int(11) DEFAULT NULL,
+  `ThongKeID` int NOT NULL,
+  `TinDangID` int DEFAULT NULL,
   `Ky` date DEFAULT NULL,
-  `SoLuotXem` int(11) DEFAULT 0,
-  `SoYeuThich` int(11) DEFAULT 0,
-  `SoCuocHen` int(11) DEFAULT 0,
-  `SoHopDong` int(11) DEFAULT 0,
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `SoLuotXem` int DEFAULT '0',
+  `SoYeuThich` int DEFAULT '0',
+  `SoCuocHen` int DEFAULT '0',
+  `SoHopDong` int DEFAULT '0',
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -4288,23 +4314,23 @@ CREATE TABLE `thongketindang` (
 --
 
 CREATE TABLE `tindang` (
-  `TinDangID` int(11) NOT NULL,
-  `DuAnID` int(11) DEFAULT NULL,
-  `KhuVucID` int(11) DEFAULT NULL,
-  `ChinhSachCocID` int(11) DEFAULT NULL,
-  `TieuDe` varchar(255) DEFAULT NULL,
-  `URL` text DEFAULT NULL COMMENT 'JSON array URLs hình ảnh tin đăng: ["/uploads/1.jpg", "/uploads/2.jpg", ...]',
-  `MoTa` text DEFAULT NULL,
-  `TienIch` text DEFAULT NULL COMMENT 'JSON array tiện ích: ["Wifi", "Máy lạnh", "Nóng lạnh", "Giường", "Tủ quần áo", ...]',
+  `TinDangID` int NOT NULL,
+  `DuAnID` int DEFAULT NULL,
+  `KhuVucID` int DEFAULT NULL,
+  `ChinhSachCocID` int DEFAULT NULL,
+  `TieuDe` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `URL` text COLLATE utf8mb4_general_ci COMMENT 'JSON array URLs hình ảnh tin đăng: ["/uploads/1.jpg", "/uploads/2.jpg", ...]',
+  `MoTa` text COLLATE utf8mb4_general_ci,
+  `TienIch` text COLLATE utf8mb4_general_ci COMMENT 'JSON array tiện ích: ["Wifi", "Máy lạnh", "Nóng lạnh", "Giường", "Tủ quần áo", ...]',
   `GiaDien` decimal(10,2) DEFAULT NULL COMMENT 'Giá điện (VNĐ/kWh) - Ví dụ: 3500.00 = 3,500đ/kWh',
   `GiaNuoc` decimal(10,2) DEFAULT NULL COMMENT 'Giá nước (VNĐ/m³) - Ví dụ: 20000.00 = 20,000đ/khối',
   `GiaDichVu` decimal(10,2) DEFAULT NULL COMMENT 'Phí dịch vụ (VNĐ/tháng) - Ví dụ: 150000.00 = 150,000đ/tháng',
-  `MoTaGiaDichVu` varchar(500) DEFAULT NULL COMMENT 'Mô tả chi tiết phí dịch vụ bao gồm: rác, vệ sinh chung, bảo vệ, internet, ...',
-  `TrangThai` enum('Nhap','ChoDuyet','DaDuyet','DaDang','TamNgung','TuChoi','LuuTru') NOT NULL DEFAULT 'Nhap',
-  `LyDoTuChoi` text DEFAULT NULL,
-  `DuyetBoiNhanVienID` int(11) DEFAULT NULL,
-  `TaoLuc` datetime DEFAULT current_timestamp(),
-  `CapNhatLuc` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `MoTaGiaDichVu` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Mô tả chi tiết phí dịch vụ bao gồm: rác, vệ sinh chung, bảo vệ, internet, ...',
+  `TrangThai` enum('Nhap','ChoDuyet','DaDuyet','DaDang','TamNgung','TuChoi','LuuTru') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'Nhap',
+  `LyDoTuChoi` text COLLATE utf8mb4_general_ci,
+  `DuyetBoiNhanVienID` int DEFAULT NULL,
+  `TaoLuc` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CapNhatLuc` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `DuyetLuc` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -4364,12 +4390,12 @@ DELIMITER ;
 --
 
 CREATE TABLE `tinnhan` (
-  `TinNhanID` int(11) NOT NULL,
-  `CuocHoiThoaiID` int(11) DEFAULT NULL,
-  `NguoiGuiID` int(11) DEFAULT NULL,
-  `NoiDung` text DEFAULT NULL,
-  `ThoiGian` datetime DEFAULT current_timestamp(),
-  `DaXoa` tinyint(1) DEFAULT 0
+  `TinNhanID` int NOT NULL,
+  `CuocHoiThoaiID` int DEFAULT NULL,
+  `NguoiGuiID` int DEFAULT NULL,
+  `NoiDung` text COLLATE utf8mb4_general_ci,
+  `ThoiGian` datetime DEFAULT CURRENT_TIMESTAMP,
+  `DaXoa` tinyint(1) DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -4510,21 +4536,21 @@ DELIMITER ;
 --
 
 CREATE TABLE `transactions` (
-  `id` int(20) NOT NULL,
-  `user_id` int(11) DEFAULT NULL,
-  `bank_name` varchar(50) DEFAULT NULL,
-  `account_number` varchar(20) DEFAULT NULL,
+  `id` int NOT NULL,
+  `user_id` int DEFAULT NULL,
+  `bank_name` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `account_number` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `amount_in` decimal(15,2) DEFAULT NULL,
-  `transaction_content` text DEFAULT NULL,
+  `transaction_content` text COLLATE utf8mb4_general_ci,
   `transaction_date` datetime DEFAULT NULL,
-  `reference_number` varchar(50) DEFAULT NULL,
-  `sepay_id` varchar(64) DEFAULT NULL,
-  `bank_brand_name` varchar(100) DEFAULT NULL,
+  `reference_number` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sepay_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bank_brand_name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `amount_out` decimal(14,2) DEFAULT NULL,
   `accumulated` decimal(14,2) DEFAULT NULL,
-  `code` varchar(100) DEFAULT NULL,
-  `sub_account` varchar(100) DEFAULT NULL,
-  `bank_account_id` varchar(64) DEFAULT NULL
+  `code` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `sub_account` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `bank_account_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -4567,9 +4593,9 @@ INSERT INTO `transactions` (`id`, `user_id`, `bank_name`, `account_number`, `amo
 --
 
 CREATE TABLE `vaitro` (
-  `VaiTroID` int(11) NOT NULL,
-  `TenVaiTro` varchar(100) NOT NULL,
-  `MoTa` text DEFAULT NULL
+  `VaiTroID` int NOT NULL,
+  `TenVaiTro` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `MoTa` text COLLATE utf8mb4_general_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -4590,8 +4616,8 @@ INSERT INTO `vaitro` (`VaiTroID`, `TenVaiTro`, `MoTa`) VALUES
 --
 
 CREATE TABLE `vaitro_quyen` (
-  `VaiTroID` int(11) NOT NULL,
-  `QuyenID` int(11) NOT NULL
+  `VaiTroID` int NOT NULL,
+  `QuyenID` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -4601,10 +4627,17 @@ CREATE TABLE `vaitro_quyen` (
 --
 
 CREATE TABLE `vi` (
-  `ViID` int(11) NOT NULL,
-  `NguoiDungID` int(11) DEFAULT NULL,
-  `SoDu` decimal(15,2) DEFAULT 0.00
+  `ViID` int NOT NULL,
+  `NguoiDungID` int DEFAULT NULL,
+  `SoDu` decimal(15,2) DEFAULT '0.00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Đang đổ dữ liệu cho bảng `vi`
+--
+
+INSERT INTO `vi` (`ViID`, `NguoiDungID`, `SoDu`) VALUES
+(1, 7, 50000.00);
 
 -- --------------------------------------------------------
 
@@ -4613,15 +4646,15 @@ CREATE TABLE `vi` (
 -- (See below for the actual view)
 --
 CREATE TABLE `v_phong_full_info` (
-`PhongID` int(11)
-,`DuAnID` int(11)
+`PhongID` int
+,`DuAnID` int
 ,`TenDuAn` varchar(255)
 ,`TenPhong` varchar(100)
 ,`TrangThai` enum('Trong','GiuCho','DaThue','DonDep')
 ,`GiaChuan` decimal(15,2)
 ,`DienTichChuan` decimal(5,2)
-,`SoTinDangDangDung` bigint(21)
-,`ChiTietTinDang` mediumtext
+,`SoTinDangDangDung` bigint
+,`ChiTietTinDang` text
 );
 
 -- --------------------------------------------------------
@@ -4631,8 +4664,8 @@ CREATE TABLE `v_phong_full_info` (
 --
 
 CREATE TABLE `yeuthich` (
-  `NguoiDungID` int(11) NOT NULL,
-  `TinDangID` int(11) NOT NULL
+  `NguoiDungID` int NOT NULL,
+  `TinDangID` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -4771,14 +4804,14 @@ ALTER TABLE `khuvuc`
   ADD KEY `ParentKhuVucID` (`ParentKhuVucID`);
 
 --
--- Indexes for table `kyc_verification`
+-- Chỉ mục cho bảng `kyc_verification`
 --
 ALTER TABLE `kyc_verification`
   ADD PRIMARY KEY (`KYCVerificationID`),
   ADD KEY `NguoiDungID` (`NguoiDungID`);
 
 --
--- Indexes for table `lichlamviec`
+-- Chỉ mục cho bảng `lichlamviec`
 --
 ALTER TABLE `lichlamviec`
   ADD PRIMARY KEY (`LichID`),
@@ -4937,13 +4970,13 @@ ALTER TABLE `yeuthich`
 -- AUTO_INCREMENT for table `bienbanbangiao`
 --
 ALTER TABLE `bienbanbangiao`
-  MODIFY `BienBanBanGiaoID` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `BienBanBanGiaoID` bigint NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `buttoansocai`
 --
 ALTER TABLE `buttoansocai`
-  MODIFY `ButToanID` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `ButToanID` bigint NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `chinhsachcoc`
@@ -4955,7 +4988,7 @@ ALTER TABLE `chinhsachcoc`
 -- AUTO_INCREMENT for table `coc`
 --
 ALTER TABLE `coc`
-  MODIFY `CocID` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `CocID` bigint NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `cuochen`
@@ -4973,40 +5006,40 @@ ALTER TABLE `cuochoithoai`
 -- AUTO_INCREMENT for table `duan`
 --
 ALTER TABLE `duan`
-  MODIFY `DuAnID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `DuAnID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `giaodich`
 --
 ALTER TABLE `giaodich`
-  MODIFY `GiaoDichID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `GiaoDichID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `hopdong`
 --
 ALTER TABLE `hopdong`
-  MODIFY `HopDongID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `HopDongID` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `hosonhanvien`
 --
 ALTER TABLE `hosonhanvien`
-  MODIFY `HoSoID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `HoSoID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `khuvuc`
 --
 ALTER TABLE `khuvuc`
-  MODIFY `KhuVucID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2778;
+  MODIFY `KhuVucID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2778;
 
 --
--- AUTO_INCREMENT for table `kyc_verification`
+-- AUTO_INCREMENT cho bảng `kyc_verification`
 --
 ALTER TABLE `kyc_verification`
-  MODIFY `KYCVerificationID` bigint(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `KYCVerificationID` bigint NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `lichlamviec`
+-- AUTO_INCREMENT cho bảng `lichlamviec`
 --
 ALTER TABLE `lichlamviec`
   MODIFY `LichID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
@@ -5021,13 +5054,13 @@ ALTER TABLE `lich_su_vi`
 -- AUTO_INCREMENT for table `mauhopdong`
 --
 ALTER TABLE `mauhopdong`
-  MODIFY `MauHopDongID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `MauHopDongID` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `nguoidung`
 --
 ALTER TABLE `nguoidung`
-  MODIFY `NguoiDungID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=230;
+  MODIFY `NguoiDungID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=245;
 
 --
 -- AUTO_INCREMENT for table `nhatkyhethong`
@@ -5039,25 +5072,25 @@ ALTER TABLE `nhatkyhethong`
 -- AUTO_INCREMENT for table `noidunghethong`
 --
 ALTER TABLE `noidunghethong`
-  MODIFY `NoiDungID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `NoiDungID` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `phong`
 --
 ALTER TABLE `phong`
-  MODIFY `PhongID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `PhongID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `phong_tindang`
 --
 ALTER TABLE `phong_tindang`
-  MODIFY `PhongTinDangID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `PhongTinDangID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `quyen`
 --
 ALTER TABLE `quyen`
-  MODIFY `QuyenID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `QuyenID` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `thongbao`
@@ -5069,13 +5102,13 @@ ALTER TABLE `thongbao`
 -- AUTO_INCREMENT for table `thongketindang`
 --
 ALTER TABLE `thongketindang`
-  MODIFY `ThongKeID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ThongKeID` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `tindang`
 --
 ALTER TABLE `tindang`
-  MODIFY `TinDangID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `TinDangID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `tinnhan`
@@ -5087,13 +5120,22 @@ ALTER TABLE `tinnhan`
 -- AUTO_INCREMENT for table `vaitro`
 --
 ALTER TABLE `vaitro`
-  MODIFY `VaiTroID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `VaiTroID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `vi`
 --
 ALTER TABLE `vi`
-  MODIFY `ViID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ViID` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+-- --------------------------------------------------------
+
+--
+-- Cấu trúc cho view `v_phong_full_info`
+--
+DROP TABLE IF EXISTS `v_phong_full_info`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_phong_full_info`  AS SELECT `p`.`PhongID` AS `PhongID`, `p`.`DuAnID` AS `DuAnID`, `d`.`TenDuAn` AS `TenDuAn`, `p`.`TenPhong` AS `TenPhong`, `p`.`TrangThai` AS `TrangThai`, `p`.`GiaChuan` AS `GiaChuan`, `p`.`DienTichChuan` AS `DienTichChuan`, count(`pt`.`TinDangID`) AS `SoTinDangDangDung`, group_concat(concat('TinDang #',`pt`.`TinDangID`,': ',coalesce(`pt`.`GiaTinDang`,`p`.`GiaChuan`),'đ') separator ' | ') AS `ChiTietTinDang` FROM (((`phong` `p` join `duan` `d` on((`p`.`DuAnID` = `d`.`DuAnID`))) left join `phong_tindang` `pt` on((`p`.`PhongID` = `pt`.`PhongID`))) left join `tindang` `td` on(((`pt`.`TinDangID` = `td`.`TinDangID`) and (`td`.`TrangThai` in ('ChoDuyet','DaDuyet','DaDang'))))) GROUP BY `p`.`PhongID`, `p`.`DuAnID`, `d`.`TenDuAn`, `p`.`TenPhong`, `p`.`TrangThai`, `p`.`GiaChuan`, `p`.`DienTichChuan` ;
 
 --
 -- Constraints for dumped tables
@@ -5171,125 +5213,34 @@ ALTER TABLE `hosonhanvien`
   ADD CONSTRAINT `hosonhanvien_ibfk_3` FOREIGN KEY (`KhuVucPhuTrachID`) REFERENCES `khuvuc` (`KhuVucID`);
 
 --
--- Constraints for table `khuvuc`
+-- Ràng buộc cho bảng `khuvuc`
 --
 ALTER TABLE `khuvuc`
   ADD CONSTRAINT `khuvuc_ibfk_1` FOREIGN KEY (`ParentKhuVucID`) REFERENCES `khuvuc` (`KhuVucID`);
 
 --
--- Constraints for table `kyc_verification`
+-- Ràng buộc cho bảng `kyc_verification`
 --
 ALTER TABLE `kyc_verification`
   ADD CONSTRAINT `kyc_verification_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
 
 --
--- Constraints for table `lichlamviec`
+-- Ràng buộc cho bảng `lichlamviec`
 --
 ALTER TABLE `lichlamviec`
   ADD CONSTRAINT `lichlamviec_ibfk_1` FOREIGN KEY (`NhanVienBanHangID`) REFERENCES `nguoidung` (`NguoiDungID`);
 
 --
--- Constraints for table `mauhopdong`
+-- Ràng buộc cho bảng `mauhopdong`
 --
 ALTER TABLE `mauhopdong`
   ADD CONSTRAINT `mauhopdong_ibfk_1` FOREIGN KEY (`TaoBoiAdminID`) REFERENCES `nguoidung` (`NguoiDungID`);
 
 --
--- Constraints for table `nguoidung`
+-- Ràng buộc cho bảng `nguoidung`
 --
 ALTER TABLE `nguoidung`
   ADD CONSTRAINT `fk_nguoidung_vaitrohoatdong` FOREIGN KEY (`VaiTroHoatDongID`) REFERENCES `vaitro` (`VaiTroID`);
-
---
--- Constraints for table `nguoidung_vaitro`
---
-ALTER TABLE `nguoidung_vaitro`
-  ADD CONSTRAINT `nguoidung_vaitro_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`),
-  ADD CONSTRAINT `nguoidung_vaitro_ibfk_2` FOREIGN KEY (`VaiTroID`) REFERENCES `vaitro` (`VaiTroID`);
-
---
--- Constraints for table `nhatkyhethong`
---
-ALTER TABLE `nhatkyhethong`
-  ADD CONSTRAINT `nhatkyhethong_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
-
---
--- Constraints for table `noidunghethong`
---
-ALTER TABLE `noidunghethong`
-  ADD CONSTRAINT `noidunghethong_ibfk_1` FOREIGN KEY (`CapNhatBoiID`) REFERENCES `nguoidung` (`NguoiDungID`);
-
---
--- Constraints for table `phong`
---
-ALTER TABLE `phong`
-  ADD CONSTRAINT `phong_ibfk_1` FOREIGN KEY (`DuAnID`) REFERENCES `duan` (`DuAnID`) ON DELETE CASCADE;
-
---
--- Constraints for table `phong_tindang`
---
-ALTER TABLE `phong_tindang`
-  ADD CONSTRAINT `phong_tindang_ibfk_1` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `phong_tindang_ibfk_2` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`) ON DELETE CASCADE;
-
---
--- Constraints for table `thanhviencuochoithoai`
---
-ALTER TABLE `thanhviencuochoithoai`
-  ADD CONSTRAINT `fk_thanhvien_cuochoithoai` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_thanhvien_nguoidung` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `thanhviencuochoithoai_ibfk_1` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`),
-  ADD CONSTRAINT `thanhviencuochoithoai_ibfk_2` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
-
---
--- Constraints for table `thongbao`
---
-ALTER TABLE `thongbao`
-  ADD CONSTRAINT `thongbao_ibfk_1` FOREIGN KEY (`NguoiNhanID`) REFERENCES `nguoidung` (`NguoiDungID`);
-
---
--- Constraints for table `thongketindang`
---
-ALTER TABLE `thongketindang`
-  ADD CONSTRAINT `thongketindang_ibfk_1` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
-
---
--- Constraints for table `tindang`
---
-ALTER TABLE `tindang`
-  ADD CONSTRAINT `fk_tindang_chinhsachcoc` FOREIGN KEY (`ChinhSachCocID`) REFERENCES `chinhsachcoc` (`ChinhSachCocID`),
-  ADD CONSTRAINT `tindang_ibfk_1` FOREIGN KEY (`DuAnID`) REFERENCES `duan` (`DuAnID`),
-  ADD CONSTRAINT `tindang_ibfk_2` FOREIGN KEY (`KhuVucID`) REFERENCES `khuvuc` (`KhuVucID`),
-  ADD CONSTRAINT `tindang_ibfk_3` FOREIGN KEY (`DuyetBoiNhanVienID`) REFERENCES `nguoidung` (`NguoiDungID`);
-
---
--- Constraints for table `tinnhan`
---
-ALTER TABLE `tinnhan`
-  ADD CONSTRAINT `fk_tinnhan_cuochoithoai` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_tinnhan_nguoigui` FOREIGN KEY (`NguoiGuiID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `tinnhan_ibfk_1` FOREIGN KEY (`CuocHoiThoaiID`) REFERENCES `cuochoithoai` (`CuocHoiThoaiID`),
-  ADD CONSTRAINT `tinnhan_ibfk_2` FOREIGN KEY (`NguoiGuiID`) REFERENCES `nguoidung` (`NguoiDungID`);
-
---
--- Constraints for table `vaitro_quyen`
---
-ALTER TABLE `vaitro_quyen`
-  ADD CONSTRAINT `vaitro_quyen_ibfk_1` FOREIGN KEY (`VaiTroID`) REFERENCES `vaitro` (`VaiTroID`),
-  ADD CONSTRAINT `vaitro_quyen_ibfk_2` FOREIGN KEY (`QuyenID`) REFERENCES `quyen` (`QuyenID`);
-
---
--- Constraints for table `vi`
---
-ALTER TABLE `vi`
-  ADD CONSTRAINT `vi_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`);
-
---
--- Constraints for table `yeuthich`
---
-ALTER TABLE `yeuthich`
-  ADD CONSTRAINT `yeuthich_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`),
-  ADD CONSTRAINT `yeuthich_ibfk_2` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

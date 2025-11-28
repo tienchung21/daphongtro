@@ -1,69 +1,229 @@
 import React, { useEffect, useState } from 'react';
-import '../../pages/quanlytaikhoan/quanlytaikhoan.css'; // dùng chung style
 import khuvucApi from '../../api/khuvucApi';
+import './QuanLyKhuVuc.css';
+
+const createEmptyForm = (overrides = {}) => ({
+  KhuVucID: null,
+  TenKhuVuc: '',
+  ParentKhuVucID: null,
+  ViDo: '',
+  KinhDo: '',
+  ...overrides
+});
+
+const normalizeResponse = (res) => {
+  if (!res) return [];
+  if (Array.isArray(res.data)) return res.data;
+  if (Array.isArray(res.data?.data)) return res.data.data;
+  return [];
+};
 
 function QuanLyKhuVuc() {
-  const [tree, setTree] = useState([]);
-  const [flat, setFlat] = useState([]); // bảng phẳng để hiển thị
-  const [loading, setLoading] = useState(false);
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [staff, setStaff] = useState([]);
+
+  const [selectedProvince, setSelectedProvince] = useState(null);
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [selectedWard, setSelectedWard] = useState(null);
+
+  const [loadingProvince, setLoadingProvince] = useState(false);
+  const [loadingDistrict, setLoadingDistrict] = useState(false);
+  const [loadingWard, setLoadingWard] = useState(false);
+  const [loadingStaff, setLoadingStaff] = useState(false);
   const [error, setError] = useState('');
+
   const [modalOpen, setModalOpen] = useState(false);
-  const [form, setForm] = useState({ KhuVucID: null, TenKhuVuc: '', ParentKhuVucID: null, ViDo: '', KinhDo: '' });
   const [mode, setMode] = useState('create');
+  const [form, setForm] = useState(createEmptyForm());
 
-  useEffect(() => { fetchTree(); }, []);
+  useEffect(() => {
+    fetchProvinces();
+  }, []);
 
-  const fetchTree = async () => {
-    setLoading(true);
+  const loadChildren = async (parentId = null) => {
+    const res = await khuvucApi.getChildren(parentId);
+    return normalizeResponse(res);
+  };
+
+  const fetchProvinces = async (keepSelection = false) => {
+    setLoadingProvince(true);
     setError('');
     try {
-      const res = await khuvucApi.getTree();
-      const raw = Array.isArray(res.data) ? res.data : (Array.isArray(res.data?.data) ? res.data.data : []);
-      setTree(raw);
-      setFlat(flatten(raw));
+      const data = await loadChildren(null);
+      setProvinces(data);
+
+      if (keepSelection && selectedProvince) {
+        const found = data.find((item) => item.KhuVucID === selectedProvince.KhuVucID);
+        if (found) {
+          setSelectedProvince(found);
+        } else {
+          setSelectedProvince(null);
+          setDistricts([]);
+          setSelectedDistrict(null);
+          setWards([]);
+          setSelectedWard(null);
+          setStaff([]);
+        }
+      }
+
+      return data;
     } catch (err) {
       console.error(err);
-      setError('Không tải được khu vực');
+      setError('Không tải được danh sách tỉnh/thành');
+      return [];
     } finally {
-      setLoading(false);
+      setLoadingProvince(false);
     }
   };
 
-  // flatten tree to rows with depth for indentation
-  const flatten = (nodes = [], depth = 0) => {
-    let out = [];
-    for (const n of nodes) {
-      out.push({ ...n, depth });
-      if (n.children && n.children.length) out = out.concat(flatten(n.children, depth + 1));
+  const fetchDistricts = async (provinceId, keepSelection = false) => {
+    if (!provinceId) {
+      setDistricts([]);
+      return [];
     }
-    return out;
+    setLoadingDistrict(true);
+    try {
+      const data = await loadChildren(provinceId);
+      setDistricts(data);
+
+      if (keepSelection && selectedDistrict) {
+        const found = data.find((item) => item.KhuVucID === selectedDistrict.KhuVucID);
+        if (found) {
+          setSelectedDistrict(found);
+        } else {
+          setSelectedDistrict(null);
+          setWards([]);
+          setSelectedWard(null);
+          setStaff([]);
+        }
+      }
+      return data;
+    } catch (err) {
+      console.error(err);
+      setError('Không tải được quận/huyện');
+      return [];
+    } finally {
+      setLoadingDistrict(false);
+    }
+  };
+
+  const fetchWards = async (districtId, keepSelection = false) => {
+    if (!districtId) {
+      setWards([]);
+      return [];
+    }
+    setLoadingWard(true);
+    try {
+      const data = await loadChildren(districtId);
+      setWards(data);
+
+      if (keepSelection && selectedWard) {
+        const found = data.find((item) => item.KhuVucID === selectedWard.KhuVucID);
+        if (found) {
+          setSelectedWard(found);
+        } else {
+          setSelectedWard(null);
+        }
+      }
+
+      return data;
+    } catch (err) {
+      console.error(err);
+      setError('Không tải được phường/xã');
+      return [];
+    } finally {
+      setLoadingWard(false);
+    }
+  };
+
+  const fetchStaffForDistrict = async (districtId) => {
+    if (!districtId) {
+      setStaff([]);
+      return;
+    }
+    setLoadingStaff(true);
+    try {
+      const res = await khuvucApi.getNhanVien(districtId);
+      const data = normalizeResponse(res);
+      setStaff(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error(err);
+      setStaff([]);
+    } finally {
+      setLoadingStaff(false);
+    }
+  };
+
+  const handleSelectProvince = async (province) => {
+    if (!province) return;
+    setSelectedProvince(province);
+    setSelectedDistrict(null);
+    setSelectedWard(null);
+    setDistricts([]);
+    setWards([]);
+    setStaff([]);
+    await fetchDistricts(province.KhuVucID);
+  };
+
+  const handleSelectDistrict = async (district) => {
+    if (!district) return;
+    setSelectedDistrict(district);
+    setSelectedWard(null);
+    setWards([]);
+    await Promise.all([
+      fetchWards(district.KhuVucID),
+      fetchStaffForDistrict(district.KhuVucID)
+    ]);
+  };
+
+  const handleSelectWard = (ward) => {
+    setSelectedWard(ward);
   };
 
   const openCreate = (parentId = null) => {
     setMode('create');
-    setForm({ KhuVucID: null, TenKhuVuc: '', ParentKhuVucID: parentId, ViDo: '', KinhDo: '' });
+    setForm(createEmptyForm({ ParentKhuVucID: parentId }));
     setModalOpen(true);
   };
 
   const openEdit = (node) => {
     setMode('edit');
-    setForm({
+    setForm(createEmptyForm({
       KhuVucID: node.KhuVucID,
       TenKhuVuc: node.TenKhuVuc || '',
       ParentKhuVucID: node.ParentKhuVucID ?? null,
       ViDo: node.ViDo ?? '',
       KinhDo: node.KinhDo ?? ''
-    });
+    }));
     setModalOpen(true);
   };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const refreshHierarchy = async () => {
+    const provincesData = await fetchProvinces(true);
+    if (selectedProvince) {
+      const matchProvince = provincesData.find((item) => item.KhuVucID === selectedProvince.KhuVucID);
+      if (matchProvince) {
+        const districtsData = await fetchDistricts(matchProvince.KhuVucID, true);
+        if (selectedDistrict) {
+          const matchDistrict = districtsData.find((item) => item.KhuVucID === selectedDistrict.KhuVucID);
+          if (matchDistrict) {
+            await fetchWards(matchDistrict.KhuVucID, true);
+            await fetchStaffForDistrict(matchDistrict.KhuVucID);
+          }
+        }
+      }
+    }
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
     try {
       if (mode === 'create') {
         await khuvucApi.create({
@@ -80,95 +240,229 @@ function QuanLyKhuVuc() {
           KinhDo: form.KinhDo || null
         });
       }
+
       setModalOpen(false);
-      await fetchTree();
+      await refreshHierarchy();
     } catch (err) {
       console.error(err);
-      alert('Lưu thất bại');
+      alert('Lưu khu vực thất bại, vui lòng thử lại');
     }
   };
 
   const handleDelete = async (node) => {
-    if (!window.confirm(`Xóa khu vực "${node.TenKhuVuc}" ?`)) return;
+    if (!window.confirm(`Xóa khu vực "${node.TenKhuVuc}"?`)) return;
     try {
       await khuvucApi.remove(node.KhuVucID);
-      await fetchTree();
+      await refreshHierarchy();
     } catch (err) {
       console.error(err);
-      alert('Xóa thất bại');
+      alert('Xóa khu vực thất bại');
     }
   };
 
+  const renderList = (items, activeId, onSelect, emptyText) => (
+    <ul className="quan-ly-khu-vuc__list">
+      {items.length === 0 ? (
+        <li className="quan-ly-khu-vuc__empty">{emptyText}</li>
+      ) : (
+        items.map((item) => (
+          <li
+            key={item.KhuVucID}
+            className={`quan-ly-khu-vuc__list-item ${
+              activeId === item.KhuVucID ? 'quan-ly-khu-vuc__list-item--active' : ''
+            }`}
+            onClick={() => onSelect(item)}
+          >
+            <div className="quan-ly-khu-vuc__list-content">
+              <span>{item.TenKhuVuc}</span>
+            </div>
+            <div className="quan-ly-khu-vuc__list-actions">
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  openEdit(item);
+                }}
+              >
+                Sửa
+              </button>
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleDelete(item);
+                }}
+              >
+                Xóa
+              </button>
+            </div>
+          </li>
+        ))
+      )}
+    </ul>
+  );
+
   return (
-    <div className="quanlytk-wrapper">
-      <div className="quanlytk-container">
-        <div className="ql-header">
-          <h3>Quản lý Khu Vực</h3>
-          <div>
-            <button className="btn btn-add" onClick={() => openCreate(null)}>Thêm khu vực gốc</button>
-            <button className="btn" onClick={fetchTree}>Tải lại</button>
+    <div className="quan-ly-khu-vuc">
+      <div className="quan-ly-khu-vuc__header">
+        <div>
+          <h1 className="quan-ly-khu-vuc__title">Quản lý Khu vực</h1>
+          <p className="quan-ly-khu-vuc__subtitle">Chọn tỉnh → quận/huyện để xem nhân viên phụ trách</p>
+        </div>
+        <button className="quan-ly-khu-vuc__primary-btn" onClick={() => openCreate(null)}>
+          + Thêm tỉnh / thành
+        </button>
+      </div>
+
+      {error && <div className="quan-ly-khu-vuc__alert quan-ly-khu-vuc__alert--error">{error}</div>}
+
+      <div className="quan-ly-khu-vuc__columns">
+        <div className="quan-ly-khu-vuc__column">
+          <div className="quan-ly-khu-vuc__column-header">
+            <h3>Tỉnh/Thành</h3>
+            <button onClick={() => openCreate(null)}>+ Tỉnh</button>
           </div>
+          {loadingProvince ? (
+            <div className="quan-ly-khu-vuc__empty">Đang tải...</div>
+          ) : (
+            renderList(provinces, selectedProvince?.KhuVucID, handleSelectProvince, 'Chưa có tỉnh/thành')
+          )}
         </div>
 
-        {loading && <div className="ql-loading">Đang tải...</div>}
-        {error && <div className="ql-error">{error}</div>}
+        <div className="quan-ly-khu-vuc__column">
+          <div className="quan-ly-khu-vuc__column-header">
+            <h3>Quận/Huyện</h3>
+            <button
+              disabled={!selectedProvince}
+              onClick={() => openCreate(selectedProvince?.KhuVucID || null)}
+            >
+              + Quận/Huyện
+            </button>
+          </div>
+          {!selectedProvince ? (
+            <div className="quan-ly-khu-vuc__empty">Chọn tỉnh để xem danh sách quận/huyện</div>
+          ) : loadingDistrict ? (
+            <div className="quan-ly-khu-vuc__empty">Đang tải...</div>
+          ) : (
+            renderList(districts, selectedDistrict?.KhuVucID, handleSelectDistrict, 'Chưa có quận/huyện')
+          )}
+        </div>
 
-        <div className="table-responsive-wrapper">
-          <table className="user-table">
+        <div className="quan-ly-khu-vuc__column">
+          <div className="quan-ly-khu-vuc__column-header">
+            <h3>Phường/Xã</h3>
+            <button
+              disabled={!selectedDistrict}
+              onClick={() => openCreate(selectedDistrict?.KhuVucID || null)}
+            >
+              + Phường/Xã
+            </button>
+          </div>
+          {!selectedDistrict ? (
+            <div className="quan-ly-khu-vuc__empty">Chọn quận/huyện để xem phường/xã</div>
+          ) : loadingWard ? (
+            <div className="quan-ly-khu-vuc__empty">Đang tải...</div>
+          ) : (
+            renderList(wards, selectedWard?.KhuVucID, handleSelectWard, 'Chưa có phường/xã')
+          )}
+        </div>
+      </div>
+
+      <div className="quan-ly-khu-vuc__staff-card">
+        <div className="quan-ly-khu-vuc__staff-header">
+          <div>
+            <h3>Nhân viên phụ trách</h3>
+            <p>
+              {selectedDistrict
+                ? `Danh sách nhân viên phụ trách quận ${selectedDistrict.TenKhuVuc}`
+                : 'Chọn quận/huyện để xem nhân viên'}
+            </p>
+          </div>
+          <span className="quan-ly-khu-vuc__staff-count">{staff.length}</span>
+        </div>
+
+        {loadingStaff ? (
+          <div className="quan-ly-khu-vuc__empty">Đang tải danh sách nhân viên...</div>
+        ) : staff.length === 0 ? (
+          <div className="quan-ly-khu-vuc__empty">Chưa có nhân viên phụ trách</div>
+        ) : (
+          <table className="quan-ly-khu-vuc__staff-table">
             <thead>
               <tr>
-                <th>Tên khu vực</th>
-                <th>Parent</th>
-                <th>Vĩ độ</th>
-                <th>Kinh độ</th>
-                <th className="th-actions">Hành động</th>
+                <th>Nhân viên</th>
+                <th>Liên hệ</th>
+                <th>Khu vực chính</th>
+                <th>Trạng thái</th>
               </tr>
             </thead>
             <tbody>
-              {flat.length === 0 && !loading ? (
-                <tr><td colSpan="5" className="no-data">Chưa có khu vực</td></tr>
-              ) : flat.map(node => (
-                <tr key={node.KhuVucID}>
-                  <td style={{ paddingLeft: `${node.depth * 18 + 8}px` }}>{node.TenKhuVuc}</td>
-                  <td>{node.ParentKhuVucID ?? '-'}</td>
-                  <td>{node.ViDo ?? '-'}</td>
-                  <td>{node.KinhDo ?? '-'}</td>
-                  <td className="td-actions">
-                    <button className="btn btn-add" onClick={() => openCreate(node.KhuVucID)}>Thêm con</button>
-                    <button className="btn btn-edit" onClick={() => openEdit(node)}>Sửa</button>
-                    <button className="btn btn-delete" onClick={() => handleDelete(node)}>Xóa</button>
+              {staff.map((nv) => (
+                <tr key={nv.NguoiDungID}>
+                  <td>
+                    <div className="quan-ly-khu-vuc__user">
+                      <span className="quan-ly-khu-vuc__user-name">{nv.TenDayDu}</span>
+                      <span className="quan-ly-khu-vuc__user-id">#{nv.MaNhanVien || nv.NguoiDungID}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="quan-ly-khu-vuc__contact">
+                      <span>{nv.Email}</span>
+                      <span>{nv.SoDienThoai}</span>
+                    </div>
+                  </td>
+                  <td>{nv.TenKhuVucChinh || '-'}</td>
+                  <td>
+                    <span
+                      className={`quan-ly-khu-vuc__status quan-ly-khu-vuc__status--${(nv.TrangThai || '')
+                        .toLowerCase()}`}
+                    >
+                      {nv.TrangThai}
+                    </span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
+        )}
       </div>
 
       {modalOpen && (
-        <div className="ql-modal-overlay" onClick={() => setModalOpen(false)}>
-          <div className="ql-modal" onClick={e => e.stopPropagation()}>
-            <h4>{mode === 'create' ? 'Thêm khu vực' : 'Cập nhật khu vực'}</h4>
-            <form onSubmit={handleSubmit} className="ql-form">
-              <label>
-                Tên khu vực
+        <div className="quan-ly-khu-vuc__modal-overlay" onClick={() => setModalOpen(false)}>
+          <div className="quan-ly-khu-vuc__modal" onClick={(event) => event.stopPropagation()}>
+            <div className="quan-ly-khu-vuc__modal-header">
+              <h3>{mode === 'create' ? 'Thêm khu vực' : 'Cập nhật khu vực'}</h3>
+              <button className="quan-ly-khu-vuc__modal-close" onClick={() => setModalOpen(false)}>
+                ✕
+              </button>
+            </div>
+            <form onSubmit={handleSubmit} className="quan-ly-khu-vuc__form">
+              <label className="quan-ly-khu-vuc__form-field">
+                <span>Tên khu vực</span>
                 <input name="TenKhuVuc" value={form.TenKhuVuc} onChange={handleChange} required />
               </label>
-              <label>
-                ParentKhuVucID (ID)
+              <label className="quan-ly-khu-vuc__form-field">
+                <span>Parent KhuVucID</span>
                 <input name="ParentKhuVucID" value={form.ParentKhuVucID ?? ''} onChange={handleChange} />
               </label>
-              <label>
-                Vĩ độ
+              <label className="quan-ly-khu-vuc__form-field">
+                <span>Vĩ độ</span>
                 <input name="ViDo" value={form.ViDo} onChange={handleChange} />
               </label>
-              <label>
-                Kinh độ
+              <label className="quan-ly-khu-vuc__form-field">
+                <span>Kinh độ</span>
                 <input name="KinhDo" value={form.KinhDo} onChange={handleChange} />
               </label>
-              <div className="ql-form-actions">
-                <button type="button" className="btn" onClick={() => setModalOpen(false)}>Hủy</button>
-                <button type="submit" className="btn btn-primary">Lưu</button>
+              <div className="quan-ly-khu-vuc__form-actions">
+                <button
+                  type="button"
+                  className="quan-ly-khu-vuc__secondary-btn"
+                  onClick={() => setModalOpen(false)}
+                >
+                  Hủy
+                </button>
+                <button type="submit" className="quan-ly-khu-vuc__primary-btn">
+                  Lưu
+                </button>
               </div>
             </form>
           </div>

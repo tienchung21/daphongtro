@@ -1,177 +1,1060 @@
-.trangchu{
+/* ============================================
+   BASE STYLES - Desktop First
+   ============================================ */
+.trangchu {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     margin: auto;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 50%, #f1f5f9 100%);
+    background-attachment: fixed;
 }
-.content{
-    margin-top: 40px;
+
+/* ============================================
+   BANNER CHÍNH
+   ============================================ */
+.trangchu__banner {
+    width: 100%;
+    height: 400px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    background-image: url('https://tromoi.com/frontend/home/images/banner_default.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+.trangchu__banner-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(0.5px);
+}
+
+.trangchu__banner-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 2rem;
+    max-width: 900px;
+    animation: fadeInUp 1s ease;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.trangchu__banner-title {
+    font-size: 4rem;
+    font-weight: 800;
+    color: #ffffff;
+    margin: 0 0 1.5rem 0;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    line-height: 1.2;
+    letter-spacing: -1px;
+}
+
+.trangchu__banner-subtitle {
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.95);
+    margin: 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    line-height: 1.6;
+}
+
+.trangchu__banner-search {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 2rem 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeInUp 1.2s ease;
+}
+
+.trangchu__banner-search .search-khuvuc {
+    width: 100%;
+    max-width: 900px;
+    margin: 0;
+    justify-content: center;
+}
+
+.trangchu__banner-search .sk-row {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 1rem 1.25rem;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    max-width: 100%;
+}
+
+.trangchu__banner-search .sk-input-keyword,
+.trangchu__banner-search .sk-select {
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 14px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+}
+
+.trangchu__banner-search .sk-input-keyword:focus,
+.trangchu__banner-search .sk-select:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.trangchu__banner-search .sk-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-size: 14px;
+    font-weight: 600;
+    color: #ffffff;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.trangchu__banner-search .sk-btn:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.content {
+    margin-top: 0;
     width: 60vw;
-    
-    
+    max-width: 1200px;
     min-height: 100vh;
     display: flex;
     flex-direction: row;
-    box-sizing: content-box;
+    box-sizing: border-box;
+    gap: 1.5rem;
+    padding: 2rem 0;
+    transition: all 0.3s ease;
 }
-.content1{
+
+.content1 {
     min-height: 100vh;
-    width: 70%;
-    padding: 5px;
-    box-shadow: 0 4px 16px 0 rgba(105, 138, 192, 0.2);
-    margin: 0 10px 30px 0 ;
+    width: 75%;
+    padding: 0.5rem;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.08);
+    margin: 0;
+    box-sizing: border-box;
+    border-radius: 24px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.content2{
+
+.content1:hover {
+    box-shadow: 0 25px 70px rgba(15, 23, 42, 0.15), 0 10px 30px rgba(15, 23, 42, 0.1);
+    transform: translateY(-2px);
+}
+
+.content2 {
     min-height: 100vh;
-    width: 30%;
+    width: 25%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    transition: all 0.3s ease;
 }
-/* khuvuc */
-.khuvuc{
+
+/* ============================================
+   MAP KHU VUC (Sidebar - Box riêng)
+   ============================================ */
+.khuvuc-map {
+    width: 100%;
+    min-height: 250px;
+    padding: 1rem;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.08);
+    box-sizing: border-box;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.khuvuc-map:hover {
+    box-shadow: 0 25px 70px rgba(15, 23, 42, 0.15), 0 10px 30px rgba(15, 23, 42, 0.1);
+    transform: translateY(-2px);
+}
+
+.khuvuc-map__title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 0.75rem;
+    color: #1e293b;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid;
+    border-image: linear-gradient(90deg, #10b981, #059669) 1;
+    background: linear-gradient(135deg, #10b981, #059669);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.khuvuc-map__container {
+    width: 100%;
     height: 200px;
-    width: 100%;
-    padding: 5px;
-    
-    box-shadow: 0 4px 16px 0 rgba(105, 138, 192, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
 
-}
-/* tintuc */
-.tintuc{
-    height: 400px;
+.khuvuc-map__container iframe {
     width: 100%;
-    margin-top: 20px;
-    padding: 5px;
-    box-shadow: 0 4px 16px 0 rgba(105, 138, 192, 0.2);
+    height: 100%;
+    border: none;
+    display: block;
 }
-/* du an */
-.duan{
-    height: 170px;
+
+/* ============================================
+   KHU VUC (Sidebar)
+   ============================================ */
+.khuvuc {
+    min-height: 200px;
     width: 100%;
-    padding: 5px;
+    padding: 1.25rem;
+    box-shadow: 0 20px 60px rgba(16, 185, 129, 0.25), 0 8px 24px rgba(5, 150, 105, 0.2);
+    box-sizing: border-box;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
-    
+    overflow: hidden;
 }
-.duan::after {
-  content: "";
-  display: block;
-  width: 95%;      /* Độ dài mong muốn */
-  margin: 0 auto;
-  border-bottom: 1px solid #e9e7e7;
-  position: absolute;
-  left: 2%;
-  bottom: 0;
-}
-.duan .anhduan{
-    height: 100%;
-    width: 30%;
-    float: left;
-    padding: 10px;
-    border-radius: 5px;
 
+.khuvuc::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+    animation: shimmer 3s infinite;
 }
-.anhduan img{
-    height: 100%;
+
+@keyframes shimmer {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    50% { transform: translate(20px, 20px) rotate(180deg); }
+}
+
+.khuvuc:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 25px 70px rgba(16, 185, 129, 0.35), 0 10px 30px rgba(5, 150, 105, 0.25);
+}
+
+.khuvuc-title {
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 1rem;
+    color: #ffffff;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.khuvuc ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.khuvuc ul li {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 0.625rem 0.875rem;
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.khuvuc ul li:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: translateX(6px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.khuvuc ul li a {
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 14px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ============================================
+   TIN TUC (Sidebar)
+   ============================================ */
+.tintuc {
+    min-height: 400px;
     width: 100%;
-    border-radius: 5px;
+    margin-top: 0;
+    padding: 1.25rem;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.12), 0 8px 24px rgba(15, 23, 42, 0.08);
+    box-sizing: border-box;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
-/* thông tin dự án*/
-.thongtinduan{
+
+.tintuc:hover {
+    box-shadow: 0 25px 70px rgba(15, 23, 42, 0.15), 0 10px 30px rgba(15, 23, 42, 0.1);
+    transform: translateY(-2px);
+}
+
+.tintuc-title {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 1rem;
+    color: #1e293b;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid;
+    border-image: linear-gradient(90deg, #667eea, #764ba2) 1;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.tintuc-baiviet {
+    width: 100%;
+    min-height: 70px;
+    margin: 0 0 0.35rem 0;
+    padding: 0.35rem;
+    box-sizing: border-box;
+    display: flex;
+    gap: 0.875rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 12px;
+    background: rgba(248, 250, 252, 0.6);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.tintuc-baiviet:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+    border-color: rgba(102, 126, 234, 0.3);
+    transform: translateX(4px);
+    box-shadow: 0 8px 24px rgba(102, 126, 234, 0.15);
+}
+
+.tintuc-baiviet:last-child {
+    margin-bottom: 0;
+}
+
+.tintuc-baiviet > .anhduan {
+    width: 30%;
+    min-width: 80px;
+    height: 70px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.tintuc-baiviet > .anhduan > img {
+    width: 100%;
     height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+}
+
+.tintuc-baiviet > .thongtinduan {
     width: 70%;
-    float: left;
-    padding: 10px 5px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.tintuc-baiviet > .thongtinduan > .tieude {
+    font-weight: bold;
+    font-size: 13px;
+    color: #1e293b;
+    line-height: 1.4;
+    margin-bottom: 0.25rem;
+}
+
+.tintuc-baiviet > .thongtinduan > .thoigian {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 400;
+}
+
+/* ============================================
+   DU AN (Tin đăng cards)
+   ============================================ */
+.danhsach {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.duan {
+    min-height: 160px;
+    width: 100%;
+    padding: 1rem;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    gap: 1.25rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+    border-radius: 0;
+    background: transparent;
+}
+
+.duan:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.03), rgba(118, 75, 162, 0.03));
+    transform: translateY(-4px);
+    border-radius: 16px;
+    box-shadow: 0 12px 32px rgba(102, 126, 234, 0.15);
+    border-bottom-color: transparent;
+}
+
+.duan:last-child {
+    border-bottom: none;
+}
+
+.duan::after {
+    display: none;
+}
+
+.duan .anhduan {
+    width: 30%;
+    min-width: 180px;
+    height: 140px;
+    flex-shrink: 0;
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-sizing: border-box;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.duan:hover .anhduan {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    transform: scale(1.02);
+}
+
+.anhduan img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.duan:hover .anhduan img {
+    transform: scale(1.05);
+}
+
+/* ============================================
+   THONG TIN DU AN
+   ============================================ */
+.thongtinduan {
+    flex: 1;
+    width: 70%;
+    padding: 0;
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
     text-align: left;
+    box-sizing: border-box;
+    gap: 0.5rem;
 }
-.thongtinduan .tieude{
-    font-weight: bold;
+
+.thongtinduan .tieude {
+    font-weight: 700;
     font-size: 18px;
-    margin-bottom:8px ;
-    
+    margin-bottom: 0.5rem;
+    color: #1e293b;
+    line-height: 1.4;
+    letter-spacing: -0.3px;
 }
-.thongtinduan .diachi{
+
+.thongtinduan .tieude a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s ease;
+}
+
+.thongtinduan .tieude a:hover {
+    color: #667eea;
+}
+
+.thongtinduan .diachi {
     font-size: 12px;
-    margin-bottom: 5px;
+    margin-bottom: 0.125rem;
     font-weight: 300;
+    color: #64748b;
 }
-.thongtinduan .gia{
-    font-size: 16px;
-    color: red;
-    font-weight: bold;
-    margin: 5px 0;
+
+.thongtinduan .gia {
+    font-size: 18px;
+    color: #ef4444;
+    font-weight: 700;
+    margin: 0.375rem 0;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: inline-block;
 }
-.thongtinduan .thoigian{
+
+.thongtinduan .dientich {
+    font-size: 12px;
+    color: #475569;
+    font-weight: 400;
+}
+
+.thongtinduan .thoigian {
     font-size: 12px;
     color: gray;
     font-weight: 300;
     display: flex;
     position: relative;
-    margin-top: 2px;
+    margin-top: auto;
+    align-items: center;
+    gap: 0.5rem;
 }
-.thongtinduan .thoigian>button{
-   text-decoration: none;
-    color: red;
+
+.thongtinduan .thoigian > button {
+    text-decoration: none;
+    color: #ef4444;
     position: absolute;
-    right: 10px;
-    font-size: 16px;
-    top: -11px;
+    right: 0;
+    font-size: 20px;
+    top: 50%;
+    transform: translateY(-50%);
     background: none;
     border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: transform 0.2s ease;
 }
-/* khuvuc */
-.khuvuc ul{
-    list-style: none;
-    gap: 20px;
-    margin-left: 20px;
+
+.thongtinduan .thoigian > button:hover {
+    transform: translateY(-50%) scale(1.1);
 }
-.khuvuc ul li{
-    display: flex;
-    justify-content: left;
+
+/* ============================================
+   LOADING, ERROR, EMPTY STATES
+   ============================================ */
+.tindang-loading,
+.tindang-error,
+.tindang-empty {
+    padding: 2rem;
+    text-align: center;
+    color: #64748b;
+    font-size: 1rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+    margin: 1rem 0;
 }
-.khuvuc ul li a{
-    text-decoration: none;
-    color: rgb(0, 0, 0);
-    font-weight: bold;
-    font-size: 13px;
+
+.tindang-error {
+    color: #ef4444;
+    background: #fef2f2;
+    border-color: #fecaca;
 }
-.khuvuc-title{
-    font-weight: bold;
-    font-size: 14px;
-    margin-bottom: 10px;
+
+.tindang-empty {
+    color: #94a3b8;
 }
-/* tintuc */
-.tintuc-baiviet {
-    width: 100%;
-    height: 70px;
-    margin: 5px;
+
+/* ============================================
+   TABLET (769px - 1024px)
+   ============================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .content {
+        width: 95vw;
+        max-width: 100%;
+        gap: 1rem;
+    }
+
+    .content1 {
+        width: 75%;
+        padding: 0.5rem;
+    }
+
+    .content2 {
+        width: 25%;
+        gap: 1rem;
+    }
+
+    .duan {
+        padding: 0.875rem;
+        gap: 0.875rem;
+    }
+
+    .duan .anhduan {
+        min-width: 160px;
+        height: 140px;
+    }
+
+    .thongtinduan .tieude {
+        font-size: 16px;
+    }
+
+    .thongtinduan .gia {
+        font-size: 15px;
+    }
+
+    .khuvuc,
+    .tintuc {
+        padding: 1rem;
+    }
 }
-.tintuc-baiviet>.anhduan {
-    height: 100%;
-    width: 30%;
-    float: left;
-    border-radius: 5px;
-    margin-right: 10px;
+
+/* Dark Mode cho trang chủ */
+.dark-mode .trangchu {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
 }
-.tintuc-baiviet>.anhduan>img {
-    height: 100%;
-    width: 100%;
-    float: left;
-    border-radius: 5px;
-    margin-right: 10px;
+
+.dark-mode .content1 {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(51, 65, 85, 0.8);
+    color: var(--text-primary);
 }
-.tintuc-baiviet>.thongtinduan {
-    height: 100%;
-    width: 65%;
-    float: left;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+
+.dark-mode .khuvuc-map {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(51, 65, 85, 0.8);
 }
-.tintuc-baiviet>.thongtinduan>.tieude {
-    font-weight: bold;
-    font-size: 13px;
+
+.dark-mode .khuvuc-map__title {
+    color: var(--text-primary);
+    border-image: linear-gradient(90deg, #34d399, #10b981) 1;
+    background: linear-gradient(135deg, #34d399, #10b981);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dark-mode .khuvuc {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+.dark-mode .tintuc {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-color: rgba(51, 65, 85, 0.8);
+}
+
+.dark-mode .duan {
+    border-bottom-color: rgba(51, 65, 85, 0.6);
+}
+
+.dark-mode .duan:hover {
+    background: linear-gradient(135deg, rgba(129, 140, 248, 0.05), rgba(139, 92, 246, 0.05));
+}
+
+.dark-mode .thongtinduan .tieude {
+    color: var(--text-primary);
+}
+
+.dark-mode .thongtinduan .diachi,
+.dark-mode .thongtinduan .dientich {
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   MOBILE (≤ 768px)
+   ============================================ */
+@media (max-width: 768px) {
+    .trangchu {
+        padding: 0;
+        width: 100%;
+    }
+
+    .trangchu__banner {
+        height: 400px;
+        min-height: 400px;
+    }
+
+    .trangchu__banner-content {
+        padding: 1.5rem;
+        margin-top: 1rem;
+        margin-bottom: auto;
+    }
+
+    .trangchu__banner-search {
+        padding: 0 1rem 1.5rem;
+    }
+
+    .trangchu__banner-search .sk-row {
+        padding: 0.875rem 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .trangchu__banner-search .sk-input-keyword,
+    .trangchu__banner-search .sk-select {
+        min-width: 140px;
+        padding: 0.625rem 0.875rem;
+        font-size: 13px;
+    }
+
+    .trangchu__banner-search .sk-btn {
+        padding: 0.625rem 1.25rem;
+        font-size: 13px;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .khuvuc-map {
+        padding: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .khuvuc-map__container {
+        height: 180px;
+    }
+
+    .trangchu__banner-title {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .trangchu__banner-subtitle {
+        font-size: 1.1rem;
+    }
+
+    .content {
+        width: 100%;
+        max-width: 100%;
+        flex-direction: column;
+        margin-top: 0;
+        padding: 1.5rem 1rem;
+        gap: 1.5rem;
+    }
+
+    .content1 {
+        width: 100%;
+        margin: 0;
+        padding: 1rem;
+        min-height: auto;
+        order: 1;
+    }
+
+    .content2 {
+        width: 100%;
+        min-height: auto;
+        order: 2;
+        gap: 1rem;
+    }
+
+    /* Card tin đăng mobile */
+    .duan {
+        min-height: 140px;
+        padding: 0.875rem;
+        gap: 0.75rem;
+        flex-wrap: nowrap;
+    }
+
+    .duan .anhduan {
+        width: 35%;
+        min-width: 120px;
+        height: 120px;
+    }
+
+    .thongtinduan {
+        width: 65%;
+        flex: 1;
+        gap: 0.375rem;
+    }
+
+    .thongtinduan .tieude {
+        font-size: 15px;
+        margin-bottom: 0.375rem;
+        line-height: 1.3;
+    }
+
+    .thongtinduan .gia {
+        font-size: 14px;
+        margin: 0.25rem 0;
+    }
+
+    .thongtinduan .diachi,
+    .thongtinduan .dientich {
+        font-size: 11px;
+    }
+
+    .thongtinduan .thoigian {
+        font-size: 11px;
+        margin-top: 0.25rem;
+    }
+
+    .thongtinduan .thoigian > button {
+        font-size: 18px;
+        right: -5px;
+    }
+
+    /* Sidebar mobile */
+    .khuvuc {
+        min-height: auto;
+        padding: 1rem;
+        margin-bottom: 0;
+    }
+
+    .khuvuc-title {
+        font-size: 13px;
+        margin-bottom: 0.75rem;
+    }
+
+    .khuvuc ul {
+        gap: 0.5rem;
+    }
+
+    .khuvuc ul li {
+        padding: 0.5rem 0.75rem;
+        font-size: 12px;
+    }
+
+    .tintuc {
+        min-height: auto;
+        padding: 1rem;
+        margin-top: 0;
+    }
+
+    .tintuc-title {
+        font-size: 13px;
+        margin-bottom: 0.75rem;
+    }
+
+    .tintuc-baiviet {
+        min-height: 65px;
+        margin: 0 0 0.75rem 0;
+        gap: 0.625rem;
+    }
+
+    .tintuc-baiviet > .anhduan {
+        width: 30%;
+        min-width: 70px;
+        height: 65px;
+    }
+
+    .tintuc-baiviet > .thongtinduan {
+        width: 70%;
+    }
+
+    .tintuc-baiviet > .thongtinduan > .tieude {
+        font-size: 12px;
+        line-height: 1.3;
+    }
+
+    .tintuc-baiviet > .thongtinduan > .thoigian {
+        font-size: 10px;
+    }
+
+    .khuvuc-map {
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .khuvuc-map__title {
+        font-size: 14px;
+        margin-bottom: 0.75rem;
+    }
+
+    .khuvuc-map__container {
+        height: 160px;
+    }
+}
+
+/* ============================================
+   SMALL MOBILE (≤ 480px)
+   ============================================ */
+@media (max-width: 480px) {
+    .trangchu__banner {
+        height: 400px;
+        min-height: 400px;
+    }
+
+    .trangchu__banner-content {
+        padding: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: auto;
+    }
+
+    .trangchu__banner-title {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .trangchu__banner-subtitle {
+        font-size: 0.9rem;
+    }
+
+    .trangchu__banner-search {
+        padding: 0 0.75rem 1rem;
+    }
+
+    .trangchu__banner-search .sk-row {
+        padding: 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .trangchu__banner-search .sk-input-keyword,
+    .trangchu__banner-search .sk-select {
+        min-width: 120px;
+        padding: 0.5rem 0.75rem;
+        font-size: 12px;
+    }
+
+    .trangchu__banner-search .sk-btn {
+        padding: 0.5rem 1rem;
+        font-size: 12px;
+    }
+
+    .trangchu__banner-search {
+        padding: 0 0.75rem 1rem;
+    }
+
+    .trangchu__banner-search .sk-row {
+        padding: 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .trangchu__banner-search .sk-input-keyword,
+    .trangchu__banner-search .sk-select {
+        min-width: 120px;
+        padding: 0.5rem 0.75rem;
+        font-size: 12px;
+    }
+
+    .trangchu__banner-search .sk-btn {
+        padding: 0.5rem 1rem;
+        font-size: 12px;
+    }
+
+    .content {
+        padding: 0 0.75rem;
+        margin-top: 0;
+        gap: 1.25rem;
+    }
+
+    .content1 {
+        padding: 0.875rem;
+    }
+
+    .duan {
+        min-height: 130px;
+        padding: 0.75rem;
+        gap: 0.625rem;
+    }
+
+    .duan .anhduan {
+        width: 38%;
+        min-width: 100px;
+        height: 110px;
+    }
+
+    .thongtinduan {
+        width: 62%;
+        gap: 0.25rem;
+    }
+
+    .thongtinduan .tieude {
+        font-size: 14px;
+        line-height: 1.25;
+    }
+
+    .thongtinduan .gia {
+        font-size: 13px;
+    }
+
+    .thongtinduan .diachi,
+    .thongtinduan .dientich {
+        font-size: 10px;
+    }
+
+    .thongtinduan .thoigian {
+        font-size: 10px;
+    }
+
+    .thongtinduan .thoigian > button {
+        font-size: 16px;
+    }
+
+    .khuvuc,
+    .tintuc {
+        padding: 0.875rem;
+    }
+
+    .khuvuc-title,
+    .tintuc-title {
+        font-size: 12px;
+    }
+
+    .tintuc-baiviet {
+        min-height: 60px;
+        gap: 0.5rem;
+    }
+
+    .tintuc-baiviet > .anhduan {
+        min-width: 60px;
+        height: 60px;
+    }
+
+    .tintuc-baiviet > .thongtinduan > .tieude {
+        font-size: 11px;
+    }
+
+    .tintuc-baiviet > .thongtinduan > .thoigian {
+        font-size: 9px;
+    }
 }

@@ -25,8 +25,11 @@ class HoSoNhanVienModel {
         trangThai = null,
         khuVucId = null,
         page = 1,
-        limit = 20
+        limit = 20,
+        operatorId = -1
       } = filters;
+
+      // console.log('Lấy danh sách nhân viên: ',filters);
 
       const offset = (page - 1) * limit;
 
@@ -49,9 +52,14 @@ class HoSoNhanVienModel {
         params.push(khuVucId);
       }
 
+      if (operatorId != -1) {
+        whereConditions.push(`hs.QuanLyID = ?`);
+        params.push(operatorId);
+      }
+
       // Luôn loại bỏ nhân viên đã xóa mềm
       whereConditions.push(`nd.TrangThai != 'XoaMem'`);
-      
+
       const whereClause = whereConditions.length > 0
         ? 'WHERE ' + whereConditions.join(' AND ')
         : '';
@@ -66,13 +74,14 @@ class HoSoNhanVienModel {
           hs.NgayBatDau,
           hs.NgayKetThuc,
           hs.GhiChu,
+          hs.QuanLyID,
           nd.TenDayDu,
           nd.Email,
           nd.SoDienThoai,
           nd.TrangThai as TrangThaiTaiKhoan,
           nd.TrangThai as TrangThaiLamViec,
           kv.TenKhuVuc,
-          kv.TenKhuVuc as KhuVucPhuTrach,
+           kv.TenKhuVuc as KhuVucPhuTrach,
           COUNT(DISTINCT ch.CuocHenID) as TongSoCuocHen,
           COUNT(DISTINCT CASE WHEN ch.TrangThai = 'HoanThanh' THEN ch.CuocHenID END) as SoCuocHenHoanThanh
         FROM hosonhanvien hs
@@ -81,7 +90,7 @@ class HoSoNhanVienModel {
         LEFT JOIN cuochen ch ON nd.NguoiDungID = ch.NhanVienBanHangID
         ${whereClause}
         GROUP BY hs.HoSoID
-        ORDER BY nd.TrangThai ASC, nd.TenDayDu ASC
+       ORDER BY nd.TrangThai ASC, nd.TenDayDu ASC
         LIMIT ? OFFSET ?
       `;
 
@@ -112,6 +121,43 @@ class HoSoNhanVienModel {
     } catch (error) {
       console.error('[HoSoNhanVienModel] Lỗi layDanhSachNhanVien:', error);
       throw new Error(`Lỗi lấy danh sách nhân viên: ${error.message}`);
+    }
+  }
+
+  /**
+   * Lấy danh sách nhân viên phụ trách một khu vực cụ thể
+   * @param {number} khuVucId
+   * @returns {Promise<Array>}
+   */
+  static async layNhanVienTheoKhuVuc(khuVucId) {
+    try {
+      const query = `
+        SELECT 
+          hs.HoSoID,
+          hs.NguoiDungID,
+          hs.MaNhanVien,
+          hs.KhuVucChinhID,
+          hs.KhuVucPhuTrachID,
+          nd.TenDayDu,
+          nd.Email,
+          nd.SoDienThoai,
+          nd.TrangThai,
+          kv_chinh.TenKhuVuc AS TenKhuVucChinh,
+          kv_phu.TenKhuVuc AS TenKhuVucPhuTrach
+        FROM hosonhanvien hs
+        INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
+        LEFT JOIN khuvuc kv_chinh ON hs.KhuVucChinhID = kv_chinh.KhuVucID
+        LEFT JOIN khuvuc kv_phu ON hs.KhuVucPhuTrachID = kv_phu.KhuVucID
+        WHERE nd.TrangThai != 'XoaMem'
+          AND (hs.KhuVucChinhID = ? OR hs.KhuVucPhuTrachID = ?)
+        ORDER BY nd.TrangThai ASC, nd.TenDayDu ASC
+      `;
+
+      const [rows] = await db.execute(query, [khuVucId, khuVucId]);
+      return rows;
+    } catch (error) {
+      console.error('[HoSoNhanVienModel] Lỗi layNhanVienTheoKhuVuc:', error);
+      throw new Error(`Lỗi lấy danh sách nhân viên theo khu vực: ${error.message}`);
     }
   }
 
@@ -335,7 +381,7 @@ class HoSoNhanVienModel {
    * @param {number} operatorId - ID operator thực hiện
    * @returns {Promise<{userId: number, setupToken: string}>}
    */
-  static async taoTaiKhoanNhanVien(data, operatorId) {
+  static async taoTaiKhoanNhanVien(data) {
     const connection = await db.getConnection();
 
     try {
@@ -369,15 +415,15 @@ class HoSoNhanVienModel {
       }
 
       // Tạo mật khẩu tạm thời (sẽ bắt buộc đổi khi đăng nhập lần đầu)
+      const crypto = require('crypto');
       const tempPassword = this._generateTempPassword();
-      const bcrypt = require('bcrypt');
-      const hashedPassword = await bcrypt.hash(tempPassword, 10);
+      const hashedPassword = crypto.createHash('md5').update(tempPassword).digest('hex');
 
       // Tạo nguoidung
       const [userResult] = await connection.execute(
         `INSERT INTO nguoidung 
          (TenDayDu, Email, SoDienThoai, MatKhauHash, TrangThai, TrangThaiXacMinh, TaoLuc, CapNhatLuc) 
-         VALUES (?, ?, ?, ?, 'Active', 'ChuaXacMinh', NOW(), NOW())`,
+         VALUES (?, ?, ?, ?, 'HoatDong', 'ChuaXacMinh', NOW(), NOW())`,
         [data.TenDayDu.trim(), data.Email.toLowerCase(), data.SoDienThoai, hashedPassword]
       );
 
@@ -407,14 +453,14 @@ class HoSoNhanVienModel {
       );
 
       // Tạo mã nhân viên
-      const maNhanVien = this._generateMaNhanVien(userId);
+      const maNhanVien = await this._generateNextMaNhanVien(connection);
 
       // Tạo hồ sơ nhân viên
       await connection.execute(
         `INSERT INTO hosonhanvien 
-         (NguoiDungID, MaNhanVien, KhuVucChinhID, TyLeHoaHong, TrangThaiLamViec, NgayBatDau) 
-         VALUES (?, ?, ?, ?, 'Active', CURDATE())`,
-        [userId, maNhanVien, data.KhuVucChinhID, data.TyLeHoaHong || 5]
+         (NguoiDungID, MaNhanVien, KhuVucChinhID, KhuVucPhuTrachID, TyLeHoaHong, NgayBatDau, QuanLyID) 
+         VALUES (?, ?, ?, ?, ?, CURDATE(), ?)`,
+        [userId, maNhanVien, data.KhuVucChinhID, data.KhuVucPhuTrachID, 50, data.operatorId]
       );
 
       // Tạo setup token (để gửi email)
@@ -423,7 +469,7 @@ class HoSoNhanVienModel {
       // Ghi audit log
       await NhatKyHeThongService.ghiNhan({
         TacNhan: 'Operator',
-        NguoiDungID: operatorId,
+        NguoiDungID: data.operatorId,
         HanhDong: 'TAO_TAI_KHOAN_NHAN_VIEN',
         DoiTuong: 'NguoiDung',
         DoiTuongID: userId,
@@ -520,10 +566,35 @@ class HoSoNhanVienModel {
    * Generate mã nhân viên (format: NV + timestamp + random)
    * @private
    */
-  static _generateMaNhanVien(userId) {
-    const timestamp = Date.now().toString().slice(-6);
-    const userPart = userId.toString().padStart(4, '0');
-    return `NV${timestamp}${userPart}`;
+  /**
+   * Tìm mã NV lớn nhất hiện tại và sinh mã tiếp theo (VD: NV0005 -> NV0006)
+   * @param {Object} connection - Connection transaction hiện tại
+   */
+  static async _generateNextMaNhanVien(connection) {
+    // 1. Lấy mã nhân viên mới nhất (sắp xếp giảm dần theo ID hoặc tách chuỗi)
+    // Lưu ý: REGEXP_SUBSTR chỉ dùng cho MySQL 8.0+, nếu version thấp dùng logic khác
+    const [rows] = await connection.execute(
+      `SELECT MaNhanVien FROM hosonhanvien 
+       WHERE MaNhanVien LIKE 'NV%' 
+       ORDER BY LENGTH(MaNhanVien) DESC, MaNhanVien DESC 
+       LIMIT 1`
+    );
+
+    let nextNumber = 1;
+
+    if (rows.length > 0 && rows[0].MaNhanVien) {
+      // 2. Tách phần số ra khỏi chuỗi "NVxxxxx"
+      const currentMa = rows[0].MaNhanVien; // Ví dụ: NV00015
+      const numberPart = currentMa.replace(/\D/g, ''); // Lấy mỗi số: 00015
+
+      if (numberPart) {
+        nextNumber = parseInt(numberPart, 10) + 1;
+      }
+    }
+
+    // 3. Format lại thành chuỗi (ví dụ 5 ký tự số: 16 -> NV00016)
+    const nextMa = `NV${String(nextNumber).padStart(4, '0')}`;
+    return nextMa;
   }
 
   /**
@@ -545,8 +616,17 @@ class HoSoNhanVienModel {
    * Lấy thống kê nhân viên
    * @returns {Promise<Object>}
    */
-  static async layThongKeNhanVien() {
+  static async layThongKeNhanVien(operatorId) {
     try {
+      let whereCondition = "nd.TrangThai != 'XoaMem'";
+      const params = [];
+
+      // Nếu KHÔNG PHẢI là Admin (-1) thì mới lọc theo quản lý
+      if (operatorId && operatorId != -1) {
+        whereCondition += " AND hs.QuanLyID = ?";
+        params.push(operatorId);
+      }
+
       const query = `
         SELECT 
           COUNT(CASE WHEN nd.TrangThai = 'HoatDong' THEN 1 END) as HoatDong,
@@ -555,28 +635,14 @@ class HoSoNhanVienModel {
           COUNT(*) as TongSo,
           AVG(hs.TyLeHoaHong) as TyLeHoaHongTrungBinh
         FROM hosonhanvien hs
-        INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
-        WHERE nd.TrangThai != 'XoaMem'
+          INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
+        WHERE ${whereCondition}
       `;
 
-      console.log('📊 [HoSoNhanVienModel] Executing stats query:', query);
-      const [rows] = await db.execute(query);
+      const [rows] = await db.execute(query, params);
+
       console.log('📊 [HoSoNhanVienModel] Stats result:', rows[0]);
-      
-      // Debug: Kiểm tra dữ liệu thực tế
-      const debugQuery = `
-        SELECT 
-          nd.NguoiDungID, 
-          nd.TenDayDu, 
-          nd.TrangThai,
-          hs.HoSoID
-        FROM hosonhanvien hs
-        INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
-        WHERE nd.TrangThai != 'XoaMem'
-      `;
-      const [debugRows] = await db.execute(debugQuery);
-      console.log('📊 [HoSoNhanVienModel] All employees in hosonhanvien:', debugRows);
-      
+
       return rows[0];
     } catch (error) {
       console.error('[HoSoNhanVienModel] Lỗi layThongKeNhanVien:', error);
@@ -639,9 +705,3 @@ class HoSoNhanVienModel {
 }
 
 module.exports = HoSoNhanVienModel;
-
-
-
-
-
-

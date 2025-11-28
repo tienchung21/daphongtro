@@ -20,6 +20,9 @@ const chinhSachCocRoutes = require('./routes/chinhSachCocRoutes'); // API Chính
 const operatorRoutes = require('./routes/operatorRoutes'); // API Operator/Admin (Banned dự án)
 const geocodingRoutes = require('./routes/geocodingRoutes'); // Geocoding API
 const chatRoutes = require('./routes/chatRoutes'); // API Chat/Messaging (UC-PROJ-05)
+const hopDongCustomerRoutes = require('./routes/hopDongCustomerRoutes'); // API hợp đồng cho Khách hàng
+const hopDongAdminRoutes = require('./routes/hopDongAdminRoutes'); // API hợp đồng cho Admin/Operator
+const mauHopDongRoutes = require('./routes/mauHopDongRoutes'); // API đọc mẫu hợp đồng
 const kycRoutes = require('./api/kyc/kycRoutes'); // API KYC (Xác thực CCCD)
 
 // Routes cho Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
@@ -27,6 +30,7 @@ const nhanVienBanHangRoutes = require('./routes/nhanVienBanHangRoutes');
 const goiYTinDangRoutes = require('./routes/goiYTinDangRoutes'); // Gợi ý tin đăng (QR Xem Ngay)
 const publicGoiYRoutes = require('./routes/publicGoiYRoutes'); // Public routes cho khách quét QR
 
+const nguoiPhuTrachDuAnRoutes = require('./routes/nguoiPhuTrachDuAnRoutes');
 // Routes cho Operator (UC-OPER-01 đến UC-OPER-06)
 const tinDangOperatorRoutes = require('./routes/tinDangOperatorRoutes'); // UC-OPER-01: Duyệt tin đăng
 const duAnOperatorRoutes = require('./routes/duAnOperatorRoutes'); // UC-OPER-02: Quản lý dự án
@@ -35,8 +39,12 @@ const cuocHenOperatorRoutes = require('./routes/cuocHenOperatorRoutes'); // UC-O
 const hoSoNhanVienRoutes = require('./routes/hoSoNhanVienRoutes'); // UC-OPER-04&05: Quản lý NVBH
 const bienBanBanGiaoRoutes = require('./routes/bienBanBanGiaoRoutes'); // UC-OPER-06: Biên bản bàn giao
 const dashboardOperatorRoutes = require('./routes/dashboardOperatorRoutes'); // Dashboard metrics
+const noiDungHeThongRoutes = require('./routes/noiDungHeThongRoutes'); // Quản lý Nội dung Hệ thống
+const yeuCauRutTienRoutes = require('./routes/yeuCauRutTienRoutes'); // API Rút tiền
+const chatBotRoutes = require('./routes/chatBotRoutes'); // API Chatbot AI
 
 // Routes từ upstream
+const viRoutes = require('./routes/viRoutes');
 const tinDangRoutes = require('./routes/tinDangRoutes');
 const khuVucRoutes = require('./routes/khuVucRoutes');
 const yeuThichRoutes = require('./routes/yeuThichRoutes');
@@ -47,7 +55,7 @@ const cuocHenRoutes = require('./routes/cuocHenRoutes');
 const publicDuAnRoutes = require('./routes/publicDuAnRoutes');
 const publicTinDangRoutes = require('./routes/publicTinDangRoutes');
 const sepaySync = require('./services/sepaySyncService');
-
+const lichSuViRoutes = require('./routes/lichSuViRoutes');
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
@@ -149,6 +157,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/api/users', userRoutes);
 app.use('/api', authRoutes);
 
+
 // API từ local (Module Chủ dự án)
 app.use('/api/chu-du-an', chuDuAnRoutes); // API nghiệp vụ chủ dự án theo đặc tả
 app.use('/api/chu-du-an/chinh-sach-coc', chinhSachCocRoutes); // API Chính sách Cọc
@@ -156,6 +165,9 @@ app.use('/api/operator', operatorRoutes); // API Operator/Admin (UC-OPR-01, UC-O
 app.use('/api/geocode', geocodingRoutes); // Geocoding API (Nominatim)
 app.use('/api/chat', chatRoutes); // API Chat/Messaging (UC-PROJ-05)
 app.use('/api/kyc', kycRoutes); // API KYC (Xác thực CCCD)
+app.use('/api/hop-dong', hopDongCustomerRoutes); // API hợp đồng phía Khách hàng
+app.use('/api/admin', hopDongAdminRoutes); // API hợp đồng cho Admin/Operator
+app.use('/api/mau-hop-dong', mauHopDongRoutes); // API preview mẫu hợp đồng
 
 // API Operator (UC-OPER-01 đến UC-OPER-06)
 app.use('/api/operator/tin-dang', tinDangOperatorRoutes); // UC-OPER-01: Duyệt tin đăng
@@ -165,11 +177,15 @@ app.use('/api/operator/cuoc-hen', cuocHenOperatorRoutes); // UC-OPER-03: Gán cu
 app.use('/api/operator/nhan-vien', hoSoNhanVienRoutes); // UC-OPER-04&05: Quản lý NVBH
 app.use('/api/operator/bien-ban', bienBanBanGiaoRoutes); // UC-OPER-06: Biên bản bàn giao
 app.use('/api/operator/dashboard', dashboardOperatorRoutes); // Dashboard metrics
+app.use('/api/operator/noi-dung-he-thong', noiDungHeThongRoutes); // Quản lý Nội dung Hệ thống
+app.use('/api/rut-tien', yeuCauRutTienRoutes); // API Rút tiền
+app.use('/api/chatbot', chatBotRoutes); // API Chatbot AI
 
 // API Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
 app.use('/api/nhan-vien-ban-hang', nhanVienBanHangRoutes);
 app.use('/api/nhan-vien-ban-hang/goi-y', goiYTinDangRoutes); // Gợi ý tin đăng (QR Xem Ngay)
 
+app.use('/api/nguoi-phu-trach-du-an', nguoiPhuTrachDuAnRoutes);
 // API từ upstream
 app.use('/api/tindangs', tinDangRoutes); 
 app.use('/api/khuvucs', khuVucRoutes);
@@ -181,6 +197,8 @@ app.use('/api/cuoc-hen', cuocHenRoutes);
 app.use('/api/public/du-an', publicDuAnRoutes);
 app.use('/api/public/tin-dang', publicTinDangRoutes);
 app.use('/api/public/xem-ngay', publicGoiYRoutes); // Public routes cho khách quét QR xem phòng
+app.use('/api/lich-su-vi', lichSuViRoutes);
+app.use('/api/vi', viRoutes);
 app.get('/', (req, res) => {
   res.send('API server đang chạy - Module Chủ dự án + Upstream APIs');
 });

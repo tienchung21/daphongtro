@@ -17,6 +17,9 @@ import {
   HiOutlineUserGroup,
   HiOutlineChatBubbleLeftRight,
   HiOutlineChartPie,
+  HiOutlineShieldCheck,
+  HiOutlineBanknotes,
+  HiOutlineArrowRightOnRectangle,
 } from "react-icons/hi2";
 
 /**
@@ -24,14 +27,37 @@ import {
  * Design: Modern sidebar với sections, badges, user profile
  * @returns {JSX.Element}
  */
+// Helper function để lấy vai trò người dùng
+const getUserRole = (user) => {
+  if (!user) return null;
+  return user.VaiTroHoatDongID || user.vaiTroId || user.role || user.VaiTroID || null;
+};
+
+// Helper function để lấy user từ localStorage
+const getCurrentUser = () => {
+  try {
+    return JSON.parse(localStorage.getItem('user') || '{}');
+  } catch {
+    return {};
+  }
+};
+
 function Navigation({ activeTab, onTabChange }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [userRole, setUserRole] = useState(null);
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    setUserRole(getUserRole(user));
+  }, []);
+
+  const isCustomer = userRole === 1;
 
   const mainMenuItems = [
-    {
+    !isCustomer && {
       path: "/quan-ly/dashboard",
       tab: "dashboard",
       title: "Tổng quan",
@@ -45,28 +71,42 @@ function Navigation({ activeTab, onTabChange }) {
       icon: <HiOutlineUsers />,
       description: "Quản lý người dùng",
     },
-    {
+    !isCustomer && {
       path: "/quanlytindang",
       tab: "tindang",
       title: "Tin đăng",
       icon: <HiOutlineDocumentText />,
       description: "Duyệt tin đăng",
     },
-    {
+    !isCustomer && {
       path: "/quanlykhuvuc",
       tab: "quanlykhuvuc",
       title: "Khu vực",
       icon: <HiOutlineMap />,
       description: "Quản lý khu vực",
     },
-    {
+    !isCustomer && {
       path: "/quan-ly",
-      tab: "duan",
+      tab: "quanlyduan",
       title: "Dự án",
       icon: <HiOutlineBuildingOffice2 />,
       description: "Quản lý dự án",
     },
-  ];
+    !isCustomer && {
+      path: "/quan-ly",
+      tab: "chinhsach",
+      title: "Chính sách",
+      icon: <HiOutlineShieldCheck />,
+      description: "Quản lý chính sách hệ thống",
+    },
+    !isCustomer && {
+      path: "/quan-ly",
+      tab: "ruttien",
+      title: "Yêu cầu rút tiền",
+      icon: <HiOutlineBanknotes />,
+      description: "Duyệt yêu cầu rút tiền",
+    },
+  ].filter(Boolean);
 
   const appointmentMenuItems = [
     {
@@ -76,17 +116,20 @@ function Navigation({ activeTab, onTabChange }) {
       icon: <HiOutlineCalendarDays />,
       description: "Quản lý cuộc hẹn",
     },
-    {
+    !isCustomer && {
       path: "/quan-ly",
       tab: "yeucau",
       title: "Yêu cầu",
       icon: <HiOutlineChatBubbleLeftRight />,
       description: "Quản lý yêu cầu",
     },
-  ];
+  ].filter(Boolean);
+
+  // Hiển thị tab Hợp đồng cho Admin (role 4), Operator (role 5) hoặc Khách hàng (role 1)
+  const shouldShowHopDongTab = userRole === 4 || userRole === 5 || userRole === 1;
 
   const paymentMenuItems = [
-    {
+    !isCustomer && {
       path: "/thanhtoan",
       tab: "thanhtoan",
       title: "Thanh toán",
@@ -94,13 +137,28 @@ function Navigation({ activeTab, onTabChange }) {
       description: "Quản lý giao dịch",
     },
     {
+      path: "/quanlyvi",
+      tab: "vi",
+      title: "Ví",
+      icon: <HiOutlineArrowTrendingUp />,
+      description: "Quản lý ví người dùng",
+    },
+    // Chỉ hiển thị tab Hợp đồng cho Admin/Operator/Khách hàng
+    shouldShowHopDongTab && {
+      path: "/quan-ly/hop-dong",
+      tab: "hopdong",
+      title: "Hợp đồng",
+      icon: <HiOutlineDocumentText />,
+      description: "Quản lý hợp đồng",
+    },
+    !isCustomer && {
       path: "/chu-du-an/bao-cao",
       tab: "baocao",
       title: "Báo cáo",
       icon: <HiOutlineChartPie />,
       description: "Thống kê hệ thống",
     },
-  ];
+  ].filter(Boolean);
 
   const isActive = (path) => {
     if (path === "/quan-ly/dashboard") {
@@ -123,6 +181,14 @@ function Navigation({ activeTab, onTabChange }) {
     } else {
       navigate(item.path);
     }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("userId");
+    localStorage.removeItem("user");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("token");
+    window.location.href = "/login";
   };
 
   useEffect(() => {
@@ -322,15 +388,29 @@ function Navigation({ activeTab, onTabChange }) {
           </button>
           <button
             className={`navigation__footer-btn ${
-              location.pathname === "/cai-dat"
+              (activeTab && activeTab === "caidat") || location.pathname === "/cai-dat"
                 ? "navigation__footer-btn--active"
                 : ""
             }`}
-            onClick={() => navigate("/cai-dat")}
+            onClick={() => {
+              if (onTabChange) {
+                onTabChange("caidat");
+              } else {
+                navigate("/cai-dat");
+              }
+            }}
             title="Cài đặt"
           >
             <HiOutlineCog6Tooth style={{ width: "20px", height: "20px" }} />
             {!isCollapsed && <span>Cài đặt</span>}
+          </button>
+          <button
+            className="navigation__footer-btn"
+            onClick={handleLogout}
+            title="Đăng xuất"
+          >
+            <HiOutlineArrowRightOnRectangle style={{ width: "20px", height: "20px" }} />
+            {!isCollapsed && <span>Đăng xuất</span>}
           </button>
         </div>
       </aside>

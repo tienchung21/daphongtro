@@ -27,6 +27,11 @@ import { PublicTinDangService } from "../../services/PublicService"; // Đổi s
 import cuocHenApi from "../../api/cuocHenApi"; // ✅ Dùng API mới thay vì PublicCuocHenService
 import MapViTriPhong from "../../components/MapViTriPhong/MapViTriPhong";
 import yeuThichApi from "../../api/yeuThichApi";
+import nguoiPhuTrachDuAnApi from "../../api/nguoiPhuTrachDuAnApi"; // Thêm import
+import viApi from "../../api/viApi";
+import hopDongApi from "../../api/hopDongApi";
+import lichSuViApi from "../../api/lichSuViApi";
+import { useToast, ToastContainer } from "../../components/Toast/Toast";
 import "./chitiettindang.css";
 import { getStaticUrl } from "../../config/api";
 
@@ -84,6 +89,8 @@ const toMySqlDateTime = (input) => {
  * - Share functionality
  * - Scroll progress bar
  */
+const DEFAULT_MAU_HOP_DONG_ID = 1;
+
 const ChiTietTinDang = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -108,6 +115,16 @@ const ChiTietTinDang = () => {
   // State cho modal chọn phòng để đặt cọc
   const [cocModalOpen, setCocModalOpen] = useState(false);
   const [cocPhongId, setCocPhongId] = useState(null);
+  const [soDuVi, setSoDuVi] = useState(null);
+  const [checkingCoc, setCheckingCoc] = useState(false);
+  const [hopDongModalOpen, setHopDongModalOpen] = useState(false);
+  const [hopDongData, setHopDongData] = useState(null);
+  const [hopDongLoading, setHopDongLoading] = useState(false);
+  const [hopDongError, setHopDongError] = useState(null);
+  const [hopDongPhong, setHopDongPhong] = useState(null);
+
+  // Toast notification
+  const { toasts, showToast, removeToast } = useToast();
 
   // Chuẩn bị giá trị PheDuyetChuDuAn từ tin đăng (1 => ChoPheDuyet, 0 => DaPheDuyet)
   const getPheDuyetChuValue = () => {
@@ -147,28 +164,134 @@ const ChiTietTinDang = () => {
     e.preventDefault();
     const userId = getCurrentUserId();
     if (!userId) {
-      showToast("❌ Chưa đăng nhập");
+      showToast("Chưa đăng nhập", "error");
       return;
     }
     if (!henThoiGian) {
-      showToast("❌ Chưa chọn thời gian");
+      showToast("Chưa chọn thời gian", "error");
       return;
     }
-
     if (!henPhongId) {
-      showToast("❌ Vui lòng chọn phòng cần xem");
+      showToast("Vui lòng chọn phòng cần xem", "error");
       return;
     }
 
     const mysqlTime = toMySqlDateTime(henThoiGian);
     if (!mysqlTime) {
-      showToast("❌ Thời gian không hợp lệ");
+      showToast("Thời gian không hợp lệ", "error");
       return;
+    }
+
+    // Lấy KhuVucID từ tin đăng
+    const khuVucId = tinDang?.KhuVucID;
+    let nhanVienId = 1; // Mặc định nếu không tìm thấy nhân viên phù hợp
+
+    console.log("[ChiTietTinDang] 🔍 Bắt đầu tìm nhân viên phụ trách");
+    console.log("[ChiTietTinDang] KhuVucID:", khuVucId);
+    console.log("[ChiTietTinDang] Thời gian hẹn (MySQL):", mysqlTime);
+
+    if (khuVucId) {
+      try {
+        // Gọi API lấy danh sách nhân viên phụ trách khu vực
+        console.log("[ChiTietTinDang] 📞 Gọi API lấy nhân viên phụ trách...");
+        const res = await nguoiPhuTrachDuAnApi.getByDuAnId(khuVucId);
+        console.log("[ChiTietTinDang] 📥 API response:", res);
+        console.log("[ChiTietTinDang] 📥 API response.data:", res.data);
+
+        // Axios trả về {data: {...}, status: 200, ...}
+        // Server trả về {success: true, data: [...]}
+        // Vậy cần truy cập: res.data.success và res.data.data
+        const responseData = res.data;
+        const danhSachNhanVien = responseData?.data || responseData; // Fallback nếu không có nested data
+
+        if (
+          responseData?.success &&
+          Array.isArray(danhSachNhanVien) &&
+          danhSachNhanVien.length > 0
+        ) {
+          console.log(
+            "[ChiTietTinDang] ✅ Tìm thấy",
+            danhSachNhanVien.length,
+            "nhân viên"
+          );
+
+          // Duyệt từng nhân viên và từng ca làm việc
+          console.log("--- DEBUG TÌM NHÂN VIÊN ---");
+          console.log("Giờ hẹn khách chọn:", mysqlTime);
+
+          danhSachNhanVien.forEach((nv) => {
+            console.log(
+              `Nhân viên ID ${nv.NguoiDungID}, có ${
+                nv.lichLamViec?.length || 0
+              } ca làm việc`
+            );
+            if (Array.isArray(nv.lichLamViec)) {
+              nv.lichLamViec.forEach((ca) => {
+                console.log("  Ca:", ca.BatDau, "→", ca.KetThuc);
+                // So sánh trực tiếp string MySQL datetime (YYYY-MM-DD HH:mm:ss)
+                const isInRange =
+                  mysqlTime >= ca.BatDau && mysqlTime <= ca.KetThuc;
+                console.log(
+                  "  So sánh:",
+                  mysqlTime,
+                  "trong khoảng",
+                  ca.BatDau,
+                  "-",
+                  ca.KetThuc,
+                  "→",
+                  isInRange
+                );
+              });
+            }
+          });
+
+          // Tìm nhân viên có ca làm việc chứa thời gian hẹn
+          // So sánh trực tiếp string MySQL datetime (YYYY-MM-DD HH:mm:ss)
+          const found = danhSachNhanVien.find(
+            (nv) =>
+              Array.isArray(nv.lichLamViec) &&
+              nv.lichLamViec.some((ca) => {
+                // So sánh trực tiếp string MySQL datetime format
+                return mysqlTime >= ca.BatDau && mysqlTime <= ca.KetThuc;
+              })
+          );
+
+          if (found) {
+            nhanVienId = found.NguoiDungID;
+            console.log(
+              "[ChiTietTinDang] ✅ Tìm thấy nhân viên phù hợp:",
+              nhanVienId
+            );
+          } else {
+            console.log(
+              "[ChiTietTinDang] ⚠️ Không tìm thấy nhân viên phù hợp, dùng mặc định:",
+              nhanVienId
+            );
+          }
+        } else {
+          console.log(
+            "[ChiTietTinDang] ⚠️ Không có nhân viên nào hoặc response không hợp lệ"
+          );
+          console.log("[ChiTietTinDang] responseData:", responseData);
+          console.log("[ChiTietTinDang] danhSachNhanVien:", danhSachNhanVien);
+        }
+      } catch (err) {
+        console.error("[ChiTietTinDang] ❌ Lỗi lấy nhân viên phụ trách:", err);
+        console.error(
+          "[ChiTietTinDang] Error details:",
+          err.response?.data || err.message
+        );
+        // Giữ mặc định nhanVienId = 1
+      }
+    } else {
+      console.log(
+        "[ChiTietTinDang] ⚠️ Không có KhuVucID, dùng nhân viên mặc định:",
+        nhanVienId
+      );
     }
 
     const yeuCauPheDuyet = tinDang?.YeuCauPheDuyetChu;
     let pheDuyetValue = "ChoPheDuyet";
-
     if (
       yeuCauPheDuyet === 0 ||
       yeuCauPheDuyet === "0" ||
@@ -180,45 +303,39 @@ const ChiTietTinDang = () => {
     if (!tinDang?.TinDangID) {
       showToast(
         "❌ Không tìm thấy thông tin tin đăng. Vui lòng tải lại trang."
-      );   
+      );
       return;
     }
-    console.log('dcvmm',tinDang.PhuongThucVao);
+
     const payload = {
       TinDangID: tinDang.TinDangID,
       ChuDuAnID: tinDang.ChuDuAnID,
       PhongID: henPhongId ? parseInt(henPhongId) : null,
       KhachHangID: parseInt(userId),
-      NhanVienBanHangID: "8",
+      NhanVienBanHangID: nhanVienId,
       ThoiGianHen: mysqlTime,
       TrangThai: "ChoXacNhan",
       PheDuyetChuDuAn: pheDuyetValue,
       GhiChu: henGhiChu.trim() || null,
       GhiChuKetQua: null,
-      PhuongThucVao: tinDang.PhuongThucVao
+      PhuongThucVao: tinDang.PhuongThucVao,
     };
 
     Object.keys(payload).forEach((key) => {
       if (payload[key] === undefined) {
         delete payload[key];
       }
-    }); 
-
- 
+    });
 
     setHenSubmitting(true);
     try {
       const response = await cuocHenApi.create(payload);
-
-     
-
-      // ✅ FIX: Check cả success hoặc status code
       if (
         response?.success ||
         response?.status === 201 ||
         response?.data?.success
       ) {
-        showToast("✅ Đặt lịch thành công! Người quản lý sẽ liên hệ bạn sớm.");
+        showToast("Đặt lịch thành công! Người quản lý sẽ liên hệ bạn sớm.", "success");
         setHenModalOpen(false);
         setHenPhongId(null);
         setHenThoiGian("");
@@ -232,10 +349,8 @@ const ChiTietTinDang = () => {
       }
     } catch (error) {
       console.error("[ChiTietTinDang] Lỗi tạo cuộc hẹn:", error);
-
-      // ✅ FIX: Kiểm tra error.response.status
       if (error?.response?.status === 201) {
-        showToast("✅ Đặt lịch thành công!");
+        showToast("Đặt lịch thành công!", "success");
         setHenModalOpen(false);
         setHenPhongId(null);
         setHenThoiGian("");
@@ -296,8 +411,6 @@ const ChiTietTinDang = () => {
       // Đổi sang dùng PublicTinDangService (không cần auth)
       const response = await PublicTinDangService.layChiTietTinDang(id);
       if (response && response.success) {
-      
-    
         setTinDang(response.data);
 
         // Parse danh sách ảnh
@@ -308,6 +421,193 @@ const ChiTietTinDang = () => {
       console.error("Lỗi tải chi tiết tin đăng:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openHopDongPreview = async (phong) => {
+    if (!tinDang?.TinDangID) {
+      showToast("Không tìm thấy thông tin tin đăng", "error");
+      return;
+    }
+
+    setHopDongModalOpen(true);
+    setHopDongLoading(true);
+    setHopDongError(null);
+    setHopDongData(null);
+    setHopDongPhong(phong || null);
+
+    try {
+      const overrides = {
+        chiPhi: {
+          giaThue: phong?.Gia || tinDang?.Gia || 0,
+          giaDien: tinDang?.GiaDien || null,
+          giaNuoc: tinDang?.GiaNuoc || null,
+          giaDichVu: tinDang?.GiaDichVu || null,
+          moTaDichVu: tinDang?.MoTaGiaDichVu || "",
+          soTienCoc: phong?.Gia || tinDang?.Gia || 0,
+        },
+        batDongSan: {
+          diaChi: tinDang?.DiaChi || "",
+          dienTich: phong?.DienTich || tinDang?.DienTich,
+          tenPhong: phong?.TenPhong || null,
+        },
+      };
+
+      const response = await hopDongApi.generate({
+        tinDangId: tinDang.TinDangID,
+        mauHopDongId: DEFAULT_MAU_HOP_DONG_ID,
+        overrides,
+      });
+
+      const payload = response?.data || response;
+      if (!payload?.success) {
+        throw new Error(payload?.message || "Không thể tải hợp đồng");
+      }
+
+      setHopDongData(payload.data);
+    } catch (error) {
+      console.error("[ChiTietTinDang] Lỗi dựng hợp đồng:", error);
+      const msg =
+        error?.response?.data?.message ||
+        error.message ||
+        "Không thể tải hợp đồng";
+      setHopDongError(msg);
+    } finally {
+      setHopDongLoading(false);
+    }
+  };
+
+  const closeHopDongModal = () => {
+    setHopDongModalOpen(false);
+    setHopDongData(null);
+    setHopDongError(null);
+    setHopDongLoading(false);
+    setHopDongPhong(null);
+  };
+
+  const handlePreDepositCheck = async (phong) => {
+    if (!phong) {
+      showToast("Vui lòng chọn phòng", "error");
+      return;
+    }
+
+    const userId = getCurrentUserId();
+    if (!userId) {
+      alert("📢 Yêu cầu đăng nhập\n\nBạn cần đăng nhập để đặt cọc.");
+      navigate("/login");
+      return;
+    }
+
+    setCheckingCoc(true);
+    try {
+      const viRes = await viApi.getByUser(userId);
+      let soDu = 0;
+      
+      // Handle response structure (Array or Object)
+      const viData = viRes?.data?.data;
+      if (Array.isArray(viData) && viData.length > 0) {
+          soDu = Number(viData[0].SoDu);
+      } else if (viData && typeof viData === 'object') {
+          soDu = Number(viData.SoDu);
+      }
+
+      setSoDuVi(soDu);
+      
+      // Giá phòng dùng để so sánh
+      const giaPhong = Number(phong.Gia || 0);
+      
+      if (soDu < giaPhong) {
+        showToast("Số dư ví không đủ để đặt cọc phòng này!", "error");
+        setCheckingCoc(false);
+        // Có thể điều hướng người dùng đi nạp tiền nếu muốn
+        // navigate("/vi"); 
+        return;
+      }
+      
+      // Nếu đủ tiền -> Mở modal hợp đồng
+      setCheckingCoc(false);
+      setCocModalOpen(false); // Đóng modal chọn phòng nếu đang mở
+      await openHopDongPreview(phong);
+      
+    } catch (err) {
+      console.error("Lỗi kiểm tra ví:", err);
+      showToast("Lỗi kiểm tra số dư ví", "error");
+      setCheckingCoc(false);
+    }
+  };
+
+  const handleHopDongAgree = async () => {
+    if (!tinDang?.TinDangID || !hopDongData || !hopDongPhong?.PhongID) {
+      showToast("Vui lòng chọn phòng trước khi đặt cọc", "error");
+      closeHopDongModal();
+      return;
+    }
+
+    try {
+      // Tính số tiền cọc
+      const soTienCoc =
+        hopDongData?.payload?.chiPhi?.soTienCoc ||
+        hopDongPhong?.Gia ||
+        hopDongData?.payload?.chiPhi?.giaThue ||
+        0;
+
+      // Kiểm tra số dư ví trước khi trừ tiền
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const userId = user.id || user.NguoiDungID || user._id;
+
+      if (userId) {
+        const viRes = await viApi.getByUser(userId);
+        let soDu = 0;
+        if (viRes?.data?.data?.SoDu) {
+          soDu = Number(viRes.data.data.SoDu);
+        } else if (Array.isArray(viRes?.data?.data) && viRes.data.data.length > 0) {
+          soDu = Number(viRes.data.data[0].SoDu || 0);
+        }
+
+        if (soDu < Number(soTienCoc)) {
+          showToast("Số dư ví không đủ để đặt cọc!", "error");
+          closeHopDongModal();
+          return;
+        }
+
+        // Tạo giao dịch trừ tiền (rút tiền để đặt cọc)
+        const maGiaoDich = `COC_${tinDang.TinDangID}_${hopDongPhong.PhongID}_${Date.now()}`;
+        await lichSuViApi.create({
+          user_id: userId,
+          ma_giao_dich: maGiaoDich,
+          so_tien: Number(soTienCoc),
+          trang_thai: "THANH_CONG",
+          LoaiGiaoDich: "rut", // Rút tiền để đặt cọc
+        });
+
+        // Hiển thị thông báo trừ tiền
+        showToast(
+          `Đã trừ ${Number(soTienCoc).toLocaleString("vi-VN")} ₫ từ ví để đặt cọc`,
+          "success"
+        );
+      }
+
+      // Xác nhận đặt cọc
+      await hopDongApi.confirmDeposit(tinDang.TinDangID, {
+        giaoDichId: `tmp-${Date.now()}`,
+        soTien: soTienCoc,
+        noiDungSnapshot:
+          hopDongData?.renderedHtml || hopDongData?.noiDungSnapshot || "",
+        phongId: hopDongPhong?.PhongID,
+      });
+
+      showToast("Đặt cọc thành công!", "success");
+      closeHopDongModal();
+      setCocPhongId(null);
+      await layChiTietTinDang();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (error) {
+      console.error("[ChiTietTinDang] Lỗi xác nhận hợp đồng:", error);
+      const msg =
+        error?.response?.data?.message ||
+        error.message ||
+        "Không thể xác nhận đặt cọc";
+      showToast(msg, "error");
     }
   };
 
@@ -481,14 +781,14 @@ const ChiTietTinDang = () => {
     try {
       if (daLuu) {
         setDaLuu(false);
-        showToast("✅ Đã bỏ lưu tin");
+        showToast("Đã bỏ lưu tin", "success");
       } else {
         await yeuThichApi.add({
           NguoiDungID: userId,
           TinDangID: tinDang.TinDangID,
         });
         setDaLuu(true);
-        showToast("✅ Đã lưu tin thành công!");
+        showToast("Đã lưu tin thành công!", "success");
       }
     } catch (error) {
       console.error("Lỗi lưu tin:", error);
@@ -501,27 +801,14 @@ const ChiTietTinDang = () => {
     navigator.clipboard
       .writeText(window.location.href)
       .then(() => {
-        showToast("✅ Đã sao chép link chia sẻ!");
+        showToast("Đã sao chép link chia sẻ!", "success");
       })
       .catch(() => {
-        showToast("❌ Không thể sao chép. Vui lòng thử lại.");
+        showToast("Không thể sao chép. Vui lòng thử lại.", "error");
       });
   };
 
-  const showToast = (message) => {
-    const toast = document.createElement("div");
-    toast.className = "ctd-toast";
-    toast.textContent = message;
-    document.body.appendChild(toast);
-
-    setTimeout(() => toast.classList.add("show"), 10);
-    setTimeout(() => {
-      toast.classList.remove("show");
-      setTimeout(() => {
-        if (document.body.contains(toast)) document.body.removeChild(toast);
-      }, 300);
-    }, 3000);
-  };
+  // showToast đã được thay thế bằng useToast hook
 
   const openLightbox = (index) => {
     setCurrentImageIndex(index);
@@ -1103,45 +1390,32 @@ const ChiTietTinDang = () => {
                 <button
                   className="ctd-btn-secondary ctd-btn-deposit"
                   onClick={() => {
-                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
-                    const acc = tinDang?.BankAccountNumber ?? "80349195777";
-                    const bank = tinDang?.BankName ?? "TPBank";
-
-                    // Logic chọn phòng:
-                    // 1. Nếu có nhiều phòng (> 1) → Mở modal chọn phòng
-                    // 2. Nếu 1 phòng → Lấy giá phòng đó
-                    // 3. Nếu không có phòng → Lấy TienCoc/Gia từ tin đăng
+                    // Case 1: Có nhiều phòng (> 1) -> Mở modal chọn phòng
                     if (tinDang?.DanhSachPhong?.length > 1) {
-                      // Nhiều phòng → Mở modal chọn
                       setCocModalOpen(true);
                       return;
                     }
 
-                    let amount = "1000000"; // Default fallback
-
+                    // Case 2: Có đúng 1 phòng -> Chạy quy trình đặt cọc mới (Check ví -> Hợp đồng)
                     if (tinDang?.DanhSachPhong?.length === 1) {
-                      // 1 phòng → Lấy giá phòng
                       const phong = tinDang.DanhSachPhong[0];
-                      amount = String(phong.Gia || "1000000");
-                    } else {
-                      // Không có phòng → Lấy từ tin đăng
-                      if (tinDang?.TienCoc && tinDang.TienCoc > 0) {
-                        amount = String(tinDang.TienCoc);
-                      } else if (tinDang?.Gia && tinDang.Gia > 0) {
-                        amount = String(tinDang.Gia);
-                      }
+                      handlePreDepositCheck(phong);
+                      return;
+                    }
+
+                    // Case 3: Fallback (Không có phòng hoặc lỗi data) - Logic cũ chuyển khoản
+                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
+                    const acc = tinDang?.BankAccountNumber ?? "80349195777";
+                    const bank = tinDang?.BankName ?? "TPBank";
+                    let amount = "1000000";
+
+                    if (tinDang?.TienCoc && tinDang.TienCoc > 0) {
+                      amount = String(tinDang.TienCoc);
+                    } else if (tinDang?.Gia && tinDang.Gia > 0) {
+                      amount = String(tinDang.Gia);
                     }
 
                     const des = `dk${tinId}`;
-
-                    console.log("[Đặt cọc] Debug:", {
-                      tinId,
-                      soPhong: tinDang?.DanhSachPhong?.length || 0,
-                      amount,
-                      acc,
-                      bank,
-                    });
-
                     navigate(
                       `/thanhtoancoc?acc=${encodeURIComponent(
                         acc
@@ -1362,50 +1636,84 @@ const ChiTietTinDang = () => {
                 <button
                   type="button"
                   className="hen-btn primary"
-                  disabled={!cocPhongId}
-                  onClick={() => {
+                  disabled={!cocPhongId || checkingCoc}
+                  onClick={async () => {
                     const phong = tinDang?.DanhSachPhong?.find(
                       (p) => p.PhongID === cocPhongId
                     );
                     if (!phong) {
-                      showToast("❌ Vui lòng chọn phòng");
+                      showToast("Vui lòng chọn phòng", "error");
                       return;
                     }
-
-                    const tinId = tinDang?.TinDangID ?? tinDang?.id ?? "";
-                    const acc = tinDang?.BankAccountNumber ?? "80349195777";
-                    const bank = tinDang?.BankName ?? "TPBank";
-                    const amount = String(phong.Gia || "1000000");
-                    const des = `dk${tinId}_p${phong.PhongID}`;
-
-                    console.log("[Đặt cọc phòng] Debug:", {
-                      tinId,
-                      phongId: phong.PhongID,
-                      tenPhong: phong.TenPhong,
-                      amount,
-                    });
-
-                    setCocModalOpen(false);
-                    setCocPhongId(null);
-
-                    navigate(
-                      `/thanhtoancoc?acc=${encodeURIComponent(
-                        acc
-                      )}&bank=${encodeURIComponent(
-                        bank
-                      )}&amount=${encodeURIComponent(
-                        amount
-                      )}&des=${encodeURIComponent(
-                        des
-                      )}&tinId=${encodeURIComponent(
-                        tinId
-                      )}&phongId=${encodeURIComponent(
-                        phong.PhongID
-                      )}&order=${encodeURIComponent(tinId)}`
-                    );
+                    await handlePreDepositCheck(phong);
                   }}
                 >
                   Xác nhận đặt cọc
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal xem trước hợp đồng đặt cọc */}
+        {hopDongModalOpen && (
+          <div
+            className="hen-modal-overlay"
+            onClick={() => !hopDongLoading && closeHopDongModal()}
+          >
+            <div
+              className="hop-dong-modal"
+              onClick={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div className="hop-dong-modal__header">
+                <h3>Hợp đồng đặt cọc</h3>
+                {hopDongPhong && (
+                  <p className="hop-dong-modal__subtitle">
+                    Phòng: {hopDongPhong.TenPhong} • {formatCurrency(hopDongPhong.Gia)}/tháng
+                  </p>
+                )}
+              </div>
+
+              {hopDongLoading && (
+                <div className="hop-dong-modal__state">Đang tải hợp đồng...</div>
+              )}
+
+              {!hopDongLoading && hopDongError && (
+                <div className="hop-dong-modal__alert">❌ {hopDongError}</div>
+              )}
+
+              {!hopDongLoading && !hopDongError && hopDongData && (
+                <div
+                  className="hop-dong-modal__preview"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      hopDongData?.renderedHtml ||
+                      hopDongData?.noiDungSnapshot ||
+                      "",
+                  }}
+                />
+              )}
+
+              <div className="hop-dong-modal__actions">
+                <button
+                  type="button"
+                  className="hen-btn secondary"
+                  onClick={closeHopDongModal}
+                  disabled={hopDongLoading}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="hen-btn primary"
+                  onClick={handleHopDongAgree}
+                  disabled={
+                    hopDongLoading || hopDongError !== null || !hopDongData
+                  }
+                >
+                  Đồng ý đặt cọc
                 </button>
               </div>
             </div>
@@ -1493,6 +1801,9 @@ const ChiTietTinDang = () => {
         )}
       </div>
       <Footer />
+      
+      {/* Toast Notifications */}
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   );
 };

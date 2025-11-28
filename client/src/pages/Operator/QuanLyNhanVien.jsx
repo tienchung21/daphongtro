@@ -9,6 +9,7 @@ import ModalChinhSuaNhanVien from './modals/ModalChinhSuaNhanVien';
 import ModalChiTietNhanVien from './modals/ModalChiTietNhanVien';
 import { operatorApi } from '../../services/operatorApi';
 import './QuanLyNhanVien.css';
+import { useEffect } from 'react';
 
 /**
  * UC-OPER-04&05: Quản lý Nhân viên
@@ -16,7 +17,9 @@ import './QuanLyNhanVien.css';
  */
 const QuanLyNhanVien = () => {
   const queryClient = useQueryClient();
-  
+
+  const [showFilter, setShowFilter] = useState(false);
+
   // State
   const [filters, setFilters] = useState({
     keyword: '',
@@ -25,22 +28,33 @@ const QuanLyNhanVien = () => {
     page: 1,
     limit: 20
   });
-  
+
   const [selectedNhanVien, setSelectedNhanVien] = useState(null);
   const [modalTaoOpen, setModalTaoOpen] = useState(false);
   const [modalChinhSuaOpen, setModalChinhSuaOpen] = useState(false);
   const [modalChiTietOpen, setModalChiTietOpen] = useState(false);
+  const [operatorId, setOperatorId] = useState(() => {
+    try {
+      const operator = localStorage.getItem("user");
+      if (operator) {
+        const parsed = JSON.parse(operator);
+        return parsed.NguoiDungID || -1;
+      }
+    } catch (e) {
+      return -1;
+    }
+    return -1;
+  });
 
   // Query danh sách nhân viên
   const { data: nhanVienData, isLoading, error } = useQuery({
-    queryKey: ['nhanVienOperator', filters],
+    queryKey: ['nhanVienOperator', filters, operatorId],
     queryFn: async () => {
-      const response = await operatorApi.nhanVien.getDanhSach(filters);
-      console.log('🔍 [QuanLyNhanVien] Full Axios Response:', response);
-      console.log('🔍 [QuanLyNhanVien] Response.data:', response.data);
-      console.log('🔍 [QuanLyNhanVien] Stats:', response.data?.stats);
-      console.log('🔍 [QuanLyNhanVien] Data array:', response.data?.data);
-      return response.data; // Return response.data (backend JSON)
+      const response = await operatorApi.nhanVien.getDanhSach({...filters, operatorId: operatorId});
+
+      console.log('🔍 [QuanLyNhanVien] Danh sách nhân viên:', response.data?.data);
+
+      return response.data;
     },
     keepPreviousData: true
   });
@@ -114,12 +128,12 @@ const QuanLyNhanVien = () => {
       render: (row) => row.NgayBatDau ? new Date(row.NgayBatDau).toLocaleDateString('vi-VN') : 'N/A'
     },
     {
-      key: 'TrangThaiLamViec',
+      key: 'TrangThai',
       label: 'Trạng thái',
       width: '130px',
       render: (row) => (
         <BadgeStatusOperator
-          status={row.TrangThaiLamViec}
+          status={row.TrangThai}
           statusMap={{
             'Active': { label: 'Hoạt động', variant: 'success' },
             'Inactive': { label: 'Không hoạt động', variant: 'danger' },
@@ -158,21 +172,23 @@ const QuanLyNhanVien = () => {
     {
       type: 'text',
       name: 'keyword',
-      label: 'Tìm kiếm',
-      placeholder: 'Tên, email, SĐT...',
+      // label: 'Tìm kiếm', // Không cần label hiển thị nữa
+      placeholder: 'Tìm tên, SĐT, Email...',
+      icon: '🔍', // Icon kính lúp
       value: filters.keyword
     },
     {
       type: 'select',
       name: 'trangThai',
-      label: 'Trạng thái',
+      // label: 'Trạng thái',
+      placeholder: 'Tất cả trạng thái',
+      icon: '⚡', // Icon tia sét hoặc filter
       value: filters.trangThai,
       options: [
         { value: '', label: 'Tất cả' },
         { value: 'HoatDong', label: 'Hoạt động' },
         { value: 'TamKhoa', label: 'Tạm khóa' },
         { value: 'VoHieuHoa', label: 'Vô hiệu hóa' }
-        // Không hiển thị XoaMem
       ]
     }
   ];
@@ -198,12 +214,13 @@ const QuanLyNhanVien = () => {
               Quản lý hồ sơ và thông tin Nhân viên Bán hàng
             </p>
           </div>
-          
+
           {/* Stats */}
           <div className="quan-ly-nhan-vien__stats">
             <div className="quan-ly-nhan-vien__stat-item quan-ly-nhan-vien__stat-item--success">
               <div className="quan-ly-nhan-vien__stat-value">{stats.hoatDong || 0}</div>
               <div className="quan-ly-nhan-vien__stat-label">HOẠT ĐỘNG</div>
+
             </div>
             <div className="quan-ly-nhan-vien__stat-item quan-ly-nhan-vien__stat-item--warning">
               <div className="quan-ly-nhan-vien__stat-value">{stats.tamKhoa || 0}</div>
@@ -215,27 +232,35 @@ const QuanLyNhanVien = () => {
             </div>
           </div>
 
-          {/* Action Button */}
-          <button
-            className="operator-btn operator-btn--primary"
-            onClick={handleTaoMoi}
-          >
-            ➕ Tạo Nhân viên mới
-          </button>
+          {/* Action Buttons */}
+          <div className="quan-ly-nhan-vien__actions-header">
+            {/* 2. Thêm nút Bật/Tắt Bộ lọc */}
+            <button
+              className={`operator-btn ${showFilter ? 'operator-btn--active' : 'operator-btn--secondary'}`}
+              onClick={() => setShowFilter(!showFilter)}
+            >
+              🔍 Bộ lọc
+            </button>
+
+            <button
+              className="operator-btn operator-btn--primary"
+              onClick={handleTaoMoi}
+            >
+              ➕ Tạo Nhân viên mới
+            </button>
+          </div>
         </div>
 
         {/* Filter Panel */}
-        <FilterPanelOperator
-          fields={filterFields}
-          onFilterChange={handleFilterChange}
-          onReset={() => setFilters({
-            keyword: '',
-            khuVucId: '',
-            trangThai: '',
-            page: 1,
-            limit: 20
-          })}
-        />
+        <div className={`quan-ly-nhan-vien__filter-wrapper ${showFilter ? 'is-open' : ''}`}>
+          {showFilter && (
+            <FilterPanelOperator
+              fields={filterFields}
+              onApply={handleFilterChange}
+              onReset={() => setFilters({ ...filters, keyword: '', trangThai: '' })}
+            />
+          )}
+        </div>
 
         {/* Table */}
         <div className="quan-ly-nhan-vien__content">

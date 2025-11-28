@@ -1,71 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './FilterPanelOperator.css';
 
 /**
- * Filter Panel component với glass morphism
- * @param {Object} props
- * @param {Array} props.filters - [{id, label, type, options, value, onChange}]
- * @param {Function} props.onApply - Apply handler
- * @param {Function} props.onReset - Reset handler
+ * Filter Panel dạng Toolbar hiện đại
  */
-function FilterPanelOperator({ filters = [], onApply, onReset }) {
-  const renderFilter = (filter) => {
-    const commonProps = {
-      id: filter.id,
-      value: filter.value || '',
-      onChange: (e) => filter.onChange?.(e.target.value),
-      className: 'operator-form__input'
-    };
+function FilterPanelOperator({ fields = [], onApply, onReset }) {
+  const [localValues, setLocalValues] = useState({});
 
-    switch (filter.type) {
-      case 'text':
-        return <input type="text" placeholder={filter.placeholder} {...commonProps} />;
-      
-      case 'select':
-        return (
-          <select {...commonProps}>
-            <option value="">Tất cả</option>
-            {filter.options?.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        );
-      
-      case 'date':
-        return <input type="date" {...commonProps} />;
-      
-      default:
-        return null;
+  useEffect(() => {
+    const initial = {};
+    fields.forEach(f => {
+      initial[f.name] = f.value || ''; 
+    });
+    setLocalValues(prev => ({ ...prev, ...initial }));
+  }, [fields]);
+
+  const handleChange = (name, value) => {
+    setLocalValues(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      if (onApply) onApply(localValues);
     }
   };
 
   return (
-    <div className="operator-filter">
-      {filters.map((filter) => (
-        <div key={filter.id} className="operator-filter__group">
-          <label className="operator-filter__label" htmlFor={filter.id}>
-            {filter.label}
-          </label>
-          <div className="operator-filter__control">
-            {renderFilter(filter)}
+    <div className="filter-toolbar">
+      {/* Khu vực Inputs */}
+      <div className="filter-toolbar__inputs">
+        {fields.map((field, index) => (
+          <div key={index} className="filter-input-group">
+            {/* Nếu có icon thì hiển thị, không thì thôi */}
+            {field.icon && <span className="filter-input-icon">{field.icon}</span>}
+            
+            {field.type === 'select' ? (
+              <select
+                className="filter-control filter-control--select"
+                value={localValues[field.name] || ''}
+                onChange={(e) => handleChange(field.name, e.target.value)}
+              >
+                <option value="">{field.placeholder || `Tất cả ${field.label}`}</option>
+                {field.options?.map((opt, idx) => (
+                  <option key={idx} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type={field.type}
+                className="filter-control"
+                placeholder={field.placeholder || field.label}
+                value={localValues[field.name] || ''}
+                onChange={(e) => handleChange(field.name, e.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+            )}
           </div>
-        </div>
-      ))}
-      
-      <div className="operator-filter__actions">
+        ))}
+      </div>
+
+      {/* Khu vực Buttons - Thu gọn thành Icon Button hoặc nút nhỏ */}
+      <div className="filter-toolbar__actions">
         <button 
-          className="operator-btn operator-btn--ghost operator-btn--sm"
-          onClick={onReset}
+          className="filter-btn filter-btn--apply"
+          onClick={() => onApply && onApply(localValues)}
+          title="Áp dụng bộ lọc"
         >
-          Đặt lại
+          🔍 Tìm
         </button>
         <button 
-          className="operator-btn operator-btn--primary operator-btn--sm"
-          onClick={onApply}
+          className="filter-btn filter-btn--reset"
+          onClick={() => {
+            const resetData = fields.reduce((acc, curr) => ({...acc, [curr.name]: ''}), {});
+            setLocalValues(resetData);
+            if (onReset) onReset();
+          }}
+          title="Xóa bộ lọc"
         >
-          Áp dụng
+          🔄
         </button>
       </div>
     </div>
@@ -73,9 +85,3 @@ function FilterPanelOperator({ filters = [], onApply, onReset }) {
 }
 
 export default FilterPanelOperator;
-
-
-
-
-
-

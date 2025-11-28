@@ -91,12 +91,24 @@ class TinDangOperatorController {
 
   /**
    * PUT /api/operator/tin-dang/:id/duyet
-   * Duyệt tin đăng (ChoDuyet → DaDang)
+   * Duyệt tin đăng (ChoDuyet → DaDuyet)
    */
   static async duyetTin(req, res) {
     try {
       const tinDangId = parseInt(req.params.id);
-      const nhanVienId = req.user.NguoiDungID;
+      
+      const operatorIdFromClient = req.body.operatorId;
+      
+      const nhanVienId = operatorIdFromClient 
+        ? parseInt(operatorIdFromClient) 
+        : (req.user ? req.user.NguoiDungID : null);
+
+      if (!nhanVienId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Không xác định được người thực hiện duyệt tin (Thiếu operatorId)'
+        });
+      }
 
       if (!tinDangId || isNaN(tinDangId)) {
         return res.status(400).json({
@@ -106,6 +118,8 @@ class TinDangOperatorController {
       }
 
       const tinDang = await TinDangOperatorModel.duyetTinDang(tinDangId, nhanVienId);
+
+      console.log('Danh sách tin đăng sau khi duyệt: ', tinDang);
 
       return res.status(200).json({
         success: true,
@@ -144,13 +158,27 @@ class TinDangOperatorController {
   static async tuChoiTin(req, res) {
     try {
       const tinDangId = parseInt(req.params.id);
-      const nhanVienId = req.user.NguoiDungID;
-      const { LyDoTuChoi } = req.body;
+      const operatorIdFromClient = req.body.operatorId;
+      
+      const nhanVienId = operatorIdFromClient 
+        ? parseInt(operatorIdFromClient) 
+        : (req.user ? req.user.NguoiDungID : null);
+
+      const LyDoTuChoi = req.body.lyDo;
+
+      console.log('Từ chối tin đăng: ', tinDangId, nhanVienId, LyDoTuChoi);
 
       if (!tinDangId || isNaN(tinDangId)) {
         return res.status(400).json({
           success: false,
           message: 'ID tin đăng không hợp lệ'
+        });
+      }
+
+      if (!nhanVienId) {
+        return res.status(401).json({
+          success: false,
+          message: 'Không xác định được người thực hiện duyệt tin (Thiếu operatorId)'
         });
       }
 

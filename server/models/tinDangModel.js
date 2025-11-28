@@ -428,6 +428,68 @@ class TinDangModel {
       throw new Error(`Lỗi khi xóa tin đăng: ${error.message}`);
     }
   }
+
+  /**
+   * Lấy metadata tin đăng phục vụ sinh hợp đồng (public)
+   * @param {number} tinDangId
+   * @returns {Promise<Object|null>}
+   */
+  static async layThongTinChoHopDong(tinDangId) {
+    if (!tinDangId || Number.isNaN(Number(tinDangId))) {
+      throw new Error('TinDangID không hợp lệ');
+    }
+
+    try {
+      const [rows] = await db.execute(
+        `
+          SELECT 
+            td.TinDangID,
+            td.TieuDe,
+            td.GiaDien,
+            td.GiaNuoc,
+            td.GiaDichVu,
+            td.MoTaGiaDichVu,
+            td.TrangThai,
+            td.ChinhSachCocID,
+            da.TenDuAn,
+            da.DiaChi AS DiaChiDuAn,
+            da.ChuDuAnID,
+            nd.TenDayDu AS TenChuDuAn,
+            nd.SoDienThoai AS SoDienThoaiChuDuAn,
+            nd.DiaChi AS DiaChiChuDuAn,
+            nd.NgaySinh AS NgaySinhChuDuAn,
+            nd.SoCCCD AS SoCCCDChuDuAn,
+            nd.NgayCapCCCD AS NgayCapChuDuAn,
+            nd.NoiCapCCCD AS NoiCapChuDuAn,
+            csc.TenChinhSach,
+            csc.SoTienCocAnNinhMacDinh,
+            csc.QuyTacGiaiToa,
+            (
+              SELECT MIN(COALESCE(pt.GiaTinDang, p.GiaChuan))
+              FROM phong_tindang pt
+              JOIN phong p ON pt.PhongID = p.PhongID
+              WHERE pt.TinDangID = td.TinDangID
+            ) AS GiaThueThamChieu,
+            (
+              SELECT MIN(COALESCE(pt.DienTichTinDang, p.DienTichChuan))
+              FROM phong_tindang pt
+              JOIN phong p ON pt.PhongID = p.PhongID
+              WHERE pt.TinDangID = td.TinDangID
+            ) AS DienTichThamChieu
+          FROM tindang td
+          INNER JOIN duan da ON td.DuAnID = da.DuAnID
+          INNER JOIN nguoidung nd ON da.ChuDuAnID = nd.NguoiDungID
+          LEFT JOIN chinhsachcoc csc ON td.ChinhSachCocID = csc.ChinhSachCocID
+          WHERE td.TinDangID = ? AND td.TrangThai != 'LuuTru'
+        `,
+        [tinDangId]
+      );
+
+      return rows.length > 0 ? rows[0] : null;
+    } catch (error) {
+      throw new Error(`Lỗi khi lấy dữ liệu hợp đồng cho tin đăng: ${error.message}`);
+    }
+  }
 }
 
 module.exports = TinDangModel;

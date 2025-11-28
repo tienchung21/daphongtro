@@ -1,6 +1,24 @@
 const db = require("../config/db");
 
 class PublicTinDangModel {
+  /**
+   * Lấy danh sách tin đăng công khai cho trang chủ
+   * 
+   * Điều kiện hiển thị:
+   * - Trạng thái không phải 'LuuTru'
+   * - Trạng thái phải là 'DaDuyet' hoặc 'DaDang' (đã duyệt hoặc đã đăng)
+   * - Phải có ít nhất 1 phòng trống (TrangThai = 'Trong')
+   * 
+   * @param {Object} filters - Bộ lọc tìm kiếm
+   * @param {string} [filters.trangThai] - Lọc theo trạng thái cụ thể (không khuyến khích dùng, vì đã filter mặc định)
+   * @param {number} [filters.duAnId] - Lọc theo dự án
+   * @param {string} [filters.keyword] - Từ khóa tìm kiếm (tiêu đề, mô tả)
+   * @param {number} [filters.khuVucId] - Lọc theo khu vực (bao gồm cả children)
+   * @param {string} [filters.diaChi] - Tìm kiếm theo địa chỉ
+   * @param {number} [filters.limit] - Giới hạn số lượng kết quả
+   * @returns {Promise<Array>} Danh sách tin đăng công khai
+   * @throws {Error} Nếu có lỗi xảy ra
+   */
   static async layTatCaTinDang(filters = {}) {
     try {
       let query = `
@@ -32,24 +50,22 @@ class PublicTinDangModel {
         INNER JOIN duan da ON td.DuAnID = da.DuAnID
         LEFT JOIN khuvuc kv ON td.KhuVucID = kv.KhuVucID
         WHERE td.TrangThai != 'LuuTru'
+          AND td.TrangThai IN ('DaDuyet', 'DaDang')
+          AND EXISTS (
+            SELECT 1
+            FROM phong_tindang pt
+            JOIN phong p ON pt.PhongID = p.PhongID
+            WHERE pt.TinDangID = td.TinDangID
+              AND p.TrangThai = 'Trong'
+          )
       `;
       const params = [];
 
       // 🔍 DEBUG: Log filters
       console.log("[PublicTinDangModel] Filters:", filters);
-
-      // Optional: chỉ public tin đã duyệt/đang đăng
-      // 🔧 TẠM THỜI bỏ filter này để test - lấy tất cả tin (trừ LuuTru)
-      if (filters.onlyPublic === "true") {
-        console.log(
-          "[PublicTinDangModel] ⚠️ Applying onlyPublic filter - only DaDang/DaDuyet"
-        );
-        query += ` AND td.TrangThai IN ('DaDang','DaDuyet')`;
-      } else {
-        console.log(
-          "[PublicTinDangModel] ✅ No onlyPublic filter - getting all non-archived listings"
-        );
-      }
+      console.log(
+        "[PublicTinDangModel] ✅ Chỉ hiển thị tin đăng có trạng thái DaDuyet hoặc DaDang"
+      );
 
       if (filters.trangThai) {
         query += " AND td.TrangThai = ?";
@@ -64,6 +80,60 @@ class PublicTinDangModel {
       if (filters.keyword) {
         query += " AND (td.TieuDe LIKE ? OR td.MoTa LIKE ?)";
         params.push(`%${filters.keyword}%`, `%${filters.keyword}%`);
+      }
+
+      // Filter theo KhuVucID (bao gồm cả children nếu có)
+      if (filters.khuVucId) {
+        const khuVucId = Number.parseInt(filters.khuVucId, 10);
+        if (!isNaN(khuVucId) && khuVucId > 0) {
+          try {
+            // Lấy tất cả KhuVucID con (recursive) của khu vực được chọn
+            // MySQL 8.0+ và MariaDB 10.2+ hỗ trợ RECURSIVE CTE
+            const [childRows] = await db.execute(
+              `WITH RECURSIVE khuVucTree AS (
+                SELECT KhuVucID, ParentKhuVucID, TenKhuVuc
+                FROM khuvuc
+                WHERE KhuVucID = ?
+                UNION ALL
+                SELECT kv.KhuVucID, kv.ParentKhuVucID, kv.TenKhuVuc
+                FROM khuvuc kv
+                INNER JOIN khuVucTree kvt ON kv.ParentKhuVucID = kvt.KhuVucID
+              )
+              SELECT KhuVucID FROM khuVucTree`,
+              [khuVucId]
+            );
+            
+            const khuVucIds = childRows.map((r) => r.KhuVucID);
+            console.log(
+              `[PublicTinDangModel] 🔍 KhuVucID ${khuVucId} và ${khuVucIds.length} children:`,
+              khuVucIds
+            );
+            
+            if (khuVucIds.length > 0) {
+              const placeholders = khuVucIds.map(() => "?").join(",");
+              query += ` AND td.KhuVucID IN (${placeholders})`;
+              params.push(...khuVucIds);
+            } else {
+              // Fallback: chỉ tìm chính xác KhuVucID đó
+              query += " AND td.KhuVucID = ?";
+              params.push(khuVucId);
+            }
+          } catch (recursiveError) {
+            // Nếu CTE không được hỗ trợ, fallback về cách đơn giản
+            console.warn(
+              "[PublicTinDangModel] ⚠️ RECURSIVE CTE không được hỗ trợ, dùng filter đơn giản:",
+              recursiveError.message
+            );
+            query += " AND td.KhuVucID = ?";
+            params.push(khuVucId);
+          }
+        }
+      }
+
+      // Filter theo địa chỉ (fallback - tìm kiếm theo tên khu vực)
+      if (filters.diaChi) {
+        query += " AND (da.DiaChi LIKE ? OR kv.TenKhuVuc LIKE ?)";
+        params.push(`%${filters.diaChi}%`, `%${filters.diaChi}%`);
       }
 
       query += " ORDER BY td.CapNhatLuc DESC";
@@ -98,8 +168,15 @@ class PublicTinDangModel {
 
   /**
    * Lấy chi tiết tin đăng công khai (bao gồm danh sách phòng)
+   * 
+   * Điều kiện hiển thị:
+   * - Trạng thái không phải 'LuuTru'
+   * - Trạng thái phải là 'DaDuyet' hoặc 'DaDang' (đã duyệt hoặc đã đăng)
+   * - Phải có ít nhất 1 phòng trống (TrangThai = 'Trong')
+   * 
    * @param {number} tinDangId - ID tin đăng
    * @returns {Promise<Object|null>} Chi tiết tin đăng hoặc null nếu không tìm thấy
+   * @throws {Error} Nếu có lỗi xảy ra
    */
   static async layChiTietTinDang(tinDangId) {
     try {
@@ -113,7 +190,7 @@ class PublicTinDangModel {
         td.TinDangID, td.DuAnID, td.KhuVucID, td.ChinhSachCocID,
         td.TieuDe, td.URL, td.MoTa,
         td.TienIch, td.GiaDien, td.GiaNuoc, td.GiaDichVu, td.MoTaGiaDichVu,
-        td.TrangThai, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,
+        td.TrangThai, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,td.KhuVucID,
         da.ChuDuAnID, da.TenDuAn,da.PhuongThucVao, da.DiaChi, da.YeuCauPheDuyetChu,
         da.ViDo, da.KinhDo,
         kv.TenKhuVuc,
@@ -121,7 +198,16 @@ class PublicTinDangModel {
       FROM tindang td
       INNER JOIN duan da ON td.DuAnID = da.DuAnID
       LEFT JOIN khuvuc kv ON td.KhuVucID = kv.KhuVucID
-      WHERE td.TinDangID = ? AND td.TrangThai != 'LuuTru'
+      WHERE td.TinDangID = ? 
+        AND td.TrangThai != 'LuuTru'
+        AND td.TrangThai IN ('DaDuyet', 'DaDang')
+        AND EXISTS (
+          SELECT 1
+          FROM phong_tindang pt
+          JOIN phong p ON pt.PhongID = p.PhongID
+          WHERE pt.TinDangID = td.TinDangID
+            AND p.TrangThai = 'Trong'
+        )
     `;
 
       const [rows] = await db.execute(queryTinDang, [tinDangId]);
@@ -143,7 +229,7 @@ class PublicTinDangModel {
           p.HinhAnhPhong as AnhPhong
         FROM phong_tindang pt
         INNER JOIN phong p ON pt.PhongID = p.PhongID
-        WHERE pt.TinDangID = ?
+        WHERE pt.TinDangID = ? AND p.TrangThai = 'Trong'
         ORDER BY p.PhongID ASC
       `;
 

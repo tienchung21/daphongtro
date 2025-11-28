@@ -174,7 +174,7 @@ class LichLamViecOperatorModel {
           hs.MaNhanVien,
           hs.KhuVucChinhID,
           kv.TenKhuVuc,
-          nd.TrangThai as TrangThaiLamViec,
+         nd.TrangThai as TrangThaiLamViec,
           COUNT(ch.CuocHenID) as SoCuocHen,
           COUNT(CASE WHEN ch.TrangThai = 'DaXacNhan' THEN 1 END) as SoCuocHenDaXacNhan
         FROM lichlamviec ll
@@ -509,7 +509,7 @@ class LichLamViecOperatorModel {
         LEFT JOIN cuochen ch ON nd.NguoiDungID = ch.NhanVienBanHangID
           AND ch.TrangThai IN ('DaXacNhan', 'ChoXacNhan')
           AND ABS(TIMESTAMPDIFF(MINUTE, ch.ThoiGianHen, ?)) < 60
-        WHERE nd.TrangThai = 'HoatDong'
+         WHERE nd.TrangThai = 'HoatDong'
           AND ? BETWEEN ll.BatDau AND ll.KetThuc
           ${khuVucCondition}
         GROUP BY nd.NguoiDungID, ll.LichID
@@ -529,9 +529,3 @@ class LichLamViecOperatorModel {
 }
 
 module.exports = LichLamViecOperatorModel;
-
-
-
-
-
-
