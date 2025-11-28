@@ -81,6 +81,22 @@ const resolveImageUrl = (url) => {
   return url;
 };
 
+const toRelativeUploadPath = (url = '') => {
+  if (!url) return null;
+  if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+  if (url.startsWith('/uploads')) return url;
+  if (url.startsWith('uploads/')) return `/${url}`;
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname?.startsWith('/uploads')) {
+      return parsed.pathname;
+    }
+  } catch {
+    // ignore
+  }
+  return url;
+};
+
 /**
  * Trang Chỉnh Sửa Tin Đăng - Redesigned
  * Dựa trên cấu trúc TaoTinDang.jsx
@@ -798,7 +814,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
         uploadedUrls = await uploadAnh(files);
       }
 
-      const allUrls = [...anhCu, ...uploadedUrls];
+      const allUrls = [...anhCu, ...uploadedUrls].map(toRelativeUploadPath).filter(Boolean);
 
       // 2. Upload ảnh override cho các phòng đã chọn
       let phongDaChonUploads = phongDaChon;
@@ -809,7 +825,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
             const [uploadedUrl] = await uploadAnh([p.HinhAnhTinDangFile]);
             anhUrl = uploadedUrl || null;
           }
-          return { ...p, HinhAnhTinDang: anhUrl };
+          return { ...p, HinhAnhTinDang: toRelativeUploadPath(anhUrl) };
         }));
       }
       
@@ -868,7 +884,7 @@ const layDanhSachPhongDuAn = async (duAnId) => {
     const token = localStorage.getItem('token') || 'mock-token-for-development';
     const formDataUpload = new FormData();
     files.forEach(file => formDataUpload.append('anh', file));
-    const response = await fetch('/api/chu-du-an/upload-anh', {
+    const response = await fetch(`${API_BASE_URL}/api/chu-du-an/upload-anh`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`

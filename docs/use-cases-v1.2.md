@@ -644,7 +644,7 @@
 * `MauHopDong`: (`MauHopDongID`, `TieuDe`, `NoiDungMau`, `FileURL`, `PhienBan`, `TrangThai`, `TaoBoiAdminID`, `TaoLuc`, `CapNhatLuc`)
 * `HopDong`: (`HopDongID`, `TinDangID`, `KhachHangID`, `NgayBatDau`, `NgayKetThuc`, `GiaThueCuoiCung`, `BaoCaoLuc`, `MauHopDongID`, `NoiDungSnapshot`)
 * `BienBanBanGiao`: (`BienBanBanGiaoID`, `HopDongID`, `TinDangID`, `PhongID`, `TrangThai`, `ChiSoDien`, `ChiSoNuoc`, `HienTrangJSON`, `ChuKySo`, `TaoLuc`, `CapNhatLuc`)
-* `ChinhSachCoc`: (`ChinhSachCocID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `SoTienCocAnNinhMacDinh`, `QuyTacGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`)
+* `ChinhSachCoc`: (`ChinhSachCocID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `QuyTacGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`)
 
 * `Vi`: (`ViID`, `NguoiDungID`, `SoDu`)
 * `GiaoDich`: (`GiaoDichID`, `ViID`, `SoTien`, `Loai`, `TrangThai`, `KhoaDinhDanh`, `TinDangLienQuanID`, `GiaoDichThamChieuID`, `ThoiGian`)

@@ -4,6 +4,7 @@ import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
 import { TinDangService, DuAnService } from '../../services/ChuDuAnService';
 import ModalPreviewPhong from '../../components/ChuDuAn/ModalPreviewPhong';
 import './QuanLyTinDang.css';
+import { getStaticUrl } from '../../config/api';
 
 // React Icons
 import {
@@ -122,16 +123,19 @@ const QuanLyTinDang = () => {
   };
 
   const getFirstImage = (urlJson) => {
+    if (!urlJson) return null;
     try {
       const urls = JSON.parse(urlJson || '[]');
-      if (urls.length === 0) return null;
-      
-      const firstUrl = urls[0];
-      // Nếu URL đã có http thì dùng luôn, nếu không thì thêm backend URL
-      return firstUrl.startsWith('http') ? firstUrl : `http://localhost:5000${firstUrl}`;
-    } catch {
-      return null;
+      if (Array.isArray(urls) && urls.length > 0) {
+        return getStaticUrl(urls[0]);
+      }
+    } catch (err) {
+      if (typeof urlJson === 'string') {
+        return getStaticUrl(urlJson);
+      }
+      console.error('Lỗi parse URL:', err);
     }
+    return null;
   };
 
   /**

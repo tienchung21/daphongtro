@@ -1,78 +1,119 @@
 /**
- * OCRServiceV2 - Enhanced OCR với ROI-based extraction
+ * OCRServiceV2 - Enhanced OCR với ROI-based extraction & OpenCV Warping
  * Đọc từng vùng cụ thể thay vì toàn bộ ảnh
  */
 
 import Tesseract from 'tesseract.js';
+import ImageProcessingService from './ImageProcessingService';
 
 const OCRServiceV2 = {
   /**
    * Định nghĩa ROI (Region of Interest) cho từng field trên CCCD
-   * Tọa độ tính theo % của kích thước ảnh
-   */
+   * Tọa độ tính theo % của kích thước ảnh CHUẨN (1000x630)
+  */
   CCCD_ROI: {
     // Số CCCD - Dòng 1 bên phải, màu đen đậm
     soCCCD: {
-      x: 0.40,      // 40% width từ trái
-      y: 0.25,      // 25% height từ trên
-      width: 0.35,  // 35% width
-      height: 0.08  // 8% height
+      x: 0.3646632048404658,
+      y: 0.40167174309188105,
+      width: 0.45,
+      height: 0.1
     },
-    
+
     // Họ và tên - Dòng 2, chữ IN HOA đen
     tenDayDu: {
-      x: 0.40,
-      y: 0.33,
-      width: 0.50,
-      height: 0.08
+      x: 0.27435237337743795,
+      y: 0.5376948164845092,
+      width: 0.48,
+      height: 0.09
     },
-    
+
     // Ngày sinh - Dòng 3 bên phải "Date of birth:"
     ngaySinh: {
-      x: 0.40,
-      y: 0.41,
-      width: 0.30,
-      height: 0.06
+      x: 0.5633160242023292,
+      y: 0.6076025229139963,
+      width: 0.22,
+      height: 0.09
     },
-    
+
     // Giới tính - Dòng 4 bên trái "Sex:"
     gioiTinh: {
-      x: 0.40,
-      y: 0.47,
-      width: 0.15,
-      height: 0.06
+      x: 0.4462691895486178,
+      y: 0.6599050917238253,
+      width: 0.1,
+      height: 0.1
     },
-    
+
     // Quốc tịch - Dòng 4 bên phải "Nationality:"
     quocTich: {
-      x: 0.55,
-      y: 0.47,
-      width: 0.30,
-      height: 0.06
+      x: 0.78,
+      y: 0.33,
+      width: 0.18,
+      height: 0.07
     },
-    
+
     // Quê quán - Dòng 5 "Place of origin:"
     queQuan: {
-      x: 0.40,
-      y: 0.53,
-      width: 0.50,
-      height: 0.06
+      x: 0.28,
+      y: 0.41,
+      width: 0.65,
+      height: 0.09
     },
-    
+
     // Nơi thường trú - Dòng 6-7 "Place of residence:"
     diaChi: {
-      x: 0.40,
-      y: 0.59,
-      width: 0.50,
-      height: 0.12  // 2 dòng
+      x: 0.2830051927393013,
+      y: 0.8499119973852943,
+      width: 0.63,
+      height: 0.13
     },
-    
-    // Có giá trị đến - Dưới cùng bên trái (mặt sau)
+
+    // Có giá trị đến - Dưới cùng bên trái (mặt sau - placeholder if needed)
     ngayCap: {
       x: 0.05,
-      y: 0.80,
-      width: 0.30,
+      y: 0.8,
+      width: 0.3,
       height: 0.08
+    },
+
+    // Face region for cropping
+    faceImage: {
+      x: 0.03956871353251068,
+      y: 0.3992371061612484,
+      width: 0.24,
+      height: 0.42
+    },
+
+    // QR Code region (if on front)
+    qrCode: {
+      x: 0.7822892552247601,
+      y: 0.0956208542777824,
+      width: 0.16,
+      height: 0.22
+    }
+  },
+
+  /**
+   * Filter out noisy Tesseract wasm warnings ("Parameter not found") so console is clean
+   */
+  withFilteredTesseractWarnings: async (fn) => {
+    const originalWarn = console.warn;
+    const originalError = console.error;
+    const shouldFilter = (args) => args.some(a => typeof a === 'string' && a.includes('Parameter not found'));
+    console.warn = (...args) => {
+      if (shouldFilter(args)) return;
+      return originalWarn(...args);
+    };
+    console.error = (...args) => {
+      if (shouldFilter(args)) return;
+      return originalError(...args);
+    };
+
+    try {
+      return await fn();
+    } finally {
+      console.warn = originalWarn;
+      console.error = originalError;
     }
   },
 
@@ -86,155 +127,82 @@ const OCRServiceV2 = {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
+        const safeRoi = roi && Number.isFinite(roi.x) && Number.isFinite(roi.y) && Number.isFinite(roi.width) && Number.isFinite(roi.height)
+          ? roi
+          : { x: 0, y: 0, width: 1, height: 1 };
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        
+
         // Tính tọa độ pixel thực tế
-        const cropX = Math.floor(img.width * roi.x);
-        const cropY = Math.floor(img.height * roi.y);
-        const cropWidth = Math.floor(img.width * roi.width);
-        const cropHeight = Math.floor(img.height * roi.height);
-        
+        const cropX = Math.floor(img.width * safeRoi.x);
+        const cropY = Math.floor(img.height * safeRoi.y);
+        const cropWidth = Math.max(1, Math.floor(img.width * safeRoi.width));
+        const cropHeight = Math.max(1, Math.floor(img.height * safeRoi.height));
+
         canvas.width = cropWidth;
         canvas.height = cropHeight;
-        
+
         // Crop vùng
         ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
-        
+
         resolve(canvas.toDataURL('image/png'));
       };
       img.src = imageDataUrl;
-    });
-  },
-
-  /**
-   * Filter chỉ giữ text màu đen trên nền trắng
-   * @param {string} imageDataUrl - Data URL
-   * @returns {Promise<string>} - Data URL đã filter
-   */
-  filterBlackText: async (imageDataUrl) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        
-        ctx.drawImage(img, 0, 0);
-        
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const data = imageData.data;
-        
-        for (let i = 0; i < data.length; i += 4) {
-          const r = data[i];
-          const g = data[i + 1];
-          const b = data[i + 2];
-          
-          // Tính brightness (0-255)
-          const brightness = (r + g + b) / 3;
-          
-          // Chỉ giữ text đen (brightness < 100) và nền xanh lá nhạt
-          // CCCD có background xanh lá: R:200-255, G:220-255, B:200-240
-          const isGreenBackground = (r > 200 && g > 220 && b > 200 && b < 240);
-          const isDarkText = brightness < 100;
-          
-          if (isDarkText) {
-            // Giữ nguyên text đen → chuyển thành đen hoàn toàn
-            data[i] = 0;
-            data[i + 1] = 0;
-            data[i + 2] = 0;
-          } else {
-            // Background → chuyển thành trắng
-            data[i] = 255;
-            data[i + 1] = 255;
-            data[i + 2] = 255;
-          }
-        }
-        
-        ctx.putImageData(imageData, 0, 0);
-        resolve(canvas.toDataURL('image/png'));
-      };
-      img.src = imageDataUrl;
-    });
-  },
-
-  /**
-   * Preprocessing cho từng ROI
-   * @param {string} roiDataUrl - Data URL của ROI đã crop
-   * @returns {Promise<string>} - Data URL đã xử lý
-   */
-  preprocessROI: async (roiDataUrl) => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Scale 3x cho text nhỏ
-        const scale = 3;
-        canvas.width = img.width * scale;
-        canvas.height = img.height * scale;
-        
-        ctx.imageSmoothingEnabled = false; // Giữ text sắc nét
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
-        // Sharpen + contrast
-        ctx.filter = 'contrast(1.5) brightness(1.0)';
-        ctx.drawImage(canvas, 0, 0);
-        
-        resolve(canvas.toDataURL('image/png'));
-      };
-      img.src = roiDataUrl;
     });
   },
 
   /**
    * OCR một ROI cụ thể
-   * @param {string} imageDataUrl - Data URL gốc
+   * @param {string} imageDataUrl - Data URL gốc (đã warp)
    * @param {string} fieldName - Tên field (soCCCD, tenDayDu...)
    * @returns {Promise<string>} - Text đã đọc
    */
-  recognizeField: async (imageDataUrl, fieldName) => {
+  recognizeField: async (imageDataUrl, fieldName, roiMap = OCRServiceV2.CCCD_ROI) => {
     try {
-      const roi = OCRServiceV2.CCCD_ROI[fieldName];
+      const roi = roiMap[fieldName];
       if (!roi) {
         throw new Error(`ROI not defined for field: ${fieldName}`);
       }
-      
-      console.log(`🔍 OCR field "${fieldName}" at ROI:`, roi);
-      
+
       // Step 1: Crop ROI
       const croppedROI = await OCRServiceV2.cropROI(imageDataUrl, roi);
-      
-      // Step 2: Filter black text only
-      const filteredROI = await OCRServiceV2.filterBlackText(croppedROI);
-      
-      // Step 3: Preprocess (scale + sharpen)
-      const processedROI = await OCRServiceV2.preprocessROI(filteredROI);
-      
-      // Step 4: Tesseract OCR
-      const worker = await Tesseract.createWorker('vie', 1, {
-        logger: m => {
-          if (m.status === 'recognizing text') {
-            console.log(`   ${fieldName}: ${Math.round(m.progress * 100)}%`);
-          }
+
+      // Step 2: Preprocess (Adaptive Binarization via OpenCV)
+      const processedROI = await ImageProcessingService.processROI(croppedROI, {
+        targetColor: { r: 9, g: 10, b: 4 }, // CCCD text is near black
+        tolerance: 80
+      });
+
+      // Step 3: Tesseract OCR
+      const { text, confidence } = await OCRServiceV2.withFilteredTesseractWarnings(async () => {
+        const worker = await Tesseract.createWorker('vie', 1, {
+          logger: () => { } // Silence logger
+        });
+
+        try {
+          // Config tùy theo field
+          const config = OCRServiceV2.getFieldConfig(fieldName);
+          await worker.setParameters(config);
+
+          const { data: { text, confidence } } = await worker.recognize(processedROI);
+          return { text, confidence };
+        } finally {
+          await worker.terminate();
         }
       });
-      
-      // Config tùy theo field
-      const config = OCRServiceV2.getFieldConfig(fieldName);
-      
-      await worker.setParameters(config);
-      
-      const { data: { text, confidence } } = await worker.recognize(processedROI);
-      
-      await worker.terminate();
-      
-      console.log(`✅ ${fieldName}: "${text.trim()}" (confidence: ${confidence.toFixed(1)}%)`);
-      
-      return text.trim();
-      
+
+      // Clean up text
+      let cleanText = text.trim();
+
+      // Basic post-correction
+      if (fieldName === 'soCCCD') cleanText = cleanText.replace(/\D/g, '');
+      if (fieldName === 'gioiTinh') {
+        cleanText = cleanText.replace(/[^a-zA-ZàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđĐ]/g, '');
+      }
+
+      console.log(`✅ ${fieldName}: "${cleanText}" (conf: ${confidence.toFixed(1)}%)`);
+      return cleanText;
+
     } catch (error) {
       console.error(`❌ OCR field "${fieldName}" failed:`, error.message);
       return null;
@@ -243,33 +211,28 @@ const OCRServiceV2 = {
 
   /**
    * Config Tesseract theo từng loại field
-   * @param {string} fieldName 
-   * @returns {Object} - Tesseract parameters
    */
   getFieldConfig: (fieldName) => {
     const baseConfig = {
-      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE, // Single line cho mỗi field
-      tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY,
-      load_system_dawg: '0',
-      load_freq_dawg: '0',
+      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
     };
-    
-    // Config riêng cho từng field
+
     switch (fieldName) {
       case 'soCCCD':
         return {
           ...baseConfig,
-          tessedit_char_whitelist: '0123456789', // Chỉ số
+          tessedit_char_whitelist: '0123456789',
           tessedit_pageseg_mode: Tesseract.PSM.SINGLE_WORD,
         };
-      
+
       case 'tenDayDu':
         return {
           ...baseConfig,
+          // Allow uppercase Vietnamese + spaces
           tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐ ',
           tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
         };
-      
+
       case 'ngaySinh':
       case 'ngayCap':
         return {
@@ -277,21 +240,30 @@ const OCRServiceV2 = {
           tessedit_char_whitelist: '0123456789/',
           tessedit_pageseg_mode: Tesseract.PSM.SINGLE_WORD,
         };
-      
+
       case 'gioiTinh':
         return {
           ...baseConfig,
-          tessedit_char_whitelist: 'NamNữ',
+          tessedit_char_whitelist: 'NamNữNAMNỮ',
           tessedit_pageseg_mode: Tesseract.PSM.SINGLE_WORD,
         };
-      
-      case 'diaChi':
+
+      case 'quocTich':
         return {
           ...baseConfig,
+          tessedit_char_whitelist: 'VIỆTNAMviệtnam ',
+          tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
+        };
+
+      case 'diaChi':
+      case 'queQuan':
+        return {
+          ...baseConfig,
+          // Allow wider range of chars for address
           tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZÀÁẢÃẠĂẮẰẲẴẶÂẤẦẨẪẬÈÉẺẼẸÊẾỀỂỄỆÌÍỈĨỊÒÓỎÕỌÔỐỒỔỖỘƠỚỜỞỠỢÙÚỦŨỤƯỨỪỬỮỰỲÝỶỸỴĐàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ ,.-/',
           tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK,
         };
-      
+
       default:
         return baseConfig;
     }
@@ -302,9 +274,9 @@ const OCRServiceV2 = {
    * @param {File|string} imageSource - File object hoặc data URL của ảnh CCCD
    * @returns {Promise<Object>} - Parsed CCCD data
    */
-  recognizeAll: async (imageSource) => {
-    console.log('🚀 Bắt đầu OCR tất cả fields với ROI-based extraction...');
-    
+  recognizeAll: async (imageSource, roiOverrides = {}) => {
+    console.log('🚀 Bắt đầu OCR tất cả fields với Warping & ROI...');
+
     // Convert to data URL nếu cần
     let imageDataUrl = imageSource;
     if (imageSource instanceof File) {
@@ -314,54 +286,101 @@ const OCRServiceV2 = {
         reader.readAsDataURL(imageSource);
       });
     }
-    
+
+    // 1. Warp Perspective (quan trọng nhất)
+    console.log('📐 Đang warp ảnh CCCD...');
+    const warpedImage = await ImageProcessingService.warpPerspective(imageDataUrl);
+
+    const roiConfig = { ...OCRServiceV2.CCCD_ROI, ...roiOverrides };
     const fields = ['soCCCD', 'tenDayDu', 'ngaySinh', 'gioiTinh', 'diaChi'];
-    
     const results = {};
-    
+
     for (const field of fields) {
-      results[field] = await OCRServiceV2.recognizeField(imageDataUrl, field);
+      results[field] = await OCRServiceV2.recognizeField(warpedImage, field, roiConfig);
     }
-    
+
     // Post-processing
     const parsed = {
       soCCCD: results.soCCCD || null,
       tenDayDu: results.tenDayDu ? results.tenDayDu.toUpperCase().trim() : null,
       ngaySinh: OCRServiceV2.parseDate(results.ngaySinh),
-      gioiTinh: results.gioiTinh || null,
-      diaChi: results.diaChi || null,
+      gioiTinh: OCRServiceV2.normalizeGender(results.gioiTinh),
+      diaChi: OCRServiceV2.normalizeDiaChi(results.diaChi),
       ngayCap: null, // Mặt sau
-      noiCap: null   // Mặt sau
+      noiCap: null,   // Mặt sau
+      warpedImage: warpedImage, // Return warped image for debugging/display
+      usedROI: roiConfig
     };
-    
+
     console.log('✅ OCR V2 completed:', parsed);
-    
     return parsed;
   },
 
   /**
    * Parse date từ text OCR
-   * @param {string} dateText - "11112003" hoặc "11/11/2003"
-   * @returns {string|null} - "DD/MM/YYYY"
    */
   parseDate: (dateText) => {
     if (!dateText) return null;
-    
-    // Remove non-digit chars
     const digits = dateText.replace(/\D/g, '');
-    
     if (digits.length === 8) {
-      // DDMMYYYY
       return `${digits.substring(0, 2)}/${digits.substring(2, 4)}/${digits.substring(4, 8)}`;
     } else if (digits.length >= 6) {
-      // Fallback: try DMYYYY or DDMYYYY
       const day = digits.substring(0, 2).padStart(2, '0');
       const month = digits.substring(2, 4).padStart(2, '0');
       const year = digits.substring(4);
       return `${day}/${month}/${year}`;
     }
-    
     return null;
+  },
+
+  /**
+   * Chuẩn hóa địa chỉ từ text nhiều dòng của Tesseract
+   * - Bỏ label "Nơi thường trú / Place of residence:"
+   * - Ghép các dòng từ trên xuống dưới, giữ dấu phẩy
+   */
+  normalizeDiaChi: (rawText) => {
+    if (!rawText) return null;
+    let text = rawText.replace(/\r/g, '').trim();
+    if (!text) return null;
+
+    let lines = text
+      .split('\n')
+      .map(l => l.replace(/\s+/g, ' ').trim())
+      .filter(Boolean);
+
+    if (!lines.length) return null;
+
+    // Bỏ label ở dòng đầu (nhiều biến thể)
+    lines[0] = lines[0]
+      .replace(/Nơi thường trú\s*\/\s*Place of residence\s*:/i, '')
+      .replace(/Place of residence\s*:/i, '')
+      .replace(/Noi thuong tru\s*:/i, '')
+      .trim();
+
+    // Bỏ dấu gạch ở cuối dòng, clean lại
+    lines = lines
+      .map(l => l.replace(/\s*-\s*$/, '').trim())
+      .filter(Boolean);
+
+    if (!lines.length) return null;
+
+    // Ghép các dòng: trên xuống dưới, giữ dấu phẩy gốc
+    let address = lines.join(', ');
+    address = address
+      .replace(/\s+,/g, ',')
+      .replace(/,\s+/g, ', ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    return address || null;
+  },
+
+  normalizeGender: (text) => {
+    if (!text) return null;
+    const t = text.toLowerCase();
+    if (t.includes('nam')) return 'Nam';
+    if (t.includes('nữ') || t.includes('nu')) return 'Nữ';
+    return text;
   }
 };
 

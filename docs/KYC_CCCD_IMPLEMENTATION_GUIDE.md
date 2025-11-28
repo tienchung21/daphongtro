@@ -85,7 +85,6 @@ Tự động hóa quy trình xác thực danh tính người dùng thông qua:
 │    ├─ DiaChi            (UPDATE từ OCR)                    │
 │    ├─ SoCCCD            (UPDATE từ OCR)                    │
 │    ├─ NgayCapCCCD       (UPDATE từ OCR)                    │
-│    ├─ NoiCapCCCD        (UPDATE từ OCR)                    │
 │    ├─ AnhCCCDMatTruoc   (NEW - đường dẫn ảnh)             │
 │    ├─ AnhCCCDMatSau     (NEW - đường dẫn ảnh)             │
 │    ├─ AnhSelfie         (NEW - đường dẫn ảnh)             │
@@ -265,7 +264,6 @@ CREATE TABLE IF NOT EXISTS kyc_verification (
   NgaySinh DATE DEFAULT NULL COMMENT 'Ngày sinh',
   DiaChi VARCHAR(255) DEFAULT NULL COMMENT 'Địa chỉ thường trú',
   NgayCapCCCD DATE DEFAULT NULL COMMENT 'Ngày cấp CCCD',
-  NoiCapCCCD VARCHAR(255) DEFAULT NULL COMMENT 'Nơi cấp CCCD',
   
   -- Kết quả Face Matching
   FaceSimilarity DECIMAL(5,4) DEFAULT NULL COMMENT 'Độ tương đồng khuôn mặt (0.0000 - 1.0000)',
@@ -556,7 +554,6 @@ const validateKYCRequest = (req, res, next) => {
 │  │ Ngày sinh:      01/01/1990                       │        │
 │  │ Địa chỉ:        123 ABC, Q1, TP.HCM             │        │
 │  │ Ngày cấp:       01/01/2020                       │        │
-│  │ Nơi cấp:        Cục Cảnh sát ĐKQL...            │        │
 │  │                                                   │        │
 │  │ Độ khớp khuôn mặt: 85% ✅                        │        │
 │  └─────────────────────────────────────────────────┘        │

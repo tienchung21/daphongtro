@@ -22,14 +22,16 @@ Thay vì OCR toàn bộ ảnh CCCD, giờ crop từng vùng field rồi OCR riê
 #### CCCD Field ROIs (Tọa độ theo %)
 ```javascript
 CCCD_ROI = {
-  soCCCD:    { x: 0.40, y: 0.25, width: 0.35, height: 0.08 },  // Số CCCD 12 chữ số
-  tenDayDu:  { x: 0.40, y: 0.33, width: 0.50, height: 0.08 },  // Họ tên IN HOA
-  ngaySinh:  { x: 0.40, y: 0.41, width: 0.30, height: 0.06 },  // DD/MM/YYYY
-  gioiTinh:  { x: 0.40, y: 0.47, width: 0.15, height: 0.06 },  // Nam/Nữ
-  quocTich:  { x: 0.55, y: 0.47, width: 0.30, height: 0.06 },  // Việt Nam
-  queQuan:   { x: 0.40, y: 0.53, width: 0.50, height: 0.06 },  // Nơi sinh
-  diaChi:    { x: 0.40, y: 0.59, width: 0.50, height: 0.12 },  // 2 dòng
-  ngayCap:   { x: 0.05, y: 0.80, width: 0.30, height: 0.08 }   // Mặt sau
+  soCCCD:    { x: 0.3646632048404658, y: 0.40167174309188105, width: 0.45, height: 0.1 },  // Số CCCD 12 chữ số
+  tenDayDu:  { x: 0.27435237337743795, y: 0.5376948164845092, width: 0.48, height: 0.09 },  // Họ tên IN HOA
+  ngaySinh:  { x: 0.5633160242023292, y: 0.6076025229139963, width: 0.22, height: 0.09 },  // DD/MM/YYYY
+  gioiTinh:  { x: 0.4462691895486178, y: 0.6599050917238253, width: 0.1, height: 0.1 },  // Nam/Nữ
+  quocTich:  { x: 0.78, y: 0.33, width: 0.18, height: 0.07 },  // Việt Nam
+  queQuan:   { x: 0.28, y: 0.41, width: 0.65, height: 0.09 },  // Nơi sinh
+  diaChi:    { x: 0.2830051927393013, y: 0.8499119973852943, width: 0.63, height: 0.13 },  // 2 dòng
+  ngayCap:   { x: 0.05, y: 0.8, width: 0.3, height: 0.08 },   // Mặt sau
+  faceImage: { x: 0.03956871353251068, y: 0.3992371061612484, width: 0.24, height: 0.42 },  // Face region
+  qrCode:    { x: 0.7822892552247601, y: 0.0956208542777824, width: 0.16, height: 0.22 }   // QR Code region
 }
 ```
 
@@ -68,7 +70,7 @@ Image → cropROI() → filterBlackText() → preprocessROI() → Tesseract
 ```javascript
 // Recognize all fields
 const cccdData = await OCRServiceV2.recognizeAll(imageFile);
-// Returns: { soCCCD, tenDayDu, ngaySinh, gioiTinh, diaChi, ngayCap, noiCap }
+// Returns: { soCCCD, tenDayDu, ngaySinh, gioiTinh, diaChi, ngayCap }
 
 // Recognize single field
 const name = await OCRServiceV2.recognizeField(imageDataUrl, 'tenDayDu');

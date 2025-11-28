@@ -28,6 +28,7 @@ import ModalTuChoiCuocHen from '../../components/ChuDuAn/ModalTuChoiCuocHen';
 
 // Service
 import { CuocHenService } from '../../services/ChuDuAnService';
+import { getApiBaseUrl } from '../../config/api';
 
 /**
  * UC-PROJ-02: Quản lý cuộc hẹn cho Chủ dự án
@@ -526,151 +527,279 @@ function QuanLyCuocHen() {
             </p>
           </div>
         ) : (
-          <div className="cuoc-hen-table-container">
-            <table className="cuoc-hen-table">
-              <colgroup>
-                <col style={{ width: '40px' }} />
-                <col style={{ width: '60px' }} />
-                <col style={{ width: '200px' }} />
-                <col style={{ width: '200px' }} />
-                <col style={{ width: '180px' }} />
-                <col style={{ width: '180px' }} />
-                <col style={{ width: '140px' }} />
-                <col style={{ width: '200px' }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th>
-                    <input 
-                      type="checkbox"
-                      checked={selectedIds.length === cuocHenList.length && cuocHenList.length > 0}
-                      onChange={handleSelectAll}
-                    />
-                  </th>
-                  <th>Ưu tiên</th>
-                  <th>Thời gian hẹn</th>
-                  <th>Khách hàng</th>
-                  <th>Phòng / Dự án</th>
-                  <th>NV phụ trách</th>
-                  <th>Trạng thái</th>
-                  <th>Hành động</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cuocHenList.map((cuocHen) => {
-                  const urgency = getTimeUrgency(cuocHen.ThoiGianHen);
-                  const status = formatTrangThai(cuocHen.TrangThai, cuocHen.PheDuyetChuDuAn);
+          <>
+            <div className="cuoc-hen-table-container">
+              <table className="cuoc-hen-table">
+                <colgroup>
+                  <col style={{ width: '40px' }} />
+                  <col style={{ width: '60px' }} />
+                  <col style={{ width: '200px' }} />
+                  <col style={{ width: '200px' }} />
+                  <col style={{ width: '180px' }} />
+                  <col style={{ width: '180px' }} />
+                  <col style={{ width: '140px' }} />
+                  <col style={{ width: '200px' }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>
+                      <input 
+                        type="checkbox"
+                        checked={selectedIds.length === cuocHenList.length && cuocHenList.length > 0}
+                        onChange={handleSelectAll}
+                      />
+                    </th>
+                    <th>Ưu tiên</th>
+                    <th>Thời gian hẹn</th>
+                    <th>Khách hàng</th>
+                    <th>Phòng / Dự án</th>
+                    <th>NV phụ trách</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {cuocHenList.map((cuocHen) => {
+                    const urgency = getTimeUrgency(cuocHen.ThoiGianHen);
+                    const status = formatTrangThai(cuocHen.TrangThai, cuocHen.PheDuyetChuDuAn);
 
-                  return (
-                    <tr key={cuocHen.CuocHenID} className={`urgency-${urgency}`}>
-                      <td>
-                        <input 
+                    return (
+                      <tr key={cuocHen.CuocHenID} className={`urgency-${urgency}`}>
+                        <td>
+                          <input 
+                            type="checkbox"
+                            checked={selectedIds.includes(cuocHen.CuocHenID)}
+                            onChange={() => handleSelectOne(cuocHen.CuocHenID)}
+                          />
+                        </td>
+                        <td>
+                          <div className={`urgency-badge ${urgency}`}>
+                            {urgency === 'urgent' && '🔴'}
+                            {urgency === 'soon' && '🟡'}
+                            {urgency === 'normal' && '🟢'}
+                            {urgency === 'past' && '⚫'}
+                          </div>
+                        </td>
+                        <td>
+                          <div className="time-cell">
+                            <div className="time-main">
+                              <HiOutlineClock className="cell-icon" />
+                              {formatDate(cuocHen.ThoiGianHen)}
+                            </div>
+                            <div className={`time-remaining ${urgency}`}>
+                              {formatTimeRemaining(cuocHen.ThoiGianHen)}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="customer-cell">
+                            <div className="customer-name">
+                              <HiOutlineUser className="cell-icon" />
+                              {cuocHen.TenKhachHang || 'N/A'}
+                            </div>
+                            <div className="customer-phone">
+                              <HiOutlinePhone className="cell-icon" />
+                              {cuocHen.SoDienThoaiKhach || 'N/A'}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="room-cell">
+                            <div className="room-name">
+                              <HiOutlineHome className="cell-icon" />
+                              {cuocHen.TenPhong || 'N/A'}
+                            </div>
+                            <div className="project-name">
+                              {cuocHen.TenDuAn || 'N/A'}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
+                          <div className="staff-cell">
+                            {cuocHen.TenNhanVien ? (
+                              <>
+                                <div>{cuocHen.TenNhanVien}</div>
+                                <div className="staff-phone">{cuocHen.SoDienThoaiNV}</div>
+                              </>
+                            ) : (
+                              <span className="text-muted">Chưa gán</span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`cda-badge ${status.class}`}>
+                            {status.text}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="action-buttons">
+                            {cuocHen.PheDuyetChuDuAn === 'ChoPheDuyet' && (
+                              <>
+                                <button
+                                  className="action-btn success"
+                                  onClick={() => handlePheDuyet(cuocHen)}
+                                  title="Phê duyệt"
+                                >
+                                  <HiOutlineCheck />
+                                </button>
+                                <button
+                                  className="action-btn danger"
+                                  onClick={() => handleTuChoi(cuocHen)}
+                                  title="Từ chối"
+                                >
+                                  <HiOutlineXMark />
+                                </button>
+                              </>
+                            )}
+                            <button
+                              className="action-btn info"
+                              onClick={() => handleXemChiTiet(cuocHen)}
+                              title="Xem chi tiết"
+                            >
+                              <HiOutlineEye />
+                            </button>
+                            <button
+                              className="action-btn secondary"
+                              title="Trò chuyện"
+                              onClick={() => handleOpenChat(cuocHen)}
+                            >
+                              <HiOutlineChatBubbleLeftRight />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="cuoc-hen-mobile">
+              {cuocHenList.map((cuocHen) => {
+                const urgency = getTimeUrgency(cuocHen.ThoiGianHen);
+                const status = formatTrangThai(cuocHen.TrangThai, cuocHen.PheDuyetChuDuAn);
+
+                return (
+                  <div key={`mobile-${cuocHen.CuocHenID}`} className={`cuoc-hen-mobile__card urgency-${urgency}`}>
+                    <div className="cuoc-hen-mobile__header">
+                      <div className="cuoc-hen-mobile__header-info">
+                        <span className="cuoc-hen-mobile__id"># {cuocHen.CuocHenID}</span>
+                        <span className={`cuoc-hen-mobile__status cda-badge ${status.class}`}>
+                          {status.text}
+                        </span>
+                      </div>
+                      <label className="cuoc-hen-mobile__checkbox">
+                        <input
                           type="checkbox"
                           checked={selectedIds.includes(cuocHen.CuocHenID)}
                           onChange={() => handleSelectOne(cuocHen.CuocHenID)}
                         />
-                      </td>
-                      <td>
-                        <div className={`urgency-badge ${urgency}`}>
-                          {urgency === 'urgent' && '🔴'}
-                          {urgency === 'soon' && '🟡'}
-                          {urgency === 'normal' && '🟢'}
-                          {urgency === 'past' && '⚫'}
-                        </div>
-                      </td>
-                      <td>
-                        <div className="time-cell">
-                          <div className="time-main">
-                            <HiOutlineClock className="cell-icon" />
-                            {formatDate(cuocHen.ThoiGianHen)}
-                          </div>
-                          <div className={`time-remaining ${urgency}`}>
-                            {formatTimeRemaining(cuocHen.ThoiGianHen)}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="customer-cell">
-                          <div className="customer-name">
-                            <HiOutlineUser className="cell-icon" />
-                            {cuocHen.TenKhachHang || 'N/A'}
-                          </div>
-                          <div className="customer-phone">
-                            <HiOutlinePhone className="cell-icon" />
-                            {cuocHen.SoDienThoaiKhach || 'N/A'}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="room-cell">
-                          <div className="room-name">
-                            <HiOutlineHome className="cell-icon" />
-                            {cuocHen.TenPhong || 'N/A'}
-                          </div>
-                          <div className="project-name">
-                            {cuocHen.TenDuAn || 'N/A'}
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="staff-cell">
-                          {cuocHen.TenNhanVien ? (
-                            <>
-                              <div>{cuocHen.TenNhanVien}</div>
-                              <div className="staff-phone">{cuocHen.SoDienThoaiNV}</div>
-                            </>
-                          ) : (
-                            <span className="text-muted">Chưa gán</span>
-                          )}
-                        </div>
-                      </td>
-                      <td>
-                        <span className={`cda-badge ${status.class}`}>
-                          {status.text}
+                        <span>Chọn</span>
+                      </label>
+                    </div>
+
+                    <div className="cuoc-hen-mobile__section">
+                      <div className="cuoc-hen-mobile__section-title">
+                        <HiOutlineClock className="cell-icon" />
+                        Thời gian
+                      </div>
+                      <div className="cuoc-hen-mobile__section-content">
+                        <div>{formatDate(cuocHen.ThoiGianHen)}</div>
+                        <span className={`time-remaining ${urgency}`}>
+                          {formatTimeRemaining(cuocHen.ThoiGianHen)}
                         </span>
-                      </td>
-                      <td>
-                        <div className="action-buttons">
-                          {cuocHen.PheDuyetChuDuAn === 'ChoPheDuyet' && (
-                            <>
-                              <button
-                                className="action-btn success"
-                                onClick={() => handlePheDuyet(cuocHen)}
-                                title="Phê duyệt"
-                              >
-                                <HiOutlineCheck />
-                              </button>
-                              <button
-                                className="action-btn danger"
-                                onClick={() => handleTuChoi(cuocHen)}
-                                title="Từ chối"
-                              >
-                                <HiOutlineXMark />
-                              </button>
-                            </>
-                          )}
-                          <button
-                            className="action-btn info"
-                            onClick={() => handleXemChiTiet(cuocHen)}
-                            title="Xem chi tiết"
-                          >
-                            <HiOutlineEye />
-                          </button>
-                          <button
-                            className="action-btn secondary"
-                            title="Trò chuyện"
-                            onClick={() => handleOpenChat(cuocHen)}
-                          >
-                            <HiOutlineChatBubbleLeftRight />
-                          </button>
+                      </div>
+                    </div>
+
+                    <div className="cuoc-hen-mobile__section">
+                      <div className="cuoc-hen-mobile__section-title">
+                        <HiOutlineUser className="cell-icon" />
+                        Khách hàng
+                      </div>
+                      <div className="cuoc-hen-mobile__section-content">
+                        <div className="cuoc-hen-mobile__primary-text">
+                          {cuocHen.TenKhachHang || 'N/A'}
                         </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <div className="cuoc-hen-mobile__secondary-text">
+                          <HiOutlinePhone className="cell-icon" />
+                          {cuocHen.SoDienThoaiKhach || 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="cuoc-hen-mobile__section">
+                      <div className="cuoc-hen-mobile__section-title">
+                        <HiOutlineHome className="cell-icon" />
+                        Phòng / Dự án
+                      </div>
+                      <div className="cuoc-hen-mobile__section-content">
+                        <div className="cuoc-hen-mobile__primary-text">
+                          {cuocHen.TenPhong || 'N/A'}
+                        </div>
+                        <div className="cuoc-hen-mobile__secondary-text">
+                          {cuocHen.TenDuAn || 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="cuoc-hen-mobile__section">
+                      <div className="cuoc-hen-mobile__section-title">
+                        <HiOutlineUser className="cell-icon" />
+                        NV phụ trách
+                      </div>
+                      <div className="cuoc-hen-mobile__section-content">
+                        {cuocHen.TenNhanVien ? (
+                          <>
+                            <div className="cuoc-hen-mobile__primary-text">{cuocHen.TenNhanVien}</div>
+                            <div className="cuoc-hen-mobile__secondary-text">
+                              {cuocHen.SoDienThoaiNV}
+                            </div>
+                          </>
+                        ) : (
+                          <span className="text-muted">Chưa gán</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="cuoc-hen-mobile__actions action-buttons">
+                      {cuocHen.PheDuyetChuDuAn === 'ChoPheDuyet' && (
+                        <>
+                          <button
+                            className="action-btn success"
+                            onClick={() => handlePheDuyet(cuocHen)}
+                            title="Phê duyệt"
+                          >
+                            <HiOutlineCheck />
+                          </button>
+                          <button
+                            className="action-btn danger"
+                            onClick={() => handleTuChoi(cuocHen)}
+                            title="Từ chối"
+                          >
+                            <HiOutlineXMark />
+                          </button>
+                        </>
+                      )}
+                      <button
+                        className="action-btn info"
+                        onClick={() => handleXemChiTiet(cuocHen)}
+                        title="Xem chi tiết"
+                      >
+                        <HiOutlineEye />
+                      </button>
+                      <button
+                        className="action-btn secondary"
+                        title="Trò chuyện"
+                        onClick={() => handleOpenChat(cuocHen)}
+                      >
+                        <HiOutlineChatBubbleLeftRight />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
       </div>
 

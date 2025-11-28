@@ -40,7 +40,6 @@ mysql -u root -p thue_tro < migrations/2025_10_16_add_chuduan_to_chinhsachcoc.sq
 - `TTL_CocGiuCho_Gio`: Min 1, Max 168 giờ (7 ngày)
 - `TyLePhat_CocGiuCho`: 0-100%
 - `QuyTacGiaiToa`: Enum('BanGiao', 'TheoNgay', 'Khac')
-- `SoTienCocAnNinhMacDinh`: >= 0
 
 #### Security Features:
 - ✅ JWT Authentication required
@@ -170,8 +169,7 @@ Content-Type: application/json
   "MoTa": "Giảm phí cọc cho khách hàng đăng ký trong tháng 10",
   "TTL_CocGiuCho_Gio": 96,
   "TyLePhat_CocGiuCho": 5.00,
-  "QuyTacGiaiToa": "TheoNgay",
-  "SoTienCocAnNinhMacDinh": 2000000
+  "QuyTacGiaiToa": "TheoNgay"
 }
 
 # Response

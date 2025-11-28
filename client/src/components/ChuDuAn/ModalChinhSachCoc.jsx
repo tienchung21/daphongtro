@@ -16,7 +16,6 @@ const DEFAULT_FORM = {
   TTL_CocGiuCho_Gio: '',
   TyLePhat_CocGiuCho: '',
   ChoPhepCocAnNinh: true,
-  SoTienCocAnNinhMacDinh: '',
   QuyTacGiaiToa: 'BanGiao',
   HieuLuc: true
 };
@@ -60,10 +59,6 @@ function ModalChinhSachCoc({ isOpen, projectName, policy, onClose, onSaved }) {
               ? ''
               : data.TyLePhat_CocGiuCho,
           ChoPhepCocAnNinh: data.ChoPhepCocAnNinh ?? true,
-          SoTienCocAnNinhMacDinh:
-            data.SoTienCocAnNinhMacDinh === null || data.SoTienCocAnNinhMacDinh === undefined
-              ? ''
-              : data.SoTienCocAnNinhMacDinh,
           QuyTacGiaiToa: data.QuyTacGiaiToa || 'BanGiao',
           HieuLuc: data.HieuLuc ?? true
         });
@@ -102,10 +97,6 @@ function ModalChinhSachCoc({ isOpen, projectName, policy, onClose, onSaved }) {
       TyLePhat_CocGiuCho:
         formData.TyLePhat_CocGiuCho === '' ? null : Number(formData.TyLePhat_CocGiuCho),
       ChoPhepCocAnNinh: formData.ChoPhepCocAnNinh,
-      SoTienCocAnNinhMacDinh:
-        formData.SoTienCocAnNinhMacDinh === ''
-          ? null
-          : Number(formData.SoTienCocAnNinhMacDinh),
       QuyTacGiaiToa: formData.QuyTacGiaiToa || null,
       HieuLuc: formData.HieuLuc
     };
@@ -130,14 +121,6 @@ function ModalChinhSachCoc({ isOpen, projectName, policy, onClose, onSaved }) {
         payload.TyLePhat_CocGiuCho > 100)
     ) {
       setError('Tỷ lệ phạt giữ chỗ phải nằm trong khoảng 0-100%');
-      return;
-    }
-
-    if (
-      payload.SoTienCocAnNinhMacDinh !== null &&
-      (Number.isNaN(payload.SoTienCocAnNinhMacDinh) || payload.SoTienCocAnNinhMacDinh < 0)
-    ) {
-      setError('Số tiền cọc an ninh phải lớn hơn hoặc bằng 0');
       return;
     }
 
@@ -248,21 +231,6 @@ function ModalChinhSachCoc({ isOpen, projectName, policy, onClose, onSaved }) {
                 onChange={handleChange}
                 disabled={fetching}
                 placeholder="Ví dụ: 10"
-              />
-            </div>
-
-            <div className="detail-modal-field">
-              <label htmlFor="SoTienCocAnNinhMacDinh">Cọc an ninh mặc định (VND)</label>
-              <input
-                id="SoTienCocAnNinhMacDinh"
-                name="SoTienCocAnNinhMacDinh"
-                type="number"
-                min={0}
-                step={100000}
-                value={formData.SoTienCocAnNinhMacDinh}
-                onChange={handleChange}
-                disabled={fetching || formData.ChoPhepCocAnNinh === false}
-                placeholder="Ví dụ: 1000000"
               />
             </div>
 

@@ -33,8 +33,8 @@ export const ChatProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       const response = await fetch(
         `${getApiBaseUrl()}/api/chat/conversations`,
-        { 
-          headers: { 
+        {
+          headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'
           },
@@ -153,6 +153,34 @@ export const ChatProvider = ({ children }) => {
     loadConversations();
   }, [loadConversations]);
 
+  // Incoming call state and handlers
+  const [incomingCall, setIncomingCall] = useState(null);
+
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleIncomingCall = (callData) => {
+      setIncomingCall(callData);
+    };
+
+    socket.on('incoming_call', handleIncomingCall);
+
+    return () => {
+      socket.off('incoming_call', handleIncomingCall);
+    };
+  }, [socket]);
+
+  const acceptCall = () => {
+    if (incomingCall?.roomUrl) {
+      window.open(incomingCall.roomUrl, '_blank');
+    }
+    setIncomingCall(null);
+  };
+
+  const declineCall = () => {
+    setIncomingCall(null);
+  };
+
   const value = {
     conversations,
     unreadCount,
@@ -162,7 +190,10 @@ export const ChatProvider = ({ children }) => {
     findOrCreateConversation,
     markConversationAsRead,
     isConnected,
-    loading
+    loading,
+    incomingCall,
+    acceptCall,
+    declineCall
   };
 
   return <ChatContext.Provider value={value}>{children}</ChatContext.Provider>;

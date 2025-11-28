@@ -53,7 +53,6 @@ router.get(
  *   TTL_CocGiuCho_Gio: number (default: 48, min: 1, max: 168),
  *   TyLePhat_CocGiuCho: number (default: 0, min: 0, max: 100),
  *   ChoPhepCocAnNinh: boolean (default: true),
- *   SoTienCocAnNinhMacDinh: number (optional),
  *   QuyTacGiaiToa: 'BanGiao'|'TheoNgay'|'Khac' (default: 'BanGiao'),
  *   HieuLuc: boolean (default: true)
  * }
@@ -72,7 +71,7 @@ router.post(
  * Role: Chủ dự án
  * Body: (tất cả các fields đều optional, chỉ cập nhật fields có trong request)
  *   TenChinhSach, MoTa, ChoPhepCocGiuCho, TTL_CocGiuCho_Gio,
- *   TyLePhat_CocGiuCho, ChoPhepCocAnNinh, SoTienCocAnNinhMacDinh,
+ *   TyLePhat_CocGiuCho, ChoPhepCocAnNinh,
  *   QuyTacGiaiToa, HieuLuc
  */
 router.put(

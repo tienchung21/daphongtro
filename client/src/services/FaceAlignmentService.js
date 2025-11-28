@@ -86,7 +86,12 @@ class FaceAlignmentService {
         .detectSingleFace(videoElement, this.detectionOptions)
         .withFaceLandmarks();
 
-      if (!detection) {
+      const box = detection?.detection?.box;
+      const dims = detection?.detection?.imageDims;
+      const boxValid = box && [box.x, box.y, box.width, box.height].every(Number.isFinite);
+      const dimsValid = dims && [dims.width, dims.height].every(Number.isFinite);
+
+      if (!detection || !boxValid || !dimsValid) {
         return {
           aligned: false,
           confidence: 0,
@@ -148,6 +153,9 @@ class FaceAlignmentService {
    */
   checkFacePosition(detection, videoWidth, videoHeight) {
     const box = detection.detection.box;
+    if (![box.x, box.y, box.width, box.height].every(Number.isFinite)) {
+      return { faceCenterX: 0, faceCenterY: 0, offsetX: 1, offsetY: 1, centered: false, score: 0 };
+    }
     const faceCenterX = box.x + box.width / 2;
     const faceCenterY = box.y + box.height / 2;
 
@@ -178,6 +186,9 @@ class FaceAlignmentService {
    */
   checkFaceSize(detection, videoWidth, videoHeight) {
     const box = detection.detection.box;
+    if (![box.width, box.height].every(Number.isFinite) || videoWidth <= 0 || videoHeight <= 0) {
+      return { faceWidth: 0, faceHeight: 0, sizeRatio: 0, sizeOk: false, score: 0 };
+    }
     const faceArea = box.width * box.height;
     const videoArea = videoWidth * videoHeight;
     const sizeRatio = faceArea / videoArea;

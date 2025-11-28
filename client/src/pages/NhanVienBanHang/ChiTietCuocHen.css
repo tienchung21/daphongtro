@@ -86,6 +86,7 @@
   padding: var(--nvbh-spacing-md);
   border-bottom: 1px solid var(--nvbh-glass-border);
   background: rgba(29, 78, 216, 0.03);
+  position: relative;
 }
 
 .nvbh-card__header svg {
@@ -99,6 +100,153 @@
   font-weight: 600;
   color: var(--nvbh-text-primary);
   margin: 0;
+  flex: 1;
+}
+
+/* Toggle button - Override index.css với specificity cao */
+.nvbh-card__header .nvbh-info-toggle-btn {
+  /* Reset tất cả styles từ index.css */
+  all: unset;
+  
+  /* Custom styles */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  border: 1px solid var(--nvbh-glass-border);
+  border-radius: var(--nvbh-radius-md);
+  background: var(--nvbh-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--nvbh-text-secondary);
+  cursor: pointer;
+  transition: all var(--nvbh-transition-base);
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Tắt pseudo-elements từ index.css */
+.nvbh-card__header .nvbh-info-toggle-btn::before,
+.nvbh-card__header .nvbh-info-toggle-btn::after {
+  display: none !important;
+}
+
+.nvbh-card__header .nvbh-info-toggle-btn svg {
+  width: 20px;
+  height: 20px;
+  transition: transform var(--nvbh-transition-base);
+}
+
+.nvbh-card__header .nvbh-info-toggle-btn:hover {
+  background: var(--nvbh-primary);
+  color: white;
+  border-color: var(--nvbh-primary);
+  transform: none;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.nvbh-card__header .nvbh-info-toggle-btn:active {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+
+.nvbh-card__header .nvbh-info-toggle-btn:focus-visible {
+  outline: 2px solid var(--nvbh-primary);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* Info Content Collapse/Expand */
+.nvbh-info-content {
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease-in-out,
+              padding-top 0.4s ease-in-out,
+              padding-bottom 0.4s ease-in-out;
+}
+
+.nvbh-info-content--expanded {
+  max-height: 10000px; /* Đủ lớn để chứa nội dung */
+  opacity: 1;
+  padding-top: var(--nvbh-spacing-md);
+  padding-bottom: var(--nvbh-spacing-md);
+}
+
+.nvbh-info-content--collapsed {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+/* Phòng khác trong tin đăng */
+.nvbh-phong-khac-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nvbh-spacing-md);
+  margin-top: var(--nvbh-spacing-md);
+}
+
+.nvbh-phong-khac-item {
+  border: 1px solid var(--nvbh-glass-border);
+  border-radius: var(--nvbh-radius-lg);
+  background: var(--nvbh-glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  transition: all var(--nvbh-transition-base);
+}
+
+.nvbh-phong-khac-item:hover {
+  border-color: var(--nvbh-primary);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.nvbh-phong-khac-item__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nvbh-spacing-md);
+  background: rgba(29, 78, 216, 0.03);
+  border-bottom: 1px solid var(--nvbh-glass-border);
+  transition: background var(--nvbh-transition-base);
+}
+
+.nvbh-phong-khac-item__header:hover {
+  background: rgba(29, 78, 216, 0.06);
+}
+
+.nvbh-phong-khac-item__header-content {
+  display: flex;
+  align-items: center;
+  gap: var(--nvbh-spacing-md);
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.nvbh-phong-khac-item__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--nvbh-text-primary);
+}
+
+.nvbh-phong-khac-item__price {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--nvbh-primary);
+  margin-left: auto;
+}
+
+.nvbh-phong-khac-item__content {
+  padding: 0 var(--nvbh-spacing-md);
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease-in-out,
+              padding-top 0.4s ease-in-out,
+              padding-bottom 0.4s ease-in-out;
 }
 
 .nvbh-card__body {
@@ -216,10 +364,22 @@
 }
 
 .nvbh-room__images {
+  margin-top: var(--nvbh-spacing-xl);
+  padding-top: var(--nvbh-spacing-lg);
+  border-top: 1px solid var(--nvbh-glass-border);
+}
+
+.nvbh-room__images-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--nvbh-text-primary);
+  margin: 0 0 var(--nvbh-spacing-md) 0;
+}
+
+.nvbh-room__images-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--nvbh-spacing-sm);
-  margin-top: var(--nvbh-spacing-md);
 }
 
 .nvbh-room__image {
@@ -228,6 +388,204 @@
   object-fit: cover;
   border-radius: var(--nvbh-radius-md);
   border: 1px solid var(--nvbh-glass-border);
+  transition: transform var(--nvbh-transition-base);
+}
+
+.nvbh-room__image:hover {
+  transform: scale(1.05);
+}
+
+/* Info Sections */
+.nvbh-info-section {
+  margin-bottom: var(--nvbh-spacing-xl);
+  padding-bottom: var(--nvbh-spacing-lg);
+  border-bottom: 2px solid var(--nvbh-glass-border);
+}
+
+.nvbh-info-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.nvbh-info-section__title {
+  display: flex;
+  align-items: center;
+  gap: var(--nvbh-spacing-sm);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--nvbh-text-primary);
+  margin: 0 0 var(--nvbh-spacing-md) 0;
+}
+
+.nvbh-info-section__icon {
+  width: 20px;
+  height: 20px;
+  color: var(--nvbh-primary);
+}
+
+.nvbh-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nvbh-spacing-xs);
+}
+
+.nvbh-info-row--full {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.nvbh-info-row__value--bold {
+  font-weight: 600;
+}
+
+.nvbh-info-row__value--price {
+  font-weight: 600;
+  color: var(--nvbh-primary);
+  font-size: 1rem;
+}
+
+.nvbh-info-row__icon {
+  width: 16px;
+  height: 16px;
+  margin-right: var(--nvbh-spacing-xs);
+  color: var(--nvbh-text-secondary);
+}
+
+.nvbh-info-row__note--highlight {
+  background: rgba(139, 92, 246, 0.1);
+  padding: var(--nvbh-spacing-sm) var(--nvbh-spacing-md);
+  border-radius: var(--nvbh-radius-md);
+  border-left: 3px solid var(--nvbh-primary);
+  margin-top: var(--nvbh-spacing-xs);
+}
+
+/* Status Badge */
+.nvbh-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--nvbh-spacing-xs);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--nvbh-radius-full);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.nvbh-status-badge--success {
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+}
+
+.nvbh-status-badge--warning {
+  background: rgba(234, 179, 8, 0.1);
+  color: #ca8a04;
+}
+
+.nvbh-status-badge--danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.nvbh-status-badge--info {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.nvbh-status-badge--default {
+  background: rgba(107, 114, 128, 0.1);
+  color: #6b7280;
+}
+
+/* Tiện ích */
+.nvbh-tien-ich-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--nvbh-spacing-xs);
+  margin-top: var(--nvbh-spacing-xs);
+}
+
+.nvbh-tien-ich-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  background: rgba(139, 92, 246, 0.1);
+  color: var(--nvbh-primary);
+  border-radius: var(--nvbh-radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+/* Chi phí */
+.nvbh-chi-phi-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nvbh-spacing-sm);
+  margin-top: var(--nvbh-spacing-xs);
+}
+
+.nvbh-chi-phi-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nvbh-spacing-sm) var(--nvbh-spacing-md);
+  background: rgba(107, 114, 128, 0.05);
+  border-radius: var(--nvbh-radius-md);
+  border-left: 3px solid var(--nvbh-primary);
+}
+
+.nvbh-chi-phi-item__label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--nvbh-text-primary);
+}
+
+.nvbh-chi-phi-item__value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--nvbh-primary);
+}
+
+/* Hoa hồng */
+.nvbh-hoa-hong-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--nvbh-spacing-sm);
+  margin-top: var(--nvbh-spacing-xs);
+  padding: var(--nvbh-spacing-md);
+  background: rgba(139, 92, 246, 0.05);
+  border-radius: var(--nvbh-radius-md);
+  border: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.nvbh-hoa-hong-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nvbh-spacing-xs) 0;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+}
+
+.nvbh-hoa-hong-item:last-child {
+  border-bottom: none;
+}
+
+.nvbh-hoa-hong-item__label {
+  font-size: 0.9375rem;
+  color: var(--nvbh-text-primary);
+}
+
+.nvbh-hoa-hong-item__value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--nvbh-primary);
+}
+
+.nvbh-hoa-hong-note {
+  font-size: 0.8125rem;
+  color: var(--nvbh-text-secondary);
+  font-style: italic;
+  margin-top: var(--nvbh-spacing-xs);
 }
 
 /* Map */
@@ -446,8 +804,28 @@
     min-width: 100%;
   }
   
-  .nvbh-room__images {
+  .nvbh-room__images-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .nvbh-info-section {
+    margin-bottom: var(--nvbh-spacing-lg);
+    padding-bottom: var(--nvbh-spacing-md);
+  }
+  
+  .nvbh-tien-ich-list {
+    gap: var(--nvbh-spacing-xs);
+  }
+  
+  .nvbh-tien-ich-badge {
+    font-size: 0.8125rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  .nvbh-chi-phi-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--nvbh-spacing-xs);
   }
   
   .nvbh-customer-info {

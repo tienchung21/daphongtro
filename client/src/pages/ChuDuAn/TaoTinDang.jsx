@@ -6,6 +6,7 @@ import ModalTaoNhanhDuAn from '../../components/ChuDuAn/ModalTaoNhanhDuAn';
 import ModalChinhSuaToaDo from '../../components/ChuDuAn/ModalChinhSuaToaDo';
 import SectionChonPhong from '../../components/ChuDuAn/SectionChonPhong';
 import axios from 'axios';
+import { buildApiUrl } from '../../config/api';
 
 // React Icons
 import {
@@ -118,6 +119,22 @@ const tachDiaChiDuAn = (diaChi = '') => {
   const phuong = parts.length > 0 ? parts.pop() : '';
   const chiTiet = parts.join(', ');
   return { chiTiet: chiTiet || '', phuong, quan, tinh };
+};
+
+const toRelativeUploadPath = (url = '') => {
+  if (!url) return null;
+  if (url.startsWith('blob:') || url.startsWith('data:')) return url;
+  if (url.startsWith('/uploads')) return url;
+  if (url.startsWith('uploads/')) return `/${url}`;
+  try {
+    const parsed = new URL(url);
+    if (parsed.pathname?.startsWith('/uploads')) {
+      return parsed.pathname;
+    }
+  } catch {
+    // không phải absolute URL
+  }
+  return url;
 };
 
 /**
@@ -290,7 +307,7 @@ function TaoTinDang() {
     try {
       const token = localStorage.getItem('token') || 'mock-token-for-development';
       const response = await axios.get(
-        `http://localhost:5000/api/chu-du-an/du-an/${duAnId}/phong`,
+        buildApiUrl(`/api/chu-du-an/du-an/${duAnId}/phong`),
         { headers: { Authorization: `Bearer ${token}` } }
       );
       const { data: payload } = response;
@@ -399,7 +416,7 @@ function TaoTinDang() {
     try {
       const token = localStorage.getItem('token') || 'mock-token-for-development';
       const response = await axios.post(
-        `http://localhost:5000/api/chu-du-an/du-an/${formData.DuAnID}/phong`,
+        buildApiUrl(`/api/chu-du-an/du-an/${formData.DuAnID}/phong`),
         {
           TenPhong: formPhongMoi.TenPhong,
           GiaChuan: parseFloat(parseGiaTien(formPhongMoi.GiaChuan)),
@@ -456,6 +473,7 @@ function TaoTinDang() {
       if (anhPreview.length > 0) {
         const files = anhPreview.map(p => p.file);
         uploadedUrls = await uploadAnh(files);
+        uploadedUrls = uploadedUrls.map(toRelativeUploadPath).filter(Boolean);
       }
 
       // 2. Upload ảnh override cho các phòng đã chọn từ dự án (nếu có)
@@ -467,7 +485,7 @@ function TaoTinDang() {
             const [u] = await uploadAnh([p.HinhAnhTinDangFile]);
             anhUrl = u || null;
           }
-          return { ...p, HinhAnhTinDang: anhUrl };
+          return { ...p, HinhAnhTinDang: toRelativeUploadPath(anhUrl) };
         }));
       }
 
@@ -529,7 +547,7 @@ function TaoTinDang() {
     const token = localStorage.getItem('token') || 'mock-token-for-development';
     const formDataUpload = new FormData();
     files.forEach(file => formDataUpload.append('anh', file));
-    const response = await fetch('/api/chu-du-an/upload-anh', {
+    const response = await fetch(buildApiUrl('/api/chu-du-an/upload-anh'), {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`

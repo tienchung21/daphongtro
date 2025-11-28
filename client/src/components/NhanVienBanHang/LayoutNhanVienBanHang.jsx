@@ -7,6 +7,10 @@ import React, { useState } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import NavigationNhanVienBanHang from './NavigationNhanVienBanHang';
 import FeedbackModal from './FeedbackModal';
+import NotificationBadge from './NotificationBadge/NotificationBadge';
+import NotificationCenter from './NotificationCenter/NotificationCenter';
+import ToastNotification from './ToastNotification/ToastNotification';
+import VideoCallNotification from './VideoCallNotification/VideoCallNotification';
 import '../../styles/NhanVienBanHangDesignSystem.css';
 import './LayoutNhanVienBanHang.css';
 
@@ -29,7 +33,9 @@ const LayoutNhanVienBanHang = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
 
   // Toggle sidebar (desktop)
@@ -124,20 +130,14 @@ const LayoutNhanVienBanHang = () => {
           {/* Actions */}
           <div className="nvbh-header__actions">
             {/* Notifications */}
-            <button
-              className="nvbh-header__notification-btn"
+            <NotificationBadge
               onClick={() => {
                 setNotificationOpen(!notificationOpen);
-                navigate('/nhan-vien-ban-hang/tin-nhan');
+                setUserMenuOpen(false);
               }}
-              aria-label="Notifications"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-              <span className="nvbh-header__badge">3</span>
-            </button>
+              onUnreadCountChange={setUnreadCount}
+              className="nvbh-header__notification-btn"
+            />
 
             {/* Messages */}
             <button
@@ -154,7 +154,10 @@ const LayoutNhanVienBanHang = () => {
             <div className="nvbh-header__user">
               <button
                 className="nvbh-header__user-trigger"
-                onClick={() => setNotificationOpen(!notificationOpen)}
+                onClick={() => {
+                  setUserMenuOpen(!userMenuOpen);
+                  setNotificationOpen(false);
+                }}
                 aria-label="User menu"
               >
                 <div className="nvbh-header__user-avatar">
@@ -170,7 +173,7 @@ const LayoutNhanVienBanHang = () => {
               </button>
 
               {/* User Dropdown Menu */}
-              {notificationOpen && (
+              {userMenuOpen && (
                 <div className="nvbh-header__user-dropdown">
                   <div className="nvbh-header__user-dropdown-header">
                     <div className="nvbh-header__user-dropdown-title">Tài khoản của tôi</div>
@@ -236,12 +239,24 @@ const LayoutNhanVienBanHang = () => {
         open={feedbackModalOpen}
         onOpenChange={setFeedbackModalOpen}
       />
+
+      {/* Notification Center */}
+      <NotificationCenter
+        isOpen={notificationOpen}
+        onClose={() => setNotificationOpen(false)}
+        onUnreadCountChange={setUnreadCount}
+      />
+
+      {/* Toast Notifications */}
+      <ToastNotification />
+
+      {/* Video Call Notification */}
+      <VideoCallNotification />
     </div>
   );
 };
 
 export default LayoutNhanVienBanHang;
-
 
 
 

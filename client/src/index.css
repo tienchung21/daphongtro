@@ -1,12 +1,12 @@
 root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, system-ui,
+  "SF Pro Text", "SF Pro Display",
+  "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-
   color-scheme: light dark;
   color: rgba(255, 255, 255, 0.87);
   background-color: #242424;
-
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -18,6 +18,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -34,34 +35,139 @@ h1 {
   line-height: 1.1;
 }
 
+/* Áp dụng trực tiếp cho tất cả button - Thiết kế lại theo Liquid Glass: translucency cao, phản xạ động, morphing mượt */
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  /* Biến màu adaptive cho Liquid Glass, hỗ trợ light/dark */
+  --liquid-tint: hsl(240, 70%, 55%); /* Tông xanh-tím adaptive, thay đổi theo mode */
+  --liquid-reflect: rgba(255, 255, 255, 0.15); /* Specular highlight nhẹ */
+  --liquid-translucent: rgba(255, 255, 255, 0.12); /* Nền kính lỏng mờ */
+
+  /* Kiểu chữ & layout giữ nguyên */
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 0.45em 1.3em;
+  border-radius: 999px; /* Pill tròn kiểu iOS */
+  border: none;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  position: relative;
+  outline: none;
+  overflow: hidden; /* Để phản xạ không tràn */
+  background: none;
+  color: hsl(240, 10%, 15%); /* Màu chữ adaptive, tối hơn ở light mode */
+  z-index: 0;
+
+  /* Nền kính lỏng: translucency cao với blur/refraction */
+  background: var(--liquid-translucent);
+  backdrop-filter: blur(24px) saturate(1.2); /* Tăng blur cho refraction, thêm saturate cho sống động */
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+
+  /* Shadow mềm, tạo chiều sâu Liquid Glass */
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 var(--liquid-reflect); /* Inner highlight cho phản xạ nội bộ */
+
+  /* Transition morphing mượt, như iOS fluidity */
+  transition:
+    transform 0.3s cubic-bezier(0.34, 0.16, 0.25, 1.05), /* Ease-out bounce nhẹ cho morph */
+    box-shadow 0.3s cubic-bezier(0.34, 0.16, 0.25, 1.05),
+    opacity 0.4s ease-in-out,
+    background 0.4s ease-in-out;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
+/* Viền liquid mỏng, phản xạ thay vì gradient cứng - mô phỏng khúc xạ */
+button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px; /* Viền mỏng hơn cho tinh tế */
+  background: 
+    conic-gradient(from 0deg, transparent, var(--liquid-tint), transparent 270deg); /* Conic cho fluidity xoáy nhẹ */
+  opacity: 0.6; /* Giảm opacity để không che text */
+
+  /* Mask viền mượt, thêm blend cho refraction */
+  mask: 
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  mix-blend-mode: soft-light; /* Blend với nền cho phản xạ tự nhiên */
+  pointer-events: none;
+  z-index: -1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Lớp phản xạ nội bộ: specular highlights động, như kính lỏng phản chiếu môi trường */
+button::after {
+  content: "";
+  position: absolute;
+  inset: 2px; /* Nằm sát viền */
+  border-radius: inherit;
+  background: 
+    radial-gradient(
+      circle at 20% 20%,
+      var(--liquid-reflect) 0%,
+      transparent 40%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(255, 255, 255, 0.08) 0%,
+      transparent 60%
+    ); /* Hai điểm sáng nhỏ cho specular, như phản xạ ánh sáng */
+  opacity: 0.8;
+  pointer-events: none;
+  z-index: -1;
+  transition: transform 0.3s cubic-bezier(0.34, 0.16, 0.25, 1.05); /* Morph vị trí highlight khi hover */
+}
+
+/* Hover: nâng nhẹ + tăng translucency, morph viền sáng hơn */
+button:hover {
+  transform: translateY(-2px) scale(1.015); /* Morph scale nhỏ cho fluidity */
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 0 0 1px rgba(95, 106, 252, 0.1); /* Thêm outer glow nhẹ */
+  color: var(--liquid-tint);
+  background: rgba(255, 255, 255, 0.18); /* Tăng translucency */
+}
+
+button::before:hover {
+  opacity: 0.85; /* Viền sáng hơn */
+}
+
+button::after:hover {
+  transform: scale(1.1); /* Highlight di chuyển/mở rộng nhẹ */
+}
+
+/* Active: co lại mượt, giảm phản xạ như kính bị chạm */
+button:active {
+  transform: translateY(0px) scale(0.99); /* Morph co nhẹ */
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: transform 0.1s cubic-bezier(0.34, 1.56, 0.64, 1); /* Nhún nhanh */
+}
+
+/* Focus: ring mỏng, adaptive tint kiểu iOS */
+button:focus-visible {
+  box-shadow: 
+    0 0 0 2px var(--liquid-tint),
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 var(--liquid-reflect);
+  outline: none;
+}
+
+/* Dark mode adjustments tự động qua color-scheme */
+@media (prefers-color-scheme: dark) {
   button {
-    background-color: #f9f9f9;
+    color: rgba(0, 0, 0, 0.9);
+    --liquid-translucent: rgba(0, 0, 0, 0);
+    --liquid-reflect: rgba(0, 0, 0, 0.1);
+  }
+  
+  button::before {
+    background: conic-gradient(from 0deg, transparent, hsl(0, 0%, 75%), transparent 270deg);
   }
 }

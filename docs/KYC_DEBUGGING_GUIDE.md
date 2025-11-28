@@ -43,7 +43,7 @@ Sau khi triển khai OCRServiceV2 và QR multi-region scanning, bạn cần test
 }
 
 🚀 Bắt đầu OCR tất cả fields với ROI-based extraction...
-🔍 OCR field "soCCCD" at ROI: { x: 0.4, y: 0.25, width: 0.35, height: 0.08 }
+🔍 OCR field "soCCCD" at ROI: { x: 0.3646632048404658, y: 0.40167174309188105, width: 0.45, height: 0.1 }
    soCCCD: 100%
 ✅ soCCCD: "060203002124" (confidence: 98.3%)
 
@@ -240,20 +240,20 @@ Tạo file: `client/src/test-ocr.html`
 
 **Ví dụ: Tên bị crop thiếu**
 ```javascript
-// OLD
-tenDayDu: { x: 0.40, y: 0.33, width: 0.50, height: 0.08 },
+// Current
+tenDayDu: { x: 0.27435237337743795, y: 0.5376948164845092, width: 0.48, height: 0.09 },
 
-// NEW - Move down 2%
-tenDayDu: { x: 0.40, y: 0.35, width: 0.50, height: 0.08 },
+// Adjust - Move down 2%
+tenDayDu: { x: 0.27435237337743795, y: 0.5576948164845092, width: 0.48, height: 0.09 },
 ```
 
 **Ví dụ: Số CCCD bị cắt bên phải**
 ```javascript
-// OLD
-soCCCD: { x: 0.40, y: 0.25, width: 0.35, height: 0.08 },
+// Current
+soCCCD: { x: 0.3646632048404658, y: 0.40167174309188105, width: 0.45, height: 0.1 },
 
-// NEW - Increase width 5%
-soCCCD: { x: 0.40, y: 0.25, width: 0.40, height: 0.08 },
+// Adjust - Increase width 5%
+soCCCD: { x: 0.3646632048404658, y: 0.40167174309188105, width: 0.50, height: 0.1 },
 ```
 
 ### Tool hỗ trợ: Visual ROI Debugger

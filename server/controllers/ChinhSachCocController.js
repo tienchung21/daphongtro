@@ -8,6 +8,8 @@
 const ChinhSachCocModel = require('../models/ChinhSachCocModel');
 const NhatKyHeThongService = require('../services/NhatKyHeThongService');
 
+const getChuDuAnIdFromRequest = (req) => req.user?.NguoiDungID ?? req.user?.id ?? null;
+
 class ChinhSachCocController {
   /**
    * GET /api/chu-du-an/chinh-sach-coc
@@ -15,7 +17,13 @@ class ChinhSachCocController {
    */
   static async layDanhSach(req, res) {
     try {
-      const chuDuAnID = req.user.NguoiDungID; // Từ middleware auth
+      const chuDuAnID = getChuDuAnIdFromRequest(req); // Từ middleware auth
+      if (!chuDuAnID) {
+        return res.status(401).json({
+          success: false,
+          message: 'Không xác định được chủ dự án'
+        });
+      }
       const chiLayHieuLuc = req.query.chiLayHieuLuc !== 'false'; // Default: true
 
       const danhSach = await ChinhSachCocModel.layDanhSach(chuDuAnID, chiLayHieuLuc);
@@ -42,7 +50,7 @@ class ChinhSachCocController {
   static async layChiTiet(req, res) {
     try {
       const chinhSachCocID = parseInt(req.params.id);
-      const chuDuAnID = req.user.NguoiDungID;
+      const chuDuAnID = getChuDuAnIdFromRequest(req);
 
       if (isNaN(chinhSachCocID)) {
         return res.status(400).json({
@@ -91,7 +99,13 @@ class ChinhSachCocController {
    */
   static async taoMoi(req, res) {
     try {
-      const chuDuAnID = req.user.NguoiDungID;
+      const chuDuAnID = getChuDuAnIdFromRequest(req);
+      if (!chuDuAnID) {
+        return res.status(401).json({
+          success: false,
+          message: 'Không xác định được chủ dự án'
+        });
+      }
       const {
         TenChinhSach,
         MoTa,
@@ -99,7 +113,7 @@ class ChinhSachCocController {
         TTL_CocGiuCho_Gio,
         TyLePhat_CocGiuCho,
         ChoPhepCocAnNinh,
-        SoTienCocAnNinhMacDinh,
+        SoTienCocGiuChoMacDinh,
         QuyTacGiaiToa,
         HieuLuc
       } = req.body;
@@ -133,10 +147,10 @@ class ChinhSachCocController {
         errors.push('Quy tắc giải tỏa không hợp lệ (BanGiao/TheoNgay/Khac)');
       }
 
-      if (SoTienCocAnNinhMacDinh !== undefined && SoTienCocAnNinhMacDinh !== null) {
-        const soTien = parseFloat(SoTienCocAnNinhMacDinh);
-        if (isNaN(soTien) || soTien < 0) {
-          errors.push('Số tiền cọc an ninh phải lớn hơn hoặc bằng 0');
+      if (SoTienCocGiuChoMacDinh !== undefined && SoTienCocGiuChoMacDinh !== null) {
+        const soTienGiuCho = parseFloat(SoTienCocGiuChoMacDinh);
+        if (isNaN(soTienGiuCho) || soTienGiuCho < 0) {
+          errors.push('Số tiền cọc giữ chỗ phải lớn hơn hoặc bằng 0');
         }
       }
 
@@ -156,7 +170,7 @@ class ChinhSachCocController {
         TTL_CocGiuCho_Gio,
         TyLePhat_CocGiuCho,
         ChoPhepCocAnNinh,
-        SoTienCocAnNinhMacDinh,
+        SoTienCocGiuChoMacDinh,
         QuyTacGiaiToa,
         HieuLuc
       });
@@ -195,7 +209,7 @@ class ChinhSachCocController {
   static async capNhat(req, res) {
     try {
       const chinhSachCocID = parseInt(req.params.id);
-      const chuDuAnID = req.user.NguoiDungID;
+      const chuDuAnID = getChuDuAnIdFromRequest(req);
 
       if (isNaN(chinhSachCocID)) {
         return res.status(400).json({
@@ -228,7 +242,7 @@ class ChinhSachCocController {
         TTL_CocGiuCho_Gio,
         TyLePhat_CocGiuCho,
         ChoPhepCocAnNinh,
-        SoTienCocAnNinhMacDinh,
+        SoTienCocGiuChoMacDinh,
         QuyTacGiaiToa,
         HieuLuc
       } = req.body;
@@ -264,10 +278,10 @@ class ChinhSachCocController {
         errors.push('Quy tắc giải tỏa không hợp lệ (BanGiao/TheoNgay/Khac)');
       }
 
-      if (SoTienCocAnNinhMacDinh !== undefined && SoTienCocAnNinhMacDinh !== null) {
-        const soTien = parseFloat(SoTienCocAnNinhMacDinh);
-        if (isNaN(soTien) || soTien < 0) {
-          errors.push('Số tiền cọc an ninh phải lớn hơn hoặc bằng 0');
+      if (SoTienCocGiuChoMacDinh !== undefined && SoTienCocGiuChoMacDinh !== null) {
+        const soTienGiuCho = parseFloat(SoTienCocGiuChoMacDinh);
+        if (isNaN(soTienGiuCho) || soTienGiuCho < 0) {
+          errors.push('Số tiền cọc giữ chỗ phải lớn hơn hoặc bằng 0');
         }
       }
 
@@ -287,7 +301,7 @@ class ChinhSachCocController {
       if (TTL_CocGiuCho_Gio !== undefined) dataUpdate.TTL_CocGiuCho_Gio = TTL_CocGiuCho_Gio;
       if (TyLePhat_CocGiuCho !== undefined) dataUpdate.TyLePhat_CocGiuCho = TyLePhat_CocGiuCho;
       if (ChoPhepCocAnNinh !== undefined) dataUpdate.ChoPhepCocAnNinh = ChoPhepCocAnNinh;
-      if (SoTienCocAnNinhMacDinh !== undefined) dataUpdate.SoTienCocAnNinhMacDinh = SoTienCocAnNinhMacDinh;
+      if (SoTienCocGiuChoMacDinh !== undefined) dataUpdate.SoTienCocGiuChoMacDinh = SoTienCocGiuChoMacDinh;
       if (QuyTacGiaiToa !== undefined) dataUpdate.QuyTacGiaiToa = QuyTacGiaiToa;
       if (HieuLuc !== undefined) dataUpdate.HieuLuc = HieuLuc;
 
@@ -327,7 +341,7 @@ class ChinhSachCocController {
   static async voHieuHoa(req, res) {
     try {
       const chinhSachCocID = parseInt(req.params.id);
-      const chuDuAnID = req.user.NguoiDungID;
+      const chuDuAnID = getChuDuAnIdFromRequest(req);
 
       if (isNaN(chinhSachCocID)) {
         return res.status(400).json({

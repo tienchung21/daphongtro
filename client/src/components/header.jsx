@@ -3,6 +3,7 @@ import logo from "../assets/images/logo-hinh-mai-nha_.jpg";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import yeuThichApi from "../api/yeuThichApi";
+import { getStaticUrl } from "../config/api";
 
 function Header() {
   const [showFavorites, setShowFavorites] = useState(false);
@@ -92,6 +93,31 @@ function Header() {
     window.location.reload();
   };
 
+  const resolveImageSrc = (value) => {
+    if (!value) return null;
+
+    const normalizeCandidates = (input) => {
+      if (!input) return [];
+      if (Array.isArray(input)) return input;
+      if (typeof input === "string") {
+        if (input.trim().startsWith("[")) {
+          try {
+            const parsed = JSON.parse(input);
+            return Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            return [input];
+          }
+        }
+        return [input];
+      }
+      return [input];
+    };
+
+    const firstCandidate = normalizeCandidates(value).find(Boolean);
+    if (!firstCandidate || typeof firstCandidate !== "string") return null;
+    return getStaticUrl(firstCandidate);
+  };
+
   return (
     <header className="header">
       <div className="container">
@@ -147,15 +173,10 @@ function Header() {
                   const title = tin?.TieuDe ?? tin?.title ?? "Không có tiêu đề";
 
                   // ưu tiên trường Img từ backend, nếu không có thử URL, nếu không có dùng placeholder
-                  const imgSrc = tin?.Img
-                    ? typeof tin.Img === "string" && tin.Img.startsWith("http")
-                      ? tin.Img
-                      : `http://localhost:5000${tin.Img}`
-                    : tin?.URL
-                    ? typeof tin.URL === "string" && tin.URL.startsWith("http")
-                      ? tin.URL
-                      : `http://localhost:5000${tin.URL}`
-                    : "https://via.placeholder.com/80x60?text=No+Img";
+                  const imgSrc =
+                    resolveImageSrc(tin?.Img) ||
+                    resolveImageSrc(tin?.URL) ||
+                    "https://via.placeholder.com/80x60?text=No+Img";
 
                   // debug: in ra console để kiểm tra URL / dữ liệu gốc
                   console.log("[Header] favorite item image debug:", {

@@ -16,7 +16,12 @@ import {
   HiOutlineMapPin,
   HiOutlineCalendarDays,
   HiOutlineClock,
-  HiOutlineChatBubbleLeftRight
+  HiOutlineChatBubbleLeftRight,
+  HiOutlineLightBulb,
+  HiOutlineDocumentText,
+  HiOutlineBuildingOffice,
+  HiOutlineChevronDown,
+  HiOutlineChevronUp
 } from 'react-icons/hi2';
 import {
   xemChiTietCuocHen,
@@ -24,14 +29,16 @@ import {
   doiLichCuocHen,
   huyCuocHen
 } from '../../services/nhanVienBanHangApi';
-import { getApiBaseUrl } from '../../config/api';
+import { getApiBaseUrl, getStaticUrl } from '../../config/api';
 import { formatDate, formatCurrency, formatPhone } from '../../utils/nvbhHelpers';
 import StatusBadge from '../../components/NhanVienBanHang/StatusBadge';
-import TimelineCuocHen from '../../components/NhanVienBanHang/TimelineCuocHen';
 import ActivityTimeline from '../../components/NhanVienBanHang/ActivityTimeline';
 import LoadingSkeleton from '../../components/NhanVienBanHang/LoadingSkeleton';
 import ErrorBanner from '../../components/NhanVienBanHang/ErrorBanner';
 import ModalBaoCaoKetQua from '../../components/NhanVienBanHang/ModalBaoCaoKetQua';
+import ModalGoiYPhongKhac from '../../components/NhanVienBanHang/ModalGoiYPhongKhac/ModalGoiYPhongKhac';
+import PreviewTinDangSheet from '../../components/NhanVienBanHang/PreviewTinDangSheet';
+import ModalQRXemNgay from '../../components/NhanVienBanHang/ModalQRXemNgay';
 import './ChiTietCuocHen.css';
 
 const ChiTietCuocHen = () => {
@@ -46,7 +53,15 @@ const ChiTietCuocHen = () => {
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
+  const [showGoiYModal, setShowGoiYModal] = useState(false);
+  const [showPreviewSheet, setShowPreviewSheet] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
+  const [selectedTinDangForPreview, setSelectedTinDangForPreview] = useState(null);
+  const [qrData, setQrData] = useState(null); // { cuocHenId, tinDangId, phongId, tinDangInfo, phongInfo }
   const [actionLoading, setActionLoading] = useState(false);
+  const [isInfoExpanded, setIsInfoExpanded] = useState(true);
+  // State để quản lý expanded/collapsed cho từng phòng khác
+  const [expandedPhongIds, setExpandedPhongIds] = useState(new Set());
 
   // Load appointment details
   useEffect(() => {
@@ -220,6 +235,42 @@ const ChiTietCuocHen = () => {
     }
   };
 
+  // Handler cho xem chi tiết tin đăng gợi ý
+  const handleViewDetail = (tinDang) => {
+    setSelectedTinDangForPreview(tinDang);
+    setShowPreviewSheet(true);
+  };
+
+  // Handler cho tạo QR từ preview sheet
+  const handleCreateQRFromPreview = (data) => {
+    // data = { tinDangId, phongId, tinDang, phong }
+    setQrData({
+      cuocHenId: appointment.CuocHenID,
+      tinDangId: data.tinDangId,
+      phongId: data.phongId,
+      tinDangInfo: data.tinDang,
+      phongInfo: data.phong
+    });
+    setShowPreviewSheet(false);
+    setShowQRModal(true);
+  };
+
+  // Handler cho tạo QR trực tiếp từ kết quả tìm kiếm
+  const handleCreateQR = (tinDang) => {
+    // Mở preview sheet trước để chọn phòng
+    setSelectedTinDangForPreview(tinDang);
+    setShowPreviewSheet(true);
+  };
+
+  // Handler khi QR được tạo thành công
+  const handleQRSuccess = () => {
+    setShowQRModal(false);
+    setShowGoiYModal(false);
+    setQrData(null);
+    // Có thể reload appointment để cập nhật thông tin
+    // loadAppointment();
+  };
+
   if (loading) {
     return (
       <div className="nvbh-chi-tiet-cuoc-hen">
@@ -255,6 +306,7 @@ const ChiTietCuocHen = () => {
   const canReschedule = ['DaXacNhan', 'DaYeuCau'].includes(appointment.TrangThai);
   const canCancel = ['ChoXacNhan', 'DaXacNhan', 'DaYeuCau'].includes(appointment.TrangThai);
   const canReport = appointment.TrangThai === 'DaXacNhan';
+  const canGoiY = ['DaXacNhan', 'DangDienRa'].includes(appointment.TrangThai); // Có thể gợi ý khi cuộc hẹn đã xác nhận hoặc đang diễn ra
 
   // Parse coordinates for map
   const hasCoordinates = appointment.ToaDo && appointment.ToaDo.lat && appointment.ToaDo.lng;
@@ -301,83 +353,6 @@ const ChiTietCuocHen = () => {
               <div className="nvbh-info-row">
                 <span className="nvbh-info-row__label">Phương thức vào:</span>
                 <span className="nvbh-info-row__value">{appointment.PhuongThucVao}</span>
-              </div>
-            )}
-
-            {/* Activity Timeline */}
-            {appointment.ActivityLog && appointment.ActivityLog.length > 0 && (
-              <div className="nvbh-info-row nvbh-info-row--full">
-                <span className="nvbh-info-row__label">Lịch sử hoạt động:</span>
-                <ActivityTimeline activities={appointment.ActivityLog} />
-              </div>
-            )}
-
-            {appointment.BaoCaoKetQua && (
-              <div className="nvbh-info-row nvbh-info-row--full">
-                <span className="nvbh-info-row__label">Báo cáo kết quả:</span>
-                <div className="nvbh-bao-cao-ket-qua">
-                  <div className="nvbh-bao-cao-ket-qua__header">
-                    <h4 className="nvbh-bao-cao-ket-qua__title">
-                      📋 Kết quả cuộc hẹn
-                    </h4>
-                    {appointment.BaoCaoKetQua.thoiGianBaoCao && (
-                      <span className="nvbh-bao-cao-ket-qua__time">
-                        🕐 {formatDate(appointment.BaoCaoKetQua.thoiGianBaoCao, 'datetime')}
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="nvbh-bao-cao-item">
-                    <span className="nvbh-bao-cao-item__label">Kết quả</span>
-                    <div className="nvbh-bao-cao-item__value">
-                      <span className={`nvbh-bao-cao-badge nvbh-bao-cao-badge--${
-                        appointment.BaoCaoKetQua.ketQua === 'thanh_cong' ? 'success' : 'fail'
-                      }`}>
-                        {appointment.BaoCaoKetQua.ketQua === 'thanh_cong' ? '✓ Thành công' : '✕ Thất bại'}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  <div className="nvbh-bao-cao-item">
-                    <span className="nvbh-bao-cao-item__label">Khách hàng quan tâm</span>
-                    <div className="nvbh-bao-cao-item__value">
-                      {appointment.BaoCaoKetQua.khachQuanTam ? 'Có' : 'Không'}
-                    </div>
-                  </div>
-                  
-                  {appointment.BaoCaoKetQua.lyDoThatBai && (
-                    <div className="nvbh-bao-cao-item">
-                      <span className="nvbh-bao-cao-item__label">Lý do thất bại</span>
-                      <div className="nvbh-bao-cao-item__value">
-                        {appointment.BaoCaoKetQua.lyDoThatBai}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {appointment.BaoCaoKetQua.keHoachFollowUp && (
-                    <div className="nvbh-bao-cao-item">
-                      <span className="nvbh-bao-cao-item__label">Kế hoạch follow-up</span>
-                      <div className="nvbh-bao-cao-item__value">
-                        {appointment.BaoCaoKetQua.keHoachFollowUp}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {appointment.BaoCaoKetQua.ghiChu && (
-                    <div className="nvbh-bao-cao-item">
-                      <span className="nvbh-bao-cao-item__label">Ghi chú</span>
-                      <div className="nvbh-bao-cao-item__value">
-                        {appointment.BaoCaoKetQua.ghiChu}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {appointment.BaoCaoKetQua.slaWarning && (
-                    <div className="nvbh-bao-cao-sla-warning">
-                      ⚠️ {appointment.BaoCaoKetQua.slaWarning}
-                    </div>
-                  )}
-                </div>
               </div>
             )}
             {appointment.GhiChuKetQua && !appointment.BaoCaoKetQua && (
@@ -471,31 +446,385 @@ const ChiTietCuocHen = () => {
         <div className="nvbh-card nvbh-card--full">
           <div className="nvbh-card__header">
             <HiOutlineHome />
-            <h2>Thông tin Phòng</h2>
+            <h2>Thông tin Phòng, Tin đăng & Dự án</h2>
+            <button
+              className="nvbh-info-toggle-btn"
+              onClick={() => setIsInfoExpanded(!isInfoExpanded)}
+              aria-label={isInfoExpanded ? 'Thu gọn' : 'Mở rộng'}
+              aria-expanded={isInfoExpanded}
+            >
+              {isInfoExpanded ? <HiOutlineChevronUp /> : <HiOutlineChevronDown />}
+            </button>
           </div>
-          <div className="nvbh-card__body">
-            <h3 className="nvbh-room__title">{appointment.TieuDePhong || 'Phòng trọ'}</h3>
-            <p className="nvbh-room__price">{formatCurrency(appointment.GiaPhong)}/tháng</p>
-            <div className="nvbh-info-row">
-              <HiOutlineMapPin />
-              <span>{appointment.DiaChiPhong || 'Địa chỉ phòng'}</span>
+          <div className={`nvbh-card__body nvbh-info-content ${isInfoExpanded ? 'nvbh-info-content--expanded' : 'nvbh-info-content--collapsed'}`}>
+            {/* === THÔNG TIN PHÒNG === */}
+            <div className="nvbh-info-section">
+              <h3 className="nvbh-info-section__title">
+                <HiOutlineHome className="nvbh-info-section__icon" />
+                Thông tin Phòng
+              </h3>
+              
+              <div className="nvbh-info-grid">
+                <div className="nvbh-info-row">
+                  <span className="nvbh-info-row__label">Tên phòng:</span>
+                  <span className="nvbh-info-row__value nvbh-info-row__value--bold">
+                    {appointment.TieuDePhong || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="nvbh-info-row">
+                  <span className="nvbh-info-row__label">Trạng thái phòng:</span>
+                  <span className={`nvbh-status-badge nvbh-status-badge--${
+                    appointment.TrangThaiPhong === 'Trong' ? 'success' :
+                    appointment.TrangThaiPhong === 'GiuCho' ? 'warning' :
+                    appointment.TrangThaiPhong === 'DaThue' ? 'info' : 'default'
+                  }`}>
+                    {appointment.TrangThaiPhong === 'Trong' ? '🟢 Trống' :
+                     appointment.TrangThaiPhong === 'GiuCho' ? '🟡 Giữ chỗ' :
+                     appointment.TrangThaiPhong === 'DaThue' ? '🔵 Đã thuê' :
+                     appointment.TrangThaiPhong === 'DonDep' ? '🟠 Dọn dẹp' : appointment.TrangThaiPhong}
+                  </span>
+                </div>
+                
+                <div className="nvbh-info-row">
+                  <span className="nvbh-info-row__label">Giá thuê:</span>
+                  <span className="nvbh-info-row__value nvbh-info-row__value--price">
+                    {formatCurrency(appointment.GiaPhong)}/tháng
+                  </span>
+                  {appointment.GiaChuanPhong && appointment.GiaChuanPhong !== appointment.GiaPhong && (
+                    <span className="nvbh-info-row__note">
+                      (Giá chuẩn: {formatCurrency(appointment.GiaChuanPhong)})
+                    </span>
+                  )}
+                </div>
+                
+                {appointment.DienTich && (
+                  <div className="nvbh-info-row">
+                    <span className="nvbh-info-row__label">Diện tích:</span>
+                    <span className="nvbh-info-row__value">
+                      {appointment.DienTich}m²
+                      {appointment.DienTichChuanPhong && appointment.DienTichChuanPhong !== appointment.DienTich && (
+                        <span className="nvbh-info-row__note">
+                          {' '}(Chuẩn: {appointment.DienTichChuanPhong}m²)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                )}
+                
+                {appointment.MoTaPhongHienThi && (
+                  <div className="nvbh-info-row nvbh-info-row--full">
+                    <span className="nvbh-info-row__label">Mô tả phòng:</span>
+                    <p className="nvbh-info-row__note">{appointment.MoTaPhongHienThi}</p>
+                  </div>
+                )}
+              </div>
             </div>
-            
-            {appointment.DienTich && (
-              <p className="nvbh-room__spec">Diện tích: {appointment.DienTich}m²</p>
+
+            {/* === DANH SÁCH PHÒNG KHÁC (nếu có) === */}
+            {appointment.DanhSachPhongKhac && appointment.DanhSachPhongKhac.length > 0 && (
+              <div className="nvbh-info-section">
+                <h3 className="nvbh-info-section__title">
+                  <HiOutlineHome className="nvbh-info-section__icon" />
+                  Phòng khác trong tin đăng ({appointment.DanhSachPhongKhac.length} phòng)
+                </h3>
+                
+                <div className="nvbh-phong-khac-list">
+                  {appointment.DanhSachPhongKhac.map((phong) => {
+                    const isExpanded = expandedPhongIds.has(phong.PhongID);
+                    return (
+                      <div key={phong.PhongID} className="nvbh-phong-khac-item">
+                        <div 
+                          className="nvbh-phong-khac-item__header"
+                          onClick={() => {
+                            const newExpanded = new Set(expandedPhongIds);
+                            if (isExpanded) {
+                              newExpanded.delete(phong.PhongID);
+                            } else {
+                              newExpanded.add(phong.PhongID);
+                            }
+                            setExpandedPhongIds(newExpanded);
+                          }}
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <div className="nvbh-phong-khac-item__header-content">
+                            <span className="nvbh-phong-khac-item__title">{phong.TenPhong}</span>
+                            <span className={`nvbh-status-badge nvbh-status-badge--${
+                              phong.TrangThaiPhong === 'Trong' ? 'success' :
+                              phong.TrangThaiPhong === 'GiuCho' ? 'warning' :
+                              phong.TrangThaiPhong === 'DaThue' ? 'info' : 'default'
+                            }`}>
+                              {phong.TrangThaiPhong === 'Trong' ? '🟢 Trống' :
+                               phong.TrangThaiPhong === 'GiuCho' ? '🟡 Giữ chỗ' :
+                               phong.TrangThaiPhong === 'DaThue' ? '🔵 Đã thuê' :
+                               phong.TrangThaiPhong === 'DonDep' ? '🟠 Dọn dẹp' : phong.TrangThaiPhong}
+                            </span>
+                            <span className="nvbh-phong-khac-item__price">
+                              {formatCurrency(phong.GiaPhong)}/tháng
+                            </span>
+                          </div>
+                          <button
+                            className="nvbh-info-toggle-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const newExpanded = new Set(expandedPhongIds);
+                              if (isExpanded) {
+                                newExpanded.delete(phong.PhongID);
+                              } else {
+                                newExpanded.add(phong.PhongID);
+                              }
+                              setExpandedPhongIds(newExpanded);
+                            }}
+                            aria-label={isExpanded ? 'Thu gọn' : 'Mở rộng'}
+                            aria-expanded={isExpanded}
+                          >
+                            {isExpanded ? <HiOutlineChevronUp /> : <HiOutlineChevronDown />}
+                          </button>
+                        </div>
+                        
+                        <div className={`nvbh-phong-khac-item__content ${isExpanded ? 'nvbh-info-content--expanded' : 'nvbh-info-content--collapsed'}`}>
+                          <div className="nvbh-info-grid">
+                            {phong.DienTich && (
+                              <div className="nvbh-info-row">
+                                <span className="nvbh-info-row__label">Diện tích:</span>
+                                <span className="nvbh-info-row__value">
+                                  {phong.DienTich}m²
+                                  {phong.DienTichChuanPhong && phong.DienTichChuanPhong !== phong.DienTich && (
+                                    <span className="nvbh-info-row__note">
+                                      {' '}(Chuẩn: {phong.DienTichChuanPhong}m²)
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                            )}
+                            
+                            {phong.GiaChuanPhong && phong.GiaChuanPhong !== phong.GiaPhong && (
+                              <div className="nvbh-info-row">
+                                <span className="nvbh-info-row__label">Giá chuẩn:</span>
+                                <span className="nvbh-info-row__value">
+                                  {formatCurrency(phong.GiaChuanPhong)}/tháng
+                                </span>
+                              </div>
+                            )}
+                            
+                            {phong.MoTaPhong && (
+                              <div className="nvbh-info-row nvbh-info-row--full">
+                                <span className="nvbh-info-row__label">Mô tả:</span>
+                                <p className="nvbh-info-row__note">{phong.MoTaPhong}</p>
+                              </div>
+                            )}
+                            
+                            {phong.HinhAnhPhong && phong.HinhAnhPhong.length > 0 && (
+                              <div className="nvbh-info-row nvbh-info-row--full">
+                                <span className="nvbh-info-row__label">Hình ảnh:</span>
+                                <div className="nvbh-room__images-grid" style={{ marginTop: '0.5rem' }}>
+                                  {phong.HinhAnhPhong.slice(0, 3).map((img, index) => (
+                                    <img
+                                      key={index}
+                                      src={getStaticUrl(img)}
+                                      alt={`${phong.TenPhong} ${index + 1}`}
+                                      className="nvbh-room__image"
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             )}
+
+            {/* === THÔNG TIN TIN ĐĂNG === */}
+            <div className="nvbh-info-section">
+              <h3 className="nvbh-info-section__title">
+                <HiOutlineDocumentText className="nvbh-info-section__icon" />
+                Thông tin Tin đăng
+              </h3>
+              
+              <div className="nvbh-info-grid">
+                <div className="nvbh-info-row">
+                  <span className="nvbh-info-row__label">Mã tin đăng:</span>
+                  <span className="nvbh-info-row__value">#{appointment.TinDangID}</span>
+                </div>
+                
+                <div className="nvbh-info-row">
+                  <span className="nvbh-info-row__label">Tiêu đề:</span>
+                  <span className="nvbh-info-row__value nvbh-info-row__value--bold">
+                    {appointment.TieuDeTinDang || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="nvbh-info-row">
+                  <span className="nvbh-info-row__label">Trạng thái:</span>
+                  <span className={`nvbh-status-badge nvbh-status-badge--${
+                    appointment.TrangThaiTinDang === 'DaDang' ? 'success' :
+                    appointment.TrangThaiTinDang === 'DaDuyet' ? 'info' :
+                    appointment.TrangThaiTinDang === 'ChoDuyet' ? 'warning' :
+                    appointment.TrangThaiTinDang === 'TamNgung' ? 'danger' : 'default'
+                  }`}>
+                    {appointment.TrangThaiTinDang === 'DaDang' ? '✅ Đã đăng' :
+                     appointment.TrangThaiTinDang === 'DaDuyet' ? '✓ Đã duyệt' :
+                     appointment.TrangThaiTinDang === 'ChoDuyet' ? '⏳ Chờ duyệt' :
+                     appointment.TrangThaiTinDang === 'TamNgung' ? '⏸ Tạm ngưng' :
+                     appointment.TrangThaiTinDang === 'TuChoi' ? '❌ Từ chối' :
+                     appointment.TrangThaiTinDang === 'LuuTru' ? '📦 Lưu trữ' : appointment.TrangThaiTinDang}
+                  </span>
+                </div>
+                
+                {appointment.MoTaTinDang && (
+                  <div className="nvbh-info-row nvbh-info-row--full">
+                    <span className="nvbh-info-row__label">Mô tả:</span>
+                    <p className="nvbh-info-row__note">{appointment.MoTaTinDang}</p>
+                  </div>
+                )}
+                
+                {/* Tiện ích */}
+                {appointment.TienIch && appointment.TienIch.length > 0 && (
+                  <div className="nvbh-info-row nvbh-info-row--full">
+                    <span className="nvbh-info-row__label">Tiện ích:</span>
+                    <div className="nvbh-tien-ich-list">
+                      {appointment.TienIch.map((tienIch, index) => (
+                        <span key={index} className="nvbh-tien-ich-badge">
+                          {tienIch}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Giá điện, nước, dịch vụ */}
+                <div className="nvbh-info-row nvbh-info-row--full">
+                  <span className="nvbh-info-row__label">Chi phí phụ:</span>
+                  <div className="nvbh-chi-phi-list">
+                    {appointment.GiaDien && (
+                      <div className="nvbh-chi-phi-item">
+                        <span className="nvbh-chi-phi-item__label">⚡ Điện:</span>
+                        <span className="nvbh-chi-phi-item__value">
+                          {formatCurrency(appointment.GiaDien)}/kWh
+                        </span>
+                      </div>
+                    )}
+                    {appointment.GiaNuoc && (
+                      <div className="nvbh-chi-phi-item">
+                        <span className="nvbh-chi-phi-item__label">💧 Nước:</span>
+                        <span className="nvbh-chi-phi-item__value">
+                          {formatCurrency(appointment.GiaNuoc)}/m³
+                        </span>
+                      </div>
+                    )}
+                    {appointment.GiaDichVu && (
+                      <div className="nvbh-chi-phi-item">
+                        <span className="nvbh-chi-phi-item__label">🔧 Dịch vụ:</span>
+                        <span className="nvbh-chi-phi-item__value">
+                          {formatCurrency(appointment.GiaDichVu)}/tháng
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {appointment.MoTaGiaDichVu && (
+                  <div className="nvbh-info-row nvbh-info-row--full">
+                    <span className="nvbh-info-row__label">Chi tiết phí dịch vụ:</span>
+                    <p className="nvbh-info-row__note">{appointment.MoTaGiaDichVu}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* === THÔNG TIN DỰ ÁN === */}
+            <div className="nvbh-info-section">
+              <h3 className="nvbh-info-section__title">
+                <HiOutlineBuildingOffice className="nvbh-info-section__icon" />
+                Thông tin Dự án
+              </h3>
+              
+              <div className="nvbh-info-grid">
+                <div className="nvbh-info-row">
+                  <span className="nvbh-info-row__label">Mã dự án:</span>
+                  <span className="nvbh-info-row__value">#{appointment.DuAnID}</span>
+                </div>
+                
+                <div className="nvbh-info-row">
+                  <span className="nvbh-info-row__label">Tên dự án:</span>
+                  <span className="nvbh-info-row__value nvbh-info-row__value--bold">
+                    {appointment.TenDuAn || 'N/A'}
+                  </span>
+                </div>
+                
+                <div className="nvbh-info-row">
+                  <span className="nvbh-info-row__label">Trạng thái:</span>
+                  <span className={`nvbh-status-badge nvbh-status-badge--${
+                    appointment.TrangThaiDuAn === 'HoatDong' ? 'success' :
+                    appointment.TrangThaiDuAn === 'NgungHoatDong' ? 'danger' : 'default'
+                  }`}>
+                    {appointment.TrangThaiDuAn === 'HoatDong' ? '✅ Hoạt động' :
+                     appointment.TrangThaiDuAn === 'NgungHoatDong' ? '⛔ Ngưng hoạt động' :
+                     appointment.TrangThaiDuAn === 'LuuTru' ? '📦 Lưu trữ' : appointment.TrangThaiDuAn}
+                  </span>
+                </div>
+                
+                <div className="nvbh-info-row nvbh-info-row--full">
+                  <span className="nvbh-info-row__label">Địa chỉ:</span>
+                  <div className="nvbh-info-row__value">
+                    <HiOutlineMapPin className="nvbh-info-row__icon" />
+                    {appointment.DiaChiPhong || 'N/A'}
+                  </div>
+                </div>
+                
+                {appointment.PhuongThucVaoDuAn && (
+                  <div className="nvbh-info-row nvbh-info-row--full">
+                    <span className="nvbh-info-row__label">Phương thức vào:</span>
+                    <p className="nvbh-info-row__note nvbh-info-row__note--highlight">
+                      🔑 {appointment.PhuongThucVaoDuAn}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Bảng hoa hồng */}
+                {appointment.BangHoaHong && appointment.BangHoaHong.length > 0 && (
+                  <div className="nvbh-info-row nvbh-info-row--full">
+                    <span className="nvbh-info-row__label">Bảng hoa hồng:</span>
+                    <div className="nvbh-hoa-hong-list">
+                      {appointment.BangHoaHong.map((hh, index) => (
+                        <div key={index} className="nvbh-hoa-hong-item">
+                          <span className="nvbh-hoa-hong-item__label">
+                            {hh.soThang} tháng cọc:
+                          </span>
+                          <span className="nvbh-hoa-hong-item__value">
+                            {hh.tyLe}%
+                          </span>
+                        </div>
+                      ))}
+                      {appointment.SoThangCocToiThieu && (
+                        <div className="nvbh-hoa-hong-note">
+                          * Áp dụng từ {appointment.SoThangCocToiThieu} tháng cọc trở lên
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
             
             {/* Room Images */}
             {appointment.HinhAnhPhong && appointment.HinhAnhPhong.length > 0 && (
               <div className="nvbh-room__images">
-                {appointment.HinhAnhPhong.slice(0, 4).map((img, index) => (
-                  <img
-                    key={index}
-                    src={img}
-                    alt={`Phòng ${index + 1}`}
-                    className="nvbh-room__image"
-                  />
-                ))}
+                <h4 className="nvbh-room__images-title">Hình ảnh phòng</h4>
+                <div className="nvbh-room__images-grid">
+                  {appointment.HinhAnhPhong.map((img, index) => (
+                    <img
+                      key={index}
+                      src={getStaticUrl(img)}
+                      alt={`Phòng ${index + 1}`}
+                      className="nvbh-room__image"
+                    />
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -532,10 +861,83 @@ const ChiTietCuocHen = () => {
         <div className="nvbh-card nvbh-card--full">
           <div className="nvbh-card__header">
             <HiOutlineClock />
-            <h2>Lịch sử</h2>
+            <h2>Lịch sử hoạt động</h2>
           </div>
           <div className="nvbh-card__body">
-            <TimelineCuocHen events={appointment.LichSu || []} />
+            {appointment.ActivityLog && appointment.ActivityLog.length > 0 ? (
+              <ActivityTimeline activities={appointment.ActivityLog} />
+            ) : (
+              <div className="nvbh-timeline-empty">
+                <p>Chưa có lịch sử hoạt động</p>
+              </div>
+            )}
+
+            {/* Báo cáo kết quả */}
+            {appointment.BaoCaoKetQua && (
+              <div className="nvbh-bao-cao-ket-qua">
+                <div className="nvbh-bao-cao-ket-qua__header">
+                  <h4 className="nvbh-bao-cao-ket-qua__title">
+                    📋 Kết quả cuộc hẹn
+                  </h4>
+                  {appointment.BaoCaoKetQua.thoiGianBaoCao && (
+                    <span className="nvbh-bao-cao-ket-qua__time">
+                      🕐 {formatDate(appointment.BaoCaoKetQua.thoiGianBaoCao, 'datetime')}
+                    </span>
+                  )}
+                </div>
+                
+                <div className="nvbh-bao-cao-item">
+                  <span className="nvbh-bao-cao-item__label">Kết quả</span>
+                  <div className="nvbh-bao-cao-item__value">
+                    <span className={`nvbh-bao-cao-badge nvbh-bao-cao-badge--${
+                      appointment.BaoCaoKetQua.ketQua === 'thanh_cong' ? 'success' : 'fail'
+                    }`}>
+                      {appointment.BaoCaoKetQua.ketQua === 'thanh_cong' ? '✓ Thành công' : '✕ Thất bại'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="nvbh-bao-cao-item">
+                  <span className="nvbh-bao-cao-item__label">Khách hàng quan tâm</span>
+                  <div className="nvbh-bao-cao-item__value">
+                    {appointment.BaoCaoKetQua.khachQuanTam ? 'Có' : 'Không'}
+                  </div>
+                </div>
+                
+                {appointment.BaoCaoKetQua.lyDoThatBai && (
+                  <div className="nvbh-bao-cao-item">
+                    <span className="nvbh-bao-cao-item__label">Lý do thất bại</span>
+                    <div className="nvbh-bao-cao-item__value">
+                      {appointment.BaoCaoKetQua.lyDoThatBai}
+                    </div>
+                  </div>
+                )}
+                
+                {appointment.BaoCaoKetQua.keHoachFollowUp && (
+                  <div className="nvbh-bao-cao-item">
+                    <span className="nvbh-bao-cao-item__label">Kế hoạch follow-up</span>
+                    <div className="nvbh-bao-cao-item__value">
+                      {appointment.BaoCaoKetQua.keHoachFollowUp}
+                    </div>
+                  </div>
+                )}
+                
+                {appointment.BaoCaoKetQua.ghiChu && (
+                  <div className="nvbh-bao-cao-item">
+                    <span className="nvbh-bao-cao-item__label">Ghi chú</span>
+                    <div className="nvbh-bao-cao-item__value">
+                      {appointment.BaoCaoKetQua.ghiChu}
+                    </div>
+                  </div>
+                )}
+                
+                {appointment.BaoCaoKetQua.slaWarning && (
+                  <div className="nvbh-bao-cao-sla-warning">
+                    ⚠️ {appointment.BaoCaoKetQua.slaWarning}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -567,6 +969,16 @@ const ChiTietCuocHen = () => {
             disabled={actionLoading}
           >
             Báo cáo kết quả
+          </button>
+        )}
+        {canGoiY && (
+          <button
+            className="nvbh-btn nvbh-btn--accent"
+            onClick={() => setShowGoiYModal(true)}
+            disabled={actionLoading}
+          >
+            <HiOutlineLightBulb />
+            Gợi ý tin đăng khác
           </button>
         )}
         {canCancel && (
@@ -605,6 +1017,51 @@ const ChiTietCuocHen = () => {
             setShowReportModal(false);
             loadAppointment();
           }}
+        />
+      )}
+
+      {showGoiYModal && (
+        <ModalGoiYPhongKhac
+          isOpen={showGoiYModal}
+          onClose={() => setShowGoiYModal(false)}
+          cuocHenId={appointment.CuocHenID}
+          tinDangHienTai={{
+            TinDangID: appointment.TinDangID,
+            KhuVucID: appointment.KhuVucID,
+            TieuDe: appointment.TieuDePhong
+          }}
+          onViewDetail={handleViewDetail}
+          onCreateQR={handleCreateQR}
+        />
+      )}
+
+      {/* Preview Tin Đăng Sheet */}
+      {showPreviewSheet && selectedTinDangForPreview && (
+        <PreviewTinDangSheet
+          isOpen={showPreviewSheet}
+          onClose={() => {
+            setShowPreviewSheet(false);
+            setSelectedTinDangForPreview(null);
+          }}
+          tinDangId={selectedTinDangForPreview.TinDangID}
+          onCreateQR={handleCreateQRFromPreview}
+        />
+      )}
+
+      {/* QR Modal */}
+      {showQRModal && qrData && (
+        <ModalQRXemNgay
+          isOpen={showQRModal}
+          onClose={() => {
+            setShowQRModal(false);
+            setQrData(null);
+          }}
+          cuocHenId={qrData.cuocHenId}
+          tinDangId={qrData.tinDangId}
+          phongId={qrData.phongId}
+          tinDangInfo={qrData.tinDangInfo}
+          phongInfo={qrData.phongInfo}
+          onSuccess={handleQRSuccess}
         />
       )}
     </div>
@@ -700,7 +1157,6 @@ const CancelModal = ({ onConfirm, onClose }) => {
 };
 
 export default ChiTietCuocHen;
-
 
 
 

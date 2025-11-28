@@ -93,19 +93,23 @@
   border-radius: var(--nvbh-radius-md);
   background: transparent !important;
   border: 1px solid var(--nvbh-glass-border) !important;
-  padding: 0 !important; /* Override global button padding */
+  padding: 0 !important;
+  /* Override global button padding */
   cursor: pointer;
-  color: #475569 !important; /* Slate 600 - màu xám đậm - force màu */
+  color: #475569 !important;
+  /* Slate 600 - màu xám đậm - force màu */
   transition: all var(--nvbh-transition-fast);
   flex-shrink: 0;
-  font-size: 0 !important; /* Reset font size từ global */
+  font-size: 0 !important;
+  /* Reset font size từ global */
   box-shadow: var(--nvbh-shadow-xs);
 }
 
 .nvbh-sidebar .nvbh-sidebar__collapse-btn:hover,
 .nvbh-sidebar__collapse-btn:hover {
   background: var(--nvbh-accent-50, rgba(148, 163, 184, 0.1)) !important;
-  color: #0f172a !important; /* Slate 900 - màu đen - force màu */
+  color: #0f172a !important;
+  /* Slate 900 - màu đen - force màu */
   border-color: var(--nvbh-glass-border-hover) !important;
   box-shadow: var(--nvbh-shadow-sm);
 }
@@ -116,15 +120,18 @@
 .nvbh-sidebar__collapse-icon {
   width: 16px;
   height: 16px;
-  stroke: #475569 !important; /* Set màu trực tiếp thay vì currentColor */
+  stroke: #475569 !important;
+  /* Set màu trực tiếp thay vì currentColor */
   fill: none;
-  color: #475569 !important; /* Backup color */
+  color: #475569 !important;
+  /* Backup color */
 }
 
 .nvbh-sidebar .nvbh-sidebar__collapse-btn:hover svg,
 .nvbh-sidebar__collapse-btn:hover svg,
 .nvbh-sidebar__collapse-btn:hover .nvbh-sidebar__collapse-icon {
-  stroke: #0f172a !important; /* Màu đen khi hover */
+  stroke: #0f172a !important;
+  /* Màu đen khi hover */
   color: #0f172a !important;
 }
 
@@ -198,13 +205,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: inherit; /* Kế thừa màu từ parent */
+  color: inherit;
+  /* Kế thừa màu từ parent */
 }
 
 .nvbh-nav-item__icon svg {
   width: 100%;
   height: 100%;
-  stroke: currentColor; /* Đảm bảo SVG sử dụng màu hiện tại */
+  stroke: currentColor;
+  /* Đảm bảo SVG sử dụng màu hiện tại */
   fill: none;
 }
 
@@ -213,6 +222,26 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.nvbh-nav-item__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.nvbh-nav-item--active .nvbh-nav-item__badge {
+  background: white;
+  color: var(--nvbh-primary);
 }
 
 .nvbh-sidebar--collapsed .nvbh-nav-item {
@@ -260,7 +289,8 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
-  color: inherit; /* Kế thừa màu từ parent */
+  color: inherit;
+  /* Kế thừa màu từ parent */
 }
 
 .nvbh-sidebar__feedback-icon svg {
@@ -296,11 +326,3 @@
     padding: 0 var(--nvbh-spacing-md);
   }
 }
-
-
-
-
-
-
-
-

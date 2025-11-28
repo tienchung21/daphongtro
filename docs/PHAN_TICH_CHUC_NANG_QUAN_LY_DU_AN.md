@@ -33,7 +33,6 @@ CREATE TABLE `chinhsachcoc` (
   `TTL_CocGiuCho_Gio` int(11) NOT NULL DEFAULT 48,       -- TTL cọc giữ chỗ (giờ)
   `TyLePhat_CocGiuCho` decimal(5,2) NOT NULL DEFAULT 0.00, -- Tỷ lệ phạt (%)
   `ChoPhepCocAnNinh` tinyint(1) NOT NULL DEFAULT 1,
-  `SoTienCocAnNinhMacDinh` decimal(15,2) DEFAULT NULL,
   `QuyTacGiaiToa` enum('BanGiao','TheoNgay','Khac') NOT NULL DEFAULT 'BanGiao',
   `HieuLuc` tinyint(1) NOT NULL DEFAULT 1,
   `TaoLuc` datetime DEFAULT current_timestamp(),

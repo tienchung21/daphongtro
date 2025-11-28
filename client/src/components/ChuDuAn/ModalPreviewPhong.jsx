@@ -9,6 +9,7 @@ import {
   HiOutlineXCircle,
   HiOutlineClock
 } from 'react-icons/hi2';
+import { getStaticUrl } from '../../config/api';
 
 /**
  * Modal preview danh sách phòng
@@ -84,32 +85,24 @@ const ModalPreviewPhong = ({
 
   const getHinhAnh = (urlJson) => {
     try {
-      // Log để debug
-      console.log('🖼️ URL JSON:', urlJson);
-      
-      // Nếu urlJson là null hoặc undefined
       if (!urlJson) return null;
-      
-      // Nếu urlJson đã là string path (không phải JSON)
-      if (typeof urlJson === 'string' && urlJson.startsWith('/uploads')) {
-        // Thêm timestamp để tránh browser cache
-        return `http://localhost:5000${urlJson}?t=${Date.now()}`;
+
+      const withCacheBuster = (url) => {
+        if (!url) return null;
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}t=${Date.now()}`;
+      };
+
+      // Nếu urlJson là string nhưng không phải JSON array
+      if (typeof urlJson === 'string' && !urlJson.trim().startsWith('[')) {
+        return withCacheBuster(getStaticUrl(urlJson));
       }
-      
-      // Nếu urlJson là JSON array
-      const urls = JSON.parse(urlJson);
-      console.log('📸 Parsed URLs:', urls);
-      
-      if (Array.isArray(urls) && urls.length > 0) {
-        const firstUrl = urls[0];
-        // Nếu URL đã có http://localhost:5000
-        if (firstUrl.startsWith('http')) {
-          return `${firstUrl}?t=${Date.now()}`;
-        }
-        // Nếu URL chỉ là path
-        return `http://localhost:5000${firstUrl}?t=${Date.now()}`;
+
+      const parsed = typeof urlJson === 'string' ? JSON.parse(urlJson) : urlJson;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return withCacheBuster(getStaticUrl(parsed[0]));
       }
-      
+
       return null;
     } catch (error) {
       console.error('❌ Error parsing image URL:', error, urlJson);

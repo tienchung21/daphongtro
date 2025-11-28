@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 22, 2025 at 02:56 PM
+-- Generation Time: Nov 25, 2025 at 01:32 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -18,12 +18,12 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `thue_tro`
+-- Database: `thue_tro`
 --
 
 DELIMITER $$
 --
--- Thủ tục
+-- Procedures
 --
 CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_get_phong_by_duan` (IN `p_duan_id` INT)   BEGIN
   SELECT 
@@ -76,7 +76,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `bienbanbangiao`
+-- Table structure for table `bienbanbangiao`
 --
 
 CREATE TABLE `bienbanbangiao` (
@@ -94,7 +94,7 @@ CREATE TABLE `bienbanbangiao` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Bẫy `bienbanbangiao`
+-- Triggers `bienbanbangiao`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_before_insert_bienbanbangiao_check_active` BEFORE INSERT ON `bienbanbangiao` FOR EACH ROW BEGIN
@@ -121,7 +121,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `buttoansocai`
+-- Table structure for table `buttoansocai`
 --
 
 CREATE TABLE `buttoansocai` (
@@ -134,7 +134,7 @@ CREATE TABLE `buttoansocai` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Bẫy `buttoansocai`
+-- Triggers `buttoansocai`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_buttoan_no_delete` BEFORE DELETE ON `buttoansocai` FOR EACH ROW BEGIN
@@ -152,7 +152,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `chinhsachcoc`
+-- Table structure for table `chinhsachcoc`
 --
 
 CREATE TABLE `chinhsachcoc` (
@@ -164,7 +164,7 @@ CREATE TABLE `chinhsachcoc` (
   `TTL_CocGiuCho_Gio` int(11) NOT NULL DEFAULT 48,
   `TyLePhat_CocGiuCho` tinyint(3) UNSIGNED DEFAULT NULL,
   `ChoPhepCocAnNinh` tinyint(1) NOT NULL DEFAULT 1,
-  `SoTienCocAnNinhMacDinh` decimal(15,2) DEFAULT NULL,
+  `SoTienCocGiuChoMacDinh` decimal(15,2) DEFAULT NULL,
   `QuyTacGiaiToa` enum('BanGiao','TheoNgay','Khac') NOT NULL DEFAULT 'BanGiao',
   `SoNgayGiaiToa` int(11) DEFAULT NULL,
   `HieuLuc` tinyint(1) NOT NULL DEFAULT 1,
@@ -173,14 +173,16 @@ CREATE TABLE `chinhsachcoc` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `chinhsachcoc`
+-- Dumping data for table `chinhsachcoc`
 --
 
-INSERT INTO `chinhsachcoc` (`ChinhSachCocID`, `ChuDuAnID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `SoTienCocAnNinhMacDinh`, `QuyTacGiaiToa`, `SoNgayGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, NULL, 'Mặc định', 'Policy mặc định hệ thống', 1, 48, 0, 1, NULL, 'BanGiao', NULL, 1, '2025-09-27 14:59:04', '2025-09-27 14:59:04');
+INSERT INTO `chinhsachcoc` (`ChinhSachCocID`, `ChuDuAnID`, `TenChinhSach`, `MoTa`, `ChoPhepCocGiuCho`, `TTL_CocGiuCho_Gio`, `TyLePhat_CocGiuCho`, `ChoPhepCocAnNinh`, `SoTienCocGiuChoMacDinh`, `QuyTacGiaiToa`, `SoNgayGiaiToa`, `HieuLuc`, `TaoLuc`, `CapNhatLuc`) VALUES
+(1, NULL, 'Mặc định', 'Policy mặc định hệ thống', 1, 48, 0, 1, NULL, 'BanGiao', NULL, 1, '2025-09-27 14:59:04', '2025-09-27 14:59:04'),
+(2, 1, 'Đẩy sale tháng 12', 'Chính sách cọc hỗ trợ hoa hồng cao khuyến khích các bạn sale tăng cường', 1, 72, 100, 0, NULL, 'BanGiao', NULL, 1, '2025-11-25 18:02:49', '2025-11-25 19:27:17'),
+(3, 1, 'Đẩy sale tháng 1', NULL, 1, 72, 100, 1, 500000.00, 'BanGiao', NULL, 1, '2025-11-25 19:15:58', '2025-11-25 19:15:58');
 
 --
--- Bẫy `chinhsachcoc`
+-- Triggers `chinhsachcoc`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_chk_tyle_policy_ins` BEFORE INSERT ON `chinhsachcoc` FOR EACH ROW BEGIN
@@ -202,7 +204,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `coc`
+-- Table structure for table `coc`
 --
 
 CREATE TABLE `coc` (
@@ -229,7 +231,7 @@ CREATE TABLE `coc` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Bẫy `coc`
+-- Triggers `coc`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_chk_tyle_snapshot_ins` BEFORE INSERT ON `coc` FOR EACH ROW BEGIN
@@ -274,7 +276,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `cuochen`
+-- Table structure for table `cuochen`
 --
 
 CREATE TABLE `cuochen` (
@@ -298,7 +300,7 @@ CREATE TABLE `cuochen` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `cuochen`
+-- Dumping data for table `cuochen`
 --
 
 INSERT INTO `cuochen` (`CuocHenID`, `KhachHangID`, `NhanVienBanHangID`, `PhongID`, `TinDangID`, `ThoiGianHen`, `TrangThai`, `PheDuyetChuDuAn`, `LyDoTuChoi`, `PhuongThucVao`, `ThoiGianPheDuyet`, `SoLanDoiLich`, `GhiChuKetQua`, `TaoLuc`, `CapNhatLuc`, `GhiChu`, `ChuDuAnID`) VALUES
@@ -308,17 +310,24 @@ INSERT INTO `cuochen` (`CuocHenID`, `KhachHangID`, `NhanVienBanHangID`, `PhongID
 (17, 7, 8, 7, 9, '2025-11-09 17:33:00', 'ChoXacNhan', 'DaPheDuyet', NULL, NULL, NULL, 0, NULL, '2025-11-09 17:03:06', '2025-11-19 05:39:20', '3432324', 0),
 (18, 7, 8, 4, 6, '2025-11-09 17:37:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, NULL, NULL, 0, NULL, '2025-11-09 17:07:39', '2025-11-19 05:39:29', '0', 0),
 (19, 7, 8, 4, 6, '2025-11-20 15:31:00', 'DaDoiLich', 'DaPheDuyet', NULL, NULL, NULL, 1, '{\"activities\":[{\"timestamp\":\"2025-11-19T08:31:26.812Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T08:31:40.342Z\",\"action\":\"doi_lich\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Theo yêu cầu\",\"oldTime\":\"2025-11-10T15:35:00.000Z\",\"newTime\":\"2025-11-20T15:31\"}]}', '2025-11-10 22:05:57', '2025-11-19 15:31:40', '0', 1),
-(20, 7, 8, 1, 4, '2025-11-10 22:36:00', 'HoanThanh', 'DaPheDuyet', NULL, NULL, NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-20T05:34:22.840Z\",\"action\":\"bao_cao\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Kết quả: thanh_cong\",\"ketQua\":\"thanh_cong\"}],\"oldNote\":\"\\n[2025-11-18 22:53:15] Xác nhận bởi NVBH: \",\"thoiGianBaoCao\":\"2025-11-20T05:34:22.840Z\",\"ketQua\":\"thanh_cong\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"hihi\",\"slaWarning\":\"Báo cáo muộn 229 giờ\"}', '2025-11-10 22:06:32', '2025-11-20 12:34:22', '0', 1),
+(20, 7, 8, 1, 4, '2025-11-10 22:36:00', 'DaXacNhan', 'DaPheDuyet', NULL, NULL, NULL, 0, '\n[2025-11-18 22:53:15] Xác nhận bởi NVBH: ', '2025-11-10 22:06:32', '2025-11-19 05:39:45', '0', 1),
 (21, 7, 8, 7, 9, '2025-11-20 13:39:00', 'DaDoiLich', 'DaPheDuyet', NULL, NULL, NULL, 1, '\n[2025-11-19 13:38:08] Xác nhận bởi NVBH: \n[2025-11-19 13:40:00] Đổi lịch bởi NVBH: Theo yêu cầu', '2025-11-10 22:06:43', '2025-11-19 13:40:00', '0', 1),
 (22, 7, 8, 5, 8, '2025-11-10 22:36:00', 'HoanThanh', 'DaPheDuyet', NULL, NULL, NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-19T06:52:43.449Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T06:53:03.138Z\",\"action\":\"bao_cao\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Kết quả: HoanThanh\",\"ketQua\":\"HoanThanh\"}],\"thoiGianBaoCao\":\"2025-11-19T06:53:03.138Z\",\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"Chắc chắn chốt\\n\",\"slaWarning\":\"Báo cáo muộn 207 giờ\"}', '2025-11-10 22:06:49', '2025-11-19 13:53:03', '0', 1),
 (25, 7, 8, 4, 5, '2025-11-20 13:52:00', 'DaDoiLich', 'ChoPheDuyet', NULL, NULL, NULL, 1, '{\"activities\":[{\"timestamp\":\"2025-11-19T06:52:05.652Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"},{\"timestamp\":\"2025-11-19T06:52:12.552Z\",\"action\":\"doi_lich\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Theo yêu cầu\",\"oldTime\":\"2025-11-18T17:12:00.000Z\",\"newTime\":\"2025-11-20T13:52\"}]}', '2025-11-18 23:43:00', '2025-11-19 13:52:12', '0', 0),
 (26, 7, 8, 3, 6, '2025-11-19 00:23:00', 'HoanThanh', 'ChoPheDuyet', NULL, NULL, NULL, 0, '{\"thoiGianBaoCao\":\"2025-11-19T06:37:28.455Z\",\"ketQua\":\"HoanThanh\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"Tiềm năng\",\"slaWarning\":null}', '2025-11-18 23:56:55', '2025-11-19 13:37:28', '0', 0),
-(29, 7, 8, 4, 5, '2025-11-21 00:41:00', 'HoanThanh', 'DaPheDuyet', NULL, '1234', '2025-11-19 15:26:25', 0, '\n[2025-11-19 06:34:36] Xác nhận bởi NVBH: \n[2025-11-18T23:40:04.640Z] Báo cáo kết quả:\n- Kết quả: HoanThanh\n- Khách hàng quan tâm: Có\n\n- Kế hoạch follow-up: Khả năng chốt: TrungBinh\n- Ghi chú: ha ha\n      \n[Phê duyệt bởi chủ dự án lúc 2025-11-19 15:26:25]', '2025-11-19 00:11:41', '2025-11-19 15:26:25', '0', 0);
+(29, 7, 8, 4, 5, '2025-11-21 00:41:00', 'HoanThanh', 'DaPheDuyet', NULL, '1234', '2025-11-19 15:26:25', 0, '\n[2025-11-19 06:34:36] Xác nhận bởi NVBH: \n[2025-11-18T23:40:04.640Z] Báo cáo kết quả:\n- Kết quả: HoanThanh\n- Khách hàng quan tâm: Có\n\n- Kế hoạch follow-up: Khả năng chốt: TrungBinh\n- Ghi chú: ha ha\n      \n[Phê duyệt bởi chủ dự án lúc 2025-11-19 15:26:25]', '2025-11-19 00:11:41', '2025-11-19 15:26:25', '0', 0),
+(33, 7, 8, 3, 6, '2025-11-28 11:10:00', 'ChoXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '', '2025-11-23 10:40:31', '2025-11-23 10:40:31', '', 1),
+(34, 7, 8, 6, 8, '2025-11-28 11:12:00', 'DaXacNhan', 'DaPheDuyet', NULL, 'Mật khẩu cổng là 6824', NULL, 0, '', '2025-11-23 10:43:07', '2025-11-23 10:43:07', '', 1),
+(35, 7, 8, 3, 6, '2025-11-25 04:28:00', 'DaXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-24T21:27:45.486Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"}]}', '2025-11-25 04:27:23', '2025-11-25 04:27:45', '', 1),
+(36, 7, 8, 4, 6, '2025-11-25 05:21:00', 'DaXacNhan', 'ChoPheDuyet', NULL, '', NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-24T22:20:29.023Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"\"}]}', '2025-11-25 05:20:14', '2025-11-25 05:20:29', '', 1),
+(37, 7, 8, 2, 4, '2025-11-25 00:11:47', 'DaXacNhan', 'DaPheDuyet', NULL, 'mật khẩu cổng là 1234', NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-25T00:11:47.237Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Khách hàng đồng ý xem phòng qua QR gợi ý. Cuộc hẹn được tạo tự động.\",\"qrCode\":\"hSsfpakwkB9v\",\"cuocHenGoc\":34}]}', '2025-11-25 07:11:47', '2025-11-25 07:11:47', 'Cuộc hẹn được tạo tự động từ QR gợi ý (hSsfpakwkB9v). Cuộc hẹn gốc: #34', 1),
+(38, 7, 8, 7, 9, '2025-11-25 07:18:50', 'HoanThanh', 'DaPheDuyet', NULL, 'mật khẩu cổng là 1234', NULL, 0, '{\"activities\":[{\"timestamp\":\"2025-11-25T00:18:49.705Z\",\"action\":\"xac_nhan\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Khách hàng đồng ý xem phòng qua QR gợi ý. Cuộc hẹn được tạo tự động.\",\"qrCode\":\"8k9MCoirCVmf\",\"cuocHenGoc\":36},{\"timestamp\":\"2025-11-25T00:20:04.073Z\",\"action\":\"bao_cao\",\"actor\":\"NVBH\",\"nhanVienId\":8,\"note\":\"Kết quả: thanh_cong\",\"ketQua\":\"thanh_cong\"}],\"thoiGianBaoCao\":\"2025-11-25T00:20:04.073Z\",\"ketQua\":\"thanh_cong\",\"khachQuanTam\":true,\"lyDoThatBai\":null,\"keHoachFollowUp\":\"Khả năng chốt: Cao\",\"ghiChu\":\"chắc chắn chốt\",\"slaWarning\":null}', '2025-11-25 07:18:49', '2025-11-25 07:20:04', 'Cuộc hẹn được tạo tự động từ QR gợi ý (8k9MCoirCVmf). Cuộc hẹn gốc: #36', 1),
+(39, 7, 8, 2, 4, '2025-11-25 09:27:00', 'DaXacNhan', 'DaPheDuyet', NULL, 'mật khẩu cổng là 1234', NULL, 0, '', '2025-11-25 08:58:07', '2025-11-25 08:58:07', '', 1);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `cuochoithoai`
+-- Table structure for table `cuochoithoai`
 --
 
 CREATE TABLE `cuochoithoai` (
@@ -333,7 +342,7 @@ CREATE TABLE `cuochoithoai` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `cuochoithoai`
+-- Dumping data for table `cuochoithoai`
 --
 
 INSERT INTO `cuochoithoai` (`CuocHoiThoaiID`, `NguCanhID`, `NguCanhLoai`, `TieuDe`, `ThoiDiemTinNhanCuoi`, `DangHoatDong`, `TaoLuc`, `CapNhatLuc`) VALUES
@@ -341,15 +350,14 @@ INSERT INTO `cuochoithoai` (`CuocHoiThoaiID`, `NguCanhID`, `NguCanhLoai`, `TieuD
 (202, 1, 'CuocHen', 'Cuộc hẹn xem phòng #1 - Nhà trọ Minh Tâm', '2025-11-04 04:05:27', 1, '2025-11-03 22:05:27', '2025-11-04 22:05:27'),
 (203, 1, 'HopDong', 'Hợp đồng thuê #1 - Nhà trọ Minh Tâm', '2025-11-04 22:51:51', 1, '2025-11-04 19:05:27', '2025-11-04 22:51:51'),
 (204, 17, 'TinDang', 'Tin đăng: Nhà Trọ Hoành Hợp - Hỗ trợ tư vấn', '2025-11-04 21:05:27', 1, '2025-11-04 17:05:27', '2025-11-04 22:05:27'),
-(219, 29, 'CuocHen', 'Cuộc hẹn #29 - 102', '2025-11-22 20:42:24', 1, '2025-11-19 00:16:56', '2025-11-22 20:42:24'),
+(219, 29, 'CuocHen', 'Cuộc hẹn #29 - 102', '2025-11-25 09:57:56', 1, '2025-11-19 00:16:56', '2025-11-25 09:57:56'),
 (220, 20, 'CuocHen', 'Cuộc hẹn #20 - Lam Ngoc Giang', NULL, 1, '2025-11-19 06:27:41', '2025-11-19 06:27:41'),
-(221, 21, 'CuocHen', 'Cuộc hẹn #21 - Lam Ngoc Giang', NULL, 1, '2025-11-19 13:42:47', '2025-11-19 13:42:47'),
-(224, 19, 'CuocHen', 'Cuộc hẹn #19 - Lam Ngoc Giang', NULL, 1, '2025-11-20 12:31:06', '2025-11-20 12:31:06');
+(221, 21, 'CuocHen', 'Cuộc hẹn #21 - Lam Ngoc Giang', NULL, 1, '2025-11-19 13:42:47', '2025-11-19 13:42:47');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `duan`
+-- Table structure for table `duan`
 --
 
 CREATE TABLE `duan` (
@@ -379,31 +387,31 @@ CREATE TABLE `duan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `duan`
+-- Dumping data for table `duan`
 --
 
 INSERT INTO `duan` (`DuAnID`, `TenDuAn`, `DiaChi`, `ViDo`, `KinhDo`, `ChuDuAnID`, `ChinhSachCocID`, `BangHoaHong`, `SoThangCocToiThieu`, `YeuCauPheDuyetChu`, `PhuongThucVao`, `TrangThai`, `LyDoNgungHoatDong`, `NguoiNgungHoatDongID`, `NgungHoatDongLuc`, `YeuCauMoLai`, `NoiDungGiaiTrinh`, `ThoiGianGuiYeuCau`, `NguoiXuLyYeuCauID`, `ThoiGianXuLyYeuCau`, `LyDoTuChoiMoLai`, `TaoLuc`, `CapNhatLuc`) VALUES
-(1, 'Dự án Test - Chung cư ABC', '123 Đường Test, Phường 1, Quận 1, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:45'),
-(2, 'Dự án Test - Nhà trọ XYZ', '456 Đường Test 2, Phường 2, Quận 2, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:41'),
-(3, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:38'),
-(4, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:36'),
-(5, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:32'),
-(6, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:29'),
-(7, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:25'),
-(8, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:24'),
-(9, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'LuuTru', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:19'),
-(10, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách đăng tin: Đăng tin giả mạo, thông tin sai lệch về dự án. Đã nhận 3 báo cáo từ khách hàng.', 4, '2025-09-27 14:36:46', NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:15'),
-(11, 'Dream House 1', '147 Đường số 59, Phường 15, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách thanh toán: Chủ dự án có hành vi lừa đảo, không hoàn tiền cọc cho khách hàng đúng hạn.', 5, '2025-09-27 14:36:52', 'DangXuLy', 'Tôi đã hoàn trả đầy đủ tiền cọc cho khách hàng. Xin cung cấp bằng chứng chuyển khoản đính kèm. Cam kết tuân thủ chính sách từ nay.', '2025-10-01 10:30:00', NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-20 12:25:12'),
-(12, 'Dream House 1', '147 Đường số 59, Phường Tân Tạo A, Quận Bình Tân, TP. Hồ Chí Minh', NULL, NULL, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm quy định an toàn: Dự án không đảm bảo PCCC, có nguy cơ an toàn cao sau kiểm tra của cơ quan chức năng.', 5, '2025-09-27 14:36:58', 'TuChoi', 'Dự án đã khắc phục toàn bộ vấn đề PCCC, có giấy phép từ Cảnh sát PCCC.', '2025-10-05 09:00:00', 5, '2025-10-08 14:30:00', 'Giấy phép PCCC chưa đủ điều kiện theo quy định. Cần có chứng nhận từ UBND quận/huyện.', '2025-09-24 11:38:43', '2025-11-20 12:25:07'),
-(14, 'Nhà trọ Minh Tâm', '40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8379251, 106.6581163, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 0, 'mật khẩu cổng là 1234', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-01 16:17:33', '2025-11-20 12:25:04'),
-(15, 'Nhà Trọ Cheap Avocado', '27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng', 16.0626020, 108.1760841, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-03 21:00:41', '2025-11-20 12:25:00'),
-(16, 'Nhà trọ Hải Hương', '15 Hà Huy Tập, Thị trấn Chợ Lầu, Huyện Bắc Bình, Bình Thuận', 11.2239833, 108.5011375, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-04 03:02:48', '2025-11-20 12:24:58'),
+(1, 'Dự án Test - Chung cư ABC', '123 Đường Test, Phường 1, Quận 1, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:03:57'),
+(2, 'Dự án Test - Nhà trọ XYZ', '456 Đường Test 2, Phường 2, Quận 2, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:10'),
+(3, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:14'),
+(4, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:18'),
+(5, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:21'),
+(6, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:25'),
+(7, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:28'),
+(8, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-19 14:59:18'),
+(9, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'LuuTru', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:31'),
+(10, 'Dream House 1', '147 Đường số 59, Phường 14, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách đăng tin: Đăng tin giả mạo, thông tin sai lệch về dự án. Đã nhận 3 báo cáo từ khách hàng.', 4, '2025-09-27 14:36:46', NULL, NULL, NULL, NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:34'),
+(11, 'Dream House 1', '147 Đường số 59, Phường 15, Quận Gò Vấp, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm chính sách thanh toán: Chủ dự án có hành vi lừa đảo, không hoàn tiền cọc cho khách hàng đúng hạn.', 5, '2025-09-27 14:36:52', 'DangXuLy', 'Tôi đã hoàn trả đầy đủ tiền cọc cho khách hàng. Xin cung cấp bằng chứng chuyển khoản đính kèm. Cam kết tuân thủ chính sách từ nay.', '2025-10-01 10:30:00', NULL, NULL, NULL, '2025-09-24 11:38:43', '2025-11-06 12:04:38'),
+(12, 'Dream House 1', '147 Đường số 59, Phường Tân Tạo A, Quận Bình Tân, TP. Hồ Chí Minh', NULL, NULL, 1, 1, NULL, NULL, 0, NULL, 'NgungHoatDong', 'Vi phạm quy định an toàn: Dự án không đảm bảo PCCC, có nguy cơ an toàn cao sau kiểm tra của cơ quan chức năng.', 5, '2025-09-27 14:36:58', 'TuChoi', 'Dự án đã khắc phục toàn bộ vấn đề PCCC, có giấy phép từ Cảnh sát PCCC.', '2025-10-05 09:00:00', 5, '2025-10-08 14:30:00', 'Giấy phép PCCC chưa đủ điều kiện theo quy định. Cần có chứng nhận từ UBND quận/huyện.', '2025-09-24 11:38:43', '2025-11-06 12:04:40'),
+(14, 'Nhà trọ Minh Tâm', '40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8379251, 106.6581163, 1, 1, NULL, NULL, 0, 'mật khẩu cổng là 1234', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-01 16:17:33', '2025-11-06 12:04:43'),
+(15, 'Nhà Trọ Cheap Avocado', '27 Nguyễn Như Hạnh, Phường Hòa Minh, Quận Liên Chiểu, Đà Nẵng', 16.0626020, 108.1760841, 1, 1, NULL, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-03 21:00:41', '2025-11-06 12:04:46'),
+(16, 'Nhà trọ Hải Hương', '15 Hà Huy Tập, Thị trấn Chợ Lầu, Huyện Bắc Bình, Bình Thuận', 11.2239833, 108.5011375, 1, 1, NULL, NULL, 1, NULL, 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-04 03:02:48', '2025-11-06 12:04:49'),
 (17, 'Nhà Trọ Hoành Hợp', '350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh', 10.8385462, 106.6744701, 1, 1, '[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}]', 1, 0, 'Mật khẩu cổng là 6824', 'HoatDong', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-10-05 17:05:39', '2025-11-19 15:09:04');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `giaodich`
+-- Table structure for table `giaodich`
 --
 
 CREATE TABLE `giaodich` (
@@ -423,7 +431,7 @@ CREATE TABLE `giaodich` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Bẫy `giaodich`
+-- Triggers `giaodich`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_validate_ledger_on_giaodich` AFTER UPDATE ON `giaodich` FOR EACH ROW BEGIN
@@ -452,7 +460,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hopdong`
+-- Table structure for table `hopdong`
 --
 
 CREATE TABLE `hopdong` (
@@ -465,13 +473,14 @@ CREATE TABLE `hopdong` (
   `BaoCaoLuc` datetime DEFAULT NULL,
   `MauHopDongID` int(11) DEFAULT NULL,
   `NoiDungSnapshot` text DEFAULT NULL,
-  `FileScanPath` varchar(500) DEFAULT NULL COMMENT 'Đường dẫn file scan hợp đồng (PDF/Image)'
+  `FileScanPath` varchar(500) DEFAULT NULL COMMENT 'Đường dẫn file scan hợp đồng (PDF/Image)',
+  `noidunghopdong` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `hosonhanvien`
+-- Table structure for table `hosonhanvien`
 --
 
 CREATE TABLE `hosonhanvien` (
@@ -487,16 +496,17 @@ CREATE TABLE `hosonhanvien` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `hosonhanvien`
+-- Dumping data for table `hosonhanvien`
 --
 
 INSERT INTO `hosonhanvien` (`HoSoID`, `NguoiDungID`, `MaNhanVien`, `KhuVucChinhID`, `KhuVucPhuTrachID`, `TyLeHoaHong`, `NgayBatDau`, `NgayKetThuc`, `GhiChu`) VALUES
-(7, 8, 'NV0001', 62, NULL, 10.00, '2025-11-17', NULL, NULL);
+(7, 8, 'NV0001', 62, 720, 10.00, '2025-11-17', NULL, NULL),
+(9, 9, 'NV002', 62, 720, 10.00, '2025-11-23', '0000-00-00', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `khuvuc`
+-- Table structure for table `khuvuc`
 --
 
 CREATE TABLE `khuvuc` (
@@ -508,7 +518,7 @@ CREATE TABLE `khuvuc` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `khuvuc`
+-- Dumping data for table `khuvuc`
 --
 
 INSERT INTO `khuvuc` (`KhuVucID`, `TenKhuVuc`, `ParentKhuVucID`, `ViDo`, `KinhDo`) VALUES
@@ -3326,17 +3336,31 @@ CREATE TABLE `lichlamviec` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `lichlamviec`
+-- Dumping data for table `lichlamviec`
 --
 
 INSERT INTO `lichlamviec` (`LichID`, `NhanVienBanHangID`, `BatDau`, `KetThuc`) VALUES
-(11, 8, '2025-11-18 07:00:00', '2025-11-18 15:00:00'),
-(14, 8, '2025-11-21 12:00:00', '2025-11-21 20:00:00');
+(11, 8, '2025-11-18 07:00:00', '2025-11-18 15:00:00');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `mauhopdong`
+-- Table structure for table `lich_su_vi`
+--
+
+CREATE TABLE `lich_su_vi` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `ma_giao_dich` varchar(50) NOT NULL,
+  `so_tien` decimal(18,2) NOT NULL,
+  `trang_thai` enum('THANH_CONG','CHO_XU_LY') NOT NULL DEFAULT 'CHO_XU_LY',
+  `thoi_gian` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `mauhopdong`
 --
 
 CREATE TABLE `mauhopdong` (
@@ -3354,7 +3378,7 @@ CREATE TABLE `mauhopdong` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `nguoidung`
+-- Table structure for table `nguoidung`
 --
 
 CREATE TABLE `nguoidung` (
@@ -3379,7 +3403,7 @@ CREATE TABLE `nguoidung` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `nguoidung`
+-- Dumping data for table `nguoidung`
 --
 
 INSERT INTO `nguoidung` (`NguoiDungID`, `TenDayDu`, `Email`, `VaiTroHoatDongID`, `SoDienThoai`, `MatKhauHash`, `TrangThai`, `TrangThaiXacMinh`, `NgaySinh`, `DiaChi`, `SoCCCD`, `NgayCapCCCD`, `NoiCapCCCD`, `AnhCCCDMatTruoc`, `AnhCCCDMatSau`, `AnhSelfie`, `TaoLuc`, `CapNhatLuc`) VALUES
@@ -3397,7 +3421,7 @@ INSERT INTO `nguoidung` (`NguoiDungID`, `TenDayDu`, `Email`, `VaiTroHoatDongID`,
 (229, 'Võ Hoành Chung', 'dieuhanh1@gmail.com', 1, '0349195618', 'c4ca4238a0b923820dcc509a6f75849b', 'HoatDong', 'ChuaXacMinh', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, '2025-11-19 15:36:35', '2025-11-19 15:36:35');
 
 --
--- Bẫy `nguoidung`
+-- Triggers `nguoidung`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_sync_nguoidung_vaitro_on_insert` AFTER INSERT ON `nguoidung` FOR EACH ROW BEGIN
@@ -3430,7 +3454,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `nguoidung_vaitro`
+-- Table structure for table `nguoidung_vaitro`
 --
 
 CREATE TABLE `nguoidung_vaitro` (
@@ -3439,7 +3463,7 @@ CREATE TABLE `nguoidung_vaitro` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `nguoidung_vaitro`
+-- Dumping data for table `nguoidung_vaitro`
 --
 
 INSERT INTO `nguoidung_vaitro` (`NguoiDungID`, `VaiTroID`) VALUES
@@ -3474,7 +3498,7 @@ CREATE TABLE `nhatkyhethong` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `nhatkyhethong`
+-- Dumping data for table `nhatkyhethong`
 --
 
 INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
@@ -3566,25 +3590,25 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (86, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:25:02.215', NULL),
 (87, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:25:34.278', NULL),
 (88, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:32:38.586', NULL),
-(89, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":350000,\"GiaNuoc\":2000000,\"GiaDichVu\":15000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:33:49.406', NULL),
-(90, 1, 'gui_duyet_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":350000,\"GiaNuoc\":2000000,\"GiaDichVu\":15000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:37:25.671', NULL),
+(89, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":350000,\"GiaNuoc\":2000000,\"GiaDichVu\":15000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:33:49.406', NULL),
+(90, 1, 'gui_duyet_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":350000,\"GiaNuoc\":2000000,\"GiaDichVu\":15000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:37:25.671', NULL),
 (91, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:40:17.837', NULL),
-(92, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":35000000,\"GiaNuoc\":200000000,\"GiaDichVu\":1500000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:40:25.092', NULL),
+(92, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":35000000,\"GiaNuoc\":200000000,\"GiaDichVu\":1500000000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:40:25.092', NULL),
 (93, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:40:36.618', NULL),
 (94, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:41:22.279', NULL),
-(95, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:42:48.086', NULL),
+(95, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:42:48.086', NULL),
 (96, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:42:50.169', NULL),
 (97, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:04.265', NULL),
 (98, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:23.692', NULL),
-(99, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:44.128', NULL),
+(99, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:44.128', NULL),
 (100, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:45:46.233', NULL),
 (101, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 10:46:05.333', NULL),
 (102, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:00:09.030', NULL),
-(103, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:00:17.803', NULL),
+(103, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":350000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":400000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:00:17.803', NULL),
 (104, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:00:19.524', NULL),
 (105, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:02:48.434', NULL),
 (106, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:20.605', NULL),
-(107, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":3500000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":4000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"http://localhost:5000/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:30.663', NULL),
+(107, 1, 'luu_nhap_tin_dang', 'TinDang', '4', NULL, '{\"DuAnID\":14,\"TieuDe\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\",\"MoTa\":\"Chỉ cho nữ thuê\",\"Gia\":null,\"DienTich\":null,\"KhuVucID\":941,\"URL\":[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Bảo dưỡng + rác\",\"DiaChi\":\"40/6 Lê Văn Thọ\",\"ViDo\":10.8379251,\"KinhDo\":106.6581163,\"Phongs\":[{\"PhongID\":1,\"tenPhong\":\"006\",\"gia\":3500000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387245.jpg\"},{\"PhongID\":2,\"tenPhong\":\"1006\",\"gia\":4000000,\"dienTich\":25,\"ghiChu\":null,\"url\":\"/uploads/1759483387258.jpg\"}],\"PhongsDaXoa\":[],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:30.663', NULL),
 (108, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '4', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:32.368', NULL),
 (109, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '2', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:03:53.348', NULL),
 (110, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '2', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36 Edg/140.0.0.0', '2025-10-04 11:09:30.461', NULL),
@@ -3626,13 +3650,13 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (146, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:19:03.387', NULL),
 (147, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:20:03.357', NULL),
 (148, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:21:08.064', NULL),
-(149, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:22:33.216', NULL);
-INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
+(149, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:22:33.216', NULL),
 (150, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:23:33.419', NULL),
 (151, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:24:33.411', NULL),
 (152, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:25:33.487', NULL),
 (153, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:26:33.458', NULL),
-(154, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:27:33.118', NULL),
+(154, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:27:33.118', NULL);
+INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
 (155, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:28:38.981', NULL),
 (156, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:30:07.090', NULL),
 (157, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-07\",\"denNgay\":\"2025-10-07\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-08 01:31:33.418', NULL),
@@ -3698,18 +3722,18 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (217, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:43:35.347', NULL),
 (218, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:43:39.799', NULL),
 (219, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:01.145', NULL),
-(220, 1, 'gui_duyet_tin_dang', 'TinDang', '7', NULL, '{\"DuAnID\":16,\"TieuDe\":\"Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng\",\"MoTa\":\"Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.\",\"KhuVucID\":1751,\"URL\":[\"http://localhost:5000/uploads/1759523405890.jpg\",\"http://localhost:5000/uploads/1759523405900.jpg\",\"http://localhost:5000/uploads/1759523405909.jpg\",\"http://localhost:5000/uploads/1759523405923.jpg\",\"http://localhost:5000/uploads/1759523405939.jpg\",\"http://localhost:5000/uploads/1759523405943.jpg\"],\"TienIch\":[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy\",\"DiaChi\":\"15 Hà Huy Tập\",\"ViDo\":11.2239833,\"KinhDo\":108.5011375,\"PhongIDs\":[{\"PhongID\":8,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":\"/uploads/1760107455301.jpg\",\"ThuTuHienThi\":0}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:15.414', NULL),
+(220, 1, 'gui_duyet_tin_dang', 'TinDang', '7', NULL, '{\"DuAnID\":16,\"TieuDe\":\"Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng\",\"MoTa\":\"Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.\",\"KhuVucID\":1751,\"URL\":[\"/uploads/1759523405890.jpg\",\"/uploads/1759523405900.jpg\",\"/uploads/1759523405909.jpg\",\"/uploads/1759523405923.jpg\",\"/uploads/1759523405939.jpg\",\"/uploads/1759523405943.jpg\"],\"TienIch\":[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy\",\"DiaChi\":\"15 Hà Huy Tập\",\"ViDo\":11.2239833,\"KinhDo\":108.5011375,\"PhongIDs\":[{\"PhongID\":8,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":\"/uploads/1760107455301.jpg\",\"ThuTuHienThi\":0}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:15.414', NULL),
 (221, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:24.197', NULL),
 (222, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:35.780', NULL),
-(223, 1, 'gui_duyet_tin_dang', 'TinDang', '5', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ nhận nữ\",\"KhuVucID\":1689,\"URL\":[\"http://localhost:5000/uploads/1759500198783.jpg\",\"http://localhost:5000/uploads/1759500198803.jpg\",\"http://localhost:5000/uploads/1759500198838.jpg\",\"http://localhost:5000/uploads/1759500198843.jpg\",\"http://localhost:5000/uploads/1759500198858.jpg\",\"http://localhost:5000/uploads/1759500198873.jpg\",\"http://localhost:5000/uploads/1759500198896.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":4,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:52.565', NULL),
+(223, 1, 'gui_duyet_tin_dang', 'TinDang', '5', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ nhận nữ\",\"KhuVucID\":1689,\"URL\":[\"/uploads/1759500198783.jpg\",\"/uploads/1759500198803.jpg\",\"/uploads/1759500198838.jpg\",\"/uploads/1759500198843.jpg\",\"/uploads/1759500198858.jpg\",\"/uploads/1759500198873.jpg\",\"/uploads/1759500198896.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":4,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:44:52.565', NULL),
 (224, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-10\",\"denNgay\":\"2025-10-10\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:46:05.575', NULL),
 (225, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:47:18.433', NULL),
-(226, 1, 'gui_duyet_tin_dang', 'TinDang', '7', NULL, '{\"DuAnID\":16,\"TieuDe\":\"Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng\",\"MoTa\":\"Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.\",\"KhuVucID\":1751,\"URL\":[\"http://localhost:5000/uploads/1759523405890.jpg\",\"http://localhost:5000/uploads/1759523405900.jpg\",\"http://localhost:5000/uploads/1759523405909.jpg\",\"http://localhost:5000/uploads/1759523405923.jpg\",\"http://localhost:5000/uploads/1759523405939.jpg\",\"http://localhost:5000/uploads/1759523405943.jpg\"],\"TienIch\":[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy\",\"DiaChi\":\"15 Hà Huy Tập\",\"ViDo\":11.2239833,\"KinhDo\":108.5011375,\"PhongIDs\":[{\"PhongID\":8,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":\"/uploads/1760107658795.jpg\",\"ThuTuHienThi\":0}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:47:38.881', NULL),
+(226, 1, 'gui_duyet_tin_dang', 'TinDang', '7', NULL, '{\"DuAnID\":16,\"TieuDe\":\"Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng\",\"MoTa\":\"Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.\",\"KhuVucID\":1751,\"URL\":[\"/uploads/1759523405890.jpg\",\"/uploads/1759523405900.jpg\",\"/uploads/1759523405909.jpg\",\"/uploads/1759523405923.jpg\",\"/uploads/1759523405939.jpg\",\"/uploads/1759523405943.jpg\"],\"TienIch\":[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":150000,\"MoTaGiaDichVu\":\"Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy\",\"DiaChi\":\"15 Hà Huy Tập\",\"ViDo\":11.2239833,\"KinhDo\":108.5011375,\"PhongIDs\":[{\"PhongID\":8,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":\"/uploads/1760107658795.jpg\",\"ThuTuHienThi\":0}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:47:38.881', NULL),
 (227, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '7', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-10 21:47:44.710', NULL),
 (228, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-10\",\"denNgay\":\"2025-10-10\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:01:43.595', NULL),
 (229, 1, 'chu_du_an_xem_bao_cao', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"HieuSuat\",\"tuNgay\":\"2025-09-10\",\"denNgay\":\"2025-10-10\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:01:47.011', NULL),
 (230, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:04.938', NULL),
-(231, 1, 'luu_nhap_tin_dang', 'TinDang', '5', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ nhận nữ\",\"KhuVucID\":1689,\"URL\":[\"http://localhost:5000/uploads/1759500198783.jpg\",\"http://localhost:5000/uploads/1759500198803.jpg\",\"http://localhost:5000/uploads/1759500198838.jpg\",\"http://localhost:5000/uploads/1759500198843.jpg\",\"http://localhost:5000/uploads/1759500198858.jpg\",\"http://localhost:5000/uploads/1759500198873.jpg\",\"http://localhost:5000/uploads/1759500198896.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":4,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:20.075', NULL),
+(231, 1, 'luu_nhap_tin_dang', 'TinDang', '5', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ nhận nữ\",\"KhuVucID\":1689,\"URL\":[\"/uploads/1759500198783.jpg\",\"/uploads/1759500198803.jpg\",\"/uploads/1759500198838.jpg\",\"/uploads/1759500198843.jpg\",\"/uploads/1759500198858.jpg\",\"/uploads/1759500198873.jpg\",\"/uploads/1759500198896.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3000,\"GiaNuoc\":18000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":4,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"save_draft\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:20.075', NULL),
 (232, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:21.557', NULL),
 (233, 1, 'gui_tin_dang_de_duyet', 'TinDang', '5', '{\"trangThai\":\"Nhap\"}', '{\"trangThai\":\"ChoDuyet\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:03:30.335', NULL),
 (234, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0', '2025-10-11 00:16:09.842', NULL),
@@ -3793,8 +3817,7 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (358, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '20', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:18:09.323', NULL),
 (359, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '21', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:18:15.955', NULL),
 (360, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '5', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:38:26.720', NULL),
-(361, 7, 'tao_cuoc_hen', 'CuocHen', '25', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-19 00:12:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:43:00.103', NULL);
-INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
+(361, 7, 'tao_cuoc_hen', 'CuocHen', '25', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-19 00:12:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:43:00.103', NULL),
 (362, 7, 'tao_cuoc_hen', 'CuocHen', '26', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-19 00:23:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-18 23:56:55.927', NULL),
 (363, 7, 'tao_cuoc_hen', 'CuocHen', '27', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-20 00:32:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 00:02:48.416', NULL),
 (364, 7, 'tao_cuoc_hen', 'CuocHen', '28', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-21 00:42:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 00:08:31.217', NULL),
@@ -3804,7 +3827,8 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (368, 1, 'gui_tin_nhan_socket', 'tinnhan', '2069', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:40:30.589', NULL),
 (369, 8, 'gui_tin_nhan_socket', 'tinnhan', '2070', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:41:12.545', NULL),
 (370, 1, 'gui_tin_nhan_socket', 'tinnhan', '2071', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:43:26.806', NULL),
-(371, 8, 'gui_tin_nhan_socket', 'tinnhan', '2072', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:43:34.253', NULL),
+(371, 8, 'gui_tin_nhan_socket', 'tinnhan', '2072', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:43:34.253', NULL);
+INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
 (372, 1, 'gui_tin_nhan_socket', 'tinnhan', '2073', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:54:58.288', NULL),
 (373, 1, 'gui_tin_nhan_socket', 'tinnhan', '2074', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-19 00:58:04.980', NULL),
 (374, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-20\",\"denNgay\":\"2025-11-19\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 00:59:58.126', NULL),
@@ -3865,7 +3889,7 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (429, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '22', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-19 14:13:56.773', NULL),
 (430, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:44:44.540', NULL),
 (431, 1, 'xem_tin_dang_de_chinh_sua', 'TinDang', '6', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:48:51.666', NULL),
-(432, 1, 'gui_duyet_tin_dang', 'TinDang', '6', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ cho nam thuê\",\"KhuVucID\":1689,\"URL\":[\"http://localhost:5000/uploads/1759501859354.jpg\",\"http://localhost:5000/uploads/1759501859374.jpg\",\"http://localhost:5000/uploads/1759501859408.jpg\",\"http://localhost:5000/uploads/1759501859434.jpg\",\"http://localhost:5000/uploads/1759501859459.jpg\",\"http://localhost:5000/uploads/1759501859470.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Tiền điện + nước sinh hoạt chung\\nRác\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":4,\"GiaTinDang\":10000,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:49:08.769', NULL),
+(432, 1, 'gui_duyet_tin_dang', 'TinDang', '6', NULL, '{\"DuAnID\":15,\"TieuDe\":\"Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên\",\"MoTa\":\"Chỉ cho nam thuê\",\"KhuVucID\":1689,\"URL\":[\"/uploads/1759501859354.jpg\",\"/uploads/1759501859374.jpg\",\"/uploads/1759501859408.jpg\",\"/uploads/1759501859434.jpg\",\"/uploads/1759501859459.jpg\",\"/uploads/1759501859470.jpg\"],\"TienIch\":[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"],\"GiaDien\":3500,\"GiaNuoc\":20000,\"GiaDichVu\":200000,\"MoTaGiaDichVu\":\"Tiền điện + nước sinh hoạt chung\\nRác\",\"DiaChi\":\"27 Nguyễn Như Hạnh\",\"ViDo\":16.062602,\"KinhDo\":108.1760841,\"PhongIDs\":[{\"PhongID\":3,\"GiaTinDang\":null,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":0},{\"PhongID\":4,\"GiaTinDang\":10000,\"DienTichTinDang\":null,\"MoTaTinDang\":null,\"HinhAnhTinDang\":null,\"ThuTuHienThi\":1}],\"action\":\"send_review\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:49:08.769', NULL),
 (433, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 14:58:49.523', NULL),
 (434, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:00:44.392', NULL),
 (435, 1, 'cap_nhat_du_an', 'DuAn', '17', NULL, '{\"TenDuAn\":\"Nhà Trọ Hoành Hợp\",\"DiaChi\":\"350 Nguyễn Văn Lượng, Phường 16, Quận Gò Vấp, TP. Hồ Chí Minh\",\"YeuCauPheDuyetChu\":0,\"PhuongThucVao\":\"Mật khẩu cổng là 6824\",\"TrangThai\":\"HoatDong\",\"BangHoaHong\":[{\"soThang\":6,\"tyLe\":30},{\"soThang\":12,\"tyLe\":70}],\"SoThangCocToiThieu\":1}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-19 15:02:55.691', NULL),
@@ -3900,12 +3924,162 @@ INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, 
 (464, 1, 'gui_tin_nhan_socket', 'tinnhan', '2086', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:41:59.976', NULL),
 (465, 8, 'gui_tin_nhan_socket', 'tinnhan', '2087', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-22 20:42:24.916', NULL),
 (466, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-23\",\"denNgay\":\"2025-11-22\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-22 20:47:59.042', NULL),
-(467, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-23\",\"denNgay\":\"2025-11-22\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-22 20:52:40.965', NULL);
+(467, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-23\",\"denNgay\":\"2025-11-22\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-22 20:52:40.965', NULL),
+(468, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-23\",\"denNgay\":\"2025-11-22\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-22 23:02:52.049', NULL),
+(469, 7, 'tao_cuoc_hen', 'CuocHen', '33', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-28 11:10:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:40:31.587', NULL),
+(470, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '33', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:40:49.507', NULL),
+(471, 7, 'tao_cuoc_hen', 'CuocHen', '34', NULL, '{\"PhongID\":6,\"ThoiGianHen\":\"2025-11-28 11:12:00\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:43:07.285', NULL),
+(472, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-24\",\"denNgay\":\"2025-11-23\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:45:18.265', NULL),
+(473, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-24\",\"denNgay\":\"2025-11-23\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-23 10:47:34.130', NULL),
+(474, 7, 'tao_cuoc_hen', 'CuocHen', '35', NULL, '{\"PhongID\":3,\"ThoiGianHen\":\"2025-11-25 04:28:00\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36', '2025-11-25 04:27:23.367', NULL),
+(475, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '35', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:27:45.498', NULL),
+(476, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:27:47.878', NULL),
+(477, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:33:55.780', NULL),
+(478, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:35:12.445', NULL),
+(479, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:39:13.137', NULL),
+(480, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:39:46.106', NULL),
+(481, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:40:04.021', NULL),
+(482, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:43:17.949', NULL),
+(483, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:43:53.063', NULL),
+(484, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:45:00.159', NULL),
+(485, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:45:15.993', NULL),
+(486, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:48:49.834', NULL),
+(487, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:51:21.219', NULL),
+(488, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:51:23.814', NULL),
+(489, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:53:42.675', NULL),
+(490, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 04:57:31.202', NULL),
+(491, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:04:25.026', NULL),
+(492, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:05:46.068', NULL),
+(493, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:07:23.280', NULL),
+(494, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:10:54.169', NULL),
+(495, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:12:48.335', NULL),
+(496, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:13:31.238', NULL),
+(497, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:14:05.011', NULL),
+(498, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:14:05.585', NULL),
+(499, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:15:37.160', NULL),
+(500, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:15:40.584', NULL),
+(501, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:15:52.708', NULL),
+(502, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:15:59.954', NULL),
+(503, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:16:14.710', NULL),
+(504, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:16:37.727', NULL),
+(505, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 05:17:01.160', NULL),
+(506, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '35', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:17:45.631', NULL),
+(507, 7, 'tao_cuoc_hen', 'CuocHen', '36', NULL, '{\"PhongID\":4,\"ThoiGianHen\":\"2025-11-25 05:21:00\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 05:20:14.766', NULL),
+(508, 8, 'xac_nhan_cuoc_hen', 'CuocHen', '36', '{\"trangThai\":\"ChoXacNhan\"}', '{\"trangThai\":\"DaXacNhan\",\"ghiChu\":\"\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:20:29.029', NULL),
+(509, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '36', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:20:31.872', NULL),
+(510, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '36', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 05:23:45.954', NULL),
+(511, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:02:46.921', NULL),
+(512, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:03:42.383', NULL),
+(513, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:07:05.967', NULL),
+(514, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:11:08.341', NULL),
+(515, 8, 'tao_cuoc_hen_tu_qr', 'CuocHen', '37', NULL, '{\"qrCode\":\"hSsfpakwkB9v\",\"cuocHenGoc\":34,\"tinDangId\":4,\"phongId\":2,\"khachHangID\":7}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 07:11:47.248', NULL),
+(516, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '36', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:18:12.156', NULL),
+(517, 8, 'tao_cuoc_hen_tu_qr', 'CuocHen', '38', NULL, '{\"qrCode\":\"8k9MCoirCVmf\",\"cuocHenGoc\":36,\"tinDangId\":9,\"phongId\":7,\"khachHangID\":7}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 07:18:49.716', NULL),
+(518, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:19:07.539', NULL),
+(519, 8, 'bao_cao_ket_qua_cuoc_hen', 'CuocHen', '38', NULL, '{\"ketQua\":\"thanh_cong\",\"khachQuanTam\":true,\"slaWarning\":false}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:20:04.080', NULL),
+(520, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:20:05.944', NULL),
+(521, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:22:52.495', NULL),
+(522, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:22:54.108', NULL),
+(523, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:23:01.905', NULL),
+(524, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:25:09.729', NULL),
+(525, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:26:42.407', NULL),
+(526, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:31:37.797', NULL),
+(527, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:32:15.315', NULL),
+(528, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:32:57.018', NULL),
+(529, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:34:42.454', NULL),
+(530, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:34:46.039', NULL),
+(531, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:35:03.468', NULL),
+(532, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:35:14.307', NULL),
+(533, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:35:33.348', NULL),
+(534, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:35:52.230', NULL),
+(535, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:36:27.301', NULL),
+(536, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:36:31.918', NULL),
+(537, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:36:39.653', NULL),
+(538, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:36:51.639', NULL),
+(539, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:37:07.955', NULL),
+(540, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:37:16.027', NULL),
+(541, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:38:22.310', NULL),
+(542, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:38:35.511', NULL),
+(543, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:41:48.918', NULL),
+(544, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:41:56.928', NULL),
+(545, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:41:57.832', NULL),
+(546, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:42:06.783', NULL),
+(547, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:43:17.299', NULL),
+(548, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:43:24.749', NULL),
+(549, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:43:31.996', NULL),
+(550, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:45:38.744', NULL),
+(551, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:45:52.967', NULL),
+(552, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:47:03.508', NULL),
+(553, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:47:15.914', NULL),
+(554, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:47:28.130', NULL),
+(555, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:48:31.038', NULL),
+(556, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:49:32.779', NULL),
+(557, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:49:36.884', NULL),
+(558, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:50:05.309', NULL),
+(559, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:50:26.137', NULL),
+(560, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:50:37.269', NULL),
+(561, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:51:53.958', NULL),
+(562, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:51:54.517', NULL),
+(563, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:52:09.132', NULL),
+(564, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:52:12.010', NULL),
+(565, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:52:29.671', NULL),
+(566, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:52:56.424', NULL),
+(567, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:53:41.661', NULL);
+INSERT INTO `nhatkyhethong` (`NhatKyID`, `NguoiDungID`, `HanhDong`, `DoiTuong`, `DoiTuongID`, `GiaTriTruoc`, `GiaTriSau`, `DiaChiIP`, `TrinhDuyet`, `ThoiGian`, `ChuKy`) VALUES
+(568, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:53:42.795', NULL),
+(569, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:00.954', NULL),
+(570, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:05.588', NULL),
+(571, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:08.802', NULL),
+(572, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:41.682', NULL),
+(573, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:54:51.826', NULL),
+(574, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:57:50.569', NULL),
+(575, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:58:18.059', NULL),
+(576, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:58:40.888', NULL),
+(577, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:58:41.574', NULL),
+(578, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:58:59.405', NULL),
+(579, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:59:29.788', NULL),
+(580, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '38', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 07:59:33.675', NULL),
+(581, 1, 'gui_tin_nhan_socket', 'tinnhan', '2088', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:34:18.782', NULL),
+(582, 1, 'gui_tin_nhan_socket', 'tinnhan', '2089', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:34:26.118', NULL),
+(583, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-26\",\"denNgay\":\"2025-11-25\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 08:36:08.424', NULL),
+(584, 1, 'gui_tin_nhan_socket', 'tinnhan', '2090', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:41:18.801', NULL),
+(585, 1, 'gui_tin_nhan_socket', 'tinnhan', '2091', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:42:27.157', NULL),
+(586, 1, 'gui_tin_nhan_socket', 'tinnhan', '2092', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:43:46.394', NULL),
+(587, 1, 'gui_tin_nhan_socket', 'tinnhan', '2093', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:43:59.723', NULL),
+(588, 1, 'gui_tin_nhan_socket', 'tinnhan', '2094', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:45:50.337', NULL),
+(589, 1, 'gui_tin_nhan_socket', 'tinnhan', '2095', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:45:56.917', NULL),
+(590, 1, 'gui_tin_nhan_socket', 'tinnhan', '2096', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:51:22.164', NULL),
+(591, 1, 'gui_tin_nhan_socket', 'tinnhan', '2097', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:51:32.941', NULL),
+(592, 1, 'gui_tin_nhan_socket', 'tinnhan', '2098', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:52:19.381', NULL),
+(593, 1, 'gui_tin_nhan_socket', 'tinnhan', '2099', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:52:23.737', NULL),
+(594, 1, 'gui_tin_nhan_socket', 'tinnhan', '2100', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:52:31.510', NULL),
+(595, 1, 'gui_tin_nhan_socket', 'tinnhan', '2101', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:52:42.463', NULL),
+(596, 1, 'gui_tin_nhan_socket', 'tinnhan', '2102', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:54:57.956', NULL),
+(597, 1, 'gui_tin_nhan_socket', 'tinnhan', '2103', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:55:04.292', NULL),
+(598, 1, 'gui_tin_nhan_socket', 'tinnhan', '2104', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:56:52.188', NULL),
+(599, 1, 'gui_tin_nhan_socket', 'tinnhan', '2105', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:57:01.517', NULL),
+(600, 1, 'gui_tin_nhan_socket', 'tinnhan', '2106', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 08:57:10.509', NULL),
+(601, 7, 'tao_cuoc_hen', 'CuocHen', '39', NULL, '{\"PhongID\":2,\"ThoiGianHen\":\"2025-11-25 09:27:00\"}', '::ffff:127.0.0.1', 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Mobile Safari/537.36', '2025-11-25 08:58:07.529', NULL),
+(602, 1, 'gui_tin_nhan_socket', 'tinnhan', '2107', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:05.782', NULL),
+(603, 1, 'gui_tin_nhan_socket', 'tinnhan', '2108', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:10.569', NULL),
+(604, 1, 'gui_tin_nhan_socket', 'tinnhan', '2109', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:20.704', NULL),
+(605, 8, 'gui_tin_nhan_socket', 'tinnhan', '2110', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:26.789', NULL),
+(606, 8, 'gui_tin_nhan_socket', 'tinnhan', '2111', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:36.984', NULL),
+(607, 8, 'gui_tin_nhan_socket', 'tinnhan', '2112', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:39.408', NULL),
+(608, 1, 'gui_tin_nhan_socket', 'tinnhan', '2113', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:00:55.379', NULL),
+(609, 1, 'gui_tin_nhan_socket', 'tinnhan', '2114', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:13.840', NULL),
+(610, 1, 'gui_tin_nhan_socket', 'tinnhan', '2115', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:20.102', NULL),
+(611, 1, 'gui_tin_nhan_socket', 'tinnhan', '2116', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:22.319', NULL),
+(612, 1, 'gui_tin_nhan_socket', 'tinnhan', '2117', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:40.175', NULL),
+(613, 1, 'gui_tin_nhan_socket', 'tinnhan', '2118', '\"{\\\"CuocHoiThoaiID\\\":219}\"', NULL, '', '', '2025-11-25 09:01:45.476', NULL),
+(614, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '39', NULL, NULL, '::ffff:127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 09:06:22.069', NULL),
+(615, 1, 'chu_du_an_xem_bao_cao_chi_tiet', 'BaoCao', NULL, NULL, '{\"loaiBaoCao\":\"ChiTiet\",\"tuNgay\":\"2025-10-26\",\"denNgay\":\"2025-11-25\"}', '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 17:12:58.220', NULL),
+(616, 8, 'xem_chi_tiet_cuoc_hen', 'CuocHen', '34', NULL, NULL, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0', '2025-11-25 17:14:11.731', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `noidunghethong`
+-- Table structure for table `noidunghethong`
 --
 
 CREATE TABLE `noidunghethong` (
@@ -3921,7 +4095,7 @@ CREATE TABLE `noidunghethong` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `phong`
+-- Table structure for table `phong`
 --
 
 CREATE TABLE `phong` (
@@ -3938,7 +4112,7 @@ CREATE TABLE `phong` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Bảng phòng Master - Thuộc Dự án (1 phòng vật lý = 1 bản ghi)';
 
 --
--- Đang đổ dữ liệu cho bảng `phong`
+-- Dumping data for table `phong`
 --
 
 INSERT INTO `phong` (`PhongID`, `DuAnID`, `TenPhong`, `TrangThai`, `GiaChuan`, `DienTichChuan`, `MoTaPhong`, `HinhAnhPhong`, `TaoLuc`, `CapNhatLuc`) VALUES
@@ -3954,7 +4128,7 @@ INSERT INTO `phong` (`PhongID`, `DuAnID`, `TenPhong`, `TrangThai`, `GiaChuan`, `
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `phong_tindang`
+-- Table structure for table `phong_tindang`
 --
 
 CREATE TABLE `phong_tindang` (
@@ -3970,7 +4144,7 @@ CREATE TABLE `phong_tindang` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Mapping N-N giữa Phòng và Tin đăng (lưu metadata riêng cho mỗi tin)';
 
 --
--- Đang đổ dữ liệu cho bảng `phong_tindang`
+-- Dumping data for table `phong_tindang`
 --
 
 INSERT INTO `phong_tindang` (`PhongTinDangID`, `PhongID`, `TinDangID`, `GiaTinDang`, `DienTichTinDang`, `MoTaTinDang`, `HinhAnhTinDang`, `ThuTuHienThi`, `TaoLuc`) VALUES
@@ -3988,7 +4162,7 @@ INSERT INTO `phong_tindang` (`PhongTinDangID`, `PhongID`, `TinDangID`, `GiaTinDa
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `quyen`
+-- Table structure for table `quyen`
 --
 
 CREATE TABLE `quyen` (
@@ -4000,7 +4174,7 @@ CREATE TABLE `quyen` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `thanhviencuochoithoai`
+-- Table structure for table `thanhviencuochoithoai`
 --
 
 CREATE TABLE `thanhviencuochoithoai` (
@@ -4011,7 +4185,7 @@ CREATE TABLE `thanhviencuochoithoai` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `thanhviencuochoithoai`
+-- Dumping data for table `thanhviencuochoithoai`
 --
 
 INSERT INTO `thanhviencuochoithoai` (`CuocHoiThoaiID`, `NguoiDungID`, `ThamGiaLuc`, `TinNhanCuoiDocLuc`) VALUES
@@ -4023,19 +4197,17 @@ INSERT INTO `thanhviencuochoithoai` (`CuocHoiThoaiID`, `NguoiDungID`, `ThamGiaLu
 (203, 201, '2025-11-04 19:05:27', '2025-11-04 22:05:27'),
 (204, 6, '2025-11-04 17:05:27', '2025-11-06 20:09:33'),
 (204, 203, '2025-11-04 17:05:27', '2025-11-04 21:55:27'),
-(219, 1, '2025-11-19 00:40:05', '2025-11-22 20:45:23'),
-(219, 8, '2025-11-19 00:16:56', '2025-11-22 20:44:28'),
+(219, 1, '2025-11-19 00:40:05', '2025-11-25 17:56:32'),
+(219, 8, '2025-11-19 00:16:56', '2025-11-25 17:13:59'),
 (220, 7, '2025-11-19 06:27:41', NULL),
 (220, 8, '2025-11-19 06:27:41', '2025-11-22 20:42:44'),
 (221, 7, '2025-11-19 13:42:47', NULL),
-(221, 8, '2025-11-19 13:42:47', '2025-11-19 13:44:38'),
-(224, 7, '2025-11-20 12:31:06', NULL),
-(224, 8, '2025-11-20 12:31:06', '2025-11-20 12:31:06');
+(221, 8, '2025-11-19 13:42:47', '2025-11-19 13:44:38');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `thongbao`
+-- Table structure for table `thongbao`
 --
 
 CREATE TABLE `thongbao` (
@@ -4051,10 +4223,51 @@ CREATE TABLE `thongbao` (
   `GuiLuc` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `thongbao`
+--
+
+INSERT INTO `thongbao` (`ThongBaoID`, `NguoiNhanID`, `Kenh`, `TieuDe`, `NoiDung`, `Payload`, `TrangThai`, `SoLanThu`, `TaoLuc`, `GuiLuc`) VALUES
+(1, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hello', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2088,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hello\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:34:18', '2025-11-25 08:34:18'),
+(2, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Em giai', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2089,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Em giai\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:34:26', '2025-11-25 08:34:26'),
+(3, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Alo', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2090,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Alo\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:41:18', '2025-11-25 08:41:18'),
+(4, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hello', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2091,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hello\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:42:27', '2025-11-25 08:42:27'),
+(5, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Em giai', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2092,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Em giai\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:43:46', '2025-11-25 08:43:46'),
+(6, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Sao k thấy tb nhỉ :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2093,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Sao k thấy tb nhỉ :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:43:59', '2025-11-25 08:43:59'),
+(7, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hello', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2094,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hello\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:45:50', '2025-11-25 08:45:50'),
+(8, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Tb như cc :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2095,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Tb như cc :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:45:56', '2025-11-25 08:45:56'),
+(9, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hihi', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2096,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hihi\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:51:22', '2025-11-25 08:51:22'),
+(10, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Mà vẫn k nghe', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2097,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Mà vẫn k nghe\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:51:32', '2025-11-25 08:51:32'),
+(11, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hú', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2098,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hú\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:52:19', '2025-11-25 08:52:19'),
+(12, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Test tb', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2099,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Test tb\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:52:23', '2025-11-25 08:52:23'),
+(13, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: 5 6 7', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2100,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"5 6 7\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:52:31', '2025-11-25 08:52:31'),
+(14, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: 1 2 3', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2101,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"1 2 3\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:52:42', '2025-11-25 08:52:42'),
+(15, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Tets lại', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2102,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Tets lại\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:54:57', '2025-11-25 08:54:57'),
+(16, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Vẫn k tb :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2103,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Vẫn k tb :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:55:04', '2025-11-25 08:55:04'),
+(17, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hehe', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2104,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hehe\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:56:52', '2025-11-25 08:56:52'),
+(18, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Tb đâu :)??', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2105,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Tb đâu :)??\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:57:01', '2025-11-25 08:57:01'),
+(19, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Tin nahwns k có tiêbsf à', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2106,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Tin nahwns k có tiêbsf à\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 08:57:10', '2025-11-25 08:57:10'),
+(20, 8, 'in-app', 'Cuộc hẹn mới được phân công', 'Bạn có cuộc hẹn mới với Lam Ngoc Giang vào 09:27:00 25/11/2025 tại 40/6 Lê Văn Thọ, Phường 11, Quận Gò Vấp, TP. Hồ Chí Minh', '{\"type\":\"cuoc_hen_moi\",\"CuocHenID\":39,\"ThoiGianHen\":\"2025-11-25T02:27:00.000Z\",\"TenKhachHang\":\"Lam Ngoc Giang\",\"TenPhong\":\"1006\",\"TieuDeTinDang\":\"Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10\"}', 'DaDoc', 0, '2025-11-25 08:58:07', '2025-11-25 08:58:07'),
+(21, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hennho', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2107,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hennho\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:00:05', '2025-11-25 09:00:05'),
+(22, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Vcl :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2108,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Vcl :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:00:10', '2025-11-25 09:00:10'),
+(23, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hài vãi :))', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2109,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hài vãi :))\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:00:20', '2025-11-25 09:00:20'),
+(24, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hú', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2113,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hú\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:00:55', '2025-11-25 09:00:55'),
+(25, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Hú', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2114,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Hú\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:13', '2025-11-25 09:01:13'),
+(26, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Nè', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2115,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Nè\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:20', '2025-11-25 09:01:20'),
+(27, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Nghe k', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2116,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Nghe k\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:22', '2025-11-25 09:01:22'),
+(28, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Nghe k', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2117,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Nghe k\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:40', '2025-11-25 09:01:40'),
+(29, 8, 'in-app', 'Tin nhắn mới', 'Nguyễn Văn Chủ Dự Án: Gần như real time', '{\"type\":\"tro_chuyen_moi\",\"CuocHoiThoaiID\":219,\"TinNhanID\":2118,\"NguoiGuiTen\":\"Nguyễn Văn Chủ Dự Án\",\"NoiDung\":\"Gần như real time\",\"NguCanhID\":29,\"NguCanhLoai\":\"CuocHen\"}', 'DaDoc', 0, '2025-11-25 09:01:45', '2025-11-25 09:01:45'),
+(30, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzODIxMzIwM30=\"}', 'DaDoc', 0, '2025-11-25 09:36:52', '2025-11-25 09:36:52'),
+(31, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzODY0NjAyNn0=\"}', 'DaDoc', 0, '2025-11-25 09:44:04', '2025-11-25 09:44:04'),
+(32, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzODY2NjMyOX0=\"}', 'DaDoc', 0, '2025-11-25 09:44:25', '2025-11-25 09:44:25'),
+(33, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzODY4NTI3Mn0=\"}', 'DaDoc', 0, '2025-11-25 09:44:44', '2025-11-25 09:44:44'),
+(34, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzOTM4MzY0NX0=\"}', 'DaDoc', 0, '2025-11-25 09:56:22', '2025-11-25 09:56:22'),
+(35, 8, 'in-app', 'Cuộc gọi video đến', 'Nguyễn Văn Chủ Dự Án đang gọi video cho bạn', '{\"type\":\"video_call\",\"CuocHoiThoaiID\":219,\"NguoiGoiID\":1,\"NguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"RoomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzOTQxNzY3OH0=\"}', 'DaDoc', 0, '2025-11-25 09:56:56', '2025-11-25 09:56:56');
+
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `thongketindang`
+-- Table structure for table `thongketindang`
 --
 
 CREATE TABLE `thongketindang` (
@@ -4071,7 +4284,7 @@ CREATE TABLE `thongketindang` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `tindang`
+-- Table structure for table `tindang`
 --
 
 CREATE TABLE `tindang` (
@@ -4096,22 +4309,22 @@ CREATE TABLE `tindang` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `tindang`
+-- Dumping data for table `tindang`
 --
 
 INSERT INTO `tindang` (`TinDangID`, `DuAnID`, `KhuVucID`, `ChinhSachCocID`, `TieuDe`, `URL`, `MoTa`, `TienIch`, `GiaDien`, `GiaNuoc`, `GiaDichVu`, `MoTaGiaDichVu`, `TrangThai`, `LyDoTuChoi`, `DuyetBoiNhanVienID`, `TaoLuc`, `CapNhatLuc`, `DuyetLuc`) VALUES
-(1, 5, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"http://localhost:5000/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Báo Cáo Phân Tích Chuyên Sâu: 3 Mô Hình Kinh Doanh Tối Ưu Cho Mặt Bằng Thị Trấn Bình Thuận\n\n\nLời Mở Đầu: Bối Cảnh và Phương Pháp Luận', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'Nhap', NULL, NULL, '2025-09-20 06:29:59', '2025-11-19 14:17:43', NULL),
-(2, 6, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"http://localhost:5000/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'vhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhv', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'LuuTru', 'Chủ dự án tự xóa', NULL, '2025-09-20 22:31:23', '2025-11-19 14:17:52', NULL),
-(3, 4, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"]', 'fdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsa', NULL, NULL, NULL, NULL, NULL, 'Nhap', NULL, NULL, '2025-09-20 22:32:57', '2025-11-19 14:18:14', NULL),
-(4, 14, 941, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"http://localhost:5000/uploads/1759483386941.jpg\",\"http://localhost:5000/uploads/1759483386953.jpg\",\"http://localhost:5000/uploads/1759483386973.jpg\",\"http://localhost:5000/uploads/1759483387011.jpg\",\"http://localhost:5000/uploads/1759483387065.jpg\",\"http://localhost:5000/uploads/1759483387091.jpg\",\"http://localhost:5000/uploads/1759483387125.jpg\",\"http://localhost:5000/uploads/1759483387180.jpg\"]', 'Chỉ cho nữ thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"]', 3500.00, 20000.00, 150000.00, 'Bảo dưỡng + rác', 'ChoDuyet', NULL, NULL, '2025-10-03 16:23:07', '2025-10-05 17:03:42', NULL),
-(5, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"http://localhost:5000/uploads/1759500198783.jpg\",\"http://localhost:5000/uploads/1759500198803.jpg\",\"http://localhost:5000/uploads/1759500198838.jpg\",\"http://localhost:5000/uploads/1759500198843.jpg\",\"http://localhost:5000/uploads/1759500198858.jpg\",\"http://localhost:5000/uploads/1759500198873.jpg\",\"http://localhost:5000/uploads/1759500198896.jpg\"]', 'Chỉ nhận nữ', '[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 18000.00, 200000.00, 'Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt', 'ChoDuyet', NULL, NULL, '2025-10-03 21:03:18', '2025-10-11 00:03:30', NULL),
-(6, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"http://localhost:5000/uploads/1759501859354.jpg\",\"http://localhost:5000/uploads/1759501859374.jpg\",\"http://localhost:5000/uploads/1759501859408.jpg\",\"http://localhost:5000/uploads/1759501859434.jpg\",\"http://localhost:5000/uploads/1759501859459.jpg\",\"http://localhost:5000/uploads/1759501859470.jpg\"]', 'Chỉ cho nam thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3500.00, 20000.00, 200000.00, 'Tiền điện + nước sinh hoạt chung\nRác', 'ChoDuyet', NULL, NULL, '2025-10-03 21:30:59', '2025-11-19 14:49:08', NULL),
-(7, 16, 1751, 1, 'Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng', '[\"http://localhost:5000/uploads/1759523405890.jpg\",\"http://localhost:5000/uploads/1759523405900.jpg\",\"http://localhost:5000/uploads/1759523405909.jpg\",\"http://localhost:5000/uploads/1759523405923.jpg\",\"http://localhost:5000/uploads/1759523405939.jpg\",\"http://localhost:5000/uploads/1759523405943.jpg\"]', 'Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"]', 3000.00, 18000.00, 150000.00, 'Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy', 'ChoDuyet', NULL, NULL, '2025-10-04 03:30:05', '2025-10-10 21:44:15', NULL),
-(8, 17, 946, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"http://localhost:5000/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Miễn Phí 2 tuần đầu dọn vào', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 20000.00, 150000.00, 'Bao gồm phí giữ xe', 'ChoDuyet', NULL, NULL, '2025-10-05 17:07:37', '2025-11-19 14:16:49', NULL),
-(9, 14, 941, 1, 'Cuối tháng 10 trống duy nhất 1 căn 2 phòng ngủ cao cấp ở tối đa 4 người', '[\"http://localhost:5000/uploads/1760102566417.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566419.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566422.jpg\",\"/uploads/1760102566423.jpg\",\"/uploads/1760102566424.jpg\",\"/uploads/1760102566425.jpg\"]', '2 phòng ngủ full nội thất, có thang, khóa cửa vân tay, cách IUH 3,7km', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Bếp\",\"Chỗ để xe\",\"Giường\"]', 3500.00, 20000.00, 150000.00, 'Phí giữ xe + rác sinh hoạt + điện nước khu vực chung + bảo dưỡng nội thất', 'ChoDuyet', NULL, NULL, '2025-10-10 20:22:46', '2025-11-19 14:16:55', NULL);
+(1, 5, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Báo Cáo Phân Tích Chuyên Sâu: 3 Mô Hình Kinh Doanh Tối Ưu Cho Mặt Bằng Thị Trấn Bình Thuận\n\n\nLời Mở Đầu: Bối Cảnh và Phương Pháp Luận', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'Nhap', NULL, NULL, '2025-09-20 06:29:59', '2025-11-25 19:30:44', NULL),
+(2, 6, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'vhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhvvhụkjjjjjjjvjhkvjhv', '[\"Wifi\", \"Máy lạnh\", \"Nóng lạnh\", \"Giường\", \"Tủ quần áo\"]', 3500.00, 20000.00, 150000.00, 'Bao gồm: Thu gom rác, vệ sinh khu vực chung, bảo vệ 24/7, internet tốc độ cao', 'LuuTru', 'Chủ dự án tự xóa', NULL, '2025-09-20 22:31:23', '2025-11-25 19:30:44', NULL),
+(3, 4, 944, 1, 'Khuyến mãi cực sốc, Hợp đồng 6 tháng tặng ngay 500k', '[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"]', 'fdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsafdsa', NULL, NULL, NULL, NULL, NULL, 'Nhap', NULL, NULL, '2025-09-20 22:32:57', '2025-11-25 19:30:44', NULL),
+(4, 14, 941, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"/uploads/1759483386941.jpg\",\"/uploads/1759483386953.jpg\",\"/uploads/1759483386973.jpg\",\"/uploads/1759483387011.jpg\",\"/uploads/1759483387065.jpg\",\"/uploads/1759483387091.jpg\",\"/uploads/1759483387125.jpg\",\"/uploads/1759483387180.jpg\"]', 'Chỉ cho nữ thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\"]', 3500.00, 20000.00, 150000.00, 'Bảo dưỡng + rác', 'DaDuyet', NULL, NULL, '2025-10-03 16:23:07', '2025-11-25 19:30:44', NULL),
+(5, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"/uploads/1759500198783.jpg\",\"/uploads/1759500198803.jpg\",\"/uploads/1759500198838.jpg\",\"/uploads/1759500198843.jpg\",\"/uploads/1759500198858.jpg\",\"/uploads/1759500198873.jpg\",\"/uploads/1759500198896.jpg\"]', 'Chỉ nhận nữ', '[\"Wifi\",\"Máy lạnh\",\"Giường\",\"Tủ lạnh\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 18000.00, 200000.00, 'Bao gồm phí bảo dưỡng + giặt sấy + wifi + rác sinh hoạt', 'DaDuyet', NULL, NULL, '2025-10-03 21:03:18', '2025-11-25 19:30:44', NULL),
+(6, 15, 1689, 1, 'Phòng trọ cao cấp giá rẻ, Ưu đãi tốt cho sinh viên', '[\"/uploads/1759501859354.jpg\",\"/uploads/1759501859374.jpg\",\"/uploads/1759501859408.jpg\",\"/uploads/1759501859434.jpg\",\"/uploads/1759501859459.jpg\",\"/uploads/1759501859470.jpg\"]', 'Chỉ cho nam thuê', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3500.00, 20000.00, 200000.00, 'Tiền điện + nước sinh hoạt chung\nRác', 'DaDuyet', NULL, NULL, '2025-10-03 21:30:59', '2025-11-25 19:30:44', NULL),
+(7, 16, 1751, 1, 'Phòng trọ cho cán bộ công tác ngắn hạn dưới 3 tháng', '[\"/uploads/1759523405890.jpg\",\"/uploads/1759523405900.jpg\",\"/uploads/1759523405909.jpg\",\"/uploads/1759523405923.jpg\",\"/uploads/1759523405939.jpg\",\"/uploads/1759523405943.jpg\"]', 'Vì tính chất đặc thù của gia đình nên ưu tiên những hoàn cảnh trên. Mong mọi người cảm thông.', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Chỗ để xe\",\"Bếp\",\"Giường\"]', 3000.00, 18000.00, 150000.00, 'Phí điện, nước sinh hoạt chung + rác + wifi + giặt sấy', 'DaDuyet', NULL, NULL, '2025-10-04 03:30:05', '2025-11-25 19:30:44', NULL),
+(8, 17, 946, 1, 'Phòng trọ giá rẻ cho nữ thuê, tặng ngay 1tr khi dọn vào trong tháng 10', '[\"/uploads/1759658857045.jpg\",\"/uploads/1759658857116.jpg\",\"/uploads/1759658857163.jpg\",\"/uploads/1759658857213.jpg\"]', 'Miễn Phí 2 tuần đầu dọn vào', '[\"Wifi\",\"Máy lạnh\",\"Nóng lạnh\",\"Giường\",\"Tủ lạnh\",\"Máy giặt\",\"Bếp\",\"Chỗ để xe\"]', 3000.00, 20000.00, 150000.00, 'Bao gồm phí giữ xe', 'DaDuyet', NULL, NULL, '2025-10-05 17:07:37', '2025-11-25 19:30:44', NULL),
+(9, 14, 941, 1, 'Cuối tháng 10 trống duy nhất 1 căn 2 phòng ngủ cao cấp ở tối đa 4 người', '[\"/uploads/1760102566417.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566418.jpg\",\"/uploads/1760102566419.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566420.jpg\",\"/uploads/1760102566422.jpg\",\"/uploads/1760102566423.jpg\",\"/uploads/1760102566424.jpg\",\"/uploads/1760102566425.jpg\"]', '2 phòng ngủ full nội thất, có thang, khóa cửa vân tay, cách IUH 3,7km', '[\"Wifi\",\"Tủ lạnh\",\"Máy giặt\",\"Máy lạnh\",\"Nóng lạnh\",\"Bếp\",\"Chỗ để xe\",\"Giường\"]', 3500.00, 20000.00, 150000.00, 'Phí giữ xe + rác sinh hoạt + điện nước khu vực chung + bảo dưỡng nội thất', 'DaDuyet', NULL, NULL, '2025-10-10 20:22:46', '2025-11-25 19:30:44', NULL);
 
 --
--- Bẫy `tindang`
+-- Triggers `tindang`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_tindang_pre_publish` BEFORE UPDATE ON `tindang` FOR EACH ROW BEGIN
@@ -4147,7 +4360,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `tinnhan`
+-- Table structure for table `tinnhan`
 --
 
 CREATE TABLE `tinnhan` (
@@ -4160,7 +4373,7 @@ CREATE TABLE `tinnhan` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `tinnhan`
+-- Dumping data for table `tinnhan`
 --
 
 INSERT INTO `tinnhan` (`TinNhanID`, `CuocHoiThoaiID`, `NguoiGuiID`, `NoiDung`, `ThoiGian`, `DaXoa`) VALUES
@@ -4244,10 +4457,42 @@ INSERT INTO `tinnhan` (`TinNhanID`, `CuocHoiThoaiID`, `NguoiGuiID`, `NoiDung`, `
 (2084, 219, 8, 'con cac tao ne', '2025-11-22 20:41:52', 0),
 (2085, 219, 1, 'đm Chung', '2025-11-22 20:41:53', 0),
 (2086, 219, 1, 'Chung ngu vl', '2025-11-22 20:41:59', 0),
-(2087, 219, 8, 'nhung hop ngu hon', '2025-11-22 20:42:24', 0);
+(2087, 219, 8, 'nhung hop ngu hon', '2025-11-22 20:42:24', 0),
+(2088, 219, 1, 'Hello', '2025-11-25 08:34:18', 0),
+(2089, 219, 1, 'Em giai', '2025-11-25 08:34:26', 0),
+(2090, 219, 1, 'Alo', '2025-11-25 08:41:18', 0),
+(2091, 219, 1, 'Hello', '2025-11-25 08:42:27', 0),
+(2092, 219, 1, 'Em giai', '2025-11-25 08:43:46', 0),
+(2093, 219, 1, 'Sao k thấy tb nhỉ :))', '2025-11-25 08:43:59', 0),
+(2094, 219, 1, 'Hello', '2025-11-25 08:45:50', 0),
+(2095, 219, 1, 'Tb như cc :))', '2025-11-25 08:45:56', 0),
+(2096, 219, 1, 'Hihi', '2025-11-25 08:51:22', 0),
+(2097, 219, 1, 'Mà vẫn k nghe', '2025-11-25 08:51:32', 0),
+(2098, 219, 1, 'Hú', '2025-11-25 08:52:19', 0),
+(2099, 219, 1, 'Test tb', '2025-11-25 08:52:23', 0),
+(2100, 219, 1, '5 6 7', '2025-11-25 08:52:31', 0),
+(2101, 219, 1, '1 2 3', '2025-11-25 08:52:42', 0),
+(2102, 219, 1, 'Tets lại', '2025-11-25 08:54:57', 0),
+(2103, 219, 1, 'Vẫn k tb :))', '2025-11-25 08:55:04', 0),
+(2104, 219, 1, 'Hehe', '2025-11-25 08:56:52', 0),
+(2105, 219, 1, 'Tb đâu :)??', '2025-11-25 08:57:01', 0),
+(2106, 219, 1, 'Tin nahwns k có tiêbsf à', '2025-11-25 08:57:10', 0),
+(2107, 219, 1, 'Hennho', '2025-11-25 09:00:05', 0),
+(2108, 219, 1, 'Vcl :))', '2025-11-25 09:00:10', 0),
+(2109, 219, 1, 'Hài vãi :))', '2025-11-25 09:00:20', 0),
+(2110, 219, 8, 'vãi hài', '2025-11-25 09:00:26', 0),
+(2111, 219, 8, 'vãi hài', '2025-11-25 09:00:36', 0),
+(2112, 219, 8, 'hài vãi', '2025-11-25 09:00:39', 0),
+(2113, 219, 1, 'Hú', '2025-11-25 09:00:55', 0),
+(2114, 219, 1, 'Hú', '2025-11-25 09:01:13', 0),
+(2115, 219, 1, 'Nè', '2025-11-25 09:01:20', 0),
+(2116, 219, 1, 'Nghe k', '2025-11-25 09:01:22', 0),
+(2117, 219, 1, 'Nghe k', '2025-11-25 09:01:40', 0),
+(2118, 219, 1, 'Gần như real time', '2025-11-25 09:01:45', 0),
+(2119, 219, 8, '{\"type\":\"video_call_missed\",\"nguoiGoiID\":1,\"nguoiGoiTen\":\"Nguyễn Văn Chủ Dự Án\",\"timestamp\":\"2025-11-25T02:56:56.498Z\",\"roomUrl\":\"https://jbcalling.site/room/ZGFwaG9uZ3Ryb19jaGF0XzIxOQ?data=eyJ1c2VybmFtZSI6Ik5ndXnhu4VuIFbEg24gQ2jhu6cgROG7sSDDgW4iLCJ1c2VyaWQiOjEsInBhcnRuZXJfbmFtZSI6Ik5ndXnhu4VuIFbEg24gQsOhbiBIw6BuZyIsInRpbWVzdGFtcCI6MTc2NDAzOTQxNzY3OH0=\"}', '2025-11-25 09:57:56', 0);
 
 --
--- Bẫy `tinnhan`
+-- Triggers `tinnhan`
 --
 DELIMITER $$
 CREATE TRIGGER `trg_after_insert_tinnhan` AFTER INSERT ON `tinnhan` FOR EACH ROW BEGIN
@@ -4261,7 +4506,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `transactions`
+-- Table structure for table `transactions`
 --
 
 CREATE TABLE `transactions` (
@@ -4283,7 +4528,7 @@ CREATE TABLE `transactions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `transactions`
+-- Dumping data for table `transactions`
 --
 
 INSERT INTO `transactions` (`id`, `user_id`, `bank_name`, `account_number`, `amount_in`, `transaction_content`, `transaction_date`, `reference_number`, `sepay_id`, `bank_brand_name`, `amount_out`, `accumulated`, `code`, `sub_account`, `bank_account_id`) VALUES
@@ -4312,12 +4557,13 @@ INSERT INTO `transactions` (`id`, `user_id`, `bank_name`, `account_number`, `amo
 (0, NULL, 'TPBank', '80349195777', 5000.00, 'DK1008860', '2025-10-28 15:52:16', '668ITC125301A9SS', '28078900', 'TPBank', 0.00, 26000.00, NULL, NULL, '29190'),
 (0, NULL, 'TPBank', '80349195777', 5000.00, 'DK10', '2025-10-28 15:36:38', '668ITC125301A9MZ', '28077574', 'TPBank', 0.00, 21000.00, NULL, NULL, '29190'),
 (0, NULL, 'TPBank', '80349195777', 10000.00, 'dk922845', '2025-11-18 16:48:43', '668ITC1253230759', '31244881', 'TPBank', 0.00, 96000.00, NULL, NULL, '29190'),
-(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk971184', '2025-11-19 08:25:08', '668ITC125323A2EA', '31326537', 'TPBank', 0.00, 106000.00, NULL, NULL, '29190');
+(0, NULL, 'TPBank', '80349195777', 10000.00, 'dk971184', '2025-11-19 08:25:08', '668ITC125323A2EA', '31326537', 'TPBank', 0.00, 106000.00, NULL, NULL, '29190'),
+(0, NULL, 'TPBank', '80349195777', 3.00, 'TRA LAI TIEN GUI TK: 80349195777', '2025-11-24 15:27:49', '668DDBBVND000002', '32198322', 'TPBank', 0.00, 106003.00, NULL, NULL, '29190');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `vaitro`
+-- Table structure for table `vaitro`
 --
 
 CREATE TABLE `vaitro` (
@@ -4327,7 +4573,7 @@ CREATE TABLE `vaitro` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `vaitro`
+-- Dumping data for table `vaitro`
 --
 
 INSERT INTO `vaitro` (`VaiTroID`, `TenVaiTro`, `MoTa`) VALUES
@@ -4340,7 +4586,7 @@ INSERT INTO `vaitro` (`VaiTroID`, `TenVaiTro`, `MoTa`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `vaitro_quyen`
+-- Table structure for table `vaitro_quyen`
 --
 
 CREATE TABLE `vaitro_quyen` (
@@ -4351,7 +4597,7 @@ CREATE TABLE `vaitro_quyen` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `vi`
+-- Table structure for table `vi`
 --
 
 CREATE TABLE `vi` (
@@ -4363,7 +4609,7 @@ CREATE TABLE `vi` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc đóng vai cho view `v_phong_full_info`
+-- Stand-in structure for view `v_phong_full_info`
 -- (See below for the actual view)
 --
 CREATE TABLE `v_phong_full_info` (
@@ -4381,7 +4627,7 @@ CREATE TABLE `v_phong_full_info` (
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `yeuthich`
+-- Table structure for table `yeuthich`
 --
 
 CREATE TABLE `yeuthich` (
@@ -4390,7 +4636,7 @@ CREATE TABLE `yeuthich` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `yeuthich`
+-- Dumping data for table `yeuthich`
 --
 
 INSERT INTO `yeuthich` (`NguoiDungID`, `TinDangID`) VALUES
@@ -4399,18 +4645,18 @@ INSERT INTO `yeuthich` (`NguoiDungID`, `TinDangID`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc cho view `v_phong_full_info`
+-- Structure for view `v_phong_full_info`
 --
 DROP TABLE IF EXISTS `v_phong_full_info`;
 
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `v_phong_full_info`  AS SELECT `p`.`PhongID` AS `PhongID`, `p`.`DuAnID` AS `DuAnID`, `d`.`TenDuAn` AS `TenDuAn`, `p`.`TenPhong` AS `TenPhong`, `p`.`TrangThai` AS `TrangThai`, `p`.`GiaChuan` AS `GiaChuan`, `p`.`DienTichChuan` AS `DienTichChuan`, count(`pt`.`TinDangID`) AS `SoTinDangDangDung`, group_concat(concat('TinDang #',`pt`.`TinDangID`,': ',coalesce(`pt`.`GiaTinDang`,`p`.`GiaChuan`),'đ') separator ' | ') AS `ChiTietTinDang` FROM (((`phong` `p` join `duan` `d` on(`p`.`DuAnID` = `d`.`DuAnID`)) left join `phong_tindang` `pt` on(`p`.`PhongID` = `pt`.`PhongID`)) left join `tindang` `td` on(`pt`.`TinDangID` = `td`.`TinDangID` and `td`.`TrangThai` in ('ChoDuyet','DaDuyet','DaDang'))) GROUP BY `p`.`PhongID`, `p`.`DuAnID`, `d`.`TenDuAn`, `p`.`TenPhong`, `p`.`TrangThai`, `p`.`GiaChuan`, `p`.`DienTichChuan` ;
 
 --
--- Chỉ mục cho các bảng đã đổ
+-- Indexes for dumped tables
 --
 
 --
--- Chỉ mục cho bảng `bienbanbangiao`
+-- Indexes for table `bienbanbangiao`
 --
 ALTER TABLE `bienbanbangiao`
   ADD PRIMARY KEY (`BienBanBanGiaoID`),
@@ -4419,7 +4665,7 @@ ALTER TABLE `bienbanbangiao`
   ADD KEY `fk_bbbg_tindang` (`TinDangID`);
 
 --
--- Chỉ mục cho bảng `buttoansocai`
+-- Indexes for table `buttoansocai`
 --
 ALTER TABLE `buttoansocai`
   ADD PRIMARY KEY (`ButToanID`),
@@ -4427,14 +4673,14 @@ ALTER TABLE `buttoansocai`
   ADD KEY `ViID` (`ViID`);
 
 --
--- Chỉ mục cho bảng `chinhsachcoc`
+-- Indexes for table `chinhsachcoc`
 --
 ALTER TABLE `chinhsachcoc`
   ADD PRIMARY KEY (`ChinhSachCocID`),
   ADD KEY `idx_chu_du_an` (`ChuDuAnID`);
 
 --
--- Chỉ mục cho bảng `coc`
+-- Indexes for table `coc`
 --
 ALTER TABLE `coc`
   ADD PRIMARY KEY (`CocID`),
@@ -4450,7 +4696,7 @@ ALTER TABLE `coc`
   ADD KEY `idx_coc_hopdong` (`HopDongID`);
 
 --
--- Chỉ mục cho bảng `cuochen`
+-- Indexes for table `cuochen`
 --
 ALTER TABLE `cuochen`
   ADD PRIMARY KEY (`CuocHenID`),
@@ -4467,7 +4713,7 @@ ALTER TABLE `cuochen`
   ADD KEY `TinDangID` (`TinDangID`);
 
 --
--- Chỉ mục cho bảng `cuochoithoai`
+-- Indexes for table `cuochoithoai`
 --
 ALTER TABLE `cuochoithoai`
   ADD PRIMARY KEY (`CuocHoiThoaiID`),
@@ -4475,7 +4721,7 @@ ALTER TABLE `cuochoithoai`
   ADD KEY `idx_cuochoithoai_thoidiemtinnhan` (`ThoiDiemTinNhanCuoi`);
 
 --
--- Chỉ mục cho bảng `duan`
+-- Indexes for table `duan`
 --
 ALTER TABLE `duan`
   ADD PRIMARY KEY (`DuAnID`),
@@ -4487,7 +4733,7 @@ ALTER TABLE `duan`
   ADD KEY `idx_duan_chinhsachcoc` (`ChinhSachCocID`);
 
 --
--- Chỉ mục cho bảng `giaodich`
+-- Indexes for table `giaodich`
 --
 ALTER TABLE `giaodich`
   ADD PRIMARY KEY (`GiaoDichID`),
@@ -4498,7 +4744,7 @@ ALTER TABLE `giaodich`
   ADD KEY `fk_gd_thamchieu` (`GiaoDichThamChieuID`);
 
 --
--- Chỉ mục cho bảng `hopdong`
+-- Indexes for table `hopdong`
 --
 ALTER TABLE `hopdong`
   ADD PRIMARY KEY (`HopDongID`),
@@ -4509,7 +4755,7 @@ ALTER TABLE `hopdong`
   ADD KEY `idx_hd_khachhang` (`KhachHangID`);
 
 --
--- Chỉ mục cho bảng `hosonhanvien`
+-- Indexes for table `hosonhanvien`
 --
 ALTER TABLE `hosonhanvien`
   ADD PRIMARY KEY (`HoSoID`),
@@ -4518,7 +4764,7 @@ ALTER TABLE `hosonhanvien`
   ADD KEY `KhuVucPhuTrachID` (`KhuVucPhuTrachID`);
 
 --
--- Chỉ mục cho bảng `khuvuc`
+-- Indexes for table `khuvuc`
 --
 ALTER TABLE `khuvuc`
   ADD PRIMARY KEY (`KhuVucID`),
@@ -4539,14 +4785,22 @@ ALTER TABLE `lichlamviec`
   ADD KEY `NhanVienBanHangID` (`NhanVienBanHangID`);
 
 --
--- Chỉ mục cho bảng `mauhopdong`
+-- Indexes for table `lich_su_vi`
+--
+ALTER TABLE `lich_su_vi`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `ma_giao_dich` (`ma_giao_dich`),
+  ADD KEY `idx_user` (`user_id`);
+
+--
+-- Indexes for table `mauhopdong`
 --
 ALTER TABLE `mauhopdong`
   ADD PRIMARY KEY (`MauHopDongID`),
   ADD KEY `TaoBoiAdminID` (`TaoBoiAdminID`);
 
 --
--- Chỉ mục cho bảng `nguoidung`
+-- Indexes for table `nguoidung`
 --
 ALTER TABLE `nguoidung`
   ADD PRIMARY KEY (`NguoiDungID`),
@@ -4556,7 +4810,7 @@ ALTER TABLE `nguoidung`
   ADD KEY `fk_nguoidung_vaitrohoatdong` (`VaiTroHoatDongID`);
 
 --
--- Chỉ mục cho bảng `nguoidung_vaitro`
+-- Indexes for table `nguoidung_vaitro`
 --
 ALTER TABLE `nguoidung_vaitro`
   ADD PRIMARY KEY (`NguoiDungID`,`VaiTroID`),
@@ -4570,14 +4824,14 @@ ALTER TABLE `nhatkyhethong`
   ADD KEY `NguoiDungID` (`NguoiDungID`);
 
 --
--- Chỉ mục cho bảng `noidunghethong`
+-- Indexes for table `noidunghethong`
 --
 ALTER TABLE `noidunghethong`
   ADD PRIMARY KEY (`NoiDungID`),
   ADD KEY `CapNhatBoiID` (`CapNhatBoiID`);
 
 --
--- Chỉ mục cho bảng `phong`
+-- Indexes for table `phong`
 --
 ALTER TABLE `phong`
   ADD PRIMARY KEY (`PhongID`),
@@ -4585,7 +4839,7 @@ ALTER TABLE `phong`
   ADD KEY `idx_phong_duan_trangthai` (`DuAnID`,`TrangThai`);
 
 --
--- Chỉ mục cho bảng `phong_tindang`
+-- Indexes for table `phong_tindang`
 --
 ALTER TABLE `phong_tindang`
   ADD PRIMARY KEY (`PhongTinDangID`),
@@ -4594,14 +4848,14 @@ ALTER TABLE `phong_tindang`
   ADD KEY `idx_phong_tindang_tindang` (`TinDangID`);
 
 --
--- Chỉ mục cho bảng `quyen`
+-- Indexes for table `quyen`
 --
 ALTER TABLE `quyen`
   ADD PRIMARY KEY (`QuyenID`),
   ADD UNIQUE KEY `MaQuyen` (`MaQuyen`);
 
 --
--- Chỉ mục cho bảng `thanhviencuochoithoai`
+-- Indexes for table `thanhviencuochoithoai`
 --
 ALTER TABLE `thanhviencuochoithoai`
   ADD PRIMARY KEY (`CuocHoiThoaiID`,`NguoiDungID`),
@@ -4609,14 +4863,14 @@ ALTER TABLE `thanhviencuochoithoai`
   ADD KEY `idx_thanhvien_nguoidung` (`NguoiDungID`,`ThamGiaLuc`);
 
 --
--- Chỉ mục cho bảng `thongbao`
+-- Indexes for table `thongbao`
 --
 ALTER TABLE `thongbao`
   ADD PRIMARY KEY (`ThongBaoID`),
   ADD KEY `NguoiNhanID` (`NguoiNhanID`);
 
 --
--- Chỉ mục cho bảng `thongketindang`
+-- Indexes for table `thongketindang`
 --
 ALTER TABLE `thongketindang`
   ADD PRIMARY KEY (`ThongKeID`),
@@ -4625,7 +4879,7 @@ ALTER TABLE `thongketindang`
   ADD KEY `idx_thongketindang_ky` (`Ky`);
 
 --
--- Chỉ mục cho bảng `tindang`
+-- Indexes for table `tindang`
 --
 ALTER TABLE `tindang`
   ADD PRIMARY KEY (`TinDangID`),
@@ -4638,7 +4892,7 @@ ALTER TABLE `tindang`
   ADD KEY `idx_tindang_duan_trangthai_taoluc` (`DuAnID`,`TrangThai`,`TaoLuc`);
 
 --
--- Chỉ mục cho bảng `tinnhan`
+-- Indexes for table `tinnhan`
 --
 ALTER TABLE `tinnhan`
   ADD PRIMARY KEY (`TinNhanID`),
@@ -4649,98 +4903,98 @@ ALTER TABLE `tinnhan`
   ADD KEY `idx_tinnhan_daxoa` (`DaXoa`,`CuocHoiThoaiID`);
 
 --
--- Chỉ mục cho bảng `vaitro`
+-- Indexes for table `vaitro`
 --
 ALTER TABLE `vaitro`
   ADD PRIMARY KEY (`VaiTroID`);
 
 --
--- Chỉ mục cho bảng `vaitro_quyen`
+-- Indexes for table `vaitro_quyen`
 --
 ALTER TABLE `vaitro_quyen`
   ADD PRIMARY KEY (`VaiTroID`,`QuyenID`),
   ADD KEY `QuyenID` (`QuyenID`);
 
 --
--- Chỉ mục cho bảng `vi`
+-- Indexes for table `vi`
 --
 ALTER TABLE `vi`
   ADD PRIMARY KEY (`ViID`),
   ADD UNIQUE KEY `NguoiDungID` (`NguoiDungID`);
 
 --
--- Chỉ mục cho bảng `yeuthich`
+-- Indexes for table `yeuthich`
 --
 ALTER TABLE `yeuthich`
   ADD PRIMARY KEY (`NguoiDungID`,`TinDangID`),
   ADD KEY `TinDangID` (`TinDangID`);
 
 --
--- AUTO_INCREMENT cho các bảng đã đổ
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT cho bảng `bienbanbangiao`
+-- AUTO_INCREMENT for table `bienbanbangiao`
 --
 ALTER TABLE `bienbanbangiao`
   MODIFY `BienBanBanGiaoID` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `buttoansocai`
+-- AUTO_INCREMENT for table `buttoansocai`
 --
 ALTER TABLE `buttoansocai`
   MODIFY `ButToanID` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `chinhsachcoc`
+-- AUTO_INCREMENT for table `chinhsachcoc`
 --
 ALTER TABLE `chinhsachcoc`
-  MODIFY `ChinhSachCocID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `ChinhSachCocID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT cho bảng `coc`
+-- AUTO_INCREMENT for table `coc`
 --
 ALTER TABLE `coc`
   MODIFY `CocID` bigint(20) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `cuochen`
+-- AUTO_INCREMENT for table `cuochen`
 --
 ALTER TABLE `cuochen`
-  MODIFY `CuocHenID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `CuocHenID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
--- AUTO_INCREMENT cho bảng `cuochoithoai`
+-- AUTO_INCREMENT for table `cuochoithoai`
 --
 ALTER TABLE `cuochoithoai`
-  MODIFY `CuocHoiThoaiID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=225;
+  MODIFY `CuocHoiThoaiID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=224;
 
 --
--- AUTO_INCREMENT cho bảng `duan`
+-- AUTO_INCREMENT for table `duan`
 --
 ALTER TABLE `duan`
   MODIFY `DuAnID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
--- AUTO_INCREMENT cho bảng `giaodich`
+-- AUTO_INCREMENT for table `giaodich`
 --
 ALTER TABLE `giaodich`
   MODIFY `GiaoDichID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT cho bảng `hopdong`
+-- AUTO_INCREMENT for table `hopdong`
 --
 ALTER TABLE `hopdong`
   MODIFY `HopDongID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `hosonhanvien`
+-- AUTO_INCREMENT for table `hosonhanvien`
 --
 ALTER TABLE `hosonhanvien`
   MODIFY `HoSoID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
--- AUTO_INCREMENT cho bảng `khuvuc`
+-- AUTO_INCREMENT for table `khuvuc`
 --
 ALTER TABLE `khuvuc`
   MODIFY `KhuVucID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2778;
@@ -4755,92 +5009,98 @@ ALTER TABLE `kyc_verification`
 -- AUTO_INCREMENT for table `lichlamviec`
 --
 ALTER TABLE `lichlamviec`
-  MODIFY `LichID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `LichID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
--- AUTO_INCREMENT cho bảng `mauhopdong`
+-- AUTO_INCREMENT for table `lich_su_vi`
+--
+ALTER TABLE `lich_su_vi`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `mauhopdong`
 --
 ALTER TABLE `mauhopdong`
   MODIFY `MauHopDongID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `nguoidung`
+-- AUTO_INCREMENT for table `nguoidung`
 --
 ALTER TABLE `nguoidung`
   MODIFY `NguoiDungID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=230;
 
 --
--- AUTO_INCREMENT cho bảng `nhatkyhethong`
+-- AUTO_INCREMENT for table `nhatkyhethong`
 --
 ALTER TABLE `nhatkyhethong`
-  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=468;
+  MODIFY `NhatKyID` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=617;
 
 --
--- AUTO_INCREMENT cho bảng `noidunghethong`
+-- AUTO_INCREMENT for table `noidunghethong`
 --
 ALTER TABLE `noidunghethong`
   MODIFY `NoiDungID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `phong`
+-- AUTO_INCREMENT for table `phong`
 --
 ALTER TABLE `phong`
   MODIFY `PhongID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
--- AUTO_INCREMENT cho bảng `phong_tindang`
+-- AUTO_INCREMENT for table `phong_tindang`
 --
 ALTER TABLE `phong_tindang`
   MODIFY `PhongTinDangID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
--- AUTO_INCREMENT cho bảng `quyen`
+-- AUTO_INCREMENT for table `quyen`
 --
 ALTER TABLE `quyen`
   MODIFY `QuyenID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `thongbao`
+-- AUTO_INCREMENT for table `thongbao`
 --
 ALTER TABLE `thongbao`
-  MODIFY `ThongBaoID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `ThongBaoID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
--- AUTO_INCREMENT cho bảng `thongketindang`
+-- AUTO_INCREMENT for table `thongketindang`
 --
 ALTER TABLE `thongketindang`
   MODIFY `ThongKeID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT cho bảng `tindang`
+-- AUTO_INCREMENT for table `tindang`
 --
 ALTER TABLE `tindang`
   MODIFY `TinDangID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT cho bảng `tinnhan`
+-- AUTO_INCREMENT for table `tinnhan`
 --
 ALTER TABLE `tinnhan`
-  MODIFY `TinNhanID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2088;
+  MODIFY `TinNhanID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2120;
 
 --
--- AUTO_INCREMENT cho bảng `vaitro`
+-- AUTO_INCREMENT for table `vaitro`
 --
 ALTER TABLE `vaitro`
   MODIFY `VaiTroID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
--- AUTO_INCREMENT cho bảng `vi`
+-- AUTO_INCREMENT for table `vi`
 --
 ALTER TABLE `vi`
   MODIFY `ViID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- Các ràng buộc cho các bảng đã đổ
+-- Constraints for dumped tables
 --
 
 --
--- Các ràng buộc cho bảng `bienbanbangiao`
+-- Constraints for table `bienbanbangiao`
 --
 ALTER TABLE `bienbanbangiao`
   ADD CONSTRAINT `fk_bbbg_hopdong` FOREIGN KEY (`HopDongID`) REFERENCES `hopdong` (`HopDongID`),
@@ -4848,14 +5108,62 @@ ALTER TABLE `bienbanbangiao`
   ADD CONSTRAINT `fk_bbbg_tindang` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
 
 --
--- Các ràng buộc cho bảng `buttoansocai`
+-- Constraints for table `buttoansocai`
 --
 ALTER TABLE `buttoansocai`
   ADD CONSTRAINT `buttoansocai_ibfk_1` FOREIGN KEY (`GiaoDichID`) REFERENCES `giaodich` (`GiaoDichID`),
   ADD CONSTRAINT `buttoansocai_ibfk_2` FOREIGN KEY (`ViID`) REFERENCES `vi` (`ViID`);
 
 --
--- Các ràng buộc cho bảng `hosonhanvien`
+-- Constraints for table `chinhsachcoc`
+--
+ALTER TABLE `chinhsachcoc`
+  ADD CONSTRAINT `fk_chinhsachcoc_chuduan` FOREIGN KEY (`ChuDuAnID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `coc`
+--
+ALTER TABLE `coc`
+  ADD CONSTRAINT `coc_ibfk_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`),
+  ADD CONSTRAINT `fk_coc_bbbg` FOREIGN KEY (`BienBanBanGiaoID`) REFERENCES `bienbanbangiao` (`BienBanBanGiaoID`),
+  ADD CONSTRAINT `fk_coc_giaodich` FOREIGN KEY (`GiaoDichID`) REFERENCES `giaodich` (`GiaoDichID`),
+  ADD CONSTRAINT `fk_coc_tindang` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`);
+
+--
+-- Constraints for table `cuochen`
+--
+ALTER TABLE `cuochen`
+  ADD CONSTRAINT `cuochen_ibfk_2` FOREIGN KEY (`NhanVienBanHangID`) REFERENCES `nguoidung` (`NguoiDungID`),
+  ADD CONSTRAINT `cuochen_ibfk_3` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`),
+  ADD CONSTRAINT `cuochen_ibfk_phong` FOREIGN KEY (`PhongID`) REFERENCES `phong` (`PhongID`);
+
+--
+-- Constraints for table `duan`
+--
+ALTER TABLE `duan`
+  ADD CONSTRAINT `duan_ibfk_1` FOREIGN KEY (`ChuDuAnID`) REFERENCES `nguoidung` (`NguoiDungID`),
+  ADD CONSTRAINT `fk_duan_chinhsachcoc` FOREIGN KEY (`ChinhSachCocID`) REFERENCES `chinhsachcoc` (`ChinhSachCocID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_duan_nguoi_ngung_hoat_dong` FOREIGN KEY (`NguoiNgungHoatDongID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  ADD CONSTRAINT `fk_duan_nguoi_xu_ly_yeu_cau` FOREIGN KEY (`NguoiXuLyYeuCauID`) REFERENCES `nguoidung` (`NguoiDungID`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `giaodich`
+--
+ALTER TABLE `giaodich`
+  ADD CONSTRAINT `fk_gd_thamchieu` FOREIGN KEY (`GiaoDichThamChieuID`) REFERENCES `giaodich` (`GiaoDichID`),
+  ADD CONSTRAINT `giaodich_ibfk_1` FOREIGN KEY (`ViID`) REFERENCES `vi` (`ViID`),
+  ADD CONSTRAINT `giaodich_ibfk_2` FOREIGN KEY (`TinDangLienQuanID`) REFERENCES `tindang` (`TinDangID`);
+
+--
+-- Constraints for table `hopdong`
+--
+ALTER TABLE `hopdong`
+  ADD CONSTRAINT `hopdong_ibfk_1` FOREIGN KEY (`TinDangID`) REFERENCES `tindang` (`TinDangID`),
+  ADD CONSTRAINT `hopdong_ibfk_2` FOREIGN KEY (`KhachHangID`) REFERENCES `nguoidung` (`NguoiDungID`),
+  ADD CONSTRAINT `hopdong_ibfk_3` FOREIGN KEY (`MauHopDongID`) REFERENCES `mauhopdong` (`MauHopDongID`);
+
+--
+-- Constraints for table `hosonhanvien`
 --
 ALTER TABLE `hosonhanvien`
   ADD CONSTRAINT `hosonhanvien_ibfk_1` FOREIGN KEY (`NguoiDungID`) REFERENCES `nguoidung` (`NguoiDungID`),

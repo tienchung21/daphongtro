@@ -203,6 +203,139 @@
   text-align: center;
 }
 
+.debug-vision-card {
+  background: #0f172a;
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 10px;
+  border: 2px solid #1e293b;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.35);
+}
+
+.vision-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  color: #cbd5e1;
+  font-weight: 700;
+}
+
+.vision-toggle {
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.vision-toggle.secondary {
+  background: #0ea5e9;
+  border-color: #0284c7;
+  color: #0b1120;
+}
+
+.vision-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vision-overlay {
+  position: relative;
+  width: 100%;
+  padding-top: 63%; /* keep 1000x630 ratio */
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #334155;
+}
+
+.vision-box {
+  position: absolute;
+  border: 2px dashed #22d3ee;
+  box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.4);
+  border-radius: 6px;
+  background: rgba(14, 165, 233, 0.1);
+  color: #e0f2fe;
+  font-size: 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 4px;
+  cursor: move;
+  z-index: 3;
+}
+
+.vision-box span {
+  background: rgba(15, 23, 42, 0.75);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.resize-handle {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  width: 12px;
+  height: 12px;
+  background: #22d3ee;
+  border: 2px solid #0ea5e9;
+  border-radius: 4px;
+  cursor: se-resize;
+}
+
+.vision-box.qr {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  color: #fcd34d;
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.4);
+  z-index: 2;
+}
+
+.vision-box.qr span {
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.vision-legend {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 8px 16px;
+  color: #cbd5e1;
+  font-size: 12px;
+  align-items: center;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.legend-dot.ocr {
+  background: #22d3ee;
+}
+
+.legend-dot.qr {
+  background: #f59e0b;
+}
+
+.legend-note {
+  grid-column: span 2;
+  color: #94a3b8;
+}
+
 .image-preview label {
   display: block;
   font-size: 0.875rem;
@@ -1095,4 +1228,86 @@
   .verification-status h3::before {
     font-size: 1.5rem;
   }
+}
+
+/* Input Method Toggle */
+.input-method-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  background: rgba(255, 255, 255, 0.5);
+  color: #64748b;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.toggle-btn.active {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.toggle-btn:hover:not(.active) {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: #94a3b8;
+}
+
+/* Upload Container */
+.upload-container {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  aspect-ratio: 16/9;
+  background: rgba(241, 245, 249, 0.5);
+  border-radius: 24px;
+  border: 3px dashed #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.upload-container:hover {
+  border-color: #3b82f6;
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.upload-box {
+  text-align: center;
+  padding: 20px;
+}
+
+.upload-icon {
+  font-size: 48px;
+  color: #94a3b8;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+}
+
+.upload-container:hover .upload-icon {
+  color: #3b82f6;
+  transform: translateY(-4px);
+}
+
+.upload-box p {
+  color: #64748b;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.upload-box input[type="file"] {
+  display: none;
 }

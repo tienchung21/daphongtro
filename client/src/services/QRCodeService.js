@@ -1,51 +1,175 @@
 /**
  * QRCodeService - Xử lý QR Code trên CCCD Việt Nam
  * Format QR: "soCCCD|maQR|hoTen|ngaySinh|gioiTinh|diaChi|ngayCap"
- * Ví dụ: "060203002124|261426123|Võ Nguyễn Hoành Hợp|11112003|Nam|15, Đường Hà Huy Tập, Chợ Lầu, Bắc Bình, Bình Thuận|19042021"
  */
+
+import ImageProcessingService from './ImageProcessingService';
+import jsQR from 'jsqr';
+
+const ENABLE_QR_DEBUG_VISION = true; // Bật để xem hình vùng đang scan (base64) trong console/attempts
+const DEFAULT_QR_REGIONS = [
+  { name: 'full', x: 0, y: 0, width: 1, height: 1 },
+  { name: 'trl', x: 0.6924438618283316, y: 0.0074855560260057, width: 0.3, height: 0.4 },
+  { name: 'trm', x: 0.7244438618283315, y: 0.02501127822470541, width: 0.26, height: 0.32 },
+  { name: 'trs', x: 0.7942411152644188, y: 0.09223411162860624, width: 0.14, height: 0.22 },
+  { name: 'tc', x: 0.7476492301647519, y: 0.04126173970120754, width: 0.22, height: 0.32 }
+];
+
+const ensureHiddenQrContainer = () => {
+  if (typeof document === 'undefined') return;
+  let el = document.getElementById('qr-reader-hidden');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'qr-reader-hidden';
+    el.style.display = 'none';
+    document.body.appendChild(el);
+  }
+};
+
+// Helper: decode QR với jsQR, kèm upscale + multi-threshold + invert fallback
+const decodeWithJsqrEnhanced = async (imageDataUrl, label = 'full-image') => {
+  try {
+    const img = new Image();
+    img.src = imageDataUrl;
+    await img.decode();
+
+    // FIX 1: Upscale ảnh nhỏ (min 400px) thay vì scale down
+    const minSide = Math.min(img.width, img.height);
+    const targetMin = 400;
+    const scale = minSide < targetMin ? targetMin / minSide : 1;
+    const maxScale = 3; // Không scale quá 3x để tránh blur
+    const finalScale = Math.min(scale, maxScale);
+    
+    const width = Math.max(1, Math.round(img.width * finalScale));
+    const height = Math.max(1, Math.round(img.height * finalScale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, 0, 0, width, height);
+
+    // Lấy imageData gốc để tính avg
+    const originalImageData = ctx.getImageData(0, 0, width, height);
+    const originalData = originalImageData.data;
+    let sum = 0;
+    for (let i = 0; i < originalData.length; i += 4) {
+      const gray = 0.299 * originalData[i] + 0.587 * originalData[i + 1] + 0.114 * originalData[i + 2];
+      sum += gray;
+    }
+    const avg = sum / (originalData.length / 4 || 1);
+
+    // FIX 2: Thử nhiều threshold levels
+    const thresholdFactors = [0.85, 0.9, 0.95, 1.0, 1.05];
+    
+    for (const factor of thresholdFactors) {
+      const threshold = avg * factor;
+      const binaryData = new Uint8ClampedArray(originalData.length);
+      
+      for (let i = 0; i < originalData.length; i += 4) {
+        const gray = 0.299 * originalData[i] + 0.587 * originalData[i + 1] + 0.114 * originalData[i + 2];
+        const v = gray > threshold ? 255 : 0;
+        binaryData[i] = binaryData[i + 1] = binaryData[i + 2] = v;
+        binaryData[i + 3] = 255;
+      }
+
+      const code = jsQR(binaryData, width, height);
+      if (code?.data) {
+        console.log(`✅ QR via jsQR (${label}, threshold=${factor})`);
+        return code.data;
+      }
+    }
+
+    // FIX 3: Thử invert (QR đảo màu)
+    const invertedData = new Uint8ClampedArray(originalData.length);
+    for (let i = 0; i < originalData.length; i += 4) {
+      invertedData[i] = 255 - originalData[i];
+      invertedData[i + 1] = 255 - originalData[i + 1];
+      invertedData[i + 2] = 255 - originalData[i + 2];
+      invertedData[i + 3] = 255;
+    }
+    const invertedCode = jsQR(invertedData, width, height);
+    if (invertedCode?.data) {
+      console.log(`✅ QR via jsQR (${label}, inverted)`);
+      return invertedCode.data;
+    }
+
+    console.warn(`⚠️ jsQR (${label}, enhanced) không detect`);
+    return null;
+  } catch (e) {
+    console.warn(`⚠️ jsQR (${label}) error:`, e?.message || String(e));
+    return null;
+  }
+};
 
 const QRCodeService = {
   /**
-   * Crop vùng QR code từ ảnh CCCD với tọa độ cụ thể
-   * @param {string} imageDataUrl - Data URL của ảnh
-   * @param {Object} region - {x, y, width, height} theo % (0-1)
-   * @returns {Promise<string>} - Data URL của vùng QR đã crop
+   * Vẽ bounding box của region lên ảnh gốc để debug tầm nhìn
    */
-  cropQRRegion: async (imageDataUrl, region = { x: 0.65, y: 0, width: 0.35, height: 0.30 }) => {
+  visualizeRegion: async (imageDataUrl, region) => {
+    const img = new Image();
+    img.src = imageDataUrl;
+    await img.decode();
+
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+
+    ctx.drawImage(img, 0, 0);
+    ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+    ctx.lineWidth = Math.max(2, Math.floor(img.width * 0.003));
+    ctx.strokeRect(
+      img.width * region.x,
+      img.height * region.y,
+      img.width * region.width,
+      img.height * region.height
+    );
+
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.35)';
+    ctx.fillRect(
+      img.width * region.x,
+      img.height * region.y,
+      img.width * region.width,
+      img.height * region.height
+    );
+
+    return canvas.toDataURL('image/png');
+  },
+
+  /**
+   * Crop vùng QR code từ ảnh CCCD với tọa độ cụ thể
+   */
+  cropQRRegion: async (imageDataUrl, region = { x: 0.6996492301647519, y: 0.09626173970120754, width: 0.2, height: 0.3 }) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        
-        // Tính tọa độ pixel thực tế từ region %
+
         const qrX = Math.floor(img.width * region.x);
         const qrY = Math.floor(img.height * region.y);
         const qrWidth = Math.floor(img.width * region.width);
         const qrHeight = Math.floor(img.height * region.height);
-        
+
         canvas.width = qrWidth;
         canvas.height = qrHeight;
-        
-        // Crop vùng QR
+
         ctx.drawImage(img, qrX, qrY, qrWidth, qrHeight, 0, 0, qrWidth, qrHeight);
-        
-        // Tăng contrast để QR rõ hơn
+
+        // Tăng contrast
         const imageData = ctx.getImageData(0, 0, qrWidth, qrHeight);
         const data = imageData.data;
-        
         for (let i = 0; i < data.length; i += 4) {
-          // Tăng contrast
-          const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
           const factor = 1.5;
           data[i] = Math.min(255, (data[i] - 128) * factor + 128);
           data[i + 1] = Math.min(255, (data[i + 1] - 128) * factor + 128);
           data[i + 2] = Math.min(255, (data[i + 2] - 128) * factor + 128);
         }
-        
         ctx.putImageData(imageData, 0, 0);
-        
-        console.log(`📐 QR region cropped: ${qrWidth}x${qrHeight} from (${qrX}, ${qrY})`);
+
         resolve(canvas.toDataURL('image/png'));
       };
       img.onerror = reject;
@@ -54,15 +178,12 @@ const QRCodeService = {
   },
 
   /**
-   * Scan QR code từ ảnh CCCD với retry và cropping
-   * @param {File|string} imageSource - File object hoặc data URL
-   * @returns {Promise<Object>} - Parsed CCCD data
+   * Scan QR code từ ảnh CCCD với retry và deskew
    */
-  scanFromImage: async (imageSource) => {
+  scanFromImage: async (imageSource, customRegions = null) => {
     try {
-      console.log('🔍 Bắt đầu quét QR code từ ảnh CCCD...');
-      
-      // Convert to data URL nếu cần
+      console.log('🔍 Bắt đầu quét QR code...');
+
       let imageDataUrl = imageSource;
       if (imageSource instanceof File) {
         imageDataUrl = await new Promise((resolve) => {
@@ -71,364 +192,375 @@ const QRCodeService = {
           reader.readAsDataURL(imageSource);
         });
       }
-      
-      // Lazy import html5-qrcode
+
+      // BƯỚC 0: Thử jsQR enhanced trên toàn ảnh trước (nếu thành công thì return luôn)
+      const fullJsqr = await decodeWithJsqrEnhanced(imageDataUrl, 'full-image');
+      if (fullJsqr) {
+        const parsedData = QRCodeService.parseQRData(fullJsqr);
+        return {
+          success: true,
+          source: 'QR_CODE',
+          data: parsedData,
+          attempts: 1,
+          attemptsLog: [{ method: 'full-image:jsqr-enhanced', note: 'decoded_without_roi' }]
+        };
+      }
+
+      let qrData = null;
+      let attempts = [{ method: 'full-image:jsqr-enhanced', error: 'no code detected' }];
+
+      // Lazy import html5-qrcode (chỉ dùng khi jsQR full-image không thành công)
+      ensureHiddenQrContainer();
       const { Html5Qrcode } = await import('html5-qrcode');
-      
       const html5QrCode = new Html5Qrcode("qr-reader-hidden", {
-        formatsToSupport: [0], // 0 = QR_CODE
+        formatsToSupport: [0], // QR_CODE
         verbose: false
       });
-      
-      let qrData = null;
-      let attempts = [];
-      
-      // Attempt 1: Scan toàn bộ ảnh
-      try {
-        console.log('   Attempt 1: Scan full image...');
-        const blob = await fetch(imageDataUrl).then(r => r.blob());
-        const file = new File([blob], "cccd-full.jpg", { type: "image/jpeg" });
-        const result = await html5QrCode.scanFile(file, false);
-        qrData = result;
-        console.log('✅ QR found on full image');
-      } catch (err) {
-        attempts.push({ method: 'full', error: err.message });
-        console.warn('   ❌ Full image scan failed:', err.message);
-      }
-      
-      // Attempt 2-5: Thử nhiều vùng crop khác nhau
-      if (!qrData) {
-        const regions = [
-          { name: 'top-right-large', x: 0.60, y: 0, width: 0.40, height: 0.35 },
-          { name: 'top-right-medium', x: 0.65, y: 0, width: 0.35, height: 0.30 },
-          { name: 'top-right-small', x: 0.70, y: 0.05, width: 0.28, height: 0.25 },
-          { name: 'top-center', x: 0.35, y: 0, width: 0.30, height: 0.30 },
-        ];
-        
+
+      const scan = async (url) => {
+        try {
+          const blob = await fetch(url).then(r => r.blob());
+          const mime = blob.type || 'image/png';
+          const ext = mime.includes('png') ? 'png' : 'jpg';
+          const file = new File([blob], `scan.${ext}`, { type: mime });
+          return await html5QrCode.scanFile(file, false);
+        } catch (e) {
+          throw e;
+        }
+      };
+
+      const scanWithJsQR = async (dataUrl, label) => {
+        try {
+          const data = await decodeWithJsqrEnhanced(dataUrl, label);
+          if (data) {
+            return data;
+          }
+          throw new Error('jsQR: no code detected (enhanced)');
+        } catch (e) {
+          attempts.push({ method: `${label}:jsqr`, error: e.message });
+          return null;
+        }
+      };
+
+      const regions = (customRegions && customRegions.length > 0)
+        ? customRegions.map((r, idx) => {
+            const { name, key, ...rest } = r;
+            return { name: name || key || `custom-${idx}`, ...rest };
+          })
+        : DEFAULT_QR_REGIONS;
+
+      // Helper: scan a list of regions on a given image
+      const scanRegions = async (srcLabel, url) => {
         for (const region of regions) {
+          const attemptLabel = `${srcLabel}:${region.name}`;
+          let cropped = null;
           try {
-            console.log(`   Attempt (${region.name}): Scan cropped region...`);
-            const croppedQR = await QRCodeService.cropQRRegion(imageDataUrl, region);
-            const blob = await fetch(croppedQR).then(r => r.blob());
-            const file = new File([blob], `cccd-qr-${region.name}.jpg`, { type: "image/jpeg" });
-            const result = await html5QrCode.scanFile(file, false);
-            qrData = result;
-            console.log(`✅ QR found on cropped region: ${region.name}`);
-            break; // Tìm thấy thì dừng
+            console.log(`   Attempt (${attemptLabel}): scanning region...`);
+            cropped = await QRCodeService.cropQRRegion(url, region);
+            if (ENABLE_QR_DEBUG_VISION) {
+              const vision = await QRCodeService.visualizeRegion(url, region);
+              attempts.push({ method: `${attemptLabel}:vision`, previewLength: vision?.length || 0 });
+            }
+            const data = await scan(cropped);
+            console.log(`✅ QR found on ${attemptLabel}`);
+            return data;
           } catch (err) {
-            attempts.push({ method: region.name, error: err.message });
-            console.warn(`   ❌ ${region.name} scan failed:`, err.message);
+            attempts.push({ method: attemptLabel, error: err.message });
+            // Fallback: jsQR decode trên region vừa crop
+            if (cropped) {
+              const jsqrData = await scanWithJsQR(cropped, attemptLabel);
+              if (jsqrData) return jsqrData;
+            }
+          }
+        }
+        return null;
+      };
+
+      // 1. Scan ảnh gốc theo nhiều vùng
+      qrData = await scanRegions('original', imageDataUrl);
+
+      // 2. Scan ảnh đã Warp (nếu chưa tìm thấy)
+      if (!qrData) {
+        try {
+          console.log('   Attempt (warped): Warping image...');
+          const warped = await ImageProcessingService.warpPerspective(imageDataUrl);
+          qrData = await scanRegions('warped', warped);
+        } catch (err) {
+          attempts.push({ method: 'warped', error: err.message });
+        }
+      }
+
+      // 3. Deskew / Rotate và scan theo vùng (nếu chưa tìm thấy)
+      if (!qrData) {
+        const angles = [90, -90, 180];
+        for (const angle of angles) {
+          try {
+            console.log(`   Attempt (rotate_${angle}): Rotate ${angle} deg...`);
+            const rotated = await ImageProcessingService.deskew(imageDataUrl, angle);
+            qrData = await scanRegions(`rotate_${angle}`, rotated);
+            if (qrData) break;
+          } catch (err) {
+            attempts.push({ method: `rotate_${angle}`, error: err.message });
           }
         }
       }
-      
+
       if (!qrData) {
-        throw new Error(`Không tìm thấy QR code sau ${attempts.length} lần thử: ${JSON.stringify(attempts)}`);
+        throw new Error(`Không tìm thấy QR code sau ${attempts.length} lần thử.`);
       }
-      
-      console.log('✅ QR Code raw data:', qrData);
-      
-      // Parse QR data
+
       const parsedData = QRCodeService.parseQRData(qrData);
-      
-      console.log('📊 Thông tin từ QR code:', parsedData);
-      
       return {
         success: true,
         source: 'QR_CODE',
-        raw: qrData,
         data: parsedData,
-        attempts: attempts.length + 1
+        attempts: attempts.length + 1,
+        attemptsLog: attempts
       };
-      
+
     } catch (error) {
-      console.error('❌ QR scan failed completely:', error.message);
+      const msg = error?.message || String(error);
+      console.error('❌ QR scan failed:', msg);
       return {
         success: false,
         source: 'QR_CODE',
-        error: error.message,
-        data: null
+        error: msg,
+        data: null,
+        attemptsLog: []
       };
     }
   },
 
   /**
-   * Parse QR code data theo format CCCD Việt Nam
-   * Format: "soCCCD|soCMND|hoTen|ngaySinh|gioiTinh|diaChi|ngayCap"
-   * Ví dụ: "060203002124|261426123|Võ Nguyễn Hoành Hợp|11112003|Nam|15, Đường Hà Huy Tập, Chợ Lầu, Bắc Bình, Bình Thuận|19042021"
-   * @param {string} qrString - Raw QR string
-   * @returns {Object} - Parsed data
+   * Scan QR THÔ (không parse CCCD), dùng jsQR trên toàn ảnh
+   * Phục vụ debug / playground. Nếu jsQR fail sẽ fallback sang html5-qrcode (ZXing).
    */
-  parseQRData: (qrString) => {
-    console.log('🔧 Parsing QR string:', qrString);
-    
-    const parts = qrString.split('|');
-    
-    if (parts.length < 7) {
-      throw new Error(`Invalid QR format. Expected 7 parts, got ${parts.length}`);
+  scanRawFromImage: async (imageSource) => {
+    try {
+      let imageDataUrl = imageSource;
+      if (imageSource instanceof File) {
+        imageDataUrl = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = (e) => resolve(e.target.result);
+          reader.readAsDataURL(imageSource);
+        });
+      }
+
+      let raw = null;
+      let from = null;
+
+      // Thử jsQR nguyên ảnh
+      const img = new Image();
+      img.src = imageDataUrl;
+      await img.decode();
+
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, canvas.width, canvas.height);
+      if (code?.data) {
+        console.log('✅ Raw QR via jsQR (full-image)');
+        raw = code.data;
+        from = 'jsqr';
+      } else {
+        console.warn('⚠️ jsQR full-image không detect, thử jsQR enhanced + html5-qrcode...');
+        // Thử enhanced jsQR
+        const enhanced = await decodeWithJsqrEnhanced(imageDataUrl, 'raw-full-image');
+        if (enhanced) {
+          raw = enhanced;
+          from = 'jsqr-enhanced';
+        } else {
+          ensureHiddenQrContainer();
+          ensureHiddenQrContainer();
+          const { Html5Qrcode } = await import('html5-qrcode');
+          const html5QrCode = new Html5Qrcode("qr-reader-hidden", {
+            formatsToSupport: [0],
+            verbose: false
+          });
+          const blob = await fetch(imageDataUrl).then(r => r.blob());
+          const mime = blob.type || 'image/png';
+          const ext = mime.includes('png') ? 'png' : 'jpg';
+          const file = new File([blob], `raw.${ext}`, { type: mime });
+          raw = await html5QrCode.scanFile(file, false);
+          from = 'html5-qrcode';
+          console.log('✅ Raw QR via html5-qrcode (full-image)');
+        }
+      }
+
+      let parsed = null;
+      try {
+        parsed = QRCodeService.parseQRData(raw);
+      } catch (e) {
+        // Ignore parse errors here, raw vẫn usable
+      }
+
+      return {
+        success: true,
+        raw,
+        parsed,
+        engine: from
+      };
+    } catch (error) {
+      const msg = error?.message || String(error);
+      console.error('❌ Raw QR scan failed:', msg);
+      return {
+        success: false,
+        raw: null,
+        parsed: null,
+        error: msg
+      };
     }
-    
-    // Parse ngày sinh từ DDMMYYYY
-    const ngaySinhRaw = parts[3]; // "11112003"
-    const ngaySinh = ngaySinhRaw.length === 8 
-      ? `${ngaySinhRaw.substring(0, 2)}/${ngaySinhRaw.substring(2, 4)}/${ngaySinhRaw.substring(4, 8)}`
-      : ngaySinhRaw;
-    
-    // Parse ngày cấp từ DDMMYYYY
-    const ngayCapRaw = parts[6]; // "19042021"
-    const ngayCap = ngayCapRaw.length === 8
-      ? `${ngayCapRaw.substring(0, 2)}/${ngayCapRaw.substring(2, 4)}/${ngayCapRaw.substring(4, 8)}`
-      : ngayCapRaw;
-    
-    const result = {
-      soCCCD: parts[0].trim(),           // "060203002124" - Số CCCD 12 số
-      soCMND: parts[1].trim(),           // "261426123" - Số CMND cũ (9 số) hoặc rỗng
-      tenDayDu: parts[2].trim(),         // "Võ Nguyễn Hoành Hợp"
-      ngaySinh: ngaySinh,                // "11/11/2003"
-      gioiTinh: parts[4].trim(),         // "Nam" / "Nữ"
-      diaChi: parts[5].trim(),           // "15, Đường Hà Huy Tập, Chợ Lầu, Bắc Bình, Bình Thuận"
-      ngayCap: ngayCap,                  // "19/04/2021"
-      noiCap: null                       // Không có trong QR, cần OCR
-    };
-    
-    // Validate CCCD (12 số)
-    if (!result.soCCCD || result.soCCCD.length !== 12) {
-      throw new Error('Invalid CCCD number in QR code');
-    }
-    
-    // Validate CMND (9 số hoặc rỗng)
-    if (result.soCMND && result.soCMND.length > 0 && result.soCMND.length !== 9) {
-      console.warn('⚠️ CMND number has unexpected length:', result.soCMND.length);
-    }
-    
-    console.log('✅ Parsed QR data:', result);
-    
-    return result;
   },
 
-  /**
-   * So sánh độ tương đồng giữa 2 strings (Levenshtein distance)
-   * @param {string} str1 
-   * @param {string} str2 
-   * @returns {number} - Similarity score 0-1 (1 = giống hệt)
-   */
+  parseQRData: (qrString) => {
+    const parts = qrString.split('|');
+    if (parts.length < 7) throw new Error('Invalid QR format');
+
+    const formatDate = (s) => s.length === 8 ? `${s.substring(0, 2)}/${s.substring(2, 4)}/${s.substring(4)}` : s;
+
+    return {
+      soCCCD: parts[0].trim(),
+      soCMND: parts[1].trim(),
+      tenDayDu: parts[2].trim(),
+      ngaySinh: formatDate(parts[3]),
+      gioiTinh: parts[4].trim(),
+      diaChi: parts[5].trim(),
+      ngayCap: formatDate(parts[6]),
+      noiCap: null
+    };
+  },
+
   calculateSimilarity: (str1, str2) => {
     if (!str1 || !str2) return 0;
-    
-    // Normalize: lowercase, remove diacritics, trim
-    const normalize = (s) => s
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[đĐ]/g, "d")
-      .trim();
-    
+    const normalize = (s) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[đĐ]/g, "d").trim();
     const s1 = normalize(str1);
     const s2 = normalize(str2);
-    
     if (s1 === s2) return 1;
-    
-    // Levenshtein distance
+
     const matrix = [];
     const n = s1.length;
     const m = s2.length;
-    
     if (n === 0) return m === 0 ? 1 : 0;
     if (m === 0) return 0;
-    
-    for (let i = 0; i <= n; i++) {
-      matrix[i] = [i];
-    }
-    
-    for (let j = 0; j <= m; j++) {
-      matrix[0][j] = j;
-    }
-    
+
+    for (let i = 0; i <= n; i++) matrix[i] = [i];
+    for (let j = 0; j <= m; j++) matrix[0][j] = j;
+
     for (let i = 1; i <= n; i++) {
       for (let j = 1; j <= m; j++) {
         if (s1[i - 1] === s2[j - 1]) {
           matrix[i][j] = matrix[i - 1][j - 1];
         } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1, // substitution
-            matrix[i][j - 1] + 1,     // insertion
-            matrix[i - 1][j] + 1      // deletion
-          );
+          matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, matrix[i][j - 1] + 1, matrix[i - 1][j] + 1);
         }
       }
     }
-    
-    const distance = matrix[n][m];
-    const maxLength = Math.max(n, m);
-    const similarity = 1 - (distance / maxLength);
-    
-    return similarity;
+    return 1 - (matrix[n][m] / Math.max(n, m));
   },
 
   /**
-   * So sánh và merge dữ liệu từ QR và OCR
-   * @param {Object} qrData - Data từ QR code
-   * @param {Object} ocrData - Data từ OCR
-   * @returns {Object} - Merged data với confidence scores
+   * Merge QR + OCR và tính Risk Score
    */
-  mergeAndValidate: (qrData, ocrData) => {
-    console.log('🔀 Bắt đầu merge & validate QR + OCR data...');
-    
+  mergeAndValidate: (qrData, ocrData, faceDistance = 0.5) => {
+    console.log('🔀 Merging QR + OCR with Risk Scoring...');
+
     const result = {
       finalData: {},
       sources: {},
       confidence: {},
-      conflicts: []
+      conflicts: [],
+      riskScore: 0,
+      riskLevel: 'UNKNOWN'
     };
-    
-    // Helper: chọn data tốt nhất
-    const selectBest = (field, qrValue, ocrValue) => {
-      // Nếu chỉ có 1 source
-      if (!qrValue && !ocrValue) {
-        result.finalData[field] = null;
-        result.sources[field] = 'NONE';
-        result.confidence[field] = 0;
-        return;
-      }
-      
-      if (qrValue && !ocrValue) {
-        result.finalData[field] = qrValue;
+
+    // 1. Merge Fields
+    const fields = ['soCCCD', 'tenDayDu', 'ngaySinh', 'diaChi', 'ngayCap', 'gioiTinh'];
+    let matchedCoreFields = 0;
+    const coreFields = ['soCCCD', 'ngaySinh', 'gioiTinh'];
+
+    for (const field of fields) {
+      const qrVal = qrData?.[field];
+      const ocrVal = ocrData?.[field];
+
+      if (qrVal && !ocrVal) {
+        result.finalData[field] = qrVal;
         result.sources[field] = 'QR_CODE';
         result.confidence[field] = 1.0;
-        return;
-      }
-      
-      if (!qrValue && ocrValue) {
-        result.finalData[field] = ocrValue;
+      } else if (!qrVal && ocrVal) {
+        result.finalData[field] = ocrVal;
         result.sources[field] = 'OCR';
-        result.confidence[field] = 0.7; // OCR confidence thấp hơn QR
-        return;
-      }
-      
-      // Có cả 2 sources - so sánh
-      const similarity = QRCodeService.calculateSimilarity(
-        String(qrValue), 
-        String(ocrValue)
-      );
-      
-      console.log(`   ${field}: QR="${qrValue}" vs OCR="${ocrValue}" → Similarity: ${(similarity * 100).toFixed(1)}%`);
-      
-      if (similarity >= 0.85) {
-        // Trùng khớp cao - ưu tiên QR
-        result.finalData[field] = qrValue;
-        result.sources[field] = 'QR_CODE (verified by OCR)';
-        result.confidence[field] = 1.0;
-      } else if (similarity >= 0.6) {
-        // Tương đồng vừa phải - conflict warning
-        result.finalData[field] = qrValue; // Ưu tiên QR
-        result.sources[field] = 'QR_CODE (partial OCR match)';
-        result.confidence[field] = 0.85;
-        result.conflicts.push({
-          field,
-          qrValue,
-          ocrValue,
-          similarity: similarity.toFixed(2)
-        });
-      } else {
-        // Khác nhau nhiều - conflict error
-        result.finalData[field] = qrValue; // Vẫn ưu tiên QR
-        result.sources[field] = 'QR_CODE (OCR mismatch)';
         result.confidence[field] = 0.7;
-        result.conflicts.push({
-          field,
-          qrValue,
-          ocrValue,
-          similarity: similarity.toFixed(2),
-          severity: 'HIGH'
-        });
-      }
-    };
-    
-    // So sánh từng field
-    const fields = ['soCCCD', 'tenDayDu', 'ngaySinh', 'diaChi', 'ngayCap'];
-    
-    for (const field of fields) {
-      selectBest(field, qrData?.[field], ocrData?.[field]);
-    }
-    
-    // Nơi cấp - chỉ từ OCR (không có trong QR)
-    result.finalData.noiCap = ocrData?.noiCap || null;
-    result.sources.noiCap = ocrData?.noiCap ? 'OCR' : 'NONE';
-    result.confidence.noiCap = ocrData?.noiCap ? 0.7 : 0;
-    
-    // Giới tính - chỉ từ QR
-    result.finalData.gioiTinh = qrData?.gioiTinh || null;
-    result.sources.gioiTinh = qrData?.gioiTinh ? 'QR_CODE' : 'NONE';
-    result.confidence.gioiTinh = qrData?.gioiTinh ? 1.0 : 0;
-    
-    // Số CMND cũ - chỉ từ QR
-    result.finalData.soCMND = qrData?.soCMND || null;
-    result.sources.soCMND = qrData?.soCMND ? 'QR_CODE' : 'NONE';
-    result.confidence.soCMND = qrData?.soCMND ? 1.0 : 0;
-    
-    // Overall confidence
-    const avgConfidence = Object.values(result.confidence)
-      .reduce((sum, c) => sum + c, 0) / Object.keys(result.confidence).length;
-    
-    result.overallConfidence = avgConfidence;
-    result.hasConflicts = result.conflicts.length > 0;
-    
-    console.log('✅ Merge completed:', {
-      overallConfidence: `${(avgConfidence * 100).toFixed(1)}%`,
-      conflicts: result.conflicts.length,
-      sources: result.sources
-    });
-    
-    if (result.conflicts.length > 0) {
-      console.warn('⚠️ Conflicts detected:', result.conflicts);
-    }
-    
-    return result;
-  },
+      } else if (qrVal && ocrVal) {
+        const sim = QRCodeService.calculateSimilarity(String(qrVal), String(ocrVal));
 
-  /**
-   * Detect QR code region trên ảnh (optional - để crop trước khi scan)
-   * @param {string} imageDataUrl - Data URL của ảnh
-   * @returns {Promise<Object|null>} - QR region hoặc null
-   */
-  detectQRRegion: async (imageDataUrl) => {
-    try {
-      console.log('🔍 Detecting QR code region...');
-      
-      const img = new Image();
-      await new Promise((resolve, reject) => {
-        img.onload = resolve;
-        img.onerror = reject;
-        img.src = imageDataUrl;
-      });
-      
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      
-      // Simple QR detection: tìm vùng có pattern đen-trắng đặc trưng
-      // (Simplified - production nên dùng opencv.js hoặc jsQR để detect chính xác)
-      
-      // Thường QR code ở góc phải trên của CCCD
-      const qrRegion = {
-        x: Math.floor(canvas.width * 0.7),
-        y: Math.floor(canvas.height * 0.05),
-        width: Math.floor(canvas.width * 0.25),
-        height: Math.floor(canvas.height * 0.25)
-      };
-      
-      console.log('✅ QR region estimated:', qrRegion);
-      
-      return qrRegion;
-      
-    } catch (error) {
-      console.warn('⚠️ QR region detection failed:', error.message);
-      return null;
+        // Stricter thresholds
+        const isHighConf = field === 'diaChi' || field === 'tenDayDu' ? sim >= 0.90 : sim >= 0.98;
+
+        if (isHighConf) {
+          result.finalData[field] = qrVal;
+          result.sources[field] = 'QR_CODE (verified)';
+          result.confidence[field] = 1.0;
+          if (coreFields.includes(field)) matchedCoreFields++;
+        } else {
+          result.finalData[field] = qrVal; // Prefer QR
+          result.sources[field] = 'QR_CODE (mismatch)';
+          result.confidence[field] = 0.7;
+          result.conflicts.push({ field, qr: qrVal, ocr: ocrVal, sim });
+        }
+      } else {
+        result.finalData[field] = null;
+        result.confidence[field] = 0;
+      }
     }
+
+    result.finalData.noiCap = ocrData?.noiCap || null;
+
+    // 2. Calculate Risk Score
+    // Weights: QR_OK (20%), CoreMatch (20%), Face (40%), Address (20%)
+    const qrOk = qrData ? 1 : 0;
+    const coreMatchRatio = coreFields.length > 0 ? matchedCoreFields / coreFields.length : 0;
+
+    // Face Score: dist <= 0.45 -> 1.0, dist >= 0.60 -> 0.0
+    let faceScore = 0;
+    if (faceDistance <= 0.45) faceScore = 1.0;
+    else if (faceDistance >= 0.60) faceScore = 0.0;
+    else faceScore = (0.60 - faceDistance) / (0.60 - 0.45);
+
+    const addressSim = qrData?.diaChi && ocrData?.diaChi
+      ? QRCodeService.calculateSimilarity(qrData.diaChi, ocrData.diaChi)
+      : (ocrData?.diaChi ? 0.5 : 0); // Fallback if only OCR address exists
+
+    // If QR is missing, redistribute weights: Face (60%), Address (0%), CoreMatch (0%) -> this is bad.
+    // Better: If QR missing, max score is capped, but Face is critical.
+
+    if (!qrData) {
+      // Fallback scoring when QR fails: Face (70%), OCR Completeness (30%)
+      // We check if OCR got the core fields
+      let ocrCompleteness = 0;
+      if (ocrData?.soCCCD) ocrCompleteness += 0.33;
+      if (ocrData?.tenDayDu) ocrCompleteness += 0.33;
+      if (ocrData?.ngaySinh) ocrCompleteness += 0.34;
+
+      result.riskScore = (0.70 * faceScore) + (0.30 * ocrCompleteness);
+    } else {
+      result.riskScore = (0.20 * qrOk) + (0.20 * coreMatchRatio) + (0.40 * faceScore) + (0.20 * addressSim);
+    }
+
+    // 3. Determine Risk Level
+    if (result.riskScore >= 0.85 && faceDistance <= 0.45) {
+      result.riskLevel = 'AUTO_APPROVE';
+    } else if (result.riskScore >= 0.65 || (faceDistance > 0.45 && faceDistance <= 0.60)) {
+      result.riskLevel = 'MANUAL_REVIEW';
+    } else {
+      result.riskLevel = 'REJECT';
+    }
+
+    console.log('📊 Risk Score:', result.riskScore.toFixed(2), 'Level:', result.riskLevel);
+    return result;
   }
 };
 

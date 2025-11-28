@@ -26,7 +26,7 @@ class ChinhSachCocModel {
           csc.TTL_CocGiuCho_Gio,
           csc.TyLePhat_CocGiuCho,
           csc.ChoPhepCocAnNinh,
-          csc.SoTienCocAnNinhMacDinh,
+          csc.SoTienCocGiuChoMacDinh,
           csc.QuyTacGiaiToa,
           csc.HieuLuc,
           csc.TaoLuc,
@@ -34,7 +34,7 @@ class ChinhSachCocModel {
           COUNT(DISTINCT td.TinDangID) AS SoTinDangSuDung
         FROM chinhsachcoc csc
         LEFT JOIN tindang td ON td.ChinhSachCocID = csc.ChinhSachCocID
-        WHERE (csc.ChuDuAnID = ? OR csc.ChuDuAnID IS NULL)
+        WHERE (csc.ChuDuAnID = ? OR csc.ChinhSachCocID = 1)
       `;
 
       const params = [chuDuAnID];
@@ -45,7 +45,7 @@ class ChinhSachCocModel {
 
       query += `
         GROUP BY csc.ChinhSachCocID
-        ORDER BY csc.ChuDuAnID IS NULL, csc.HieuLuc DESC, csc.TaoLuc DESC
+        ORDER BY csc.ChinhSachCocID = 1, csc.ChuDuAnID IS NULL, csc.HieuLuc DESC, csc.TaoLuc DESC
       `;
 
       const [rows] = await db.query(query, params);
@@ -108,7 +108,6 @@ class ChinhSachCocModel {
    * @param {number} data.TTL_CocGiuCho_Gio - TTL cọc giữ chỗ (giờ) (default: 48)
    * @param {number} data.TyLePhat_CocGiuCho - Tỷ lệ phạt (%) (default: 0.00)
    * @param {boolean} data.ChoPhepCocAnNinh - Cho phép cọc an ninh (default: true)
-   * @param {number} data.SoTienCocAnNinhMacDinh - Số tiền cọc an ninh mặc định (optional)
    * @param {string} data.QuyTacGiaiToa - Quy tắc giải tỏa: 'BanGiao'|'TheoNgay'|'Khac' (default: 'BanGiao')
    * @param {boolean} data.HieuLuc - Hiệu lực (default: true)
    * @returns {Promise<number>} ID của chính sách cọc vừa tạo
@@ -124,7 +123,7 @@ class ChinhSachCocModel {
           TTL_CocGiuCho_Gio,
           TyLePhat_CocGiuCho,
           ChoPhepCocAnNinh,
-          SoTienCocAnNinhMacDinh,
+          SoTienCocGiuChoMacDinh,
           QuyTacGiaiToa,
           HieuLuc
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -138,7 +137,7 @@ class ChinhSachCocModel {
         data.TTL_CocGiuCho_Gio || 48,
         data.TyLePhat_CocGiuCho || 0.00,
         data.ChoPhepCocAnNinh !== undefined ? data.ChoPhepCocAnNinh : 1,
-        data.SoTienCocAnNinhMacDinh || null,
+        data.SoTienCocGiuChoMacDinh ?? null,
         data.QuyTacGiaiToa || 'BanGiao',
         data.HieuLuc !== undefined ? data.HieuLuc : 1
       ];
@@ -198,9 +197,9 @@ class ChinhSachCocModel {
         updateFields.push('ChoPhepCocAnNinh = ?');
         params.push(data.ChoPhepCocAnNinh ? 1 : 0);
       }
-      if (data.SoTienCocAnNinhMacDinh !== undefined) {
-        updateFields.push('SoTienCocAnNinhMacDinh = ?');
-        params.push(data.SoTienCocAnNinhMacDinh);
+      if (data.SoTienCocGiuChoMacDinh !== undefined) {
+        updateFields.push('SoTienCocGiuChoMacDinh = ?');
+        params.push(data.SoTienCocGiuChoMacDinh);
       }
       if (data.QuyTacGiaiToa !== undefined) {
         updateFields.push('QuyTacGiaiToa = ?');

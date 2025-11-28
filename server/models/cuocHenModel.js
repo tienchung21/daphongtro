@@ -153,6 +153,21 @@ class CuocHenModel {
         }`
       );
 
+      // Gửi thông báo cho NVBH (async, không chờ)
+      if (nhanVienId) {
+        const ThongBaoService = require('../services/ThongBaoService');
+        
+        // Thông báo cuộc hẹn mới
+        ThongBaoService.thongBaoCuocHenMoi(result.insertId, nhanVienId)
+          .catch(err => console.error('[CuocHenModel] Lỗi gửi thông báo cuộc hẹn mới:', err));
+        
+        // Nếu cần phê duyệt, gửi thông báo chờ phê duyệt
+        if (pheDuyetChuDuAn === 'ChoPheDuyet') {
+          ThongBaoService.thongBaoCuocHenChoPheDuyet(result.insertId, nhanVienId)
+            .catch(err => console.error('[CuocHenModel] Lỗi gửi thông báo chờ phê duyệt:', err));
+        }
+      }
+
       return { CuocHenID: result.insertId };
     } catch (error) {
       console.error("[CuocHenModel] ❌ Lỗi tạo cuộc hẹn:", error);
