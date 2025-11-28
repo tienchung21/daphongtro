@@ -11,6 +11,10 @@ const userMessageCount = new Map();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 phút
 const MAX_MESSAGES_PER_MINUTE = 50;
 
+// Map để lưu thông tin cuộc gọi video đang chờ (để lưu cuộc gọi nhỡ)
+// Key: cuocHoiThoaiID, Value: { nguoiGoiID, nguoiGoiTen, roomUrl, timestamp }
+const pendingVideoCalls = new Map();
+
 /**
  * Reset message count sau mỗi phút
  */
@@ -153,6 +157,28 @@ function setupChatHandlers(socket, io) {
 
       console.log(`[Socket.IO] Message sent: ${tinNhan.TinNhanID} in conversation ${cuocHoiThoaiID}`);
 
+      // Gửi thông báo cho NVBH nếu có trong cuộc hội thoại (async, không chờ)
+      // Lấy danh sách thành viên và kiểm tra ai là NVBH
+      const db = require('../config/db');
+      const [thanhVienRows] = await db.execute(`
+        SELECT tv.NguoiDungID, nd.VaiTroHoatDongID
+        FROM thanhviencuochoithoai tv
+        INNER JOIN nguoidung nd ON tv.NguoiDungID = nd.NguoiDungID
+        WHERE tv.CuocHoiThoaiID = ? AND tv.NguoiDungID != ?
+      `, [cuocHoiThoaiID, userId]);
+
+      // VaiTroHoatDongID = 2 là NhanVienBanHang
+      const nvbhMembers = thanhVienRows.filter(member => member.VaiTroHoatDongID === 2);
+      
+      if (nvbhMembers.length > 0) {
+        const ThongBaoService = require('../services/ThongBaoService');
+        // Gửi thông báo cho tất cả NVBH trong cuộc hội thoại
+        nvbhMembers.forEach(nvbh => {
+          ThongBaoService.thongBaoTroChuyenMoi(cuocHoiThoaiID, nvbh.NguoiDungID, tinNhan.TinNhanID)
+            .catch(err => console.error(`[Socket.IO] Lỗi gửi thông báo cho NVBH ${nvbh.NguoiDungID}:`, err));
+        });
+      }
+
       // Audit log (async, không chờ)
       NhatKyService.ghiNhan({
         NguoiDungID: userId,
@@ -209,6 +235,180 @@ function setupChatHandlers(socket, io) {
 
     } catch (error) {
       console.error('[Socket.IO] mark_as_read error:', error);
+    }
+  });
+
+  /**
+   * INITIATE_VIDEO_CALL: Chủ dự án gọi video cho NVBH
+   */
+  socket.on('initiate_video_call', async ({ cuocHoiThoaiID, roomUrl }) => {
+    try {
+      // Validation
+      if (!cuocHoiThoaiID || !roomUrl) {
+        return socket.emit('error', {
+          event: 'initiate_video_call',
+          message: 'Thiếu thông tin cuộc gọi'
+        });
+      }
+
+      // Kiểm tra quyền truy cập
+      const hasAccess = await ChatModel.kiemTraQuyenTruyCap(cuocHoiThoaiID, userId);
+      
+      if (!hasAccess) {
+        return socket.emit('error', {
+          event: 'initiate_video_call',
+          message: 'Bạn không có quyền truy cập cuộc hội thoại này'
+        });
+      }
+
+      // Lấy thông tin người gọi
+      const db = require('../config/db');
+      const [nguoiGoiRows] = await db.execute(`
+        SELECT NguoiDungID, TenDayDu, VaiTroHoatDongID
+        FROM nguoidung
+        WHERE NguoiDungID = ?
+      `, [userId]);
+
+      if (nguoiGoiRows.length === 0) {
+        return socket.emit('error', {
+          event: 'initiate_video_call',
+          message: 'Không tìm thấy thông tin người gọi'
+        });
+      }
+
+      const nguoiGoi = nguoiGoiRows[0];
+
+      // Lấy danh sách thành viên trong cuộc hội thoại (trừ người gọi)
+      const [thanhVienRows] = await db.execute(`
+        SELECT tv.NguoiDungID, nd.TenDayDu, nd.VaiTroHoatDongID
+        FROM thanhviencuochoithoai tv
+        INNER JOIN nguoidung nd ON tv.NguoiDungID = nd.NguoiDungID
+        WHERE tv.CuocHoiThoaiID = ? AND tv.NguoiDungID != ?
+      `, [cuocHoiThoaiID, userId]);
+
+      // Lưu thông tin cuộc gọi vào Map (để lưu cuộc gọi nhỡ sau này)
+      pendingVideoCalls.set(cuocHoiThoaiID, {
+        nguoiGoiID: userId,
+        nguoiGoiTen: nguoiGoi.TenDayDu,
+        roomUrl,
+        timestamp: new Date().toISOString()
+      });
+
+      // Tự động xóa sau 2 phút (cuộc gọi đã kết thúc hoặc quá lâu)
+      setTimeout(() => {
+        pendingVideoCalls.delete(cuocHoiThoaiID);
+      }, 2 * 60 * 1000);
+
+      // Gửi thông báo video call cho tất cả thành viên khác
+      thanhVienRows.forEach(thanhVien => {
+        // Emit event video_call_incoming cho từng thành viên
+        io.to(`notifications:${thanhVien.NguoiDungID}`).emit('video_call_incoming', {
+          cuocHoiThoaiID,
+          nguoiGoiID: userId,
+          nguoiGoiTen: nguoiGoi.TenDayDu,
+          roomUrl,
+          timestamp: new Date().toISOString()
+        });
+
+        // Gửi thông báo trong-app cho NVBH (nếu là NVBH)
+        if (thanhVien.VaiTroHoatDongID === 2) {
+          const ThongBaoService = require('../services/ThongBaoService');
+          ThongBaoService.thongBaoVideoCall(
+            cuocHoiThoaiID,
+            userId,
+            thanhVien.NguoiDungID,
+            roomUrl
+          ).catch(err => console.error(`[Socket.IO] Lỗi gửi thông báo video call cho NVBH ${thanhVien.NguoiDungID}:`, err));
+        }
+      });
+
+      console.log(`[Socket.IO] Video call initiated by user ${userId} in conversation ${cuocHoiThoaiID}`);
+
+      // Xác nhận cho người gọi
+      socket.emit('video_call_initiated', {
+        cuocHoiThoaiID,
+        roomUrl,
+        recipients: thanhVienRows.map(tv => tv.NguoiDungID)
+      });
+
+    } catch (error) {
+      console.error('[Socket.IO] initiate_video_call error:', error);
+      socket.emit('error', {
+        event: 'initiate_video_call',
+        message: error.message || 'Lỗi khi khởi tạo cuộc gọi video'
+      });
+    }
+  });
+
+  /**
+   * ANSWER_VIDEO_CALL: NVBH trả lời cuộc gọi
+   */
+  socket.on('answer_video_call', async ({ cuocHoiThoaiID, accepted, roomUrl, missed }) => {
+    try {
+      // Nếu là cuộc gọi nhỡ (missed = true), lưu vào tin nhắn
+      if (missed === true) {
+        try {
+          // Lấy thông tin người gọi từ Map
+          const callInfo = pendingVideoCalls.get(cuocHoiThoaiID);
+          
+          if (callInfo) {
+            // Lưu tin nhắn cuộc gọi nhỡ
+            const missedCallMessage = JSON.stringify({
+              type: 'video_call_missed',
+              nguoiGoiID: callInfo.nguoiGoiID,
+              nguoiGoiTen: callInfo.nguoiGoiTen,
+              timestamp: callInfo.timestamp,
+              roomUrl: callInfo.roomUrl || null
+            });
+
+            await ChatModel.guiTinNhan({
+              CuocHoiThoaiID: cuocHoiThoaiID,
+              NguoiGuiID: userId, // NVBH là người nhận (missed)
+              NoiDung: missedCallMessage
+            });
+
+            // Xóa khỏi Map sau khi đã lưu
+            pendingVideoCalls.delete(cuocHoiThoaiID);
+
+            // Broadcast tin nhắn cuộc gọi nhỡ đến tất cả thành viên
+            io.to(`conversation_${cuocHoiThoaiID}`).emit('new_message', {
+              TinNhanID: null, // Sẽ được set bởi ChatModel
+              CuocHoiThoaiID: cuocHoiThoaiID,
+              NguoiGuiID: userId,
+              NoiDung: missedCallMessage,
+              ThoiGian: new Date(),
+              NguoiGuiTen: 'Hệ thống'
+            });
+
+            console.log(`[Socket.IO] Missed video call saved to conversation ${cuocHoiThoaiID}`);
+          } else {
+            console.warn(`[Socket.IO] Không tìm thấy thông tin cuộc gọi cho conversation ${cuocHoiThoaiID}`);
+          }
+        } catch (saveError) {
+          console.error('[Socket.IO] Lỗi lưu cuộc gọi nhỡ:', saveError);
+        }
+      } else {
+        // Nếu không phải cuộc gọi nhỡ (đồng ý hoặc từ chối), xóa khỏi Map
+        pendingVideoCalls.delete(cuocHoiThoaiID);
+      }
+
+      // Thông báo cho người gọi
+      socket.to(`conversation_${cuocHoiThoaiID}`).emit('video_call_answered', {
+        cuocHoiThoaiID,
+        nguoiTraLoiID: userId,
+        accepted,
+        roomUrl: accepted ? roomUrl : null,
+        missed: missed || false,
+        timestamp: new Date().toISOString()
+      });
+
+      console.log(`[Socket.IO] Video call answered by user ${userId} in conversation ${cuocHoiThoaiID}: ${accepted ? 'accepted' : missed ? 'missed' : 'rejected'}`);
+    } catch (error) {
+      console.error('[Socket.IO] answer_video_call error:', error);
+      socket.emit('error', {
+        event: 'answer_video_call',
+        message: error.message || 'Lỗi khi trả lời cuộc gọi'
+      });
     }
   });
 

@@ -8,6 +8,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { HiOutlineArrowLeft, HiOutlineEllipsisVertical, HiOutlineVideoCamera } from 'react-icons/hi2';
 import useChat from '../../hooks/useChat';
 import { useChatContext } from '../../context/ChatContext';
+import useSocket from '../../hooks/useSocket';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
 import './ChatWindow.css';
@@ -16,6 +17,7 @@ export const ChatWindow = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { markConversationAsRead, conversations } = useChatContext();
+  const { socket, isConnected: socketConnected } = useSocket();
   const {
     messages,
     sendMessage,
@@ -82,6 +84,16 @@ export const ChatWindow = () => {
     // URL cuối cùng: .../room/ZGFwaG9uZ3Ryb19jaGF0XzEyMw?data=eyJ1c2VybmFtZ...
     const roomUrl = `https://jbcalling.site/room/${secureRoomId}?data=${encodedData}`;
     
+    // 3. Emit socket event để thông báo cho NVBH (nếu là chủ dự án)
+    if (socket && socketConnected) {
+      socket.emit('initiate_video_call', {
+        cuocHoiThoaiID: conversationId,
+        roomUrl
+      });
+      console.log('[ChatWindow] Emitted initiate_video_call event');
+    }
+    
+    // 4. Mở window video call
     const width = 1280;
     const height = 720;
     const left = (window.screen.width - width) / 2;

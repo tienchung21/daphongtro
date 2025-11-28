@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { useChatContext } from '../../context/ChatContext';
 import './NavigationNhanVienBanHang.css';
 
 // Icons (sử dụng SVG inline để tránh phụ thuộc thư viện)
@@ -76,16 +77,27 @@ const MessageCircleIcon = () => (
   </svg>
 );
 
+// MessageSquare icon (cho Tin nhắn)
+const MessageSquareIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
 const NavigationNhanVienBanHang = ({ collapsed, mobileOpen, onToggle, onCloseMobile, onFeedbackClick, user }) => {
+  // Get unread count from ChatContext
+  const { unreadCount } = useChatContext();
+
   // Thêm prop onToggle nếu chưa có
-  const handleToggle = onToggle || (() => {});
-  // Menu items theo Figma design
+  const handleToggle = onToggle || (() => { });
+  // Menu items theo Fig design
   const navItems = [
     { icon: LayoutDashboardIcon, label: 'Bảng điều khiển', path: '/nhan-vien-ban-hang' },
     { icon: CalendarIcon, label: 'Lịch làm việc', path: '/nhan-vien-ban-hang/lich-lam-viec' },
     { icon: CalendarCheckIcon, label: 'Cuộc hẹn', path: '/nhan-vien-ban-hang/cuoc-hen' },
     { icon: FileTextIcon, label: 'Giao dịch & Cọc', path: '/nhan-vien-ban-hang/giao-dich' },
-    { icon: DollarSignIcon, label: 'Thu nhập của tôi', path: '/nhan-vien-ban-hang/thu-nhap' }
+    { icon: DollarSignIcon, label: 'Thu nhập của tôi', path: '/nhan-vien-ban-hang/thu-nhap' },
+    { icon: MessageSquareIcon, label: 'Tin nhắn', path: '/nhan-vien-ban-hang/tin-nhan', badge: unreadCount }
   ];
 
   return (
@@ -135,7 +147,12 @@ const NavigationNhanVienBanHang = ({ collapsed, mobileOpen, onToggle, onCloseMob
               <item.icon />
             </span>
             {!collapsed && (
-              <span className="nvbh-nav-item__label">{item.label}</span>
+              <>
+                <span className="nvbh-nav-item__label">{item.label}</span>
+                {item.badge > 0 && (
+                  <span className="nvbh-nav-item__badge">{item.badge}</span>
+                )}
+              </>
             )}
           </NavLink>
         ))}
@@ -144,7 +161,7 @@ const NavigationNhanVienBanHang = ({ collapsed, mobileOpen, onToggle, onCloseMob
       {/* Bottom Actions - Feedback button */}
       {!collapsed && (
         <div className="nvbh-sidebar__bottom">
-          <button 
+          <button
             className="nvbh-sidebar__feedback-btn"
             onClick={onFeedbackClick}
           >
@@ -158,11 +175,3 @@ const NavigationNhanVienBanHang = ({ collapsed, mobileOpen, onToggle, onCloseMob
 };
 
 export default NavigationNhanVienBanHang;
-
-
-
-
-
-
-
-

@@ -576,6 +576,12 @@
   border: 1px solid #6ee7b7;
 }
 
+.tag-secondary {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #c4b5fd;
+}
+
 /* === ROOMS SECTION - REDESIGNED === */
 .rooms-section {
   background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);

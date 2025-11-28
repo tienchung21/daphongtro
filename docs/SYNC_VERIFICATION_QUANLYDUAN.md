@@ -133,7 +133,6 @@ SELECT
   csc.TTL_CocGiuCho_Gio,
   csc.TyLePhat_CocGiuCho,
   csc.ChoPhepCocAnNinh,
-  csc.SoTienCocAnNinhMacDinh,
   csc.QuyTacGiaiToa,
   csc.HieuLuc,
   csc.CapNhatLuc

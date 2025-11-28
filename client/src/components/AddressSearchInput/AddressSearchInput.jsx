@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { HiOutlineMapPin, HiOutlineMagnifyingGlass, HiOutlineCheckCircle, HiOutlineXCircle } from 'react-icons/hi2';
 import './AddressSearchInput.css';
+import { buildApiUrl } from '../../config/api';
 
 /**
  * Component tìm kiếm địa chỉ và geocode tự động
  * @param {string} initialAddress - Địa chỉ ban đầu
  * @param {function} onCoordinatesFound - Callback khi tìm thấy tọa độ (lat, lng, displayName)
  */
+const GEO_API_URL = buildApiUrl('/api/geocode');
+
 const AddressSearchInput = ({ initialAddress = '', onCoordinatesFound }) => {
   const [address, setAddress] = useState(initialAddress);
   const [loading, setLoading] = useState(false);
@@ -25,7 +28,7 @@ const AddressSearchInput = ({ initialAddress = '', onCoordinatesFound }) => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/geocode', {
+      const response = await fetch(GEO_API_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

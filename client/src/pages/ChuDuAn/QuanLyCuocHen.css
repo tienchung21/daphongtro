@@ -268,6 +268,10 @@
   border-radius: var(--radius-lg);
 }
 
+.cuoc-hen-mobile {
+  display: none;
+}
+
 .cuoc-hen-table {
   width: 100%;
   min-width: 100%;
@@ -632,7 +636,96 @@
     display: none;
   }
   
-  /* TODO: Implement mobile card view */
+  .cuoc-hen-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .cuoc-hen-mobile__card {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-lg);
+    box-shadow: 0 12px 30px rgba(15, 118, 110, 0.08);
+    border: 1px solid rgba(15, 118, 110, 0.08);
+    backdrop-filter: blur(10px);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+
+  .cuoc-hen-mobile__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-md);
+  }
+
+  .cuoc-hen-mobile__header-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .cuoc-hen-mobile__id {
+    font-weight: 600;
+    color: var(--color-text-primary);
+  }
+
+  .cuoc-hen-mobile__checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+  }
+
+  .cuoc-hen-mobile__checkbox input {
+    width: 18px;
+    height: 18px;
+  }
+
+  .cuoc-hen-mobile__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .cuoc-hen-mobile__section-title {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .cuoc-hen-mobile__section-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+  }
+
+  .cuoc-hen-mobile__primary-text {
+    font-weight: 600;
+  }
+
+  .cuoc-hen-mobile__secondary-text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+  }
+
+  .cuoc-hen-mobile__actions {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 /* ==================== UTILITIES ==================== */

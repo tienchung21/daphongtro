@@ -7,6 +7,10 @@ const cors = require('cors');
 const path = require('path');
 const socketAuth = require('./middleware/socketAuth');
 const setupChatHandlers = require('./socket/chatHandlers');
+const setupGoiYHandlers = require('./socket/goiYHandlers');
+const { setupNotificationHandlers } = require('./socket/notificationHandlers');
+const { startAppointmentReminders } = require('./jobs/appointmentReminders');
+const { startAppointmentReportReminders } = require('./jobs/appointmentReportReminders');
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 
@@ -23,6 +27,9 @@ const kycRoutes = require('./api/kyc/kycRoutes'); // API KYC (Xác thực CCCD)
 
 // Routes cho Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
 const nhanVienBanHangRoutes = require('./routes/nhanVienBanHangRoutes');
+const goiYTinDangRoutes = require('./routes/goiYTinDangRoutes'); // Gợi ý tin đăng (QR Xem Ngay)
+const publicGoiYRoutes = require('./routes/publicGoiYRoutes'); // Public routes cho khách quét QR
+
 const nguoiPhuTrachDuAnRoutes = require('./routes/nguoiPhuTrachDuAnRoutes');
 // Routes cho Operator (UC-OPER-01 đến UC-OPER-06)
 const tinDangOperatorRoutes = require('./routes/tinDangOperatorRoutes'); // UC-OPER-01: Duyệt tin đăng
@@ -98,7 +105,16 @@ const io = new Server(server, {
 io.use(socketAuth);
 io.on('connection', (socket) => {
   setupChatHandlers(socket, io);
+  setupGoiYHandlers(socket, io);
+  setupNotificationHandlers(socket, io);
 });
+
+// Store io instance in app for use in controllers
+app.set('io', io);
+
+// Store io instance in utils for use in services
+const { setIoInstance } = require('./utils/socketIo');
+setIoInstance(io);
 
 // Express CORS Options (sử dụng cùng logic với Socket.IO)
 const corsOptions = {
@@ -167,6 +183,8 @@ app.use('/api/chatbot', chatBotRoutes); // API Chatbot AI
 
 // API Nhân viên Bán hàng (UC-SALE-01 đến UC-SALE-07)
 app.use('/api/nhan-vien-ban-hang', nhanVienBanHangRoutes);
+app.use('/api/nhan-vien-ban-hang/goi-y', goiYTinDangRoutes); // Gợi ý tin đăng (QR Xem Ngay)
+
 app.use('/api/nguoi-phu-trach-du-an', nguoiPhuTrachDuAnRoutes);
 // API từ upstream
 app.use('/api/tindangs', tinDangRoutes); 
@@ -178,6 +196,7 @@ app.use('/api/sepay', sepayCallbackRoutes);
 app.use('/api/cuoc-hen', cuocHenRoutes);
 app.use('/api/public/du-an', publicDuAnRoutes);
 app.use('/api/public/tin-dang', publicTinDangRoutes);
+app.use('/api/public/xem-ngay', publicGoiYRoutes); // Public routes cho khách quét QR xem phòng
 app.use('/api/lich-su-vi', lichSuViRoutes);
 app.use('/api/vi', viRoutes);
 app.get('/', (req, res) => {
@@ -232,4 +251,8 @@ server.listen(PORT, () => {
   setTimeout(() => {
     sepaySync.startPolling(60 * 1000); // Poll mỗi 60 giây
   }, 1000);
+
+  // Khởi động cron jobs cho thông báo
+  startAppointmentReminders();
+  startAppointmentReportReminders();
 });

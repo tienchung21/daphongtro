@@ -4,6 +4,7 @@ import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
 import { TinDangService } from '../../services/ChuDuAnService';
 import { HiOutlinePencil, HiOutlineTrash, HiOutlineEye } from 'react-icons/hi2';
 import './QuanLyTinDang.css'; // Tái sử dụng CSS
+import { getStaticUrl } from '../../config/api';
 
 /**
  * Trang Quản Lý Tin Nháp
@@ -105,9 +106,17 @@ const QuanLyNhap = () => {
             {tinNhaps.map(tin => {
               let anhDauTien = null;
               try {
-                anhDauTien = tin.URL ? JSON.parse(tin.URL)[0] : null;
+                if (tin.URL) {
+                  const parsed = JSON.parse(tin.URL);
+                  if (Array.isArray(parsed) && parsed.length > 0) {
+                    anhDauTien = getStaticUrl(parsed[0]);
+                  }
+                }
               } catch (e) {
                 console.error('Lỗi parse URL:', e);
+                if (typeof tin.URL === 'string') {
+                  anhDauTien = getStaticUrl(tin.URL);
+                }
               }
               
               return (
@@ -118,7 +127,7 @@ const QuanLyNhap = () => {
 
                   {anhDauTien ? (
                     <img 
-                      src={`http://localhost:5000${anhDauTien}`} 
+                      src={anhDauTien} 
                       alt={tin.TieuDe}
                       className="qtd-card-image"
                     />

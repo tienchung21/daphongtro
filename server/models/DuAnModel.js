@@ -91,7 +91,6 @@ class DuAnModel {
             csc.TTL_CocGiuCho_Gio,
             csc.TyLePhat_CocGiuCho,
             csc.ChoPhepCocAnNinh,
-            csc.SoTienCocAnNinhMacDinh,
             csc.QuyTacGiaiToa,
             csc.HieuLuc,
             csc.CapNhatLuc,
@@ -108,7 +107,6 @@ class DuAnModel {
             csc.TTL_CocGiuCho_Gio,
             csc.TyLePhat_CocGiuCho,
             csc.ChoPhepCocAnNinh,
-            csc.SoTienCocAnNinhMacDinh,
             csc.QuyTacGiaiToa,
             csc.HieuLuc,
             csc.CapNhatLuc
@@ -139,7 +137,6 @@ class DuAnModel {
           TTL_CocGiuCho_Gio: row.TTL_CocGiuCho_Gio !== null ? Number(row.TTL_CocGiuCho_Gio) : null,
           TyLePhat_CocGiuCho: row.TyLePhat_CocGiuCho !== null ? Number(row.TyLePhat_CocGiuCho) : null,
           ChoPhepCocAnNinh: row.ChoPhepCocAnNinh === null ? null : Number(row.ChoPhepCocAnNinh) === 1,
-          SoTienCocAnNinhMacDinh: row.SoTienCocAnNinhMacDinh !== null ? Number(row.SoTienCocAnNinhMacDinh) : null,
           QuyTacGiaiToa: row.QuyTacGiaiToa || null,
           HieuLuc: row.HieuLuc === null ? null : Number(row.HieuLuc) === 1,
           CapNhatLuc: row.CapNhatLuc || null,

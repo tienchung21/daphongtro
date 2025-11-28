@@ -7,6 +7,23 @@
 const db = require('../config/db');
 const NhatKyHeThongService = require('./NhatKyHeThongService');
 
+const normalizeImagePath = (value = '') => {
+  if (!value) return value;
+  if (value.startsWith('/uploads')) return value;
+  if (value.startsWith('uploads/')) return `/${value}`;
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    try {
+      const parsed = new URL(value);
+      if (parsed.pathname?.startsWith('/uploads')) {
+        return parsed.pathname;
+      }
+    } catch {
+      return value;
+    }
+  }
+  return value;
+};
+
 class NhanVienBanHangService {
   /**
    * UC-SALE-01: Đăng ký lịch làm việc
@@ -164,28 +181,55 @@ class NhanVienBanHangService {
           kh.SoDienThoai as SDTKhachHang,
           kh.Email as EmailKhachHang,
           
+          -- Thông tin Phòng (từ bảng phong)
+          p.PhongID,
           p.TenPhong as TieuDePhong, 
-          p.GiaChuan as GiaPhong,
-          p.DienTichChuan as DienTich,
+          p.TrangThai as TrangThaiPhong,
+          p.GiaChuan as GiaChuanPhong,
+          p.DienTichChuan as DienTichChuanPhong,
+          p.MoTaPhong,
+          p.HinhAnhPhong as HinhAnhPhongGoc,
           
+          -- Thông tin Phòng-Tin đăng (từ phong_tindang - ưu tiên cho tin này)
+          COALESCE(pt.GiaTinDang, p.GiaChuan) as GiaPhong,
+          COALESCE(pt.DienTichTinDang, p.DienTichChuan) as DienTich,
+          COALESCE(pt.MoTaTinDang, p.MoTaPhong) as MoTaPhongHienThi,
+          COALESCE(pt.HinhAnhTinDang, p.HinhAnhPhong) as HinhAnhPhongTinDang,
+          
+          -- Thông tin Tin đăng
           td.TinDangID, 
           td.TieuDe as TieuDeTinDang,
-          td.DuAnID as ChuDuAnID,
-          td.URL as HinhAnhPhong,
+          td.MoTa as MoTaTinDang,
+          td.TienIch,
+          td.GiaDien,
+          td.GiaNuoc,
+          td.GiaDichVu,
+          td.MoTaGiaDichVu,
+          td.TrangThai as TrangThaiTinDang,
+          td.URL as HinhAnhTinDang,
+          td.DuAnID,
           
+          -- Thông tin Dự án
+          da.DuAnID,
           da.TenDuAn, 
           da.DiaChi as DiaChiPhong,
           da.KinhDo,
           da.ViDo,
+          da.PhuongThucVao as PhuongThucVaoDuAn,
+          da.TrangThai as TrangThaiDuAn,
+          da.BangHoaHong,
+          da.SoThangCocToiThieu,
+          da.ChuDuAnID,
           
+          -- Thông tin Chủ dự án
           cda.TenDayDu as TenChuDuAn,
           cda.SoDienThoai as SoDienThoaiChuDuAn,
           cda.Email as EmailChuDuAn
           
         FROM cuochen ch
         INNER JOIN phong p ON ch.PhongID = p.PhongID
-        INNER JOIN phong_tindang pt ON p.PhongID = pt.PhongID
-        INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
+        INNER JOIN phong_tindang pt ON p.PhongID = pt.PhongID AND pt.TinDangID = ch.TinDangID
+        INNER JOIN tindang td ON ch.TinDangID = td.TinDangID
         INNER JOIN duan da ON td.DuAnID = da.DuAnID
         LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
         LEFT JOIN nguoidung cda ON da.ChuDuAnID = cda.NguoiDungID
@@ -198,22 +242,44 @@ class NhanVienBanHangService {
 
       const appointment = rows[0];
 
-      // Parse JSON fields
-      if (appointment.HinhAnhPhong) {
+      // Parse JSON fields - Hình ảnh
+      // Ưu tiên: HinhAnhTinDang > HinhAnhPhongTinDang > HinhAnhPhongGoc
+      let hinhAnhSource = appointment.HinhAnhTinDang || appointment.HinhAnhPhongTinDang || appointment.HinhAnhPhongGoc;
+      if (hinhAnhSource) {
         try {
-          const images = JSON.parse(appointment.HinhAnhPhong);
-          // Convert relative URLs to full URLs
-          appointment.HinhAnhPhong = images.map(img => {
-            if (img.startsWith('/uploads')) {
-              return `http://localhost:5000${img}`;
-            }
-            return img;
-          });
+          const images = JSON.parse(hinhAnhSource);
+          appointment.HinhAnhPhong = images.map(img => normalizeImagePath(img));
         } catch (e) {
-          appointment.HinhAnhPhong = [];
+          if (typeof hinhAnhSource === 'string' && hinhAnhSource.trim()) {
+            appointment.HinhAnhPhong = [normalizeImagePath(hinhAnhSource)];
+          } else {
+            appointment.HinhAnhPhong = [];
+          }
         }
       } else {
         appointment.HinhAnhPhong = [];
+      }
+
+      // Parse TienIch (tiện ích) từ tin đăng
+      if (appointment.TienIch) {
+        try {
+          appointment.TienIch = JSON.parse(appointment.TienIch);
+        } catch (e) {
+          appointment.TienIch = [];
+        }
+      } else {
+        appointment.TienIch = [];
+      }
+
+      // Parse BangHoaHong (bảng hoa hồng) từ dự án
+      if (appointment.BangHoaHong) {
+        try {
+          appointment.BangHoaHong = JSON.parse(appointment.BangHoaHong);
+        } catch (e) {
+          appointment.BangHoaHong = null;
+        }
+      } else {
+        appointment.BangHoaHong = null;
       }
 
       // Parse coordinates
@@ -258,6 +324,43 @@ class NhanVienBanHangService {
         appointment.ActivityLog = [];
         appointment.BaoCaoKetQua = null;
       }
+
+      // Lấy danh sách phòng khác từ cùng tin đăng
+      const [phongKhacRows] = await db.execute(`
+        SELECT 
+          p.PhongID,
+          p.TenPhong,
+          p.TrangThai as TrangThaiPhong,
+          COALESCE(pt.GiaTinDang, p.GiaChuan) as GiaPhong,
+          COALESCE(pt.DienTichTinDang, p.DienTichChuan) as DienTich,
+          COALESCE(pt.MoTaTinDang, p.MoTaPhong) as MoTaPhong,
+          COALESCE(pt.HinhAnhTinDang, p.HinhAnhPhong) as HinhAnhPhong,
+          p.GiaChuan as GiaChuanPhong,
+          p.DienTichChuan as DienTichChuanPhong
+        FROM phong_tindang pt
+        INNER JOIN phong p ON pt.PhongID = p.PhongID
+        WHERE pt.TinDangID = ? AND p.PhongID != ?
+        ORDER BY pt.ThuTuHienThi, p.TenPhong ASC
+      `, [appointment.TinDangID, appointment.PhongID]);
+
+      // Parse hình ảnh cho từng phòng
+      appointment.DanhSachPhongKhac = phongKhacRows.map(phong => {
+        let hinhAnh = [];
+        if (phong.HinhAnhPhong) {
+          try {
+            const images = JSON.parse(phong.HinhAnhPhong);
+            hinhAnh = images.map(img => normalizeImagePath(img));
+          } catch (e) {
+            if (typeof phong.HinhAnhPhong === 'string' && phong.HinhAnhPhong.trim()) {
+              hinhAnh = [normalizeImagePath(phong.HinhAnhPhong)];
+            }
+          }
+        }
+        return {
+          ...phong,
+          HinhAnhPhong: hinhAnh
+        };
+      });
 
       return appointment;
     } catch (error) {
@@ -320,6 +423,19 @@ class NhanVienBanHangService {
          WHERE CuocHenID = ?`,
         [JSON.stringify(ghiChuData), cuocHenId]
       );
+
+      // Kiểm tra nếu cuộc hẹn đã được phê duyệt (PheDuyetChuDuAn = 'DaPheDuyet')
+      const [updatedCuocHen] = await db.execute(
+        'SELECT PheDuyetChuDuAn FROM cuochen WHERE CuocHenID = ?',
+        [cuocHenId]
+      );
+
+      // Gửi thông báo nếu đã được phê duyệt (async, không chờ)
+      if (updatedCuocHen[0]?.PheDuyetChuDuAn === 'DaPheDuyet') {
+        const ThongBaoService = require('./ThongBaoService');
+        ThongBaoService.thongBaoCuocHenDaPheDuyet(cuocHenId, nhanVienId)
+          .catch(err => console.error('[NhanVienBanHangService] Lỗi gửi thông báo đã phê duyệt:', err));
+      }
 
       return true;
     } catch (error) {
@@ -424,6 +540,12 @@ class NhanVienBanHangService {
         throw new Error('Không thể hủy cuộc hẹn ở trạng thái này');
       }
 
+      // Lấy trạng thái hiện tại để kiểm tra
+      const [currentCuocHen] = await db.execute(
+        'SELECT TrangThai FROM cuochen WHERE CuocHenID = ?',
+        [cuocHenId]
+      );
+
       // Cập nhật trạng thái
       await db.execute(
         `UPDATE cuochen 
@@ -432,6 +554,13 @@ class NhanVienBanHangService {
          WHERE CuocHenID = ?`,
         [lyDoHuy, cuocHenId]
       );
+
+      // Nếu trạng thái trước đó là 'HuyBoiKhach', gửi thông báo (async, không chờ)
+      if (currentCuocHen[0]?.TrangThai === 'HuyBoiKhach') {
+        const ThongBaoService = require('./ThongBaoService');
+        ThongBaoService.thongBaoKhachHuyCuocHen(cuocHenId, nhanVienId)
+          .catch(err => console.error('[NhanVienBanHangService] Lỗi gửi thông báo khách hủy:', err));
+      }
 
       return true;
     } catch (error) {
@@ -681,8 +810,6 @@ class NhanVienBanHangService {
 }
 
 module.exports = NhanVienBanHangService;
-
-
 
 
 

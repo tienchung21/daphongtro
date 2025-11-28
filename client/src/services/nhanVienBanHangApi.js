@@ -217,6 +217,39 @@ export const layCuocHenTheoTuan = async (soTuan = 4) => {
   return apiClient.get(`/bao-cao/cuoc-hen-theo-tuan?soTuan=${soTuan}`);
 };
 
+// ==================== THÔNG BÁO ====================
+
+/**
+ * Lấy danh sách thông báo với pagination
+ * @param {Object} filters - {trangThai, loai, page, limit}
+ */
+export const layDanhSachThongBao = async (filters = {}) => {
+  const params = new URLSearchParams(filters);
+  return apiClient.get(`/thong-bao?${params.toString()}`);
+};
+
+/**
+ * Đếm số thông báo chưa đọc
+ */
+export const demThongBaoChuaDoc = async () => {
+  return apiClient.get('/thong-bao/dem-chua-doc');
+};
+
+/**
+ * Đánh dấu thông báo đã đọc
+ * @param {number} thongBaoId
+ */
+export const danhDauDaDoc = async (thongBaoId) => {
+  return apiClient.put(`/thong-bao/${thongBaoId}/doc`);
+};
+
+/**
+ * Đánh dấu tất cả thông báo đã đọc
+ */
+export const danhDauDocTatCa = async () => {
+  return apiClient.put('/thong-bao/doc-tat-ca');
+};
+
 // ==================== DASHBOARD ====================
 
 /**
@@ -319,6 +352,59 @@ export const getMonthEnd = (date = new Date()) => {
   return new Date(date.getFullYear(), date.getMonth() + 1, 0);
 };
 
+// ==================== GỢI Ý TIN ĐĂNG (QR Xem Ngay) ====================
+
+/**
+ * Tìm kiếm tin đăng gợi ý theo bộ lọc
+ * @param {Object} filters - Bộ lọc tìm kiếm
+ * @param {number} [filters.cuocHenId] - ID cuộc hẹn hiện tại
+ * @param {number} [filters.khuVucId] - ID khu vực
+ * @param {number} [filters.giaMin] - Giá tối thiểu
+ * @param {number} [filters.giaMax] - Giá tối đa
+ * @param {number} [filters.dienTichMin] - Diện tích tối thiểu
+ * @param {number} [filters.dienTichMax] - Diện tích tối đa
+ * @param {string} [filters.tienIch] - Tiện ích (comma-separated)
+ * @param {number} [filters.limit] - Giới hạn số lượng
+ */
+export const timKiemGoiY = async (filters = {}) => {
+  return apiClient.post('/goi-y/tim-kiem', filters);
+};
+
+/**
+ * Lấy chi tiết tin đăng gợi ý (bao gồm danh sách phòng trống)
+ * @param {number} tinDangId - ID tin đăng
+ */
+export const layChiTietTinDangGoiY = async (tinDangId) => {
+  return apiClient.get(`/goi-y/tin-dang/${tinDangId}`);
+};
+
+/**
+ * Tạo QR "Xem Ngay" cho khách
+ * @param {Object} data - Dữ liệu tạo QR
+ * @param {number} [data.cuocHenId] - ID cuộc hẹn (optional)
+ * @param {number} data.tinDangId - ID tin đăng
+ * @param {number} data.phongId - ID phòng được chọn
+ */
+export const taoQRXemNgay = async (data) => {
+  return apiClient.post('/goi-y/tao-qr', data);
+};
+
+/**
+ * Kiểm tra trạng thái QR (polling fallback)
+ * @param {string} maQR - Mã QR
+ */
+export const kiemTraTrangThaiQR = async (maQR) => {
+  return apiClient.get(`/goi-y/trang-thai/${maQR}`);
+};
+
+/**
+ * Lấy danh sách khu vực con dựa trên KhuVucPhuTrachID của NVBH
+ * @returns {Promise<Array>} Danh sách khu vực con
+ */
+export const layDanhSachKhuVuc = async () => {
+  return apiClient.get('/goi-y/khu-vuc');
+};
+
 export default {
   // Lịch làm việc
   layLichLamViec,
@@ -350,6 +436,18 @@ export default {
   layDashboard,
   layHoSo,
   capNhatHoSo,
+  
+  // Thông báo
+  layDanhSachThongBao,
+  demThongBaoChuaDoc,
+  danhDauDaDoc,
+  danhDauDocTatCa,
+  
+  // Gợi ý tin đăng
+  timKiemGoiY,
+  layChiTietTinDangGoiY,
+  taoQRXemNgay,
+  kiemTraTrangThaiQR,
   
   // Helpers
   formatCurrency,

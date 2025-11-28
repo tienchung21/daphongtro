@@ -7,7 +7,7 @@ class KycController {
       console.log('📁 [KYC] Files:', req.files);
       
       const { 
-        soCCCD, tenDayDu, ngaySinh, diaChi, ngayCapCCCD, noiCapCCCD, 
+        soCCCD, tenDayDu, ngaySinh, diaChi, ngayCapCCCD, 
         faceSimilarity 
       } = req.body;
       
@@ -38,8 +38,7 @@ class KycController {
       const similarity = parseFloat(faceSimilarity);
       
       if (similarity >= 0.85) {
-        // Auto approve logic could go here if enabled
-        // trangThai = 'ThanhCong'; 
+        trangThai = 'ThanhCong';
       } else if (similarity < 0.6) {
         trangThai = 'ThatBai';
         lyDo = 'Độ khớp khuôn mặt thấp (' + (similarity * 100).toFixed(2) + '%)';
@@ -52,7 +51,6 @@ class KycController {
         NgaySinh: ngaySinh || null,
         DiaChi: diaChi || null,
         NgayCapCCCD: ngayCapCCCD || null,
-        NoiCapCCCD: noiCapCCCD || null,
         FaceSimilarity: similarity || null,
         TrangThai: trangThai,
         LyDoThatBai: lyDo,

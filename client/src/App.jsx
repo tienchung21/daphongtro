@@ -45,81 +45,78 @@ import QuanLyLichNVBH from "./pages/Operator/QuanLyLichNVBH";
 import QuanLyNhanVien from "./pages/Operator/QuanLyNhanVien";
 import QuanLyBienBan from "./pages/Operator/QuanLyBienBan";
 
+// Import trang Xem Ngay (Public) cho Gợi ý Tin đăng
+import XemNgayConfirm from './pages/XemNgay/XemNgayConfirm';
+
 // Import từ upstream
-import QuanLyTaiKhoan from "./pages/quanlytaikhoan";
-import SearchKhuVuc from "./components/SearchKhuVuc";
-import QuanLyTinDang from "./pages/quanlytindang";
-import QuanLyKhuVuc from "./pages/quanlykhuvuc";
-import ThanhToan from "./pages/thanhtoan";
-import ThanhToanCoc from "./pages/thanhtoancoc";
-import Appointments from "./pages/cuochencuatoi"; // đúng thư mục hiện tại
-import QuanLy from "./pages/QuanLy";
-
-import Naptien from "./pages/Naptien";
-
+import QuanLyTaiKhoan from './pages/quanlytaikhoan';
+import SearchKhuVuc from './components/SearchKhuVuc';
+import QuanLyTinDang from './pages/quanlytindang';
+import QuanLyKhuVuc from './pages/quanlykhuvuc';
+import ThanhToan from './pages/thanhtoan';
+import ThanhToanCoc from './pages/thanhtoancoc';
+import Appointments from './pages/cuochencuatoi'; // đúng thư mục hiện tại
+import QuanLy from './pages/QuanLy';
+import VideoCallPopup from './components/VideoCallPopup';
+import KycDebugPlayground from './pages/XacThucKYC/KycDebugPlayground';
 function App() {
+
   return (
+
     <div className="App">
+      <VideoCallPopup />
+
       <Routes>
-        <Route path="/" element={<TrangChu />} />
+        <Route path='/' element={<TrangChu />} />
         {/* <Route path='/about' element={<div>About Page</div>} /> */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/dangky" element={<Dangky />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/dangky' element={<Dangky />} />
+
         {/* 🎯 Route cho Khách hàng - Chi tiết tin đăng công khai (Soft Tech Theme) */}
-        <Route path="/tin-dang/:id" element={<ChiTietTinDangKhachHang />} />
-        <Route path="/naptien" element={<Naptien />} />
+        <Route path='/tin-dang/:id' element={<ChiTietTinDangKhachHang />} />
+        
+        {/* 🎯 Route cho Khách hàng - Xem tin đăng gợi ý qua QR (Public) */}
+        <Route path='/xem-ngay/:maQR' element={<XemNgayConfirm />} />
+
         {/* Routes cho Nhân viên Bán hàng */}
-        <Route path="/nhan-vien-ban-hang" element={<LayoutNhanVienBanHang />}>
+        <Route path='/nhan-vien-ban-hang' element={<LayoutNhanVienBanHang />}>
           <Route index element={<DashboardNVBH />} />
-          <Route path="lich-lam-viec" element={<LichLamViec />} />
-          <Route path="cuoc-hen" element={<QuanLyCuocHenNVBH />} />
-          <Route path="cuoc-hen/:id" element={<ChiTietCuocHenNVBH />} />
-          <Route path="giao-dich" element={<QuanLyGiaoDich />} />
-          <Route path="thu-nhap" element={<BaoCaoThuNhap />} />
-          <Route path="tin-nhan" element={<TinNhanNVBH />} />
-          <Route path="tin-nhan/:id" element={<ChiTietTinNhanNVBH />} />
-          <Route path="cai-dat" element={<CaiDatNhanVienBanHang />} />
+          <Route path='lich-lam-viec' element={<LichLamViec />} />
+          <Route path='cuoc-hen' element={<QuanLyCuocHenNVBH />} />
+          <Route path='cuoc-hen/:id' element={<ChiTietCuocHenNVBH />} />
+          <Route path='giao-dich' element={<QuanLyGiaoDich />} />
+          <Route path='thu-nhap' element={<BaoCaoThuNhap />} />
+          <Route path='tin-nhan' element={<TinNhanNVBH />} />
+          <Route path='tin-nhan/:id' element={<ChiTietTinNhanNVBH />} />
+          <Route path='cai-dat' element={<CaiDatNhanVienBanHang />} />
         </Route>
+
         {/* Routes cho NVDH (UC-OPER-01 đến UC-OPER-06) */}
-        <Route path="/nvdh/dashboard" element={<DashboardOperator />} />
-        <Route path="/nvdh/duyet-tin-dang" element={<DuyetTinDang />} />
-        <Route path="/nvdh/du-an" element={<QuanLyDuAnOperator />} />
-        <Route path="/nvdh/lich-nvbh" element={<QuanLyLichNVBH />} />
-        <Route path="/nvdh/nhan-vien" element={<QuanLyNhanVien />} />
-        <Route path="/nvdh/bien-ban" element={<QuanLyBienBan />} />
+        <Route path='/nvdh/dashboard' element={<DashboardOperator />} />
+        <Route path='/nvdh/duyet-tin-dang' element={<DuyetTinDang />} />
+        <Route path='/nvdh/du-an' element={<QuanLyDuAnOperator />} />
+        <Route path='/nvdh/lich-nvbh' element={<QuanLyLichNVBH />} />
+        <Route path='/nvdh/nhan-vien' element={<QuanLyNhanVien />} />
+        <Route path='/nvdh/bien-ban' element={<QuanLyBienBan />} />
+
         {/* Routes cho Chủ dự án */}
-        <Route path="/chu-du-an/dashboard" element={<DashboardChuDuAn />} />
-        <Route path="/chu-du-an/du-an" element={<QuanLyDuAn />} />{" "}
-        {/* ✨ Quản lý dự án */}
-        <Route path="/chu-du-an/tin-dang" element={<QuanLyTinDangChuDuAn />} />
-        <Route
-          path="/chu-du-an/tin-dang/:id"
-          element={<ChiTietTinDang />}
-        />{" "}
-        {/* ✨ Light Glass Morphism Theme */}
-        <Route path="/chu-du-an/tao-tin-dang" element={<TaoTinDang />} />
-        <Route
-          path="/chu-du-an/chinh-sua-tin-dang/:id"
-          element={<ChinhSuaTinDang />}
-        />
-        <Route path="/chu-du-an/bao-cao" element={<BaoCaoHieuSuat />} />
-        <Route path="/chu-du-an/cuoc-hen" element={<QuanLyCuocHen />} />{" "}
-        {/* ✨ UC-PROJ-02: Quản lý cuộc hẹn */}
-        <Route path="/chu-du-an/hop-dong" element={<QuanLyHopDong />} />{" "}
-        {/* ✨ UC-PROJ-04: Quản lý hợp đồng */}
-        <Route path="/chu-du-an/tin-nhan" element={<TinNhan />} />{" "}
-        {/* ✨ UC-PROJ-05: Tin nhắn */}
-        <Route
-          path="/chu-du-an/tin-nhan/:id"
-          element={<ChiTietTinNhan />}
-        />{" "}
-        {/* ✨ Chi tiết cuộc hội thoại */}
-        <Route path="/cai-dat" element={<CaiDat />} />{" "}
-        {/* ✨ Cài đặt tài khoản Chủ dự án */}
-        <Route path="/xac-thuc-kyc" element={<XacThucKYC />} />{" "}
-        {/* ✨ Xác thực KYC */}
+        <Route path='/chu-du-an/dashboard' element={<DashboardChuDuAn />} />
+        <Route path='/chu-du-an/du-an' element={<QuanLyDuAn />} /> {/* ✨ Quản lý dự án */}
+        <Route path='/chu-du-an/tin-dang' element={<QuanLyTinDangChuDuAn />} />
+        <Route path='/chu-du-an/tin-dang/:id' element={<ChiTietTinDang />} /> {/* ✨ Light Glass Morphism Theme */}
+        <Route path='/chu-du-an/tao-tin-dang' element={<TaoTinDang />} />
+        <Route path='/chu-du-an/chinh-sua-tin-dang/:id' element={<ChinhSuaTinDang />} />
+        <Route path='/chu-du-an/bao-cao' element={<BaoCaoHieuSuat />} />
+        <Route path='/chu-du-an/cuoc-hen' element={<QuanLyCuocHen />} /> {/* ✨ UC-PROJ-02: Quản lý cuộc hẹn */}
+        <Route path='/chu-du-an/hop-dong' element={<QuanLyHopDong />} /> {/* ✨ UC-PROJ-04: Quản lý hợp đồng */}
+        <Route path='/chu-du-an/tin-nhan' element={<TinNhan />} /> {/* ✨ UC-PROJ-05: Tin nhắn */}
+        <Route path='/chu-du-an/tin-nhan/:id' element={<ChiTietTinNhan />} /> {/* ✨ Chi tiết cuộc hội thoại */}
+        <Route path='/cai-dat' element={<CaiDat />} /> {/* ✨ Cài đặt tài khoản Chủ dự án */}
+        <Route path='/xac-thuc-kyc' element={<XacThucKYC />} /> {/* ✨ Xác thực KYC */}
+        <Route path='/kyc-debug' element={<KycDebugPlayground />} /> {/* 🔍 ROI/QR debug playground */}
+
         {/* Routes từ upstream */}
-        <Route path="/searchkhuvuc" element={<SearchKhuVuc />} />
+        <Route path='/searchkhuvuc' element={<SearchKhuVuc />} />
         <Route path="/quanlytaikhoan" element={<QuanLyTaiKhoan />} />
         <Route path="/quanlytindang" element={<QuanLyTinDang />} />
         <Route path="/quanlykhuvuc" element={<QuanLyKhuVuc />} />

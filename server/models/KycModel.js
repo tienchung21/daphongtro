@@ -1,20 +1,21 @@
 const db = require('../config/db');
 
 class KYCModel {
-  static async create(data) {
+  static async create(data, connection = null) {
+    const conn = connection || db;
     const sql = `
       INSERT INTO kyc_verification 
-      (NguoiDungID, SoCCCD, TenDayDu, NgaySinh, DiaChi, NgayCapCCCD, NoiCapCCCD, 
+      (NguoiDungID, SoCCCD, TenDayDu, NgaySinh, DiaChi, NgayCapCCCD, 
        FaceSimilarity, TrangThai, LyDoThatBai, AnhCCCDMatTruoc, AnhCCCDMatSau, AnhSelfie)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `;
     const params = [
       data.NguoiDungID, data.SoCCCD, data.TenDayDu, data.NgaySinh, data.DiaChi, 
-      data.NgayCapCCCD, data.NoiCapCCCD, data.FaceSimilarity, data.TrangThai, 
+      data.NgayCapCCCD, data.FaceSimilarity, data.TrangThai, 
       data.LyDoThatBai, data.AnhCCCDMatTruoc, data.AnhCCCDMatSau, data.AnhSelfie
     ];
     
-    const [result] = await db.execute(sql, params);
+    const [result] = await conn.execute(sql, params);
     return result.insertId;
   }
 
@@ -22,7 +23,7 @@ class KYCModel {
     const sql = `
       SELECT 
         KYCVerificationID, NguoiDungID, SoCCCD, TenDayDu, NgaySinh, DiaChi, 
-        NgayCapCCCD, NoiCapCCCD, FaceSimilarity, TrangThai, LyDoThatBai, 
+        NgayCapCCCD, FaceSimilarity, TrangThai, LyDoThatBai, 
         AnhCCCDMatTruoc, AnhCCCDMatSau, AnhSelfie, TaoLuc
       FROM kyc_verification 
       WHERE NguoiDungID = ? 
@@ -36,7 +37,7 @@ class KYCModel {
     const sql = `
       SELECT 
         KYCVerificationID, NguoiDungID, SoCCCD, TenDayDu, NgaySinh, DiaChi, 
-        NgayCapCCCD, NoiCapCCCD, FaceSimilarity, TrangThai, LyDoThatBai, 
+        NgayCapCCCD, FaceSimilarity, TrangThai, LyDoThatBai, 
         AnhCCCDMatTruoc, AnhCCCDMatSau, AnhSelfie, TaoLuc
       FROM kyc_verification 
       WHERE KYCVerificationID = ?

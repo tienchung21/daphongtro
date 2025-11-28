@@ -33,6 +33,7 @@ import hopDongApi from "../../api/hopDongApi";
 import lichSuViApi from "../../api/lichSuViApi";
 import { useToast, ToastContainer } from "../../components/Toast/Toast";
 import "./chitiettindang.css";
+import { getStaticUrl } from "../../config/api";
 
 /**
  * Helper: Chuyển datetime-local input hoặc ISO string sang MySQL datetime format
@@ -619,26 +620,27 @@ const ChiTietTinDang = () => {
   };
 
   const parseImages = (urlJson) => {
-    try {
-      if (!urlJson) return [];
-
-      // Handle string path
-      if (typeof urlJson === "string" && urlJson.startsWith("/uploads")) {
-        return [`http://localhost:5000${urlJson}`];
+    const normalizeValues = (value) => {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+          try {
+            const parsed = JSON.parse(trimmed);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        }
+        return [trimmed];
       }
-
-      // Handle JSON array
-      const urls = JSON.parse(urlJson);
-      if (Array.isArray(urls)) {
-        return urls.map((url) =>
-          url.startsWith("http") ? url : `http://localhost:5000${url}`
-        );
-      }
-
       return [];
-    } catch {
-      return [];
-    }
+    };
+
+    return normalizeValues(urlJson)
+      .map((url) => getStaticUrl(url))
+      .filter(Boolean);
   };
 
   const parseTienIch = (tienIchJson) => {
@@ -1213,9 +1215,8 @@ const ChiTietTinDang = () => {
 
                 <div className="ctd-rooms-grid">
                   {tinDang.DanhSachPhong.map((phong) => {
-                    // Fix: AnhPhong là string, không phải JSON array
                     const phongImage = phong.AnhPhong
-                      ? `http://localhost:5000${phong.AnhPhong}`
+                      ? getStaticUrl(phong.AnhPhong)
                       : null;
                     const isAvailable = phong.TrangThaiPhong === "Trong";
 
@@ -1612,7 +1613,7 @@ const ChiTietTinDang = () => {
                     </div>
                     {phong.AnhPhong && (
                       <img
-                        src={`http://localhost:5000${phong.AnhPhong}`}
+                        src={getStaticUrl(phong.AnhPhong)}
                         alt={phong.TenPhong}
                         className="coc-phong-thumb"
                       />

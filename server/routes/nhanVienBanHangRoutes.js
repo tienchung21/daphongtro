@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const NhanVienBanHangController = require('../controllers/NhanVienBanHangController');
+const ThongBaoController = require('../controllers/ThongBaoController');
 const auth = require('../middleware/auth');
 const { requireRoles } = require('../middleware/role');
 
@@ -41,6 +42,12 @@ router.get('/bao-cao/cuoc-hen-theo-tuan', NhanVienBanHangController.layCuocHenTh
 router.get('/dashboard', NhanVienBanHangController.layDashboard);
 router.get('/ho-so', NhanVienBanHangController.layHoSo);
 router.put('/ho-so', NhanVienBanHangController.capNhatHoSo);
+
+// ==================== THÔNG BÁO ====================
+router.get('/thong-bao', ThongBaoController.layDanhSach);
+router.get('/thong-bao/dem-chua-doc', ThongBaoController.demChuaDoc);
+router.put('/thong-bao/:id/doc', ThongBaoController.danhDauDaDoc);
+router.put('/thong-bao/doc-tat-ca', ThongBaoController.danhDauDocTatCa);
 
 module.exports = router;
 

@@ -6,6 +6,7 @@ import tinDangPublicApi from "../../api/tinDangPublicApi";
 import SearchKhuVuc from "../../components/SearchKhuVuc";
 import yeuThichApi from "../../api/yeuThichApi";
 import { Link } from "react-router-dom";
+import { getStaticUrl } from "../../config/api";
 import { useTranslation } from "../../context/LanguageContext";
 import ChatBot from "../../components/ChatBot/ChatBot";
 
@@ -139,31 +140,29 @@ function TrangChu() {
     const raw = tin?.URL ?? tin?.Img ?? tin?.Images ?? tin?.images;
     if (!raw) return placeholder;
 
-    if (Array.isArray(raw) && raw.length) return raw[0];
-
-    if (typeof raw === "string") {
-      const s = raw.trim();
-      try {
-        if ((s.startsWith("[") && s.endsWith("]")) || s.startsWith('{"')) {
-          const parsed = JSON.parse(s);
-          if (Array.isArray(parsed) && parsed.length) return parsed[0];
-          if (
-            parsed?.images &&
-            Array.isArray(parsed.images) &&
-            parsed.images.length
-          )
-            return parsed.images[0];
+    const normalizeList = (input) => {
+      if (!input) return [];
+      if (Array.isArray(input)) return input;
+      if (typeof input === "string") {
+        const s = input.trim();
+        if (s.startsWith("[") && s.endsWith("]")) {
+          try {
+            const parsed = JSON.parse(s);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [s];
+          }
         }
-      } catch {
-        /* ignore */
+        return [s];
       }
+      return [input];
+    };
 
-      const m = s.match(/https?:\/\/[^",\]\s]+/);
-      if (m) return m[0];
-      if (s.startsWith("http") || s.startsWith("/")) return s;
-    }
+    const first = normalizeList(raw).find(Boolean);
+    if (!first) return placeholder;
 
-    return placeholder;
+    const full = getStaticUrl(first);
+    return full || placeholder;
   };
 
   return (

@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { buildApiUrl } from '../config/api';
 
-const API_URL = import.meta.env.VITE_KYC_API_URL || 'http://localhost:5000/api/kyc';
+const API_URL = import.meta.env.VITE_KYC_API_URL || `${buildApiUrl('/api/kyc')}`;
 
 const KYCService = {
   xacThuc: async (formData) => {

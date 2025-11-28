@@ -207,9 +207,9 @@ const Dashboard = () => {
           <div className="nvbh-card__body">
             {data.cuocHenHomNay.length > 0 ? (
               <div className="nvbh-upcoming-list">
-                {data.cuocHenHomNay.slice(0, 3).map((cuocHen) => (
+                {data.cuocHenHomNay.slice(0, 3).map((cuocHen, index) => (
                   <div
-                    key={cuocHen.CuocHenID}
+                    key={`cuoc-hen-${cuocHen.CuocHenID}-${index}`}
                     className="nvbh-upcoming-item"
                     onClick={() => navigate(`/nhan-vien-ban-hang/cuoc-hen/${cuocHen.CuocHenID}`)}
                   >

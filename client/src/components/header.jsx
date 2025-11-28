@@ -3,6 +3,7 @@ import logo from "../assets/images/logo-hinh-mai-nha_.jpg";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import yeuThichApi from "../api/yeuThichApi";
+import { getStaticUrl } from "../config/api";
 import { HiOutlineLanguage, HiOutlineSun, HiOutlineMoon, HiOutlineLightBulb } from "react-icons/hi2";
 import { useLanguage, useTranslation } from "../context/LanguageContext";
 
@@ -118,6 +119,29 @@ function Header() {
     window.location.reload();
   };
 
+  const resolveImageSrc = (value) => {
+    if (!value) return null;
+
+    const normalizeCandidates = (input) => {
+      if (!input) return [];
+      if (Array.isArray(input)) return input;
+      if (typeof input === "string") {
+        if (input.trim().startsWith("[")) {
+          try {
+            const parsed = JSON.parse(input);
+            return Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            return [input];
+          }
+        }
+        return [input];
+      }
+      return [input];
+    };
+
+    const firstCandidate = normalizeCandidates(value).find(Boolean);
+    if (!firstCandidate || typeof firstCandidate !== "string") return null;
+    return getStaticUrl(firstCandidate);
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
   };

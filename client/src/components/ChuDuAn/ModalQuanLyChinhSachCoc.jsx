@@ -11,7 +11,8 @@ import {
   HiOutlineClock,
   HiOutlineShieldCheck,
   HiOutlineDocumentCheck,
-  HiOutlineCalendarDays
+  HiOutlineCalendarDays,
+  HiOutlineCurrencyDollar
 } from 'react-icons/hi2';
 import ChinhSachCocService from '../../services/ChinhSachCocService';
 import './ModalQuanLyChinhSachCoc.css';
@@ -25,7 +26,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
     TTL_CocGiuCho_Gio: 72, // Default 3 ngày
     TyLePhat_CocGiuCho: 100, // Default 100%
     ChoPhepCocAnNinh: false,
-    SoTienCocAnNinhMacDinh: 0,
+    SoTienCocGiuChoMacDinh: 0,
     QuyTacGiaiToa: 'BanGiao',
     SoNgayGiaiToa: null, // Số ngày giải tỏa (chỉ dùng khi QuyTacGiaiToa='TheoNgay')
   });
@@ -33,6 +34,30 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return 'Chưa thiết lập';
+    }
+    const numeric = Number(value);
+    if (Number.isNaN(numeric) || numeric < 0) {
+      return 'Chưa thiết lập';
+    }
+    return `${numeric.toLocaleString('vi-VN')} ₫`;
+  };
+
+  const getQuyTacLabel = (value) => {
+    switch (value) {
+      case 'BanGiao':
+        return 'Giải tỏa khi bàn giao';
+      case 'TheoNgay':
+        return 'Giải tỏa theo ngày';
+      case 'Khac':
+        return 'Quy tắc khác';
+      default:
+        return 'Chưa cấu hình';
+    }
+  };
 
   // Load data khi mode = edit
   useEffect(() => {
@@ -44,7 +69,7 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
         TTL_CocGiuCho_Gio: chinhSachCoc.TTL_CocGiuCho_Gio || 72,
         TyLePhat_CocGiuCho: chinhSachCoc.TyLePhat_CocGiuCho || 100,
         ChoPhepCocAnNinh: chinhSachCoc.ChoPhepCocAnNinh === 1,
-        SoTienCocAnNinhMacDinh: chinhSachCoc.SoTienCocAnNinhMacDinh || 0,
+        SoTienCocGiuChoMacDinh: chinhSachCoc.SoTienCocGiuChoMacDinh || 0,
         QuyTacGiaiToa: chinhSachCoc.QuyTacGiaiToa || 'BanGiao',
         SoNgayGiaiToa: chinhSachCoc.SoNgayGiaiToa || null,
       });
@@ -84,12 +109,10 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
       if (isNaN(tyLePhat) || tyLePhat < 0 || tyLePhat > 100) {
         newErrors.TyLePhat_CocGiuCho = 'Tỷ lệ phạt phải từ 0-100%';
       }
-    }
 
-    if (formData.ChoPhepCocAnNinh) {
-      const soTien = parseFloat(formData.SoTienCocAnNinhMacDinh);
-      if (isNaN(soTien) || soTien < 0) {
-        newErrors.SoTienCocAnNinhMacDinh = 'Số tiền cọc an ninh phải >= 0';
+      const soTienGiuCho = parseFloat(formData.SoTienCocGiuChoMacDinh);
+      if (isNaN(soTienGiuCho) || soTienGiuCho < 0) {
+        newErrors.SoTienCocGiuChoMacDinh = 'Số tiền cọc giữ chỗ phải >= 0';
       }
     }
 
@@ -121,6 +144,8 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
 
     try {
       // Prepare data
+      const parsedSoTienCocGiuCho = parseFloat(formData.SoTienCocGiuChoMacDinh);
+
       const submitData = {
         TenChinhSach: formData.TenChinhSach.trim(),
         MoTa: formData.MoTa.trim(),
@@ -128,7 +153,9 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
         TTL_CocGiuCho_Gio: parseInt(formData.TTL_CocGiuCho_Gio),
         TyLePhat_CocGiuCho: parseFloat(formData.TyLePhat_CocGiuCho),
         ChoPhepCocAnNinh: formData.ChoPhepCocAnNinh,
-        SoTienCocAnNinhMacDinh: parseFloat(formData.SoTienCocAnNinhMacDinh),
+        SoTienCocGiuChoMacDinh: formData.ChoPhepCocGiuCho
+          ? (isNaN(parsedSoTienCocGiuCho) ? null : parsedSoTienCocGiuCho)
+          : null,
         QuyTacGiaiToa: formData.QuyTacGiaiToa,
         SoNgayGiaiToa: formData.QuyTacGiaiToa === 'TheoNgay' ? parseInt(formData.SoNgayGiaiToa) : null,
       };
@@ -268,6 +295,24 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
                     <span className="form-hint">0-100% (số nguyên)</span>
                     {errors.TyLePhat_CocGiuCho && <span className="error-text">{errors.TyLePhat_CocGiuCho}</span>}
                   </div>
+
+                  {/* Số tiền cọc giữ chỗ */}
+                  <div className="form-group">
+                    <label className="form-label">Số tiền cọc giữ chỗ mặc định (VNĐ)</label>
+                    <input
+                      type="number"
+                      name="SoTienCocGiuChoMacDinh"
+                      className={`form-input ${errors.SoTienCocGiuChoMacDinh ? 'error' : ''}`}
+                      value={formData.SoTienCocGiuChoMacDinh}
+                      onChange={handleChange}
+                      min="0"
+                      step="50000"
+                      placeholder="Ví dụ: 500000"
+                    />
+                    {errors.SoTienCocGiuChoMacDinh && (
+                      <span className="error-text">{errors.SoTienCocGiuChoMacDinh}</span>
+                    )}
+                  </div>
                 </>
               )}
             </div>
@@ -292,23 +337,6 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
                   </label>
                 </div>
               </div>
-
-              {formData.ChoPhepCocAnNinh && (
-                <div className="form-group">
-                  <label className="form-label">Số tiền cọc an ninh mặc định (VNĐ)</label>
-                  <input
-                    type="number"
-                    name="SoTienCocAnNinhMacDinh"
-                    className={`form-input ${errors.SoTienCocAnNinhMacDinh ? 'error' : ''}`}
-                    value={formData.SoTienCocAnNinhMacDinh}
-                    onChange={handleChange}
-                    min="0"
-                    step="100000"
-                    placeholder="Ví dụ: 2000000"
-                  />
-                  {errors.SoTienCocAnNinhMacDinh && <span className="error-text">{errors.SoTienCocAnNinhMacDinh}</span>}
-                </div>
-              )}
             </div>
 
             {/* Quy tắc giải tỏa */}
@@ -352,6 +380,96 @@ const ModalQuanLyChinhSachCoc = ({ isOpen, onClose, onSuccess, chinhSachCoc = nu
                 </div>
               )}
             </div>
+
+          {/* Preview */}
+          <div className="modal-csc__preview">
+            <div className="modal-csc__preview-header">
+              <h3 className="modal-csc__preview-title">Preview chính sách</h3>
+              <p className="modal-csc__preview-subtitle">Thông tin sẽ hiển thị trong modal chọn chính sách</p>
+            </div>
+            <div className="modal-csc__preview-card">
+              <div className="modal-csc__preview-name">
+                {formData.TenChinhSach?.trim() || 'Chính sách chưa có tên'}
+              </div>
+              {formData.MoTa?.trim() && (
+                <p className="modal-csc__preview-description">{formData.MoTa.trim()}</p>
+              )}
+
+              <div className="modal-csc__preview-section">
+                <div className="modal-csc__preview-row">
+                  <span className="modal-csc__preview-label">Cọc giữ chỗ</span>
+                  <span
+                    className={`modal-csc__badge ${
+                      formData.ChoPhepCocGiuCho ? 'modal-csc__badge--success' : 'modal-csc__badge--muted'
+                    }`}
+                  >
+                    {formData.ChoPhepCocGiuCho ? 'Cho phép' : 'Không áp dụng'}
+                  </span>
+                </div>
+                {formData.ChoPhepCocGiuCho && (
+                  <>
+                    <div className="modal-csc__preview-row">
+                      <span className="modal-csc__preview-label">
+                        <HiOutlineClock className="modal-csc__preview-icon" />
+                        TTL giữ chỗ
+                      </span>
+                      <span className="modal-csc__preview-value">{formData.TTL_CocGiuCho_Gio} giờ</span>
+                    </div>
+                    <div className="modal-csc__preview-row">
+                      <span className="modal-csc__preview-label">
+                        <HiOutlineExclamationCircle className="modal-csc__preview-icon" />
+                        Tỷ lệ phạt
+                      </span>
+                      <span className="modal-csc__preview-value">{formData.TyLePhat_CocGiuCho}%</span>
+                    </div>
+                    <div className="modal-csc__preview-row">
+                      <span className="modal-csc__preview-label">
+                        <HiOutlineCurrencyDollar className="modal-csc__preview-icon" />
+                        Số tiền giữ chỗ
+                      </span>
+                      <span className="modal-csc__preview-value">
+                        {formatCurrency(formData.SoTienCocGiuChoMacDinh)}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              <div className="modal-csc__preview-section">
+                <div className="modal-csc__preview-row">
+                  <span className="modal-csc__preview-label">Cọc an ninh</span>
+                  <span
+                    className={`modal-csc__badge ${
+                      formData.ChoPhepCocAnNinh ? 'modal-csc__badge--success' : 'modal-csc__badge--muted'
+                    }`}
+                  >
+                    {formData.ChoPhepCocAnNinh ? 'Cho phép' : 'Không áp dụng'}
+                  </span>
+                </div>
+              </div>
+
+              <div className="modal-csc__preview-section">
+                <div className="modal-csc__preview-row">
+                  <span className="modal-csc__preview-label">
+                    <HiOutlineDocumentCheck className="modal-csc__preview-icon" />
+                    Quy tắc giải tỏa
+                  </span>
+                  <span className="modal-csc__preview-value">{getQuyTacLabel(formData.QuyTacGiaiToa)}</span>
+                </div>
+                {formData.QuyTacGiaiToa === 'TheoNgay' && (
+                  <div className="modal-csc__preview-row">
+                    <span className="modal-csc__preview-label">
+                      <HiOutlineCalendarDays className="modal-csc__preview-icon" />
+                      Số ngày giải tỏa
+                    </span>
+                    <span className="modal-csc__preview-value">
+                      {formData.SoNgayGiaiToa ? `${formData.SoNgayGiaiToa} ngày` : 'Chưa thiết lập'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
 
             {/* Footer */}
             <div className="modal-footer">

@@ -94,7 +94,7 @@ NgungHoatDong → ChuaGui → DangXuLy → ChapNhan/TuChoi
 - Light Glass Morphism theme
 - Dual mode: create/edit
 - Client validation + conditional fields
-- Form: TenChinhSach, MoTa, ChoPhepCocGiuCho, TTL, TyLePhat, ChoPhepCocAnNinh, SoTienCocAnNinhMacDinh, QuyTacGiaiToa
+- Form: TenChinhSach, MoTa, ChoPhepCocGiuCho, TTL, TyLePhat, ChoPhepCocAnNinh, QuyTacGiaiToa
 
 **3. ModalYeuCauMoLaiDuAn.jsx + CSS** (530 LOC)
 - Warning accent theme (orange)

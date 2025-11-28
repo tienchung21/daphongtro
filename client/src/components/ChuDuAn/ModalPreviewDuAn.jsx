@@ -42,6 +42,17 @@ const toNumber = (value) => {
   return Number.isNaN(parsed) ? 0 : parsed;
 };
 
+const formatCurrency = (value) => {
+  if (value === null || value === undefined || value === '') {
+    return 'Chưa thiết lập';
+  }
+  const numeric = Number(value);
+  if (Number.isNaN(numeric) || numeric < 0) {
+    return 'Chưa thiết lập';
+  }
+  return `${numeric.toLocaleString('vi-VN')} ₫`;
+};
+
 function ModalPreviewDuAn({
   isOpen,
   onClose,
@@ -314,6 +325,10 @@ function ModalPreviewDuAn({
                               <span className="policy-tag tag-warning">
                                 <HiOutlineExclamationTriangle className="tag-icon" />
                                 Phạt: {policy.TyLePhat_CocGiuCho}%
+                              </span>
+                              <span className="policy-tag tag-secondary">
+                                <HiOutlineCurrencyDollar className="tag-icon" />
+                                {formatCurrency(policy.SoTienCocGiuChoMacDinh)}
                               </span>
                             </>
                           )}

@@ -5,6 +5,7 @@
  */
 
 import React, { useRef, useEffect } from 'react';
+import { HiOutlinePhone } from 'react-icons/hi2';
 import './MessageList.css';
 
 export const MessageList = ({ messages, currentUserId, isTyping = false, loading = false }) => {
@@ -49,6 +50,17 @@ export const MessageList = ({ messages, currentUserId, isTyping = false, loading
           {messages.map((message) => {
             const isOwn = message.NguoiGuiID === currentUserId;
             
+            // Kiểm tra nếu là tin nhắn cuộc gọi nhỡ
+            let missedCallData = null;
+            try {
+              const parsed = JSON.parse(message.NoiDung);
+              if (parsed && parsed.type === 'video_call_missed') {
+                missedCallData = parsed;
+              }
+            } catch (e) {
+              // Không phải JSON, bỏ qua
+            }
+
             // Debug: Log comparison
             if (messages.indexOf(message) === 0) {
               console.log('🔍 Message Debug:', {
@@ -60,6 +72,27 @@ export const MessageList = ({ messages, currentUserId, isTyping = false, loading
               });
             }
 
+            // Hiển thị cuộc gọi nhỡ
+            if (missedCallData) {
+              return (
+                <div
+                  key={message.TinNhanID}
+                  className="message-bubble message-missed-call"
+                >
+                  <div className="message-missed-call-content">
+                    <HiOutlinePhone className="message-missed-call-icon" />
+                    <div className="message-missed-call-info">
+                      <p className="message-missed-call-text">
+                        Cuộc gọi video từ <strong>{missedCallData.nguoiGoiTen || 'Người dùng'}</strong> đã bị nhỡ
+                      </p>
+                      <span className="message-time">{formatTime(message.ThoiGian)}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // Tin nhắn thông thường
             return (
               <div
                 key={message.TinNhanID}

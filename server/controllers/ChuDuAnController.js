@@ -426,6 +426,20 @@ class ChuDuAnController {
           req.get('User-Agent')
         );
 
+        // Gửi thông báo cho NVBH (async, không chờ)
+        // Lấy NhanVienBanHangID từ cuộc hẹn
+        const ThongBaoService = require('../services/ThongBaoService');
+        const db = require('../config/db');
+        const [cuocHen] = await db.execute(
+          'SELECT NhanVienBanHangID FROM cuochen WHERE CuocHenID = ?',
+          [cuocHenId]
+        );
+        
+        if (cuocHen.length > 0 && cuocHen[0].NhanVienBanHangID) {
+          ThongBaoService.thongBaoCuocHenDaPheDuyet(cuocHenId, cuocHen[0].NhanVienBanHangID)
+            .catch(err => console.error('[ChuDuAnController] Lỗi gửi thông báo đã phê duyệt:', err));
+        }
+
         res.json({
           success: true,
           message: 'Phê duyệt cuộc hẹn thành công'
@@ -487,6 +501,20 @@ class ChuDuAnController {
           req.ip,
           req.get('User-Agent')
         );
+
+        // Gửi thông báo cho NVBH (async, không chờ)
+        // Lấy NhanVienBanHangID từ cuộc hẹn
+        const ThongBaoService = require('../services/ThongBaoService');
+        const db = require('../config/db');
+        const [cuocHen] = await db.execute(
+          'SELECT NhanVienBanHangID FROM cuochen WHERE CuocHenID = ?',
+          [cuocHenId]
+        );
+        
+        if (cuocHen.length > 0 && cuocHen[0].NhanVienBanHangID) {
+          ThongBaoService.thongBaoCuocHenTuChoi(cuocHenId, cuocHen[0].NhanVienBanHangID, lyDoTuChoi)
+            .catch(err => console.error('[ChuDuAnController] Lỗi gửi thông báo từ chối:', err));
+        }
 
         res.json({
           success: true,
@@ -811,7 +839,6 @@ class ChuDuAnController {
         'TTL_CocGiuCho_Gio',
         'TyLePhat_CocGiuCho',
         'ChoPhepCocAnNinh',
-        'SoTienCocAnNinhMacDinh',
         'QuyTacGiaiToa',
         'HieuLuc'
       ];
