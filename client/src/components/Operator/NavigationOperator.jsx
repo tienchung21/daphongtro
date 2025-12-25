@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./NavigationOperator.css";
 import IconOperator from "./Icon";
+
+// Logo Hommy
+import HommyLogoIcon from "../../assets/images/Hommy_Logo_Icon.svg";
 import {
   HiOutlineChartBar,
   HiOutlineCheckCircle,
@@ -93,13 +96,13 @@ function NavigationOperator() {
   ];
 
   const handleLogout = () => {
-    try {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      sessionStorage.clear();
-    } finally {
-      navigate("/login");
-    }
+    // Clear localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.clear();
+    
+    // Force reload để clear React state và redirect to login
+    window.location.href = "/login";
   };
 
   return (
@@ -117,9 +120,7 @@ function NavigationOperator() {
           {/* Logo/Brand */}
           <div className="operator-nav__brand">
             <div className="operator-nav__brand-icon">
-              <IconOperator size={24} title="Điều hành">
-                <HiOutlineBuildingOffice />
-              </IconOperator>
+              <img src={HommyLogoIcon} alt="Hommy" className="operator-nav__brand-logo" />
             </div>
             <div className="operator-nav__brand-text">
               <div className="operator-nav__brand-title">Điều hành</div>

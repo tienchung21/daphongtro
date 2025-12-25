@@ -7,12 +7,17 @@ import ImageProcessingService from './ImageProcessingService';
 import jsQR from 'jsqr';
 
 const ENABLE_QR_DEBUG_VISION = true; // Bật để xem hình vùng đang scan (base64) trong console/attempts
+
+/**
+ * QR Regions - Cập nhật từ KYC Debug calibration [2024-12-10]
+ * Sắp xếp theo độ ưu tiên: trs (nhỏ nhất, chính xác nhất) → trl (rộng nhất)
+ */
 const DEFAULT_QR_REGIONS = [
   { name: 'full', x: 0, y: 0, width: 1, height: 1 },
-  { name: 'trl', x: 0.6924438618283316, y: 0.0074855560260057, width: 0.3, height: 0.4 },
-  { name: 'trm', x: 0.7244438618283315, y: 0.02501127822470541, width: 0.26, height: 0.32 },
-  { name: 'trs', x: 0.7942411152644188, y: 0.09223411162860624, width: 0.14, height: 0.22 },
-  { name: 'tc', x: 0.7476492301647519, y: 0.04126173970120754, width: 0.22, height: 0.32 }
+  { name: 'trs', x: 0.7488202812287943, y: 0.066528110505082154, width: 0.17, height: 0.25 },
+  { name: 'tc', x: 0.7350600625148778, y: 0.035, width: 0.2, height: 0.3 },
+  { name: 'trm', x: 0.7139388609855822, y: 0.0303052771011813199, width: 0.24, height: 0.33 },
+  { name: 'trl', x: 0.6843596950212068, y: 0.02, width: 0.28, height: 0.38 }
 ];
 
 const ensureHiddenQrContainer = () => {
@@ -179,6 +184,7 @@ const QRCodeService = {
 
   /**
    * Scan QR code từ ảnh CCCD với retry và deskew
+   * [2024-12-10] Added: Xiaomi Style Enhancement trước khi scan
    */
   scanFromImage: async (imageSource, customRegions = null) => {
     try {
@@ -193,8 +199,16 @@ const QRCodeService = {
         });
       }
 
-      // BƯỚC 0: Thử jsQR enhanced trên toàn ảnh trước (nếu thành công thì return luôn)
-      const fullJsqr = await decodeWithJsqrEnhanced(imageDataUrl, 'full-image');
+      // BƯỚC 0.5: Apply Xiaomi Style Enhancement TRƯỚC khi scan
+      console.log('🔧 Áp dụng Xiaomi Style Enhancement (E100/B60/C50)...');
+      const enhancedImage = await ImageProcessingService.xiaomiStyleEnhance(imageDataUrl, {
+        exposure: 100,
+        brightness: 60,
+        contrast: 50
+      });
+
+      // BƯỚC 0: Thử jsQR enhanced trên ảnh đã enhance
+      const fullJsqr = await decodeWithJsqrEnhanced(enhancedImage, 'full-image-xiaomi');
       if (fullJsqr) {
         const parsedData = QRCodeService.parseQRData(fullJsqr);
         return {
@@ -202,12 +216,31 @@ const QRCodeService = {
           source: 'QR_CODE',
           data: parsedData,
           attempts: 1,
-          attemptsLog: [{ method: 'full-image:jsqr-enhanced', note: 'decoded_without_roi' }]
+          attemptsLog: [{ method: 'full-image-xiaomi:jsqr-enhanced', note: 'decoded_with_xiaomi_style' }]
+        };
+      }
+
+      // Thử lại với ảnh gốc (không enhance) - fallback
+      const fullJsqrOriginal = await decodeWithJsqrEnhanced(imageDataUrl, 'full-image-original');
+      if (fullJsqrOriginal) {
+        const parsedData = QRCodeService.parseQRData(fullJsqrOriginal);
+        return {
+          success: true,
+          source: 'QR_CODE',
+          data: parsedData,
+          attempts: 2,
+          attemptsLog: [
+            { method: 'full-image-xiaomi:jsqr-enhanced', error: 'no code detected' },
+            { method: 'full-image-original:jsqr-enhanced', note: 'decoded_without_enhancement' }
+          ]
         };
       }
 
       let qrData = null;
-      let attempts = [{ method: 'full-image:jsqr-enhanced', error: 'no code detected' }];
+      let attempts = [
+        { method: 'full-image-xiaomi:jsqr-enhanced', error: 'no code detected' },
+        { method: 'full-image-original:jsqr-enhanced', error: 'no code detected' }
+      ];
 
       // Lazy import html5-qrcode (chỉ dùng khi jsQR full-image không thành công)
       ensureHiddenQrContainer();
@@ -276,15 +309,30 @@ const QRCodeService = {
         return null;
       };
 
-      // 1. Scan ảnh gốc theo nhiều vùng
-      qrData = await scanRegions('original', imageDataUrl);
+      // 1. Scan ảnh đã Xiaomi enhance theo nhiều vùng (ưu tiên)
+      console.log('📍 Scanning regions trên ảnh Xiaomi enhanced...');
+      qrData = await scanRegions('xiaomi', enhancedImage);
 
-      // 2. Scan ảnh đã Warp (nếu chưa tìm thấy)
+      // 1.5. Scan ảnh gốc theo nhiều vùng (fallback)
+      if (!qrData) {
+        console.log('📍 Fallback: Scanning regions trên ảnh gốc...');
+        qrData = await scanRegions('original', imageDataUrl);
+      }
+
+      // 2. Scan ảnh đã Warp + Xiaomi (nếu chưa tìm thấy)
       if (!qrData) {
         try {
-          console.log('   Attempt (warped): Warping image...');
+          console.log('   Attempt (warped-xiaomi): Warping + Xiaomi enhance...');
           const warped = await ImageProcessingService.warpPerspective(imageDataUrl);
-          qrData = await scanRegions('warped', warped);
+          const warpedEnhanced = await ImageProcessingService.xiaomiStyleEnhance(warped, {
+            exposure: 100, brightness: 60, contrast: 50
+          });
+          qrData = await scanRegions('warped-xiaomi', warpedEnhanced);
+          
+          // Thử warped gốc nếu enhanced không thành công
+          if (!qrData) {
+            qrData = await scanRegions('warped', warped);
+          }
         } catch (err) {
           attempts.push({ method: 'warped', error: err.message });
         }

@@ -1,10 +1,10 @@
 import "./header.css";
-import logo from "../assets/images/logo-hinh-mai-nha_.jpg";
+import logo from "../assets/images/Hommy_Logo_Web.svg";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import yeuThichApi from "../api/yeuThichApi";
 import { getStaticUrl } from "../config/api";
-import { HiOutlineLanguage, HiOutlineSun, HiOutlineMoon, HiOutlineLightBulb } from "react-icons/hi2";
+import { HiOutlineLanguage, HiOutlineSun, HiOutlineMoon, HiOutlineLightBulb, HiOutlineArrowDownTray } from "react-icons/hi2";
 import { useLanguage, useTranslation } from "../context/LanguageContext";
 
 function Header() {
@@ -16,6 +16,35 @@ function Header() {
   const { language, toggleLanguage } = useLanguage();
   const { t } = useTranslation();
   const [darkMode, setDarkMode] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [canInstall, setCanInstall] = useState(false);
+
+  // PWA Install prompt handler
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setCanInstall(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    
+    // Check if app is already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setCanInstall(false);
+    }
+    
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setCanInstall(false);
+    }
+    setDeferredPrompt(null);
+  };
 
   // Load saved preferences
   useEffect(() => {
@@ -114,9 +143,12 @@ function Header() {
     localStorage.removeItem("userId");
     localStorage.removeItem("user");
     localStorage.removeItem("currentUser");
+    localStorage.removeItem("token");
+    sessionStorage.clear();
     setCurrentUser(null);
     setFavorites([]);
-    window.location.reload();
+    // Force reload và redirect về login
+    window.location.href = "/login";
   };
 
   const resolveImageSrc = (value) => {
@@ -150,34 +182,6 @@ function Header() {
 
   return (
     <>
-      {/* Floating Controls - Language & Dark Mode */}
-      <div className="header__floating-controls">
-        <button
-          className="header__floating-btn header__floating-btn--language"
-          onClick={toggleLanguage}
-          type="button"
-          aria-label="Đổi ngôn ngữ"
-          title={language === 'vi' ? 'Switch to English' : 'Switch to Vietnamese'}
-        >
-          <HiOutlineLanguage className="header__floating-icon" style={{ width: '20px', height: '20px' }} />
-          <span className="header__floating-text">{language === 'vi' ? 'VI' : 'EN'}</span>
-        </button>
-
-        <button
-          className="header__floating-btn header__floating-btn--theme"
-          onClick={toggleDarkMode}
-          type="button"
-          aria-label="Chế độ sáng/tối"
-          title={darkMode ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'}
-        >
-          {darkMode ? (
-            <HiOutlineSun className="header__floating-icon" style={{ width: '20px', height: '20px' }} />
-          ) : (
-            <HiOutlineLightBulb className="header__floating-icon" style={{ width: '20px', height: '20px' }} />
-          )}
-        </button>
-      </div>
-
       <header className="header">
         <div className="header__container">
         <div className="header__logo">
@@ -219,6 +223,50 @@ function Header() {
             </li>
           </ul>
         </nav>
+
+        {/* Header Actions Group - Install, Language, Theme, Favorites */}
+        <div className="header__actions">
+          {/* PWA Install Button */}
+          {canInstall && (
+            <button
+              className="header__install-btn"
+              onClick={handleInstallClick}
+              type="button"
+              aria-label="Tải xuống ứng dụng"
+              title="Cài đặt ứng dụng Hommy"
+            >
+              <HiOutlineArrowDownTray className="header__install-icon" />
+              <span className="header__install-text">{t('header.installApp') || 'Tải ứng dụng'}</span>
+            </button>
+          )}
+
+          {/* Language Toggle */}
+          <button
+            className="header__action-btn header__action-btn--language"
+            onClick={toggleLanguage}
+            type="button"
+            aria-label="Đổi ngôn ngữ"
+            title={language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}
+          >
+            <HiOutlineLanguage className="header__action-icon" />
+            <span className="header__action-text">{language === 'vi' ? 'VI' : 'EN'}</span>
+          </button>
+
+          {/* Dark Mode Toggle */}
+          <button
+            className="header__action-btn header__action-btn--theme"
+            onClick={toggleDarkMode}
+            type="button"
+            aria-label="Chế độ sáng/tối"
+            title={darkMode ? 'Chuyển sang chế độ sáng' : 'Chuyển sang chế độ tối'}
+          >
+            {darkMode ? (
+              <HiOutlineSun className="header__action-icon" />
+            ) : (
+              <HiOutlineLightBulb className="header__action-icon" />
+            )}
+          </button>
+        </div>
 
         <div className="header__favorites">
           <button

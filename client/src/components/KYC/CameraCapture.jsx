@@ -5,6 +5,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import CardDetectionService from '../../services/CardDetectionService';
 import FaceAlignmentService from '../../services/FaceAlignmentService';
 
+/**
+ * CameraCapture - Component chụp ảnh KYC với resolution cao cố định
+ * 
+ * Resolution: Ưu tiên 4K (3840x2160), fallback 1080p minimum
+ * - Camera chạy ở resolution cao từ đầu để capture được ảnh chất lượng
+ * - Detection vẫn nhanh vì chỉ cần video element, không cần full resolution
+ * - Không switch resolution giữa chừng để tránh camera restart/flicker
+ */
 const CameraCapture = ({ onCapture, label, overlayType = 'card', autoCapture = false }) => {
   const webcamRef = useRef(null);
   const [facingMode, setFacingMode] = useState("user"); // "user" (front) or "environment" (back)
@@ -13,18 +21,131 @@ const CameraCapture = ({ onCapture, label, overlayType = 'card', autoCapture = f
   const [alignmentStatus, setAlignmentStatus] = useState('Đang khởi động...');
   const [confidence, setConfidence] = useState(0);
   const [modelsLoaded, setModelsLoaded] = useState(false);
+  const [hasCaptured, setHasCaptured] = useState(false); // Flag để ngăn chụp nhiều lần
+  const [flashEnabled, setFlashEnabled] = useState(false);
+  const [flashSupported, setFlashSupported] = useState(false);
   const alignmentTimerRef = useRef(null);
   const countdownIntervalRef = useRef(null);
   const detectionIntervalRef = useRef(null);
   const consecutiveAlignedFrames = useRef(0);
+  const streamRef = useRef(null);
 
-  // Cấu hình độ phân giải cao nhất có thể (4K > 1440p > 1080p > 720p)
-  const videoConstraints = {
-    width: { ideal: 3840, min: 1280 },  // 4K ideal, min 720p
-    height: { ideal: 2160, min: 720 },  // 4K ideal, min 720p
-    facingMode: facingMode,
-    aspectRatio: { ideal: 16 / 9 }
+  /**
+   * CẤU HÌNH ĐỘ PHÂN GIẢI:
+   * Ưu tiên 4K (3840x2160), fallback 1080p minimum
+   * Chạy resolution cao từ đầu, không switch giữa chừng
+   */
+  const VIDEO_RESOLUTION = { 
+    width: { ideal: 3840, min: 1920 }, 
+    height: { ideal: 2160, min: 1080 } 
   };
+
+  // Cấu hình video constraints - resolution cao cố định
+  const videoConstraints = {
+    width: VIDEO_RESOLUTION.width,
+    height: VIDEO_RESOLUTION.height,
+    facingMode: facingMode,
+    aspectRatio: { ideal: 16 / 9 },
+    // Hỗ trợ flash/torch trên mobile khi dùng camera sau
+    ...(flashEnabled && facingMode === 'environment' && {
+      advanced: [{ torch: true }]
+    })
+  };
+
+  // Kiểm tra hỗ trợ flash khi stream được tạo
+  const checkFlashSupport = (stream) => {
+    try {
+      const videoTrack = stream.getVideoTracks()[0];
+      if (!videoTrack) {
+        setFlashSupported(false);
+        return;
+      }
+
+      // Kiểm tra capabilities
+      if ('getCapabilities' in videoTrack) {
+        const capabilities = videoTrack.getCapabilities();
+        if (capabilities.torch !== undefined) {
+          setFlashSupported(true);
+          console.log('✅ [CameraCapture] Flash được hỗ trợ');
+          return;
+        }
+      }
+
+      setFlashSupported(false);
+      console.log('ℹ️ [CameraCapture] Flash không được hỗ trợ');
+    } catch (error) {
+      console.log('⚠️ [CameraCapture] Không thể kiểm tra hỗ trợ flash:', error);
+      setFlashSupported(false);
+    }
+  };
+
+  // Callback khi stream được tạo - dùng để kiểm tra và điều khiển flash
+  const handleUserMedia = (stream) => {
+    streamRef.current = stream;
+    
+    // Chỉ kiểm tra flash support khi dùng camera sau
+    if (facingMode === 'environment') {
+      checkFlashSupport(stream);
+      
+      // Nếu flash đã được bật trước đó, áp dụng ngay
+      if (flashEnabled) {
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack && 'applyConstraints' in videoTrack) {
+          videoTrack.applyConstraints({
+            advanced: [{ torch: true }]
+          }).catch(err => {
+            console.warn('⚠️ [CameraCapture] Không thể bật flash:', err);
+          });
+        }
+      }
+    } else {
+      setFlashSupported(false);
+    }
+  };
+
+  // Điều khiển flash khi state thay đổi
+  useEffect(() => {
+    const controlFlash = async () => {
+      if (!streamRef.current) return;
+      
+      const videoTrack = streamRef.current.getVideoTracks()[0];
+      if (!videoTrack) return;
+
+      try {
+        // Kiểm tra capabilities trước
+        if ('getCapabilities' in videoTrack) {
+          const capabilities = videoTrack.getCapabilities();
+          if (capabilities.torch === undefined) {
+            console.log('ℹ️ [CameraCapture] Camera không hỗ trợ torch');
+            return;
+          }
+        }
+
+        // Áp dụng constraints để bật/tắt torch
+        if ('applyConstraints' in videoTrack) {
+          await videoTrack.applyConstraints({
+            advanced: [{ torch: flashEnabled }]
+          });
+          console.log(`✅ [CameraCapture] Flash ${flashEnabled ? 'đã bật' : 'đã tắt'}`);
+        }
+      } catch (error) {
+        console.warn('⚠️ [CameraCapture] Không thể điều khiển flash:', error);
+      }
+    };
+
+    // Chỉ điều khiển flash khi camera sau, đã hỗ trợ flash và có stream
+    if (facingMode === 'environment' && flashSupported && streamRef.current) {
+      controlFlash();
+    }
+  }, [flashEnabled, facingMode, flashSupported]);
+
+  // Reset flash khi chuyển camera
+  useEffect(() => {
+    if (facingMode === 'user') {
+      setFlashEnabled(false);
+      setFlashSupported(false);
+    }
+  }, [facingMode]);
 
   // Load face detection models nếu là selfie
   useEffect(() => {
@@ -50,11 +171,34 @@ const CameraCapture = ({ onCapture, label, overlayType = 'card', autoCapture = f
     };
   }, []);
 
+  // Reset state khi component mount hoặc khi label thay đổi (step thay đổi)
+  useEffect(() => {
+    console.log(`🔄 [CameraCapture] Reset state - label: ${label}`);
+    setHasCaptured(false);
+    setIsAligned(false);
+    setCountdown(null);
+    consecutiveAlignedFrames.current = 0;
+    // Clear all timers
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
+    }
+  }, [label]); // Reset khi label thay đổi (tức là step thay đổi)
+
   // Real-time detection loop
   useEffect(() => {
-    if (!autoCapture || !webcamRef.current) return;
+    if (!autoCapture || !webcamRef.current || hasCaptured) return; // Không chạy nếu đã chụp
 
     const checkAlignment = async () => {
+      // Ngăn chụp nếu đã chụp rồi
+      if (hasCaptured) {
+        return;
+      }
+
       const video = webcamRef.current?.video;
 
       // Safety check: Ensure video is ready and has dimensions
@@ -94,14 +238,14 @@ const CameraCapture = ({ onCapture, label, overlayType = 'card', autoCapture = f
         setAlignmentStatus(result.reason);
 
         // Yêu cầu 3 frames liên tiếp aligned để tránh false positive
-        if (result.aligned) {
+        if (result.aligned && !hasCaptured) {
           consecutiveAlignedFrames.current += 1;
 
           if (consecutiveAlignedFrames.current >= 3) {
             setIsAligned(true);
 
-            // Chỉ start countdown 1 lần
-            if (!countdownIntervalRef.current && countdown === null) {
+            // Chỉ start countdown 1 lần và nếu chưa chụp
+            if (!countdownIntervalRef.current && countdown === null && !hasCaptured) {
               startCountdown();
             }
           }
@@ -131,12 +275,13 @@ const CameraCapture = ({ onCapture, label, overlayType = 'card', autoCapture = f
         clearInterval(detectionIntervalRef.current);
       }
     };
-  }, [autoCapture, overlayType, modelsLoaded, countdown]);
+  }, [autoCapture, overlayType, modelsLoaded, countdown, hasCaptured]);
 
   const startCountdown = () => {
     // Clear existing timers
     if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
 
+    // Camera đã chạy ở resolution cao từ đầu, không cần switch
     let count = 3;
     setCountdown(count);
 
@@ -147,14 +292,46 @@ const CameraCapture = ({ onCapture, label, overlayType = 'card', autoCapture = f
       } else {
         clearInterval(countdownIntervalRef.current);
         setCountdown(null);
+        // Capture ngay, không cần đợi vì resolution đã cao sẵn
         capture();
       }
     }, 1000);
   };
 
   const capture = useCallback(async () => {
+    // Ngăn chụp nhiều lần
+    if (hasCaptured) {
+      console.log('⚠️ [CameraCapture] Đã chụp rồi, bỏ qua capture request');
+      return;
+    }
+
+    console.log(`📸 [CameraCapture] Bắt đầu capture - overlayType: ${overlayType}, label: ${label}`);
+    setHasCaptured(true); // Đánh dấu đã chụp ngay lập tức
+    
+    // Dừng tất cả detection và countdown
+    if (detectionIntervalRef.current) {
+      clearInterval(detectionIntervalRef.current);
+      detectionIntervalRef.current = null;
+    }
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+      setCountdown(null);
+    }
+
     const imageSrc = webcamRef.current?.getScreenshot();
-    if (!imageSrc) return;
+    if (!imageSrc) {
+      console.warn('⚠️ [CameraCapture] Không lấy được screenshot');
+      setHasCaptured(false); // Reset nếu lỗi
+      return;
+    }
+
+    // Log kích thước ảnh capture được
+    const tempImg = new Image();
+    tempImg.src = imageSrc;
+    tempImg.onload = () => {
+      console.log(`📐 [CameraCapture] Captured image resolution: ${tempImg.width}x${tempImg.height}`);
+    };
 
     // Nếu là card capture, crop ảnh theo vùng overlay (tỷ lệ 1.586:1)
     if (overlayType === 'card') {
@@ -189,16 +366,18 @@ const CameraCapture = ({ onCapture, label, overlayType = 'card', autoCapture = f
         );
 
         const croppedImage = canvas.toDataURL('image/jpeg', 1.0);
+        console.log(`✅ [CameraCapture] Đã crop ảnh card - size: ${canvas.width}x${canvas.height} (from ${img.width}x${img.height})`);
         onCapture(croppedImage);
       } catch (e) {
-        console.warn('Crop failed, using original:', e);
+        console.warn('⚠️ [CameraCapture] Crop failed, using original:', e);
         onCapture(imageSrc);
       }
     } else {
       // Face capture - giữ nguyên
+      console.log(`✅ [CameraCapture] Đã capture ảnh face`);
       onCapture(imageSrc);
     }
-  }, [webcamRef, onCapture, overlayType]);
+  }, [webcamRef, onCapture, overlayType, hasCaptured, label]);
 
   const switchCamera = () => {
     setFacingMode(prev => prev === "user" ? "environment" : "user");
@@ -221,6 +400,7 @@ const CameraCapture = ({ onCapture, label, overlayType = 'card', autoCapture = f
         videoConstraints={videoConstraints}
         className="webcam-video"
         forceScreenshotSourceSize={true}
+        onUserMedia={handleUserMedia}
       />
 
       {/* Overlay Frame */}
@@ -301,6 +481,29 @@ const CameraCapture = ({ onCapture, label, overlayType = 'card', autoCapture = f
             </svg>
             <span className="switch-label">{facingMode === 'user' ? 'Trước' : 'Sau'}</span>
           </button>
+
+          {/* Nút bật/tắt flash - Chỉ hiện khi camera sau và hỗ trợ flash */}
+          {facingMode === 'environment' && flashSupported && (
+            <button
+              onClick={() => setFlashEnabled(!flashEnabled)}
+              className={`flash-btn ${flashEnabled ? 'active' : ''}`}
+              title={flashEnabled ? 'Tắt flash' : 'Bật flash'}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill={flashEnabled ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 6h-1a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h1" />
+                <path d="M6 3h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4z" />
+                <line x1="6" y1="1" x2="6" y2="3" />
+                <line x1="10" y1="1" x2="10" y2="3" />
+                <line x1="14" y1="1" x2="14" y2="3" />
+                <line x1="18" y1="1" x2="18" y2="3" />
+                <line x1="6" y1="21" x2="6" y2="23" />
+                <line x1="10" y1="21" x2="10" y2="23" />
+                <line x1="14" y1="21" x2="14" y2="23" />
+                <line x1="18" y1="21" x2="18" y2="23" />
+              </svg>
+              <span className="flash-label">{flashEnabled ? 'Tắt' : 'Bật'}</span>
+            </button>
+          )}
 
           {/* Nút chụp - Chỉ hiện khi không auto-capture */}
           {!autoCapture && (

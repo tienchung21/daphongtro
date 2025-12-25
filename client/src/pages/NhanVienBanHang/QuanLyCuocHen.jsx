@@ -128,7 +128,7 @@ const QuanLyCuocHen = () => {
     if (!reason) return;
     
     try {
-      const response = await huyCuocHen(appointmentId, { lyDoHuy: reason });
+      const response = await huyCuocHen(appointmentId, reason);
       if (response.success) {
         loadAppointments();
       }

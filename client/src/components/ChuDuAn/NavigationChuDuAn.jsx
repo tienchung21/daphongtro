@@ -2,6 +2,9 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import './NavigationChuDuAn.css';
 
+// Logo Hommy
+import HommyLogoIcon from '../../assets/images/Hommy_Logo_Icon.svg';
+
 // React Icons
 import {
   HiOutlineChartBar,
@@ -28,8 +31,31 @@ function NavigationChuDuAn() {
   const [user, setUser] = useState({});
 
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
-    setUser(userData);
+    // Load user từ localStorage
+    const loadUser = () => {
+      const userData = JSON.parse(localStorage.getItem('user') || '{}');
+      setUser(userData);
+    };
+    
+    loadUser();
+    
+    // Lắng nghe storage event để cập nhật khi KYC thay đổi
+    const handleStorageChange = (e) => {
+      if (e.key === 'user') {
+        loadUser();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Cũng lắng nghe custom event cho cùng tab
+    const handleKYCUpdate = () => loadUser();
+    window.addEventListener('kyc-updated', handleKYCUpdate);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('kyc-updated', handleKYCUpdate);
+    };
   }, []);
 
   const mainMenuItems = [
@@ -103,8 +129,8 @@ function NavigationChuDuAn() {
     localStorage.removeItem('user');
     sessionStorage.clear();
     
-    // Redirect to login
-    navigate('/login');
+    // Force reload để clear React state và redirect to login
+    window.location.href = '/login';
   };
 
   // Lắng nghe sự kiện global từ Header để mở/đóng sidebar trên mobile
@@ -135,14 +161,20 @@ function NavigationChuDuAn() {
       {/* Header */}
       <div className="cda-sidebar-header">
         <div className="cda-brand">
-          {!isCollapsed && (
+          {!isCollapsed ? (
             <>
-              <div className="cda-brand-icon">🏢</div>
+              <div className="cda-brand-icon">
+                <img src={HommyLogoIcon} alt="Hommy" className="cda-brand-logo" />
+              </div>
               <div className="cda-brand-text">
                 <div className="cda-brand-title">Chủ dự án</div>
                 <div className="cda-brand-subtitle">Quản lý & Phát triển</div>
               </div>
             </>
+          ) : (
+            <div className="cda-brand-icon cda-brand-icon--collapsed">
+              <img src={HommyLogoIcon} alt="Hommy" className="cda-brand-logo cda-brand-logo--collapsed" />
+            </div>
           )}
         </div>
         <button 

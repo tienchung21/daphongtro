@@ -111,6 +111,24 @@
   animation: float 3s ease-in-out infinite;
 }
 
+/* Logo styling - White/Gold on purple gradient header */
+.navigation__brand-logo {
+  width: 36px;
+  height: 36px;
+  filter: brightness(0) invert(1) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  transition: all 0.3s ease;
+}
+
+.navigation__brand-logo--collapsed {
+  width: 28px;
+  height: 28px;
+}
+
+.navigation__brand-icon:hover .navigation__brand-logo {
+  filter: invert(68%) sepia(89%) saturate(399%) hue-rotate(6deg) brightness(92%) contrast(87%) drop-shadow(0 2px 8px rgba(212, 175, 55, 0.5));
+  transform: scale(1.1);
+}
+
 @keyframes float {
   0%, 100% { transform: translateY(0px) rotate(0deg); }
   50% { transform: translateY(-3px) rotate(5deg); }

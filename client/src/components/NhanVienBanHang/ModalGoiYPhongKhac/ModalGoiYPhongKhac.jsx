@@ -70,6 +70,59 @@ const ModalGoiYPhongKhac = ({
     }
   }, [isOpen, tinDangHienTai]);
 
+  // Tự động set filters dựa trên lý do khi chọn lý do
+  useEffect(() => {
+    if (!lyDo || !tinDangHienTai || currentStep !== 1) return;
+
+    const giaPhongHienTai = Number(tinDangHienTai.GiaPhong) || Number(tinDangHienTai.GiaChuanPhong) || 0;
+    const dienTichHienTai = Number(tinDangHienTai.DienTich) || Number(tinDangHienTai.DienTichChuanPhong) || 0;
+
+    setFilters(prevFilters => {
+      let newFilters = { ...prevFilters };
+
+      switch (lyDo) {
+        case 'gia_cao':
+          // Lý do "Giá cao quá" → lọc phòng RẺ HƠN
+          // Set giaMax = giá hiện tại * 0.95 (giảm 5%) để có buffer hợp lý
+          if (giaPhongHienTai > 0) {
+            newFilters.giaMax = Math.floor(giaPhongHienTai * 0.95);
+            newFilters.giaMin = null; // Không giới hạn giá tối thiểu
+          }
+          break;
+
+        case 'dien_tich_nho':
+          // Lý do "Diện tích nhỏ" → lọc phòng RỘNG HƠN
+          // Set dienTichMin = diện tích hiện tại + 2m² để có buffer hợp lý
+          if (dienTichHienTai > 0) {
+            newFilters.dienTichMin = Math.ceil(dienTichHienTai + 2);
+            newFilters.dienTichMax = null; // Không giới hạn diện tích tối đa
+          }
+          break;
+
+        case 'vi_tri':
+          // Lý do "Vị trí không phù hợp" → giữ nguyên khuVucId (người dùng tự chọn)
+          // Không tự động set, để người dùng chọn khu vực khác
+          break;
+
+        case 'tien_ich':
+          // Lý do "Thiếu tiện ích" → giữ nguyên tienIch (người dùng tự chọn)
+          // Không tự động set, để người dùng chọn tiện ích
+          break;
+
+        case 'tinh_trang_phong':
+        case 'khac':
+          // Lý do "Tình trạng phòng" hoặc "Khác" → không có filter cụ thể
+          // Chỉ dựa vào ghi chú
+          break;
+
+        default:
+          break;
+      }
+
+      return newFilters;
+    });
+  }, [lyDo, tinDangHienTai, currentStep]); // Chỉ chạy khi lyDo, tinDangHienTai hoặc currentStep thay đổi
+
   // Tìm kiếm khi vào step 3
   const doSearch = useCallback(async () => {
     try {

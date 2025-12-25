@@ -1,308 +1,427 @@
 /**
- * Controller xử lý các API hợp đồng dành cho Khách hàng (đặt cọc/preview)
+ * Controller xử lý Hợp đồng cho Khách hàng (Authenticated)
+ * Routes: /api/hop-dong/*
  */
 
-const HopDongTemplateService = require('../services/HopDongTemplateService');
-const NhatKyHeThongService = require('../services/NhatKyHeThongService');
-const HopDongModel = require('../models/HopDongModel');
 const db = require('../config/db');
+const HopDongTemplateService = require('../services/HopDongTemplateService');
 
 class HopDongCustomerController {
   /**
+   * Dựng hợp đồng preview cho khách hàng
    * POST /api/hop-dong/generate
-   * Sinh snapshot hợp đồng với dữ liệu override (nếu có)
+   * Body: { tinDangId, phongId, soThangKy, ngayChuyenVao }
    */
   static async generate(req, res) {
     try {
-      const { mauHopDongId, tinDangId, overrides } = req.body || {};
+      const khachHangId = req.user.id;
+      const { tinDangId, phongId, soThangKy, ngayChuyenVao, mauHopDongId } = req.body;
 
       if (!tinDangId) {
         return res.status(400).json({
           success: false,
-          message: 'Thiếu tinDangId',
+          message: 'Thiếu TinDangID để dựng hợp đồng'
         });
       }
 
+      // Lấy thông tin phòng nếu có
+      let thongTinPhong = null;
+      if (phongId) {
+        const [phongRows] = await db.execute(`
+          SELECT 
+            p.PhongID,
+            p.TenPhong,
+            p.GiaChuan,
+            p.DienTichChuan,
+            pt.GiaTinDang,
+            pt.DienTichTinDang
+          FROM phong p
+          LEFT JOIN phong_tindang pt ON p.PhongID = pt.PhongID AND pt.TinDangID = ?
+          WHERE p.PhongID = ?
+        `, [tinDangId, phongId]);
+        
+        if (phongRows.length > 0) {
+          thongTinPhong = phongRows[0];
+        }
+      }
+
+      // Dựng preview hợp đồng
       const preview = await HopDongTemplateService.buildPreview({
-        mauHopDongId: mauHopDongId ? Number(mauHopDongId) : null,
-        tinDangId: Number(tinDangId),
-        khachHangId: req.user.id,
-        overrides: overrides || {},
+        mauHopDongId: mauHopDongId || null,
+        tinDangId,
+        khachHangId,
+        overrides: {
+          batDongSan: {
+            tenPhong: thongTinPhong?.TenPhong || null,
+            dienTich: thongTinPhong?.DienTichTinDang || thongTinPhong?.DienTichChuan || null
+          },
+          chiPhi: {
+            giaThue: thongTinPhong?.GiaTinDang || thongTinPhong?.GiaChuan || null,
+            soTienCoc: soThangKy ? (thongTinPhong?.GiaTinDang || thongTinPhong?.GiaChuan || 0) * soThangKy : null
+          }
+        }
       });
 
-      return res.status(201).json({
+      // Thêm thông tin bổ sung
+      preview.thongTinBoSung = {
+        phongId,
+        soThangKy,
+        ngayChuyenVao,
+        giaPhong: thongTinPhong?.GiaTinDang || thongTinPhong?.GiaChuan || 0
+      };
+
+      res.json({
         success: true,
-        data: {
-          template: preview.template,
-          payload: preview.payload,
-          noiDungSnapshot: preview.renderedHtml,
-        },
+        data: preview
       });
     } catch (error) {
-      console.error('[HopDongCustomerController.generate]', error);
-      return res.status(400).json({
+      console.error('[HopDongCustomerController] generate error:', error);
+      res.status(500).json({
         success: false,
-        message: error.message || 'Không thể sinh hợp đồng',
+        message: error.message || 'Lỗi khi dựng hợp đồng'
       });
     }
   }
 
   /**
+   * Xác nhận đặt cọc (khách hàng đồng ý)
    * POST /api/hop-dong/:tinDangId/confirm-deposit
-   * Tạm thời chỉ ghi nhận log xác nhận đặt cọc
+   * Body: { phongId, soThangKy, ngayChuyenVao }
    */
   static async confirmDeposit(req, res) {
     try {
-      const tinDangId = Number(req.params.tinDangId);
-      const { giaoDichId, soTien, noiDungSnapshot, phongId, ngayBatDau } = req.body || {};
+      const khachHangId = req.user.id;
+      const { tinDangId } = req.params;
+      const { phongId, soThangKy, ngayChuyenVao, noiDungSnapshot } = req.body;
 
-      console.log('[confirmDeposit] Request body:', { tinDangId, phongId, ngayBatDau, soTien });
-
-      if (!tinDangId || Number.isNaN(tinDangId)) {
+      if (!tinDangId || !phongId || !soThangKy) {
         return res.status(400).json({
           success: false,
-          message: 'TinDangID không hợp lệ',
+          message: 'Thiếu thông tin cần thiết để đặt cọc'
         });
       }
 
-      if (!giaoDichId || !soTien) {
+      const soThangKyNumber = Number(soThangKy);
+      if (!soThangKyNumber || Number.isNaN(soThangKyNumber) || soThangKyNumber <= 0) {
         return res.status(400).json({
           success: false,
-          message: 'Thiếu thông tin giao dịch hoặc số tiền',
+          message: 'Số tháng ký hợp đồng không hợp lệ'
         });
       }
 
-      if (!phongId || Number.isNaN(Number(phongId))) {
+      // Tính ngày bắt đầu (ngày chuyển vào) và ngày kết thúc hợp đồng
+      let ngayBatDauValue;
+      if (ngayChuyenVao) {
+        const parsedDate = new Date(ngayChuyenVao);
+        if (Number.isNaN(parsedDate.getTime())) {
         return res.status(400).json({
           success: false,
-          message: 'Phòng không hợp lệ',
+            message: 'Ngày chuyển vào không hợp lệ'
         });
       }
-
-      // Validate ngày bắt đầu (ngày muốn chuyển vào)
-      let ngayBatDauFormatted = null;
-      if (ngayBatDau) {
-        const parsedDate = new Date(ngayBatDau);
-        if (isNaN(parsedDate.getTime())) {
-          return res.status(400).json({
-            success: false,
-            message: 'Ngày chuyển vào không hợp lệ',
-          });
-        }
-        // Format thành YYYY-MM-DD
-        ngayBatDauFormatted = parsedDate.toISOString().split('T')[0];
+        ngayBatDauValue = parsedDate.toISOString().split('T')[0];
+      } else {
+        ngayBatDauValue = new Date().toISOString().split('T')[0];
       }
 
-      const phongIdNum = Number(phongId);
+      const ngayKetThucDate = new Date(ngayBatDauValue);
+      ngayKetThucDate.setMonth(ngayKetThucDate.getMonth() + soThangKyNumber);
+      const ngayKetThucValue = ngayKetThucDate.toISOString().split('T')[0];
 
-      // Lấy thông tin phòng, dự án và giá phòng
-      const [phongRows] = await db.execute(
-        `
+      // Lấy thông tin phòng, giá và SoThangCocToiThieu từ dự án
+      const [phongRows] = await db.execute(`
           SELECT 
             p.PhongID, 
+          p.TenPhong,
+          p.GiaChuan,
             p.TrangThai,
-            p.DuAnID,
-            COALESCE(pt.GiaTinDang, p.GiaChuan) as GiaPhong,
-            td.DuAnID as TinDangDuAnID
-          FROM phong_tindang pt
-          INNER JOIN phong p ON pt.PhongID = p.PhongID
+          pt.GiaTinDang,
+          td.TinDangID,
+          td.TieuDe,
+          da.DuAnID,
+          da.TenDuAn,
+          da.ChuDuAnID,
+            da.SoThangCocToiThieu
+        FROM phong p
+        INNER JOIN phong_tindang pt ON p.PhongID = pt.PhongID
           INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
-          WHERE pt.TinDangID = ? AND p.PhongID = ?
-          LIMIT 1
-        `,
-        [tinDangId, phongIdNum]
-      );
+        INNER JOIN duan da ON td.DuAnID = da.DuAnID
+        WHERE p.PhongID = ? AND td.TinDangID = ?
+      `, [phongId, tinDangId]);
 
-      if (!phongRows.length) {
+      if (phongRows.length === 0) {
         return res.status(404).json({
           success: false,
-          message: 'Không tìm thấy phòng thuộc tin đăng này',
+          message: 'Không tìm thấy phòng hoặc tin đăng'
         });
       }
 
-      if (phongRows[0].TrangThai !== 'Trong') {
+      const phong = phongRows[0];
+
+      // Kiểm tra trạng thái phòng
+      if (phong.TrangThai !== 'Trong') {
         return res.status(400).json({
           success: false,
-          message: 'Phòng đã được giữ chỗ hoặc không còn trống',
+          message: 'Phòng không còn trống, không thể đặt cọc'
         });
       }
 
-      const phongInfo = phongRows[0];
-      const duAnId = phongInfo.DuAnID || phongInfo.TinDangDuAnID || null;
-      const giaPhong = phongInfo.GiaPhong || null;
+      // Tính tiền cọc đúng công thức:
+      // Tiền cọc = Giá phòng (GiaTinDang nếu có, fallback GiaChuan) × SoThangCocToiThieu (từ dự án, null = 1)
+      const giaPhong = phong.GiaTinDang || phong.GiaChuan || 0;
+      const soThangCocToiThieu =
+        Number(phong.SoThangCocToiThieu) || 1;
+      const tongTienCoc = giaPhong * soThangCocToiThieu;
 
-      await db.execute(
-        `
-          UPDATE phong
-          SET TrangThai = 'GiuCho', CapNhatLuc = NOW()
-          WHERE PhongID = ?
-        `,
-        [phongIdNum]
-      );
+      // Kiểm tra ví khách hàng
+      const [viRows] = await db.execute(`
+        SELECT SoDu FROM vi WHERE NguoiDungID = ?
+      `, [khachHangId]);
 
-      // Ghi nhận log
-      await NhatKyHeThongService.ghiNhan({
-        NguoiDungID: req.user.id,
-        HanhDong: NhatKyHeThongService.HANH_DONG.DAT_COC_GIU_CHO,
-        DoiTuong: 'TinDang',
-        DoiTuongID: tinDangId,
-        ChiTiet: {
-          giaoDichId,
-          soTien,
-          noiDungSnapshotPreview: typeof noiDungSnapshot === 'string'
-            ? noiDungSnapshot.slice(0, 1000)
-            : null,
-        },
-        DiaChiIP: req.ip,
-        TrinhDuyet: req.get('User-Agent') || '',
-      });
+      if (viRows.length === 0 || viRows[0].SoDu < tongTienCoc) {
+        return res.status(400).json({
+          success: false,
+          message: 'Số dư ví không đủ để đặt cọc',
+          canThieu: tongTienCoc - (viRows[0]?.SoDu || 0)
+        });
+      }
 
-      // Tạo record hợp đồng với nội dung đã render
-      if (noiDungSnapshot && typeof noiDungSnapshot === 'string') {
-        const [hopDongResult] = await db.execute(`
+      // Dựng nội dung hợp đồng
+      // Ưu tiên dùng noiDungSnapshot client đã generate (HTML đầy đủ),
+      // nếu không có thì fallback sang buildPreview trên server
+      let noiDungHopDong =
+        typeof noiDungSnapshot === 'string' && noiDungSnapshot.trim()
+          ? noiDungSnapshot
+          : `Hợp đồng thuê phòng qua app - Số tháng ký: ${soThangKyNumber}`;
+
+      if (!noiDungSnapshot || typeof noiDungSnapshot !== 'string' || !noiDungSnapshot.trim()) {
+        try {
+          const preview = await HopDongTemplateService.buildPreview({
+            mauHopDongId: null,
+            tinDangId: Number(tinDangId),
+            khachHangId,
+            overrides: {
+              batDongSan: {
+                tenPhong: phong.TenPhong,
+                dienTich: null
+              },
+              chiPhi: {
+                giaThue: giaPhong,
+                soTienCoc: tongTienCoc
+              }
+            }
+          });
+          if (preview && preview.renderedHtml) {
+            noiDungHopDong = preview.renderedHtml;
+          }
+        } catch (buildErr) {
+          console.error('[HopDongCustomerController] buildPreview error, fallback to simple content:', buildErr);
+        }
+      }
+
+      // Bắt đầu transaction
+      const connection = await db.getConnection();
+      await connection.beginTransaction();
+
+      try {
+        // 1. Tạo bản ghi cọc trong bảng `coc`
+        const [cocResult] = await connection.execute(`
+          INSERT INTO coc (
+            GiaoDichID, TinDangID, PhongID, Loai, SoTien, TrangThai, GhiChu
+          ) VALUES (0, ?, ?, 'CocGiuCho', ?, 'HieuLuc', ?)
+        `, [
+          tinDangId, phongId, tongTienCoc, 
+          `Đặt cọc qua app. Số tháng ký: ${soThangKy}`
+        ]);
+
+        const cocId = cocResult.insertId;
+
+        // 2. Tạo bản ghi hợp đồng thuê trong bảng `hopdong`
+        const [hopDongResult] = await connection.execute(`
           INSERT INTO hopdong (
             TinDangID, 
             PhongID,
             DuAnID,
+            NhanVienBanHangID,
             KhachHangID, 
+            NgayBatDau,
+            NgayKetThuc,
             GiaThueCuoiCung,
             SoTienCoc,
             noidunghopdong,
-            NgayBatDau,
             TrangThai
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'xacthuc')
+          ) VALUES (?, ?, ?, NULL, ?, ?, ?, ?, ?, ?, 'xacthuc')
         `, [
           tinDangId,
-          phongIdNum,
-          duAnId,
-          req.user.id,
+          phongId,
+          phong.DuAnID,
+          khachHangId,
+          ngayBatDauValue,
+          ngayKetThucValue,
           giaPhong,
-          Number(soTien),
-          noiDungSnapshot,
-          ngayBatDauFormatted
+          tongTienCoc,
+          noiDungHopDong
         ]);
 
         const hopDongId = hopDongResult.insertId;
 
-        console.log('[confirmDeposit] Đã tạo hợp đồng:', { hopDongId, ngayBatDau: ngayBatDauFormatted });
+        // 3. Trừ tiền ví khách hàng
+        await connection.execute(`
+          UPDATE vi SET SoDu = SoDu - ? WHERE NguoiDungID = ?
+        `, [tongTienCoc, khachHangId]);
 
-        return res.json({
-          success: true,
-          message: 'Đã ghi nhận yêu cầu xác nhận đặt cọc. Hệ thống sẽ đối soát giao dịch.',
-          data: {
-            tinDangId,
-            giaoDichId,
-            soTien,
-            phongId: phongIdNum,
+        // 4. Ghi lịch sử ví
+        const maGiaoDich = `DAT_COC_${cocId}_${Date.now()}`;
+        await connection.execute(`
+          INSERT INTO lich_su_vi (
+            user_id, so_tien, LoaiGiaoDich, trang_thai, ma_giao_dich
+          ) VALUES (?, ?, 'dat_coc', 'THANH_CONG', ?)
+        `, [khachHangId, -tongTienCoc, maGiaoDich]);
+
+        // 5. Cập nhật trạng thái phòng - chuyển sang GiuCho
+        await connection.execute(`
+          UPDATE phong SET TrangThai = 'GiuCho' WHERE PhongID = ?
+        `, [phongId]);
+
+        await connection.commit();
+
+        // Emit socket event nếu có
+        const io = req.app.get('io');
+        if (io) {
+          io.to(`user_${phong.ChuDuAnID}`).emit('dat_coc_moi', {
+            cocId,
             hopDongId,
-            ngayBatDau: ngayBatDauFormatted,
-          },
+            tenPhong: phong.TenPhong,
+            tongTienCoc,
+            khachHangId
         });
       }
 
-      return res.json({
+        res.json({
         success: true,
-        message: 'Đã ghi nhận yêu cầu xác nhận đặt cọc. Hệ thống sẽ đối soát giao dịch.',
+          message: 'Đặt cọc thành công',
         data: {
-          tinDangId,
-          giaoDichId,
-          soTien,
-          phongId: phongIdNum,
-        },
-      });
+            cocId,
+            hopDongId,
+            tongTienCoc,
+            phong: {
+              PhongID: phong.PhongID,
+              TenPhong: phong.TenPhong
+            }
+          }
+        });
+
+      } catch (error) {
+        await connection.rollback();
+        throw error;
+      } finally {
+        connection.release();
+      }
+
     } catch (error) {
-      console.error('[HopDongCustomerController.confirmDeposit]', error);
-      return res.status(400).json({
+      console.error('[HopDongCustomerController] confirmDeposit error:', error);
+      res.status(500).json({
         success: false,
-        message: error.message || 'Không thể ghi nhận xác nhận đặt cọc',
+        message: error.message || 'Lỗi khi xác nhận đặt cọc'
       });
     }
   }
 
   /**
-   * GET /api/hop-dong/khach-hang
    * Lấy danh sách hợp đồng của khách hàng
+   * GET /api/hop-dong/khach-hang
    */
   static async layDanhSachHopDong(req, res) {
     try {
-      const khachHangId = req.user.id || req.user.NguoiDungID;
-      const { tuNgay, denNgay } = req.query;
+      const nguoiDungId = req.user.id;
 
-      console.log(`[HopDongCustomer] layDanhSachHopDong - KH ID: ${khachHangId}`);
-
-      if (!khachHangId) {
-        return res.status(401).json({
-          success: false,
-          message: 'Không xác định được khách hàng'
-        });
-      }
-
-      const danhSach = await HopDongModel.layHopDongCuaKhachHang(khachHangId, {
-        tuNgay,
-        denNgay
-      });
-
-      console.log(`[HopDongCustomer] Tìm thấy ${danhSach.length} hợp đồng`);
+      // Lấy danh sách hợp đồng thuê của khách hàng
+      const [hopDongs] = await db.execute(`
+        SELECT 
+          hd.HopDongID,
+          hd.TinDangID,
+          hd.PhongID,
+          hd.DuAnID,
+          hd.NgayBatDau,
+          hd.NgayKetThuc,
+          hd.GiaThueCuoiCung,
+          hd.SoTienCoc,
+          hd.TrangThai,
+          td.TieuDe AS TieuDeTinDang,
+          p.TenPhong,
+          p.GiaChuan AS GiaPhong,
+          da.TenDuAn,
+          da.DiaChi
+        FROM hopdong hd
+        LEFT JOIN tindang td ON hd.TinDangID = td.TinDangID
+        LEFT JOIN phong p ON hd.PhongID = p.PhongID
+        LEFT JOIN duan da ON hd.DuAnID = da.DuAnID
+        WHERE hd.KhachHangID = ?
+        ORDER BY hd.NgayBatDau DESC
+      `, [nguoiDungId]);
 
       res.json({
         success: true,
-        data: danhSach
+        data: hopDongs
       });
-
     } catch (error) {
-      console.error('[HopDongCustomerController.layDanhSachHopDong]', error);
-      console.error('[HopDongCustomerController.layDanhSachHopDong] Error details:', error.message);
-      console.error('[HopDongCustomerController.layDanhSachHopDong] Stack:', error.stack);
+      console.error('[HopDongCustomerController] layDanhSachHopDong error:', error);
       res.status(500).json({
         success: false,
-        message: error.message || 'Lỗi khi lấy danh sách hợp đồng'
+        message: 'Lỗi khi lấy danh sách hợp đồng'
       });
     }
   }
 
   /**
+   * Yêu cầu hủy hợp đồng
    * POST /api/hop-dong/:id/xin-huy
-   * Khách hàng xin hủy hợp đồng
    */
   static async xinHuy(req, res) {
     try {
-      const hopDongID = parseInt(req.params.id, 10);
-      const khachHangID = req.user?.id || req.user?.NguoiDungID || req.user?.userId;
+      const { id } = req.params;
+      const nguoiDungId = req.user.id;
+      const { lyDo } = req.body;
 
-      if (!khachHangID) {
-        return res.status(401).json({
+      // Kiểm tra hợp đồng tồn tại và thuộc về người dùng
+      const [hopDongs] = await db.execute(`
+        SELECT * FROM hopdong 
+        WHERE HopDongID = ? AND KhachHangID = ?
+      `, [id, nguoiDungId]);
+
+      if (hopDongs.length === 0) {
+        return res.status(404).json({
           success: false,
-          message: 'Không xác định được người dùng'
+          message: 'Không tìm thấy hợp đồng'
         });
       }
 
-      if (!hopDongID || isNaN(hopDongID)) {
+      const hopDong = hopDongs[0];
+
+      // Chỉ hợp đồng đã xác thực mới có thể xin hủy
+      if (hopDong.TrangThai !== 'xacthuc') {
         return res.status(400).json({
           success: false,
-          message: 'ID hợp đồng không hợp lệ'
+          message: 'Không thể hủy hợp đồng ở trạng thái này'
         });
       }
 
-      await HopDongModel.xinHuyHopDong(hopDongID, khachHangID);
+      // Cập nhật trạng thái hợp đồng thành xinhuy
+      await db.execute(`
+        UPDATE hopdong 
+        SET TrangThai = 'xinhuy'
+        WHERE HopDongID = ?
+      `, [id]);
 
-      // Audit log
-      await NhatKyHeThongService.ghiNhan({
-        NguoiDungID: khachHangID,
-        HanhDong: 'xin_huy_hop_dong',
-        DoiTuong: 'HopDong',
-        DoiTuongID: hopDongID,
-        ChiTiet: JSON.stringify({ hopDongID })
-      });
-
-      return res.json({
+      res.json({
         success: true,
-        message: 'Đã gửi yêu cầu hủy hợp đồng thành công'
+        message: 'Đã gửi yêu cầu hủy hợp đồng'
       });
     } catch (error) {
-      console.error('[HopDongCustomerController] Lỗi xinHuy:', error);
-      return res.status(500).json({
+      console.error('[HopDongCustomerController] xinHuy error:', error);
+      res.status(500).json({
         success: false,
-        message: error.message || 'Lỗi khi xử lý yêu cầu hủy hợp đồng'
+        message: 'Lỗi khi gửi yêu cầu hủy'
       });
     }
   }

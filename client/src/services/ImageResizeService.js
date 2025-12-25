@@ -40,16 +40,17 @@ const ImageResizeService = {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
-        // Nếu ảnh đã nhỏ hơn maxWidth, không cần resize
-        if (img.width <= maxWidth) {
-          resolve(dataUrl);
-          return;
+        // Calculate dimensions
+        let newWidth = img.width;
+        let newHeight = img.height;
+
+        if (img.width > maxWidth) {
+          const scale = maxWidth / img.width;
+          newWidth = Math.round(img.width * scale);
+          newHeight = Math.round(img.height * scale);
         }
 
-        const scale = maxWidth / img.width;
-        const newWidth = Math.round(img.width * scale);
-        const newHeight = Math.round(img.height * scale);
-
+        // Always draw to canvas to ensure JPEG format
         const canvas = document.createElement('canvas');
         canvas.width = newWidth;
         canvas.height = newHeight;
@@ -57,6 +58,11 @@ const ImageResizeService = {
         const ctx = canvas.getContext('2d');
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
+        
+        // Fill white background for transparent PNGs
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, newWidth, newHeight);
+        
         ctx.drawImage(img, 0, 0, newWidth, newHeight);
 
         resolve(canvas.toDataURL('image/jpeg', quality));

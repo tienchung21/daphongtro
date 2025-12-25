@@ -5,9 +5,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  HiOutlineVideoCamera, 
-  HiOutlinePhone, 
+import {
+  HiOutlineVideoCamera,
+  HiOutlinePhone,
   HiOutlineXMark,
   HiUserCircle
 } from 'react-icons/hi2';
@@ -18,8 +18,27 @@ import './VideoCallNotification.css';
 const VideoCallNotification = () => {
   const { socket, isConnected } = useSocket();
   const { playNotificationSound } = useNotificationSound({ enabled: true, volume: 0.7 });
+
   const [incomingCall, setIncomingCall] = useState(null);
   const [isRinging, setIsRinging] = useState(false);
+
+  // Refs để quản lý timers
+  const ringingIntervalRef = React.useRef(null);
+  const autoRejectTimerRef = React.useRef(null);
+
+  /**
+   * Helper để clear timers
+   */
+  const clearTimers = useCallback(() => {
+    if (ringingIntervalRef.current) {
+      clearInterval(ringingIntervalRef.current);
+      ringingIntervalRef.current = null;
+    }
+    if (autoRejectTimerRef.current) {
+      clearTimeout(autoRejectTimerRef.current);
+      autoRejectTimerRef.current = null;
+    }
+  }, []);
 
   /**
    * Xử lý đồng ý cuộc gọi
@@ -50,10 +69,11 @@ const VideoCallNotification = () => {
       `width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes,status=yes`
     );
 
-    // Đóng pop-up
+    // Xóa timers và đóng pop-up
+    clearTimers();
     setIncomingCall(null);
     setIsRinging(false);
-  }, [incomingCall, socket, isConnected]);
+  }, [incomingCall, socket, isConnected, clearTimers]);
 
   /**
    * Xử lý từ chối cuộc gọi
@@ -73,10 +93,11 @@ const VideoCallNotification = () => {
       });
     }
 
-    // Đóng pop-up
+    // Xóa timers và đóng pop-up
+    clearTimers();
     setIncomingCall(null);
     setIsRinging(false);
-  }, [incomingCall, socket, isConnected]);
+  }, [incomingCall, socket, isConnected, clearTimers]);
 
   /**
    * Lắng nghe socket events
@@ -88,23 +109,15 @@ const VideoCallNotification = () => {
     socket.emit('subscribe_notifications');
     console.log('[VideoCallNotification] Subscribed to notifications room');
 
-    let autoRejectTimer = null;
-    let ringingInterval = null;
-
     const handleVideoCallIncoming = (data) => {
       console.log('[VideoCallNotification] Incoming video call:', data);
-      
+
       // Clear timers cũ nếu có
-      if (autoRejectTimer) {
-        clearTimeout(autoRejectTimer);
-      }
-      if (ringingInterval) {
-        clearInterval(ringingInterval);
-      }
-      
+      clearTimers();
+
       // Phát âm thanh lần đầu
       playNotificationSound('video_call');
-      
+
       // Hiển thị pop-up
       setIncomingCall(data);
       setIsRinging(true);
@@ -112,24 +125,28 @@ const VideoCallNotification = () => {
       // Chuông reo liên tục mỗi 2.5 giây trong 1 phút
       let ringCount = 0;
       const maxRings = 24; // 60 giây / 2.5 giây = 24 lần
-      
-      ringingInterval = setInterval(() => {
+
+      ringingIntervalRef.current = setInterval(() => {
         ringCount++;
         if (ringCount < maxRings) {
           playNotificationSound('video_call');
         } else {
           // Dừng chuông sau 1 phút
-          clearInterval(ringingInterval);
+          if (ringingIntervalRef.current) {
+            clearInterval(ringingIntervalRef.current);
+            ringingIntervalRef.current = null;
+          }
         }
       }, 2500); // Mỗi 2.5 giây
 
       // Tự động từ chối sau 1 phút (60000ms) nếu không trả lời
-      autoRejectTimer = setTimeout(async () => {
+      autoRejectTimerRef.current = setTimeout(async () => {
         // Dừng chuông
-        if (ringingInterval) {
-          clearInterval(ringingInterval);
+        if (ringingIntervalRef.current) {
+          clearInterval(ringingIntervalRef.current);
+          ringingIntervalRef.current = null;
         }
-        
+
         setIncomingCall(prev => {
           if (prev?.cuocHoiThoaiID === data.cuocHoiThoaiID) {
             // Gửi socket event từ chối và lưu cuộc gọi nhỡ
@@ -147,21 +164,31 @@ const VideoCallNotification = () => {
         });
         setIsRinging(false);
       }, 60000); // 1 phút
+
+
+    };
+
+    const handleCallEnded = () => {
+      console.log('[VideoCallNotification] Call ended or answered elsewhere');
+      clearTimers();
+      setIncomingCall(null);
+      setIsRinging(false);
     };
 
     socket.on('video_call_incoming', handleVideoCallIncoming);
+    socket.on('video_call_answered', handleCallEnded); // Nghe ở thiết bị khác
+    socket.on('video_call_rejected', handleCallEnded); // Từ chối ở thiết bị khác
+    socket.on('video_call_ended', handleCallEnded);    // Người gọi tắt máy
 
     return () => {
       socket.off('video_call_incoming', handleVideoCallIncoming);
+      socket.off('video_call_answered', handleCallEnded);
+      socket.off('video_call_rejected', handleCallEnded);
+      socket.off('video_call_ended', handleCallEnded);
       socket.emit('unsubscribe_notifications');
-      if (autoRejectTimer) {
-        clearTimeout(autoRejectTimer);
-      }
-      if (ringingInterval) {
-        clearInterval(ringingInterval);
-      }
+      clearTimers();
     };
-  }, [socket, isConnected, playNotificationSound]);
+  }, [socket, isConnected, playNotificationSound, clearTimers]);
 
   /**
    * Animation cho icon video

@@ -2,6 +2,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import "./navigation.css";
 
+// Logo Hommy
+import HommyLogoIcon from "../../assets/images/Hommy_Logo_Icon.svg";
+
 // React Icons
 import {
   HiOutlineChartBar,
@@ -218,7 +221,13 @@ function Navigation({ activeTab, onTabChange }) {
         {/* Header */}
         <div className="navigation__header">
           <div className="navigation__brand">
-            <div className="navigation__brand-icon">⚙️</div>
+            <div className="navigation__brand-icon">
+              <img 
+                src={HommyLogoIcon} 
+                alt="Hommy" 
+                className={`navigation__brand-logo ${isCollapsed ? 'navigation__brand-logo--collapsed' : ''}`}
+              />
+            </div>
             {!isCollapsed && (
               <div className="navigation__brand-text">
                 <div className="navigation__brand-title">Quản lý</div>

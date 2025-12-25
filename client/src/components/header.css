@@ -2,101 +2,117 @@
    HEADER - BEM Naming Convention
    ============================================ */
 
-/* Floating Controls (Language & Dark Mode) - Góc trên bên phải */
-.header__floating-controls {
-    position: fixed;
-    top: 20px;
-    right: 20px;
+/* Header Actions Group (Install, Language, Theme) */
+.header__actions {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-    z-index: 2000;
-    pointer-events: none;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding-right: 12px;
 }
 
-.header__floating-btn {
-    width: 44px;
-    height: 44px;
+/* Install App Button - Nổi bật */
+.header__install-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: linear-gradient(135deg, #D4AF37 0%, #B88912 100%);
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1e293b;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+    white-space: nowrap;
+}
+
+.header__install-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.4);
+    background: linear-gradient(135deg, #F7D774 0%, #D4AF37 100%);
+}
+
+.header__install-btn:active {
+    transform: translateY(0);
+}
+
+.header__install-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.header__install-text {
+    display: inline;
+}
+
+/* Action Buttons (Language, Theme) */
+.header__action-btn {
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
-    background: #1e293b;
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: #f1f5f9;
+    border: 1px solid rgba(226, 232, 240, 0.8);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2), 0 2px 8px rgba(0, 0, 0, 0.1);
-    pointer-events: auto;
     position: relative;
-    overflow: hidden;
 }
 
-.header__floating-btn::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+.header__action-btn:hover {
+    background: #e2e8f0;
+    transform: scale(1.05);
 }
 
-.header__floating-btn:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 4px 12px rgba(0, 0, 0, 0.2);
-    background: #0f172a;
-}
-
-.header__floating-btn:hover::before {
-    opacity: 1;
-}
-
-.header__floating-btn:active {
-    transform: translateY(-2px) scale(1.02);
-}
-
-.header__floating-btn--language {
+.header__action-btn--language {
     background: #1e293b;
+    border-color: transparent;
 }
 
-.header__floating-btn--language:hover {
-    background: #0f172a;
+.header__action-btn--language:hover {
+    background: #334155;
 }
 
-.header__floating-btn--theme {
+.header__action-btn--language .header__action-icon {
+    color: #ffffff;
+}
+
+.header__action-btn--language .header__action-text {
+    color: #ffffff;
+}
+
+.header__action-btn--theme {
     background: #ffffff;
-    border-color: rgba(0, 0, 0, 0.1);
+    border-color: #e2e8f0;
 }
 
-.header__floating-btn--theme:hover {
+.header__action-btn--theme:hover {
     background: #f8fafc;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.header__floating-icon {
-    width: 20px;
-    height: 20px;
-    font-size: 20px;
-    color: #ffffff;
-    z-index: 1;
-    position: relative;
+.header__action-icon {
+    width: 18px;
+    height: 18px;
+    color: #475569;
     flex-shrink: 0;
-    display: block;
 }
 
-.header__floating-btn--theme .header__floating-icon {
-    color: #1e293b;
-}
-
-.header__floating-text {
-    font-size: 11px;
+.header__action-text {
+    font-size: 10px;
     font-weight: 700;
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: #1e293b;
     color: #ffffff;
-    z-index: 1;
-    position: relative;
-    margin-left: 3px;
+    padding: 1px 4px;
+    border-radius: 6px;
+    line-height: 1;
 }
 
 .header {
@@ -528,6 +544,20 @@
         padding: 0 1rem;
     }
 
+    .header__actions {
+        gap: 6px;
+    }
+
+    .header__install-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .header__action-btn {
+        width: 34px;
+        height: 34px;
+    }
+
     .header__nav-list {
         gap: 15px;
     }
@@ -616,6 +646,32 @@
     border-color: rgba(129, 140, 248, 0.4);
 }
 
+/* Dark Mode - Header Actions */
+.dark-mode .header__action-btn {
+    background: #334155;
+    border-color: #475569;
+}
+
+.dark-mode .header__action-btn:hover {
+    background: #475569;
+}
+
+.dark-mode .header__action-btn--language {
+    background: #f1f5f9;
+}
+
+.dark-mode .header__action-btn--language:hover {
+    background: #ffffff;
+}
+
+.dark-mode .header__action-btn--language .header__action-icon {
+    color: #1e293b;
+}
+
+.dark-mode .header__action-btn--theme .header__action-icon {
+    color: #f1f5f9;
+}
+
 /* ============================================
    MOBILE (≤ 768px)
    ============================================ */
@@ -632,25 +688,41 @@
         min-height: 60px;
     }
 
-    .header__floating-controls {
-        top: 12px;
-        right: 12px;
-        gap: 8px;
+    /* Header Actions on Mobile */
+    .header__actions {
+        order: 2;
+        gap: 6px;
+        padding-right: 8px;
     }
 
-    .header__floating-btn {
-        width: 40px;
-        height: 40px;
+    .header__install-btn {
+        padding: 6px 10px;
+        font-size: 11px;
+        border-radius: 16px;
     }
 
-    .header__floating-icon {
-        width: 18px;
-        height: 18px;
-        font-size: 18px;
+    .header__install-icon {
+        width: 16px;
+        height: 16px;
     }
 
-    .header__floating-text {
-        font-size: 10px;
+    .header__install-text {
+        display: none;
+    }
+
+    .header__action-btn {
+        width: 32px;
+        height: 32px;
+    }
+
+    .header__action-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .header__action-text {
+        font-size: 9px;
+        padding: 1px 3px;
     }
 
     /* Logo */
@@ -667,8 +739,8 @@
     /* Menu Toggle */
     .header__menu-toggle {
         display: flex;
-        order: 2;
-        margin-left: auto;
+        order: 3;
+        margin-left: 0;
         z-index: 1001;
     }
 

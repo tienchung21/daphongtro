@@ -390,6 +390,19 @@ export const taoQRXemNgay = async (data) => {
 };
 
 /**
+ * Tạo QR đặt cọc cho khách hàng quét
+ * @param {Object} data - Dữ liệu tạo QR
+ * @param {number} data.cuocHenId - ID cuộc hẹn
+ * @param {number} data.tinDangId - ID tin đăng
+ * @param {number} data.phongId - ID phòng được chọn
+ * @param {number} data.soThangKy - Số tháng ký hợp đồng
+ * @param {number} data.soTienCoc - Số tiền cọc ước tính
+ */
+export const taoQRDatCoc = async (data) => {
+  return apiClient.post('/goi-y/tao-qr-dat-coc', data);
+};
+
+/**
  * Kiểm tra trạng thái QR (polling fallback)
  * @param {string} maQR - Mã QR
  */
@@ -447,6 +460,7 @@ export default {
   timKiemGoiY,
   layChiTietTinDangGoiY,
   taoQRXemNgay,
+  taoQRDatCoc,
   kiemTraTrangThaiQR,
   
   // Helpers

@@ -1,6 +1,10 @@
 /**
  * Service Layer cho Thông báo
  * Xử lý business logic tạo và gửi thông báo cho Nhân viên Bán hàng
+ * 
+ * Tích hợp:
+ * - In-app notifications (socket.io)
+ * - Push notifications (web-push) cho notification center
  */
 
 const ThongBaoModel = require('../models/ThongBaoModel');
@@ -8,18 +12,82 @@ const db = require('../config/db');
 const { emitNotificationNew } = require('../socket/notificationHandlers');
 const { getIoInstance } = require('../utils/socketIo');
 
+// Import Push Notification helpers từ pushRoutes
+let sendPushToUser;
+try {
+  const pushRoutes = require('../routes/pushRoutes');
+  sendPushToUser = pushRoutes.sendPushToUser;
+} catch (e) {
+  console.warn('[ThongBaoService] Push routes not available:', e.message);
+}
+
+// ============================================
+// NOTIFICATION SOUNDS & TAGS
+// Mỗi loại thông báo có tag riêng để nhóm và âm thanh riêng
+// ============================================
+const NOTIFICATION_CONFIG = {
+  // Tin nhắn
+  tro_chuyen_moi: {
+    tag: 'chat-message',
+    icon: '/icons/icon-chat.png',
+    vibrate: [100, 50, 100], // Ngắn, nhẹ
+    requireInteraction: false
+  },
+  // Video call
+  video_call: {
+    tag: 'video-call',
+    icon: '/icons/icon-videocall.png',
+    vibrate: [300, 100, 300, 100, 300], // Dài, urgent
+    requireInteraction: true // Giữ cho đến khi user tương tác
+  },
+  // Cuộc hẹn
+  cuoc_hen_moi: {
+    tag: 'appointment-new',
+    icon: '/icons/icon-calendar.png',
+    vibrate: [200, 100, 200],
+    requireInteraction: false
+  },
+  cuoc_hen_cho_phe_duyet: {
+    tag: 'appointment-pending',
+    icon: '/icons/icon-calendar.png',
+    vibrate: [200, 100, 200],
+    requireInteraction: false
+  },
+  cuoc_hen_da_phe_duyet: {
+    tag: 'appointment-approved',
+    icon: '/icons/icon-check.png',
+    vibrate: [100, 50, 100, 50, 100],
+    requireInteraction: false
+  },
+  cuoc_hen_bi_tu_choi: {
+    tag: 'appointment-rejected',
+    icon: '/icons/icon-warning.png',
+    vibrate: [300, 100, 300],
+    requireInteraction: true
+  },
+  // Hệ thống
+  default: {
+    tag: 'system',
+    icon: '/icons/icon-192x192.png',
+    vibrate: [200, 100, 200],
+    requireInteraction: false
+  }
+};
+
 class ThongBaoService {
   /**
-   * Helper: Tạo và gửi thông báo
+   * Helper: Tạo và gửi thông báo (in-app + push)
    * @param {number} nguoiNhanId - ID người nhận
    * @param {string} type - Loại thông báo (từ Payload.type)
    * @param {string} tieuDe - Tiêu đề
    * @param {string} noiDung - Nội dung
    * @param {Object} payload - Dữ liệu bổ sung
+   * @param {string} url - URL để navigate khi click (optional)
    * @returns {Promise<{ThongBaoID: number}>}
    */
-  static async guiThongBao(nguoiNhanId, type, tieuDe, noiDung, payload = {}) {
+  static async guiThongBao(nguoiNhanId, type, tieuDe, noiDung, payload = {}, url = '/') {
     try {
+      // 1. Lưu vào database (in-app)
       const thongBao = await ThongBaoModel.taoMoi({
         NguoiNhanID: nguoiNhanId,
         Kenh: 'in-app',
@@ -32,14 +100,40 @@ class ThongBaoService {
         TrangThai: 'ChuaDoc'
       });
 
-      // Emit socket event để frontend nhận real-time
+      // 2. Emit socket event để frontend nhận real-time (nếu đang online)
       const io = getIoInstance();
       if (io) {
         try {
           emitNotificationNew(io, nguoiNhanId, thongBao);
         } catch (socketError) {
           console.error('[ThongBaoService] Lỗi emit socket notification:', socketError);
-          // Không throw error, chỉ log vì thông báo đã được lưu vào DB
+        }
+      }
+
+      // 3. Gửi Push Notification (hiện trên notification center)
+      if (sendPushToUser) {
+        try {
+          const config = NOTIFICATION_CONFIG[type] || NOTIFICATION_CONFIG.default;
+          
+          await sendPushToUser(nguoiNhanId, {
+            title: tieuDe,
+            body: noiDung,
+            icon: config.icon,
+            tag: config.tag,
+            url: url,
+            vibrate: config.vibrate,
+            requireInteraction: config.requireInteraction,
+            data: {
+              type,
+              ThongBaoID: thongBao.ThongBaoID,
+              ...payload
+            }
+          });
+          
+          console.log(`📱 [ThongBaoService] Push sent to user ${nguoiNhanId}: ${type}`);
+        } catch (pushError) {
+          // Không throw lỗi push - chỉ log
+          console.warn('[ThongBaoService] Push notification failed:', pushError.message);
         }
       }
 
@@ -92,7 +186,8 @@ class ThongBaoService {
           TenKhachHang: cuocHen.TenKhachHang,
           TenPhong: cuocHen.TenPhong,
           TieuDeTinDang: cuocHen.TieuDeTinDang
-        }
+        },
+        `/nhan-vien-ban-hang/cuoc-hen/${cuocHenId}` // URL điều hướng đến chi tiết cuộc hẹn
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo cuộc hẹn mới:', error);
@@ -133,7 +228,8 @@ class ThongBaoService {
           CuocHenID: cuocHenId,
           ThoiGianHen: cuocHen.ThoiGianHen,
           TenKhachHang: cuocHen.TenKhachHang
-        }
+        },
+        `/nhan-vien-ban-hang/cuoc-hen/${cuocHenId}` // URL điều hướng
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo chờ phê duyệt:', error);
@@ -174,7 +270,8 @@ class ThongBaoService {
           CuocHenID: cuocHenId,
           ThoiGianHen: cuocHen.ThoiGianHen,
           TenKhachHang: cuocHen.TenKhachHang
-        }
+        },
+        `/nhan-vien-ban-hang/cuoc-hen/${cuocHenId}` // URL điều hướng
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo đã phê duyệt:', error);
@@ -213,7 +310,8 @@ class ThongBaoService {
           ThoiGianHen: cuocHen.ThoiGianHen,
           TenKhachHang: cuocHen.TenKhachHang,
           LyDo: lyDo
-        }
+        },
+        `/nhan-vien-ban-hang/cuoc-hen/${cuocHenId}` // URL điều hướng
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo từ chối:', error);
@@ -250,7 +348,8 @@ class ThongBaoService {
           CuocHenID: cuocHenId,
           ThoiGianHen: cuocHen.ThoiGianHen,
           TenKhachHang: cuocHen.TenKhachHang
-        }
+        },
+        `/nhan-vien-ban-hang/cuoc-hen` // Điều hướng đến danh sách cuộc hẹn
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo khách hủy:', error);
@@ -309,7 +408,8 @@ class ThongBaoService {
           PhanHoi,
           TenKhachHang: info.TenKhachHang,
           TieuDeTinDang: info.TieuDeTinDang
-        }
+        },
+        `/nhan-vien-ban-hang/khach-hang/${KhachHangID}` // Điều hướng đến trang khách hàng
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo phản hồi gợi ý:', error);
@@ -351,7 +451,8 @@ class ThongBaoService {
           TenKhachHang: cuocHen.TenKhachHang,
           TieuDeTinDang: cuocHen.TieuDeTinDang,
           MaQR: maQR
-        }
+        },
+        `/nhan-vien-ban-hang/cuoc-hen/${cuocHenId}` // Điều hướng đến chi tiết cuộc hẹn
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo cuộc hẹn từ QR:', error);
@@ -396,7 +497,8 @@ class ThongBaoService {
           CuocHenID: cuocHenId,
           SoTien: info.SoTien,
           TenKhachHang: info.TenKhachHang
-        }
+        },
+        `/nhan-vien-ban-hang/cuoc-hen/${cuocHenId}` // Điều hướng đến chi tiết cuộc hẹn
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo cọc mới:', error);
@@ -442,7 +544,8 @@ class ThongBaoService {
           NoiDung: tinNhan.NoiDung,
           NguCanhID: tinNhan.NguCanhID,
           NguCanhLoai: tinNhan.NguCanhLoai
-        }
+        },
+        `/nhan-vien-ban-hang/tin-nhan/${cuocHoiThoaiId}` // URL điều hướng đến cuộc trò chuyện
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo tin nhắn mới:', error);
@@ -479,7 +582,8 @@ class ThongBaoService {
           NguoiGoiID: nguoiGoiId,
           NguoiGoiTen: nguoiGoi.TenDayDu,
           RoomUrl: roomUrl
-        }
+        },
+        roomUrl || `/nhan-vien-ban-hang/tin-nhan/${cuocHoiThoaiId}` // Mở room URL hoặc đến tin nhắn
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo video call:', error);
@@ -519,7 +623,8 @@ class ThongBaoService {
           ThoiGianHen: cuocHen.ThoiGianHen,
           TenKhachHang: cuocHen.TenKhachHang,
           TenPhong: cuocHen.TenPhong
-        }
+        },
+        `/nhan-vien-ban-hang/cuoc-hen/${cuocHenId}` // Điều hướng đến chi tiết cuộc hẹn để báo cáo
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo cần báo cáo:', error);
@@ -563,7 +668,8 @@ class ThongBaoService {
           TenKhachHang: cuocHen.TenKhachHang,
           TenPhong: cuocHen.TenPhong,
           DiaChi: cuocHen.DiaChi || null
-        }
+        },
+        `/nhan-vien-ban-hang/cuoc-hen/${cuocHenId}` // Điều hướng đến chi tiết cuộc hẹn
       );
     } catch (error) {
       console.error('[ThongBaoService] Lỗi thông báo reminder:', error);

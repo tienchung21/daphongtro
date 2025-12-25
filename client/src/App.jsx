@@ -3,6 +3,7 @@ import "./App.css";
 import TrangChu from "./pages/trangchu";
 import Login from "./pages/login";
 import Dangky from "./pages/dangky";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // Import các components cho Chủ dự án
 import DashboardChuDuAn from "./pages/ChuDuAn/Dashboard"; // ✨ Light Glass Morphism với Dashboard mới
@@ -44,9 +45,13 @@ import QuanLyDuAnOperator from "./pages/Operator/QuanLyDuAnOperator";
 import QuanLyLichNVBH from "./pages/Operator/QuanLyLichNVBH";
 import QuanLyNhanVien from "./pages/Operator/QuanLyNhanVien";
 import QuanLyBienBan from "./pages/Operator/QuanLyBienBan";
+import BaoCaoThuNhapNVDH from "./pages/Operator/BaoCaoThuNhapNVDH";
 
 // Import trang Xem Ngay (Public) cho Gợi ý Tin đăng
 import XemNgayConfirm from './pages/XemNgay/XemNgayConfirm';
+
+// Import trang Xem Hợp đồng Cọc (Public) qua QR
+import XemHopDongCoc from './pages/XemHopDongCoc/XemHopDongCoc';
 
 // Import từ upstream
 import QuanLyTaiKhoan from './pages/quanlytaikhoan';
@@ -77,9 +82,16 @@ function App() {
         
         {/* 🎯 Route cho Khách hàng - Xem tin đăng gợi ý qua QR (Public) */}
         <Route path='/xem-ngay/:maQR' element={<XemNgayConfirm />} />
+        
+        {/* 🎯 Route cho Khách hàng - Xem hợp đồng cọc qua QR (Public) */}
+        <Route path='/dat-coc/:maQR' element={<XemHopDongCoc />} />
 
-        {/* Routes cho Nhân viên Bán hàng */}
-        <Route path='/nhan-vien-ban-hang' element={<LayoutNhanVienBanHang />}>
+        {/* Routes cho Nhân viên Bán hàng - Chỉ NVBH (2) và Admin (5) */}
+        <Route path='/nhan-vien-ban-hang' element={
+          <ProtectedRoute allowedRoles={[2, 5]}>
+            <LayoutNhanVienBanHang />
+          </ProtectedRoute>
+        }>
           <Route index element={<DashboardNVBH />} />
           <Route path='lich-lam-viec' element={<LichLamViec />} />
           <Route path='cuoc-hen' element={<QuanLyCuocHenNVBH />} />
@@ -91,29 +103,30 @@ function App() {
           <Route path='cai-dat' element={<CaiDatNhanVienBanHang />} />
         </Route>
 
-        {/* Routes cho NVDH (UC-OPER-01 đến UC-OPER-06) */}
-        <Route path='/nvdh/dashboard' element={<DashboardOperator />} />
-        <Route path='/nvdh/duyet-tin-dang' element={<DuyetTinDang />} />
-        <Route path='/nvdh/du-an' element={<QuanLyDuAnOperator />} />
-        <Route path='/nvdh/lich-nvbh' element={<QuanLyLichNVBH />} />
-        <Route path='/nvdh/nhan-vien' element={<QuanLyNhanVien />} />
-        <Route path='/nvdh/bien-ban' element={<QuanLyBienBan />} />
+        {/* Routes cho NVDH (UC-OPER-01 đến UC-OPER-06) - Chỉ NVDH (4) và Admin (5) */}
+        <Route path='/nvdh/dashboard' element={<ProtectedRoute allowedRoles={[4, 5]}><DashboardOperator /></ProtectedRoute>} />
+        <Route path='/nvdh/duyet-tin-dang' element={<ProtectedRoute allowedRoles={[4, 5]}><DuyetTinDang /></ProtectedRoute>} />
+        <Route path='/nvdh/du-an' element={<ProtectedRoute allowedRoles={[4, 5]}><QuanLyDuAnOperator /></ProtectedRoute>} />
+        <Route path='/nvdh/lich-nvbh' element={<ProtectedRoute allowedRoles={[4, 5]}><QuanLyLichNVBH /></ProtectedRoute>} />
+        <Route path='/nvdh/nhan-vien' element={<ProtectedRoute allowedRoles={[4, 5]}><QuanLyNhanVien /></ProtectedRoute>} />
+        <Route path='/nvdh/bien-ban' element={<ProtectedRoute allowedRoles={[4, 5]}><QuanLyBienBan /></ProtectedRoute>} />
+        <Route path='/nvdh/thu-nhap' element={<ProtectedRoute allowedRoles={[4, 5]}><BaoCaoThuNhapNVDH /></ProtectedRoute>} />
 
-        {/* Routes cho Chủ dự án */}
-        <Route path='/chu-du-an/dashboard' element={<DashboardChuDuAn />} />
-        <Route path='/chu-du-an/du-an' element={<QuanLyDuAn />} /> {/* ✨ Quản lý dự án */}
-        <Route path='/chu-du-an/tin-dang' element={<QuanLyTinDangChuDuAn />} />
-        <Route path='/chu-du-an/tin-dang/:id' element={<ChiTietTinDang />} /> {/* ✨ Light Glass Morphism Theme */}
-        <Route path='/chu-du-an/tao-tin-dang' element={<TaoTinDang />} />
-        <Route path='/chu-du-an/chinh-sua-tin-dang/:id' element={<ChinhSuaTinDang />} />
-        <Route path='/chu-du-an/bao-cao' element={<BaoCaoHieuSuat />} />
-        <Route path='/chu-du-an/cuoc-hen' element={<QuanLyCuocHen />} /> {/* ✨ UC-PROJ-02: Quản lý cuộc hẹn */}
-        <Route path='/chu-du-an/hop-dong' element={<QuanLyHopDong />} /> {/* ✨ UC-PROJ-04: Quản lý hợp đồng */}
-        <Route path='/chu-du-an/tin-nhan' element={<TinNhan />} /> {/* ✨ UC-PROJ-05: Tin nhắn */}
-        <Route path='/chu-du-an/tin-nhan/:id' element={<ChiTietTinNhan />} /> {/* ✨ Chi tiết cuộc hội thoại */}
-        <Route path='/cai-dat' element={<CaiDat />} /> {/* ✨ Cài đặt tài khoản Chủ dự án */}
-        <Route path='/xac-thuc-kyc' element={<XacThucKYC />} /> {/* ✨ Xác thực KYC */}
-        <Route path='/kyc-debug' element={<KycDebugPlayground />} /> {/* 🔍 ROI/QR debug playground */}
+        {/* Routes cho Chủ dự án - Chỉ CDA (3) và Admin (5) */}
+        <Route path='/chu-du-an/dashboard' element={<ProtectedRoute allowedRoles={[3, 5]}><DashboardChuDuAn /></ProtectedRoute>} />
+        <Route path='/chu-du-an/du-an' element={<ProtectedRoute allowedRoles={[3, 5]}><QuanLyDuAn /></ProtectedRoute>} />
+        <Route path='/chu-du-an/tin-dang' element={<ProtectedRoute allowedRoles={[3, 5]}><QuanLyTinDangChuDuAn /></ProtectedRoute>} />
+        <Route path='/chu-du-an/tin-dang/:id' element={<ProtectedRoute allowedRoles={[3, 5]}><ChiTietTinDang /></ProtectedRoute>} />
+        <Route path='/chu-du-an/tao-tin-dang' element={<ProtectedRoute allowedRoles={[3, 5]}><TaoTinDang /></ProtectedRoute>} />
+        <Route path='/chu-du-an/chinh-sua-tin-dang/:id' element={<ProtectedRoute allowedRoles={[3, 5]}><ChinhSuaTinDang /></ProtectedRoute>} />
+        <Route path='/chu-du-an/bao-cao' element={<ProtectedRoute allowedRoles={[3, 5]}><BaoCaoHieuSuat /></ProtectedRoute>} />
+        <Route path='/chu-du-an/cuoc-hen' element={<ProtectedRoute allowedRoles={[3, 5]}><QuanLyCuocHen /></ProtectedRoute>} />
+        <Route path='/chu-du-an/hop-dong' element={<ProtectedRoute allowedRoles={[3, 5]}><QuanLyHopDong /></ProtectedRoute>} />
+        <Route path='/chu-du-an/tin-nhan' element={<ProtectedRoute allowedRoles={[3, 5]}><TinNhan /></ProtectedRoute>} />
+        <Route path='/chu-du-an/tin-nhan/:id' element={<ProtectedRoute allowedRoles={[3, 5]}><ChiTietTinNhan /></ProtectedRoute>} />
+        <Route path='/cai-dat' element={<ProtectedRoute allowedRoles={[3, 5]}><CaiDat /></ProtectedRoute>} />
+        <Route path='/xac-thuc-kyc' element={<ProtectedRoute allowedRoles={[3, 5]}><XacThucKYC /></ProtectedRoute>} />
+        <Route path='/kyc-debug' element={<ProtectedRoute allowedRoles={[3, 5]}><KycDebugPlayground /></ProtectedRoute>} />
 
         {/* Routes từ upstream */}
         <Route path='/searchkhuvuc' element={<SearchKhuVuc />} />
@@ -124,7 +137,7 @@ function App() {
         <Route path="/thanhtoancoc" element={<ThanhToanCoc />} />
         <Route path="/cuochencuatoi" element={<Appointments />} />
         <Route path="/vi" element={<ViPage />} />
-        <Route path="/quan-ly" element={<QuanLy />} />
+        <Route path="/quan-ly" element={<ProtectedRoute allowedRoles={[1, 5]}><QuanLy /></ProtectedRoute>} />
       </Routes>
     </div>
   );

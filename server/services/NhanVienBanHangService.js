@@ -6,6 +6,7 @@
 
 const db = require('../config/db');
 const NhatKyHeThongService = require('./NhatKyHeThongService');
+const HoaHongService = require('./HoaHongService');
 
 const normalizeImagePath = (value = '') => {
   if (!value) return value;
@@ -571,27 +572,29 @@ class NhanVienBanHangService {
   /**
    * UC-SALE-04: Xác nhận cọc của khách hàng
    */
-  static async xacNhanCoc(giaoDichId, nhanVienId) {
+  static async xacNhanCoc(cocId, nhanVienId) {
     try {
-      // Kiểm tra giao dịch có liên quan đến cuộc hẹn của NVBH không
-      const [giaoDich] = await db.execute(`
-        SELECT gd.GiaoDichID, gd.TrangThai, gd.Loai
-        FROM giaodich gd
-        WHERE gd.GiaoDichID = ?
-        AND gd.Loai IN ('COC_GIU_CHO', 'COC_AN_NINH')
-        AND gd.TrangThai = 'DaUyQuyen'
-      `, [giaoDichId]);
+      // Kiểm tra cọc có liên quan đến hợp đồng của NVBH không
+      const [cocRows] = await db.execute(`
+        SELECT c.CocID, c.TrangThai, c.Loai, c.HopDongID
+        FROM coc c
+        LEFT JOIN hopdong hd ON c.HopDongID = hd.HopDongID OR (c.TinDangID = hd.TinDangID AND c.PhongID = hd.PhongID)
+        WHERE c.CocID = ?
+        AND c.Loai IN ('CocGiuCho', 'CocAnNinh')
+        AND c.TrangThai = 'HieuLuc'
+        AND hd.NhanVienBanHangID = ?
+      `, [cocId, nhanVienId]);
 
-      if (giaoDich.length === 0) {
-        throw new Error('Không tìm thấy giao dịch hoặc giao dịch không ở trạng thái chờ xác nhận');
+      if (cocRows.length === 0) {
+        throw new Error('Không tìm thấy cọc hoặc cọc không ở trạng thái chờ xác nhận');
       }
 
-      // Cập nhật trạng thái giao dịch
+      // Cập nhật trạng thái cọc → DaDoiTru (đã đối trừ vào hợp đồng)
       await db.execute(
-        `UPDATE giaodich 
-         SET TrangThai = 'DaGhiNhan' 
-         WHERE GiaoDichID = ?`,
-        [giaoDichId]
+        `UPDATE coc 
+         SET TrangThai = 'DaDoiTru', CapNhatLuc = NOW()
+         WHERE CocID = ?`,
+        [cocId]
       );
 
       return true;
@@ -688,38 +691,16 @@ class NhanVienBanHangService {
 
   /**
    * UC-SALE-06: Tính thu nhập/hoa hồng
+   * Công thức mới:
+   * - Doanh thu công ty = Số tiền cọc × % hoa hồng dự án (theo BangHoaHong JSON)
+   * - Thu nhập NVBH = Doanh thu công ty × tỷ lệ hoa hồng nhân viên (thường 50%)
    */
   static async tinhThuNhap(nhanVienId, { tuNgay, denNgay }) {
     try {
-      // Lấy tỷ lệ hoa hồng từ hồ sơ nhân viên
-      const [hoSo] = await db.execute(
-        'SELECT TyLeHoaHong FROM hosonhanvien WHERE NguoiDungID = ?',
-        [nhanVienId]
-      );
+      // Sử dụng HoaHongService để tính báo cáo thu nhập theo công thức mới
+      const baoCaoHoaHong = await HoaHongService.baoCaoThuNhapNVBH(nhanVienId, tuNgay, denNgay);
 
-      const tyLeHoaHong = hoSo.length > 0 ? (hoSo[0].TyLeHoaHong || 0) : 0;
-
-      // Lấy thống kê giao dịch đã xác nhận
-      const [giaoDich] = await db.execute(`
-        SELECT 
-          COUNT(*) as soGiaoDich,
-          SUM(gd.SoTien) as tongGiaTri,
-          SUM(gd.SoTien * ? / 100) as tongHoaHong
-        FROM giaodich gd
-        INNER JOIN cuochen ch ON gd.TinDangLienQuanID = (
-          SELECT td.TinDangID FROM cuochen c2
-          INNER JOIN phong p ON c2.PhongID = p.PhongID
-          INNER JOIN phong_tindang pt ON p.PhongID = pt.PhongID
-          INNER JOIN tindang td ON pt.TinDangID = td.TinDangID
-          WHERE c2.CuocHenID = ch.CuocHenID
-        )
-        WHERE ch.NhanVienBanHangID = ?
-        AND gd.TrangThai = 'DaGhiNhan'
-        AND gd.Loai IN ('COC_GIU_CHO', 'COC_AN_NINH')
-        AND gd.ThoiGian BETWEEN ? AND ?
-      `, [tyLeHoaHong, nhanVienId, tuNgay, denNgay]);
-
-      // Lấy thống kê cuộc hẹn
+      // Lấy thống kê cuộc hẹn để tính tỷ lệ chuyển đổi
       const [cuocHen] = await db.execute(`
         SELECT 
           COUNT(*) as tongCuocHen,
@@ -735,16 +716,22 @@ class NhanVienBanHangService {
         : 0;
 
       return {
-        tyLeHoaHong,
-        soGiaoDich: giaoDich[0].soGiaoDich || 0,
-        tongGiaTri: giaoDich[0].tongGiaTri || 0,
-        tongHoaHong: giaoDich[0].tongHoaHong || 0,
-        hoaHongTrungBinh: giaoDich[0].soGiaoDich > 0 
-          ? (giaoDich[0].tongHoaHong / giaoDich[0].soGiaoDich).toFixed(2)
+        // Thông tin công thức mới
+        tyLeHoaHong: baoCaoHoaHong.tyLeHoaHongNhanVien,
+        soGiaoDich: baoCaoHoaHong.soHopDong,
+        tongGiaTri: baoCaoHoaHong.tongDoanhThuCongTy,
+        tongHoaHong: baoCaoHoaHong.tongThuNhapNVBH,
+        hoaHongTrungBinh: baoCaoHoaHong.soHopDong > 0 
+          ? (baoCaoHoaHong.tongThuNhapNVBH / baoCaoHoaHong.soHopDong).toFixed(2)
           : 0,
+        // Thống kê cuộc hẹn
         tongCuocHen: cuocHen[0].tongCuocHen || 0,
         cuocHenHoanThanh: cuocHen[0].hoanThanh || 0,
-        tyLeChuyenDoi
+        tyLeChuyenDoi,
+        // Chi tiết hợp đồng (mới)
+        chiTietHopDong: baoCaoHoaHong.chiTietHopDong,
+        // Công thức áp dụng
+        congThuc: baoCaoHoaHong.congThuc
       };
     } catch (error) {
       throw new Error(`Lỗi tính thu nhập: ${error.message}`);

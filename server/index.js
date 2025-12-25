@@ -29,6 +29,10 @@ const kycRoutes = require('./api/kyc/kycRoutes'); // API KYC (Xác thực CCCD)
 const nhanVienBanHangRoutes = require('./routes/nhanVienBanHangRoutes');
 const goiYTinDangRoutes = require('./routes/goiYTinDangRoutes'); // Gợi ý tin đăng (QR Xem Ngay)
 const publicGoiYRoutes = require('./routes/publicGoiYRoutes'); // Public routes cho khách quét QR
+const publicHopDongCocRoutes = require('./routes/publicHopDongCocRoutes'); // Public routes cho hợp đồng cọc qua QR
+
+// Routes cho Nhân viên Điều hành
+const nhanVienDieuHanhRoutes = require('./routes/nhanVienDieuHanhRoutes');
 
 const nguoiPhuTrachDuAnRoutes = require('./routes/nguoiPhuTrachDuAnRoutes');
 // Routes cho Operator (UC-OPER-01 đến UC-OPER-06)
@@ -56,6 +60,7 @@ const publicDuAnRoutes = require('./routes/publicDuAnRoutes');
 const publicTinDangRoutes = require('./routes/publicTinDangRoutes');
 const sepaySync = require('./services/sepaySyncService');
 const lichSuViRoutes = require('./routes/lichSuViRoutes');
+const pushRoutes = require('./routes/pushRoutes'); // Push Notifications
 // Create Express app and HTTP server
 const app = express();
 const server = http.createServer(app);
@@ -185,6 +190,9 @@ app.use('/api/chatbot', chatBotRoutes); // API Chatbot AI
 app.use('/api/nhan-vien-ban-hang', nhanVienBanHangRoutes);
 app.use('/api/nhan-vien-ban-hang/goi-y', goiYTinDangRoutes); // Gợi ý tin đăng (QR Xem Ngay)
 
+// API Nhân viên Điều hành
+app.use('/api/nhan-vien-dieu-hanh', nhanVienDieuHanhRoutes);
+
 app.use('/api/nguoi-phu-trach-du-an', nguoiPhuTrachDuAnRoutes);
 // API từ upstream
 app.use('/api/tindangs', tinDangRoutes); 
@@ -197,8 +205,10 @@ app.use('/api/cuoc-hen', cuocHenRoutes);
 app.use('/api/public/du-an', publicDuAnRoutes);
 app.use('/api/public/tin-dang', publicTinDangRoutes);
 app.use('/api/public/xem-ngay', publicGoiYRoutes); // Public routes cho khách quét QR xem phòng
+app.use('/api/public/hop-dong-coc', publicHopDongCocRoutes); // Public routes cho hợp đồng cọc qua QR
 app.use('/api/lich-su-vi', lichSuViRoutes);
 app.use('/api/vi', viRoutes);
+app.use('/api/push', pushRoutes); // Push Notifications API
 app.get('/', (req, res) => {
   res.send('API server đang chạy - Module Chủ dự án + Upstream APIs');
 });

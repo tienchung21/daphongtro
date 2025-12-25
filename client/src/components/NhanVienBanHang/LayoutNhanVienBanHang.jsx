@@ -52,7 +52,9 @@ const LayoutNhanVienBanHang = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/login');
+    sessionStorage.clear();
+    // Force reload để clear React state và redirect to login
+    window.location.href = '/login';
   };
 
   // Get user info from localStorage

@@ -60,7 +60,7 @@ class MauHopDongModel {
             TaoLuc,
             CapNhatLuc
           FROM mauhopdong
-          WHERE TrangThai = 'Active'
+          WHERE TrangThai IN ('Active', 'xacthuc')
           ORDER BY CapNhatLuc DESC
           LIMIT 1
         `

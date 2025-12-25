@@ -71,6 +71,7 @@ class HoSoNhanVienModel {
           hs.NguoiDungID,
           hs.MaNhanVien,
           hs.KhuVucChinhID,
+          hs.KhuVucPhuTrachID,
           hs.TyLeHoaHong,
           hs.NgayBatDau,
           hs.NgayKetThuc,
@@ -81,13 +82,14 @@ class HoSoNhanVienModel {
           nd.SoDienThoai,
           nd.TrangThai as TrangThaiTaiKhoan,
           nd.TrangThai as TrangThaiLamViec,
-          kv.TenKhuVuc,
-           kv.TenKhuVuc as KhuVucPhuTrach,
+          kv_chinh.TenKhuVuc as TenKhuVucChinh,
+          kv_phu.TenKhuVuc as KhuVucPhuTrach,
           COUNT(DISTINCT ch.CuocHenID) as TongSoCuocHen,
           COUNT(DISTINCT CASE WHEN ch.TrangThai = 'HoanThanh' THEN ch.CuocHenID END) as SoCuocHenHoanThanh
         FROM hosonhanvien hs
         INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
-        LEFT JOIN khuvuc kv ON hs.KhuVucChinhID = kv.KhuVucID
+        LEFT JOIN khuvuc kv_chinh ON hs.KhuVucChinhID = kv_chinh.KhuVucID
+        LEFT JOIN khuvuc kv_phu ON hs.KhuVucPhuTrachID = kv_phu.KhuVucID
         LEFT JOIN cuochen ch ON nd.NguoiDungID = ch.NhanVienBanHangID
         ${whereClause}
         GROUP BY hs.HoSoID
@@ -177,13 +179,15 @@ class HoSoNhanVienModel {
           nd.SoDienThoai,
           nd.TrangThai as TrangThaiTaiKhoan,
           nd.TrangThaiXacMinh,
-          kv.TenKhuVuc,
+          kv_chinh.TenKhuVuc as TenKhuVucChinh,
+          kv_phu.TenKhuVuc as KhuVucPhuTrach,
           COUNT(DISTINCT ch.CuocHenID) as TongSoCuocHen,
           COUNT(DISTINCT CASE WHEN ch.TrangThai = 'HoanThanh' THEN ch.CuocHenID END) as SoCuocHenHoanThanh,
           COUNT(DISTINCT CASE WHEN ch.TrangThai = 'KhachKhongDen' THEN ch.CuocHenID END) as SoCuocHenKhachKhongDen
         FROM hosonhanvien hs
         INNER JOIN nguoidung nd ON hs.NguoiDungID = nd.NguoiDungID
-        LEFT JOIN khuvuc kv ON hs.KhuVucChinhID = kv.KhuVucID
+        LEFT JOIN khuvuc kv_chinh ON hs.KhuVucChinhID = kv_chinh.KhuVucID
+        LEFT JOIN khuvuc kv_phu ON hs.KhuVucPhuTrachID = kv_phu.KhuVucID
         LEFT JOIN cuochen ch ON nd.NguoiDungID = ch.NhanVienBanHangID
         WHERE hs.NguoiDungID = ?
         GROUP BY hs.HoSoID

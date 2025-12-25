@@ -188,16 +188,10 @@ Hệ thống eKYC (Electronic Know Your Customer) cho phép người dùng xác 
 - `handleCapture(imageSrc)`: Xử lý ảnh từ camera/upload, chuyển step
 - `processKYC(selfieSrc)`: Điều phối QR scan → OCR → Merge → Face match
 - `handleSubmit()`: Convert base64 → blob → FormData → POST backend
-  - Format ngày: DD/MM/YYYY → YYYY-MM-DD trước khi gửi
-  - Resize ảnh xuống 800px trước khi upload (tiết kiệm storage)
-  - Sử dụng `ImageResizeService.resizeForStorage()`
 
 **UI Sections:**
 1. **Intro Screen:** Nút "Bắt đầu ngay"
 2. **Capture Screens:** CameraCapture hoặc file upload toggle
-   - CameraCapture: Capture ở độ phân giải cao (4K ideal, min 720p)
-   - Crop ảnh về đúng tỷ lệ CCCD (1.586:1) khi capture
-   - `forceScreenshotSourceSize={true}` để giữ nguyên resolution gốc
 3. **Processing Screen:** Spinner + "Đang xử lý hình ảnh..."
 4. **Preview Screen:**
    - Confidence badge (≥90% green, 70-90% yellow, <70% red)
@@ -218,16 +212,14 @@ Hệ thống eKYC (Electronic Know Your Customer) cho phép người dùng xác 
 **ROI Definitions (Tọa độ theo %):**
 ```javascript
 CCCD_ROI = {
-  soCCCD:    { x: 0.3646632048404658, y: 0.40167174309188105, width: 0.45, height: 0.1 },  // 12 digits
-  tenDayDu:  { x: 0.27435237337743795, y: 0.5376948164845092, width: 0.48, height: 0.09 },  // Full name
-  ngaySinh:  { x: 0.5633160242023292, y: 0.6076025229139963, width: 0.22, height: 0.09 },  // DD/MM/YYYY
-  gioiTinh:  { x: 0.4462691895486178, y: 0.6599050917238253, width: 0.1, height: 0.1 },  // Nam/Nữ
-  quocTich:  { x: 0.78, y: 0.33, width: 0.18, height: 0.07 },  // Việt Nam
-  queQuan:   { x: 0.28, y: 0.41, width: 0.65, height: 0.09 },  // Place of origin
-  diaChi:    { x: 0.2830051927393013, y: 0.8499119973852943, width: 0.63, height: 0.13 },  // Address (2 lines)
-  ngayCap:   { x: 0.05, y: 0.8, width: 0.3, height: 0.08 },   // Issue date (back side)
-  faceImage: { x: 0.03956871353251068, y: 0.3992371061612484, width: 0.24, height: 0.42 },  // Face region
-  qrCode:    { x: 0.7822892552247601, y: 0.0956208542777824, width: 0.16, height: 0.22 }   // QR Code region
+  soCCCD:    { x: 0.40, y: 0.25, width: 0.35, height: 0.08 },  // 12 digits
+  tenDayDu:  { x: 0.40, y: 0.33, width: 0.50, height: 0.08 },  // Full name
+  ngaySinh:  { x: 0.40, y: 0.41, width: 0.30, height: 0.06 },  // DD/MM/YYYY
+  gioiTinh:  { x: 0.40, y: 0.47, width: 0.15, height: 0.06 },  // Nam/Nữ
+  quocTich:  { x: 0.55, y: 0.47, width: 0.30, height: 0.06 },  // Việt Nam
+  queQuan:   { x: 0.40, y: 0.53, width: 0.50, height: 0.06 },  // Place of origin
+  diaChi:    { x: 0.40, y: 0.59, width: 0.50, height: 0.12 },  // Address (2 lines)
+  ngayCap:   { x: 0.05, y: 0.80, width: 0.30, height: 0.08 }   // Issue date (back side)
 }
 ```
 
@@ -260,7 +252,8 @@ Image → resizeImage(1600px) → cropROI() → preprocessImage(adaptive thresho
   ngaySinh: "11/11/2003",
   gioiTinh: "Nam",
   diaChi: "15, Đường Hà Huy Tập, Chợ Lầu, Bắc Bình, Bình Thuận",
-  ngayCap: null   // Mặt sau
+  ngayCap: null,  // Mặt sau
+  noiCap: null    // Mặt sau
 }
 ```
 
@@ -283,11 +276,11 @@ Example:
 **Multi-Region Scan Strategy (5 attempts):**
 ```javascript
 regions = [
-  { name: 'full', x: 0, y: 0, width: 1, height: 1 },
-  { name: 'trl', x: 0.6924438618283316, y: 0.0074855560260057, width: 0.3, height: 0.4 },
-  { name: 'trm', x: 0.7244438618283315, y: 0.02501127822470541, width: 0.26, height: 0.32 },
-  { name: 'trs', x: 0.7942411152644188, y: 0.09223411162860624, width: 0.14, height: 0.22 },
-  { name: 'tc', x: 0.7476492301647519, y: 0.04126173970120754, width: 0.22, height: 0.32 }
+  { name: 'full', x: 0, y: 0, width: 1.0, height: 1.0 },
+  { name: 'top-right-large', x: 0.55, y: 0, width: 0.45, height: 0.45 },
+  { name: 'top-right-medium', x: 0.65, y: 0.02, width: 0.33, height: 0.33 },
+  { name: 'top-right-small', x: 0.70, y: 0.05, width: 0.25, height: 0.25 },
+  { name: 'center-right', x: 0.60, y: 0.10, width: 0.35, height: 0.35 }
 ]
 ```
 
@@ -412,35 +405,6 @@ getLichSu(): Promise<KYCRecord[]>
 
 ---
 
-#### 5.1. ImageResizeService.js (Image Processing)
-**Path:** `client/src/services/ImageResizeService.js`  
-**Chức năng:** Xử lý resize/upscale ảnh cho KYC processing và storage
-
-**Key Functions:**
-- `resizeForStorage(dataUrl, maxWidth=800, quality=0.85)`: Resize ảnh xuống để lưu DB
-  - Giảm kích thước ảnh xuống maxWidth (default 800px)
-  - Chất lượng JPEG có thể điều chỉnh (default 85%)
-  - Nếu ảnh đã nhỏ hơn maxWidth, giữ nguyên
-- `cropImage(imageDataUrl, x, y, width, height)`: Crop ảnh theo tọa độ pixel
-  - Dùng để crop ảnh CCCD về đúng tỷ lệ (1.586:1)
-  - Trả về base64 data URL
-- `upscaleForQR(dataUrl, minWidth=600, maxScale=3)`: Upscale ảnh nhỏ để cải thiện QR detection
-  - Đảm bảo chiều nhỏ nhất >= minWidth
-  - Không scale quá maxScale lần để tránh blur
-- `enhanceContrast(dataUrl, factor=1.5)`: Tăng contrast cho ảnh
-  - Hữu ích cho QR code bị mờ
-  - Factor mặc định 1.5
-
-**Usage trong XacThucKYC:**
-```javascript
-// Resize ảnh trước khi gửi lên server
-const resizedFront = await ImageResizeService.resizeForStorage(images.cccdFront, 800, 0.85);
-const frontBlob = await (await fetch(resizedFront)).blob();
-formData.append('cccdFront', frontBlob, 'front.jpg');
-```
-
----
-
 ### Backend Components
 
 #### 6. kycRoutes.js (API Routes)
@@ -468,7 +432,7 @@ GET    /api/kyc/lich-su
 **xacThucKYC(req, res):**
 ```javascript
 // 1. Extract data từ req.body và req.files
-const { soCCCD, tenDayDu, ngaySinh, diaChi, ngayCapCCCD, faceSimilarity } = req.body;
+const { soCCCD, tenDayDu, ngaySinh, diaChi, ngayCapCCCD, noiCapCCCD, faceSimilarity } = req.body;
 const userId = req.user.id;  // Từ JWT
 const cccdFront = req.files['cccdFront'][0].path;
 const cccdBack = req.files['cccdBack'][0].path;
@@ -485,12 +449,11 @@ if (!cccdFront || !cccdBack || !selfie) {
 // 3. Determine status
 let trangThai = 'CanXemLai';
 let lyDo = null;
-const similarity = parseFloat(faceSimilarity);
 if (similarity >= 0.85) {
-  trangThai = 'ThanhCong';
+  // Auto approve (nếu enable)
 } else if (similarity < 0.6) {
   trangThai = 'ThatBai';
-  lyDo = 'Độ khớp khuôn mặt thấp (' + (similarity * 100).toFixed(2) + '%)';
+  lyDo = 'Độ khớp khuôn mặt thấp';
 }
 
 // 4. Call service
@@ -519,71 +482,25 @@ const connection = await db.getConnection();
 await connection.beginTransaction();
 
 try {
-  // 2. Kiểm tra xem đã có KYC record chưa (tránh duplicate)
-  const checkSql = `
-    SELECT KYCVerificationID, AnhCCCDMatTruoc, AnhCCCDMatSau, AnhSelfie 
-    FROM kyc_verification 
-    WHERE NguoiDungID = ? 
-    ORDER BY TaoLuc DESC 
-    LIMIT 1
-  `;
-  const [existing] = await connection.execute(checkSql, [data.NguoiDungID]);
+  // 2. Insert kyc_verification
+  const kycId = await KycModel.create(data);
   
-  // 3. Xóa ảnh cũ nếu có (tránh duplicate ảnh)
-  if (existing.length > 0) {
-    const oldRecord = existing[0];
-    const oldImages = [
-      oldRecord.AnhCCCDMatTruoc,
-      oldRecord.AnhCCCDMatSau,
-      oldRecord.AnhSelfie
-    ].filter(Boolean);
-    
-    oldImages.forEach(imagePath => {
-      if (fs.existsSync(imagePath)) {
-        fs.unlinkSync(imagePath);
-      }
-    });
-  }
-
-  // 4. Insert kyc_verification (với connection để dùng transaction)
-  const kycId = await KycModel.create(data, connection);
-
-  // 5. Update user profile và trạng thái xác minh
-  const updateSql = `
-    UPDATE nguoidung 
-    SET 
-      TenDayDu = COALESCE(?, TenDayDu),
-      NgaySinh = COALESCE(?, NgaySinh),
-      DiaChi = COALESCE(?, DiaChi),
-      SoCCCD = COALESCE(?, SoCCCD),
-      NgayCapCCCD = COALESCE(?, NgayCapCCCD),
-      AnhCCCDMatTruoc = ?,
-      AnhCCCDMatSau = ?,
-      AnhSelfie = ?,
-      TrangThaiXacMinh = CASE 
-        WHEN ? = 'ThanhCong' THEN 'DaXacMinh'
-        WHEN ? = 'ThatBai' THEN 'TuChoi'
-        ELSE 'ChoDuyet'
-      END
+  // 3. Update nguoidung profile (nếu không phải ThatBai)
+  if (data.TrangThai !== 'ThatBai') {
+    UPDATE nguoidung SET
+      TenDayDu = ?, NgaySinh = ?, DiaChi = ?, SoCCCD = ?,
+      NgayCapCCCD = ?, NoiCapCCCD = ?,
+      AnhCCCDMatTruoc = ?, AnhCCCDMatSau = ?, AnhSelfie = ?,
+      TrangThaiXacMinh = 'ChoDuyet'
     WHERE NguoiDungID = ?
-  `;
-  const params = [
-    data.TenDayDu, data.NgaySinh, data.DiaChi, data.SoCCCD, 
-    data.NgayCapCCCD,
-    data.AnhCCCDMatTruoc, data.AnhCCCDMatSau, data.AnhSelfie,
-    data.TrangThai, data.TrangThai, // 2 lần cho CASE WHEN
-    data.NguoiDungID
-  ];
-  await connection.execute(updateSql, params);
-
-  // 6. Commit
+  }
+  
+  // 4. Commit
   await connection.commit();
   return kycId;
 } catch (error) {
   await connection.rollback();
   throw error;
-} finally {
-  connection.release();
 }
 ```
 
@@ -600,10 +517,8 @@ return await KycModel.getByUserId(userId);
 
 **Methods:**
 ```javascript
-// Insert record (với transaction support)
-create(data, connection = null): Promise<kycId>
-// - connection: Optional database connection để dùng trong transaction
-// - Nếu không có connection, dùng default db connection
+// Insert record
+create(data): Promise<kycId>
 
 // Get all records của 1 user (sorted by TaoLuc DESC)
 getByUserId(userId): Promise<KYCRecord[]>
@@ -631,6 +546,7 @@ CREATE TABLE `kyc_verification` (
   `NgaySinh` date DEFAULT NULL,
   `DiaChi` varchar(255) DEFAULT NULL,
   `NgayCapCCCD` date DEFAULT NULL,
+  `NoiCapCCCD` varchar(255) DEFAULT NULL,
   `FaceSimilarity` decimal(5,4) DEFAULT NULL COMMENT 'Độ tương đồng khuôn mặt (0-1)',
   `TrangThai` enum('ThanhCong','ThatBai','CanXemLai') DEFAULT 'CanXemLai',
   `LyDoThatBai` text DEFAULT NULL,
@@ -649,9 +565,10 @@ CREATE TABLE `kyc_verification` (
 - `NguoiDungID`: User ID (FK → nguoidung)
 - `SoCCCD`: CCCD 12 digits
 - `TenDayDu`: Full name
-- `NgaySinh`: Date of birth (YYYY-MM-DD format)
+- `NgaySinh`: Date of birth
 - `DiaChi`: Address
-- `NgayCapCCCD`: Issue date (YYYY-MM-DD format)
+- `NgayCapCCCD`: Issue date
+- `NoiCapCCCD`: Issue place
 - `FaceSimilarity`: Face matching score (decimal 0-1, precision 5,4)
 - `TrangThai`: Status (enum)
   - `ThanhCong`: Approved
@@ -684,9 +601,10 @@ FormData:
   "selfie": File (image/jpeg|png),
   "soCCCD": "060203002124",
   "tenDayDu": "Võ Nguyễn Hoành Hợp",
-  "ngaySinh": "2003-11-11" (YYYY-MM-DD format),
+  "ngaySinh": "2003-11-11" (YYYY-MM-DD) hoặc "11/11/2003" (DD/MM/YYYY),
   "diaChi": "15, Đường Hà Huy Tập...",
-  "ngayCapCCCD": "2021-04-19" (YYYY-MM-DD format),
+  "ngayCapCCCD": "2021-04-19",
+  "noiCapCCCD": "Cục Cảnh Sát ĐKQL Cư Trú và DLQG về Dân Cư",
   "faceSimilarity": "0.9234"
 }
 ```
@@ -750,6 +668,7 @@ Authorization: Bearer <JWT_TOKEN>
     "NgaySinh": "2003-11-11T00:00:00.000Z",
     "DiaChi": "15, Đường Hà Huy Tập...",
     "NgayCapCCCD": "2021-04-19T00:00:00.000Z",
+    "NoiCapCCCD": "Cục Cảnh Sát...",
     "FaceSimilarity": "0.9234",
     "TrangThai": "CanXemLai",
     "LyDoThatBai": null,
@@ -1316,6 +1235,6 @@ Console logs will show:
 ---
 
 **Tài liệu được tạo bởi:** GitHub Copilot  
-**Ngày cập nhật:** 2025-01-XX  
-**Phiên bản:** 1.1 - Updated với hiện trạng hệ thống  
+**Ngày:** 2024-01-XX  
+**Phiên bản:** 1.0 - Current System Documentation  
 **Trạng thái:** ✅ Complete & Up-to-date

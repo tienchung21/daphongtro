@@ -30,6 +30,23 @@
   font-size: 1.6rem;
   margin: 0 0 6px;
   color: #7dd3fc;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Logo styling - Gold on dark background */
+.footer-logo {
+  width: 48px;
+  height: 48px;
+  filter: invert(68%) sepia(89%) saturate(399%) hue-rotate(6deg) brightness(92%) contrast(87%);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.footer-logo:hover {
+  filter: invert(78%) sepia(89%) saturate(399%) hue-rotate(6deg) brightness(102%) contrast(87%);
+  transform: scale(1.05);
 }
 
 .muted {

@@ -34,6 +34,13 @@ router.get('/tin-dang/:tinDangId', GoiYTinDangController.layChiTietTinDang);
 router.post('/tao-qr', GoiYTinDangController.taoQRXemNgay);
 
 /**
+ * POST /api/nhan-vien-ban-hang/goi-y/tao-qr-dat-coc
+ * Tạo QR đặt cọc cho khách hàng quét
+ * Body: { cuocHenId, tinDangId, phongId, soThangKy, soTienCoc }
+ */
+router.post('/tao-qr-dat-coc', GoiYTinDangController.taoQRDatCoc);
+
+/**
  * GET /api/nhan-vien-ban-hang/goi-y/trang-thai/:maQR
  * Kiểm tra trạng thái QR (polling fallback)
  */

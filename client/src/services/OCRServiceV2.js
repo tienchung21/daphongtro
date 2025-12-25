@@ -10,30 +10,31 @@ const OCRServiceV2 = {
   /**
    * Định nghĩa ROI (Region of Interest) cho từng field trên CCCD
    * Tọa độ tính theo % của kích thước ảnh CHUẨN (1000x630)
+   * [UPDATED: 2024-12-10 từ KYC Debug calibration]
   */
   CCCD_ROI: {
     // Số CCCD - Dòng 1 bên phải, màu đen đậm
     soCCCD: {
-      x: 0.3646632048404658,
-      y: 0.40167174309188105,
-      width: 0.45,
+      x: 0.3667473716475907,
+      y: 0.401965741968357,
+      width: 0.41,
       height: 0.1
     },
 
     // Họ và tên - Dòng 2, chữ IN HOA đen
     tenDayDu: {
-      x: 0.27435237337743795,
-      y: 0.5376948164845092,
-      width: 0.48,
+      x: 0.26435237337743795,
+      y: 0.5510934829015039,
+      width: 0.5,
       height: 0.09
     },
 
     // Ngày sinh - Dòng 3 bên phải "Date of birth:"
     ngaySinh: {
-      x: 0.5633160242023292,
-      y: 0.6076025229139963,
-      width: 0.22,
-      height: 0.09
+      x: 0.5533160242023292,
+      y: 0.633998557479856,
+      width: 0.23,
+      height: 0.07
     },
 
     // Giới tính - Dòng 4 bên trái "Sex:"
@@ -62,9 +63,9 @@ const OCRServiceV2 = {
 
     // Nơi thường trú - Dòng 6-7 "Place of residence:"
     diaChi: {
-      x: 0.2830051927393013,
-      y: 0.8499119973852943,
-      width: 0.63,
+      x: 0.29508935954642616,
+      y: 0.8568073298447756,
+      width: 0.67,
       height: 0.13
     },
 
@@ -76,20 +77,20 @@ const OCRServiceV2 = {
       height: 0.08
     },
 
-    // Face region for cropping
+    // Face region for cropping - GIỮ NGUYÊN ẢNH GỐC (không xử lý Xiaomi)
     faceImage: {
-      x: 0.03956871353251068,
-      y: 0.3992371061612484,
-      width: 0.24,
-      height: 0.42
+      x: 0.00948454672538579,
+      y: 0.37962910466321625,
+      width: 0.235,
+      height: 0.45
     },
 
     // QR Code region (if on front)
     qrCode: {
-      x: 0.7822892552247601,
-      y: 0.0956208542777824,
-      width: 0.16,
-      height: 0.22
+      x: 0.7597000875748858,
+      y: 0.07091485315425831,
+      width: 0.17,
+      height: 0.25
     }
   },
 
@@ -271,11 +272,15 @@ const OCRServiceV2 = {
 
   /**
    * Recognize toàn bộ CCCD (all fields)
+   * [2024-12-10] Added: Xiaomi Style Enhancement cho OCR
+   * - Text OCR: Apply Xiaomi Style (E100/B60/C50) để tăng độ rõ nét
+   * - Face: Giữ nguyên ảnh gốc (không enhance)
+   * 
    * @param {File|string} imageSource - File object hoặc data URL của ảnh CCCD
    * @returns {Promise<Object>} - Parsed CCCD data
    */
   recognizeAll: async (imageSource, roiOverrides = {}) => {
-    console.log('🚀 Bắt đầu OCR tất cả fields với Warping & ROI...');
+    console.log('🚀 Bắt đầu OCR tất cả fields với Warping, Xiaomi Style & ROI...');
 
     // Convert to data URL nếu cần
     let imageDataUrl = imageSource;
@@ -290,13 +295,22 @@ const OCRServiceV2 = {
     // 1. Warp Perspective (quan trọng nhất)
     console.log('📐 Đang warp ảnh CCCD...');
     const warpedImage = await ImageProcessingService.warpPerspective(imageDataUrl);
+    
+    // 2. Apply Xiaomi Style Enhancement cho OCR (giữ màu, tăng contrast)
+    console.log('🔧 Áp dụng Xiaomi Style Enhancement (E100/B60/C50) cho OCR...');
+    const enhancedForOCR = await ImageProcessingService.xiaomiStyleEnhance(warpedImage, {
+      exposure: 100,
+      brightness: 60,
+      contrast: 50
+    });
 
     const roiConfig = { ...OCRServiceV2.CCCD_ROI, ...roiOverrides };
     const fields = ['soCCCD', 'tenDayDu', 'ngaySinh', 'gioiTinh', 'diaChi'];
     const results = {};
 
+    // OCR các fields text với ảnh đã enhance
     for (const field of fields) {
-      results[field] = await OCRServiceV2.recognizeField(warpedImage, field, roiConfig);
+      results[field] = await OCRServiceV2.recognizeField(enhancedForOCR, field, roiConfig);
     }
 
     // Post-processing
@@ -308,12 +322,25 @@ const OCRServiceV2 = {
       diaChi: OCRServiceV2.normalizeDiaChi(results.diaChi),
       ngayCap: null, // Mặt sau
       noiCap: null,   // Mặt sau
-      warpedImage: warpedImage, // Return warped image for debugging/display
+      warpedImage: warpedImage,         // Ảnh đã warp (dùng cho face crop - không enhance)
+      warpedEnhanced: enhancedForOCR,   // Ảnh đã warp + Xiaomi (dùng cho debug)
       usedROI: roiConfig
     };
 
     console.log('✅ OCR V2 completed:', parsed);
     return parsed;
+  },
+
+  /**
+   * Crop Face từ ảnh CCCD - GIỮ NGUYÊN ẢNH GỐC (không apply Xiaomi Style)
+   * @param {string} warpedImage - Ảnh CCCD đã warp (từ recognizeAll)
+   * @param {Object} roiOverrides - Custom ROI nếu cần
+   * @returns {Promise<string>} - Face image data URL (original quality)
+   */
+  cropFaceImage: async (warpedImage, roiOverrides = {}) => {
+    const roiConfig = { ...OCRServiceV2.CCCD_ROI, ...roiOverrides };
+    console.log('👤 Cropping face từ ảnh gốc (không enhance)...');
+    return OCRServiceV2.cropROI(warpedImage, roiConfig.faceImage);
   },
 
   /**

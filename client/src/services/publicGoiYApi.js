@@ -49,8 +49,54 @@ export const phanHoiQR = async (maQR, dongY, thoiGianHen = null) => {
   return publicClient.post(`/${maQR}/phan-hoi`, body);
 };
 
+// ============================================
+// API cho Hợp đồng cọc qua QR
+// ============================================
+
+// Axios instance cho hợp đồng cọc
+const hopDongCocClient = axios.create({
+  baseURL: `${API_BASE_URL}/api/public/hop-dong-coc`,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Response interceptor cho hop dong coc
+hopDongCocClient.interceptors.response.use(
+  (response) => response.data,
+  (error) => {
+    return Promise.reject(error.response?.data || error.message);
+  }
+);
+
+/**
+ * Xem thông tin hợp đồng cọc từ mã QR
+ * @param {string} maQR - Mã QR đặt cọc
+ * @returns {Promise<Object>} Thông tin hợp đồng cọc
+ */
+export const xemHopDongCocQR = async (maQR) => {
+  return hopDongCocClient.get(`/${maQR}`);
+};
+
+/**
+ * Phản hồi hợp đồng cọc (đồng ý/từ chối)
+ * @param {string} maQR - Mã QR đặt cọc
+ * @param {boolean} dongY - true = đồng ý đặt cọc, false = từ chối
+ * @param {string} [ngayChuyenVao] - Ngày khách muốn chuyển vào (YYYY-MM-DD)
+ * @returns {Promise<Object>} Kết quả phản hồi
+ */
+export const phanHoiHopDongCoc = async (maQR, dongY, ngayChuyenVao = null) => {
+  const body = { dongY };
+  if (dongY && ngayChuyenVao) {
+    body.ngayChuyenVao = ngayChuyenVao;
+  }
+  return hopDongCocClient.post(`/${maQR}/xac-nhan`, body);
+};
+
 export default {
   xemThongTinQR,
-  phanHoiQR
+  phanHoiQR,
+  xemHopDongCocQR,
+  phanHoiHopDongCoc
 };
 

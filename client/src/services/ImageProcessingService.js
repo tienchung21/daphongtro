@@ -1,10 +1,55 @@
 /**
  * ImageProcessingService - Xử lý ảnh nâng cao dùng OpenCV.js
  * Hỗ trợ: Warping (Perspective Transform), Deskewing, Adaptive Thresholding
+ * 
+ * [2024-12-10] Added: Xiaomi Style Enhancement cho OCR/QR
  */
 
 const ImageProcessingService = {
     isLoaded: false,
+    
+    /**
+     * Xiaomi Style Enhancement - Chỉ điều chỉnh Brightness/Contrast (giữ màu)
+     * Dùng cho OCR và QR scanning
+     * Settings tối ưu: Exposure=100, Brightness=60, Contrast=50
+     * 
+     * @param {string} imageDataUrl - Ảnh gốc (data URL)
+     * @param {Object} options - { exposure, brightness, contrast }
+     * @returns {Promise<string>} - Ảnh đã xử lý
+     */
+    xiaomiStyleEnhance: async (imageDataUrl, options = {}) => {
+        const {
+            exposure = 100,    // Xiaomi: 100 → brightness 200%
+            brightness = 60,   // Xiaomi: 60 → +36% brightness
+            contrast = 50,     // Xiaomi: 50 → contrast 150%
+        } = options;
+
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width;
+                canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+
+                // Chuyển đổi Xiaomi values sang CSS filter %
+                const exposureMultiplier = 1 + (exposure / 100);
+                const brightnessPercent = 100 + (brightness * 0.6);
+                const contrastPercent = 100 + (contrast * 0.5);
+                const finalBrightness = (brightnessPercent / 100) * exposureMultiplier * 100;
+
+                console.log(`🔧 [Xiaomi Style] brightness=${finalBrightness.toFixed(0)}%, contrast=${contrastPercent.toFixed(0)}%`);
+
+                // Áp dụng CSS filter - GIỮ NGUYÊN MÀU
+                ctx.filter = `brightness(${finalBrightness}%) contrast(${contrastPercent}%)`;
+                ctx.drawImage(img, 0, 0);
+
+                resolve(canvas.toDataURL('image/jpeg', 0.95));
+            };
+            img.onerror = () => resolve(imageDataUrl);
+            img.src = imageDataUrl;
+        });
+    },
 
     /**
      * Kiểm tra và đợi OpenCV load xong
@@ -116,7 +161,11 @@ const ImageProcessingService = {
                             cnt.delete();
                         }
 
-                        if (bestContour) {
+                        // KIỂM TRA: Contour phải chiếm ít nhất 20% diện tích ảnh
+                        const imgArea = src.rows * src.cols;
+                        const minRequiredArea = imgArea * 0.2; // 20% diện tích ảnh
+                        
+                        if (bestContour && maxArea >= minRequiredArea) {
                             // Get rotated rect for the largest contour
                             let rotRect = cv.minAreaRect(bestContour);
                             let vertices = cv.RotatedRect.points(rotRect);
@@ -130,6 +179,12 @@ const ImageProcessingService = {
                             bestContour.delete();
                             bestContour = tmp;
                             foundQuad = true;
+                            console.log(`✅ Found large enough contour: ${(maxArea / imgArea * 100).toFixed(1)}% of image`);
+                        } else {
+                            console.warn(`⚠️ Largest contour too small (${(maxArea / imgArea * 100).toFixed(1)}% < 20%), skipping warp`);
+                            if (bestContour) bestContour.delete();
+                            bestContour = null;
+                            foundQuad = false;
                         }
                     }
 
@@ -181,15 +236,27 @@ const ImageProcessingService = {
                         const canvas = document.createElement('canvas');
                         cv.imshow(canvas, warped);
 
-                        console.log('✅ Warped CCCD successfully');
+                        console.log('✅ Warped CCCD successfully to', width, 'x', height);
                         resolve(canvas.toDataURL('image/jpeg', 0.9));
 
                         // Cleanup
                         src.delete(); bestContour.delete(); srcTri.delete(); dstTri.delete(); M.delete(); warped.delete();
                     } else {
-                        console.warn('⚠️ No suitable contour found, using original image');
-                        src.delete(); if (bestContour) bestContour.delete();
-                        resolve(imageDataUrl);
+                        console.warn('⚠️ No suitable contour found, resizing original to canonical size');
+                        // QUAN TRỌNG: Resize ảnh gốc về kích thước chuẩn 1000x630 để ROI vẫn hoạt động
+                        const width = 1000;
+                        const height = 630;
+                        const resized = new cv.Mat();
+                        cv.resize(src, resized, new cv.Size(width, height), 0, 0, cv.INTER_LINEAR);
+                        
+                        const canvas = document.createElement('canvas');
+                        cv.imshow(canvas, resized);
+                        
+                        console.log('✅ Resized original to canonical size:', width, 'x', height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.9));
+                        
+                        src.delete(); resized.delete();
+                        if (bestContour) bestContour.delete();
                     }
                 } catch (err) {
                     console.error('❌ Warp error:', err);
@@ -237,18 +304,36 @@ const ImageProcessingService = {
     },
 
     /**
-     * Adaptive Thresholding cho ROI
+     * Process ROI với Xiaomi Style Enhancement
+     * [2024-12-10] Thay đổi từ color extraction sang Xiaomi B/C only
+     * - Giữ nguyên màu sắc
+     * - Tăng độ tương phản và sáng để text/QR rõ hơn
      */
     processROI: async (imageDataUrl, options = {}) => {
+        const {
+            useXiaomiStyle = true,  // Mặc định dùng Xiaomi Style
+            exposure = 100,
+            brightness = 60,
+            contrast = 50,
+            // Legacy options (khi useXiaomiStyle = false)
+            targetColor = { r: 9, g: 10, b: 4 },
+            tolerance = 80
+        } = options;
+
+        // Nếu dùng Xiaomi Style - đơn giản chỉ tăng B/C
+        if (useXiaomiStyle) {
+            return ImageProcessingService.xiaomiStyleEnhance(imageDataUrl, {
+                exposure, brightness, contrast
+            });
+        }
+
+        // Legacy: Color extraction + OpenCV binarize
         if (!await ImageProcessingService.loadOpenCV()) return imageDataUrl;
 
         return new Promise((resolve) => {
             const img = new Image();
             img.onload = () => {
                 try {
-                    const target = options.targetColor || { r: 9, g: 10, b: 4 };
-                    const tolerance = options.tolerance || 80; // color distance tolerance
-
                     // Step 1: filter out blue-ish regions + bright background on canvas
                     const canvasPre = document.createElement('canvas');
                     canvasPre.width = img.width;
@@ -261,35 +346,29 @@ const ImageProcessingService = {
                         const r = data[i];
                         const g = data[i + 1];
                         const b = data[i + 2];
-                        const brightness = (r + g + b) / 3;
+                        const brightnessVal = (r + g + b) / 3;
                         const colorDist = Math.sqrt(
-                          Math.pow(r - target.r, 2) +
-                          Math.pow(g - target.g, 2) +
-                          Math.pow(b - target.b, 2)
+                          Math.pow(r - targetColor.r, 2) +
+                          Math.pow(g - targetColor.g, 2) +
+                          Math.pow(b - targetColor.b, 2)
                         );
                         
-                        // ENHANCED: Remove blue AND green watermarks (CCCD has green watermark)
                         const blueDominant = b > r + 25 && b > g + 25;
-                        const greenDominant = g > r + 20 && g > b + 20;  // ✅ NEW: Detect green watermark
+                        const greenDominant = g > r + 20 && g > b + 20;
                         const isWatermark = greenDominant || blueDominant || 
-                                          (g > 150 && r > 100 && r < 200 && b > 100 && b < 200); // Light green/teal
+                                          (g > 150 && r > 100 && r < 200 && b > 100 && b < 200);
                         
-                        // Hard mask: keep only pixels close to target (black text), discard the rest
                         if (colorDist > tolerance) {
                             data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
                             continue;
                         }
 
-                        if (isWatermark || brightness > 200) {
-                            // Remove watermark và bright background → force to WHITE
+                        if (isWatermark || brightnessVal > 200) {
                             data[i] = 255; data[i + 1] = 255; data[i + 2] = 255;
-                        } else if (brightness < 100) {
-                            // Keep dark text (black) → force to BLACK
+                        } else if (brightnessVal < 100) {
                             data[i] = 0; data[i + 1] = 0; data[i + 2] = 0;
                         } else {
-                            // Middle range: amplify contrast
-                            const factor = 1.5;
-                            const newVal = brightness < 150 ? 0 : 255;  // Binary decision
+                            const newVal = brightnessVal < 150 ? 0 : 255;
                             data[i] = newVal; data[i + 1] = newVal; data[i + 2] = newVal;
                         }
                     }
@@ -300,7 +379,6 @@ const ImageProcessingService = {
                     const gray = new cv.Mat();
                     cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
 
-                    // Step 2: Adaptive threshold
                     const binary = new cv.Mat();
                     cv.adaptiveThreshold(gray, binary, 255, cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY, 15, 2);
 

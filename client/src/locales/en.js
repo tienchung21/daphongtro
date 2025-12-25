@@ -18,6 +18,7 @@ export default {
     removeFavorite: "Remove favorite",
     confirmRemove: "Confirm remove favorite?",
     removeFailed: "Remove failed",
+    installApp: "Install App",
   },
   
   // Homepage

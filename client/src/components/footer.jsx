@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "./footer.css";
+import HommyLogoIcon from "../assets/images/Hommy_Logo_Icon.svg";
 
 const SocialLink = ({ href, label, children }) => (
   <a
@@ -35,6 +36,7 @@ function Footer() {
         <div className="footer-top">
           <div className="footer-about">
             <h1 className="logo-text">
+              <img src={HommyLogoIcon} alt="Hommy Logo" className="footer-logo" />
               <span>Phòng Trọ Hommy</span>
             </h1>
             <p className="muted">

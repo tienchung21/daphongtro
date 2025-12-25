@@ -18,6 +18,7 @@ export default {
     removeFavorite: "Xóa yêu thích",
     confirmRemove: "Xác nhận xoá yêu thích?",
     removeFailed: "Xóa thất bại",
+    installApp: "Tải ứng dụng",
   },
   
   // Homepage

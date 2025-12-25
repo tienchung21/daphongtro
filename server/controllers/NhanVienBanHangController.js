@@ -439,7 +439,8 @@ class NhanVienBanHangController {
 
   /**
    * GET /api/nhan-vien-ban-hang/giao-dich
-   * Lấy danh sách giao dịch liên quan
+   * Lấy danh sách cọc/giao dịch liên quan đến NVBH
+   * Query từ bảng coc + hopdong (hệ thống mới)
    */
   static async layDanhSachGiaoDich(req, res) {
     try {
@@ -452,47 +453,95 @@ class NhanVienBanHangController {
         limit: req.query.limit || 50
       };
 
+      // Map trạng thái frontend sang backend
+      // Frontend: DaUyQuyen (chờ xác nhận), DaGhiNhan (đã xác nhận), DaHoanTien (đã hoàn)
+      // Backend coc: HieuLuc, HetHan, DaGiaiToa, DaDoiTru
+      const trangThaiMap = {
+        DaUyQuyen: 'HieuLuc',      // Cọc hiệu lực = chờ xác nhận/đang giữ
+        DaGhiNhan: 'DaDoiTru',     // Đã đối trừ vào hợp đồng = đã xác nhận
+        DaHoanTien: 'DaGiaiToa'    // Đã giải tỏa = đã hoàn trả
+      };
+
+      // Map loại frontend sang backend
+      const loaiMap = {
+        COC_GIU_CHO: 'CocGiuCho',
+        COC_AN_NINH: 'CocAnNinh'
+      };
+
+      const trangThaiBE = filters.trangThai && filters.trangThai !== 'all'
+        ? trangThaiMap[filters.trangThai] || filters.trangThai
+        : null;
+      const loaiBE = filters.loai && filters.loai !== 'all'
+        ? loaiMap[filters.loai] || filters.loai
+        : null;
+
+      // Query từ bảng coc với JOIN hopdong và cuochen
       const [danhSach] = await require('../config/db').execute(`
         SELECT 
-          gd.GiaoDichID,
-          gd.SoTien,
-          gd.Loai,
-          gd.TrangThai,
-          gd.ThoiGian,
-          gd.TinDangLienQuanID,
-          ch.CuocHenID,
+          c.CocID as GiaoDichID,
+          c.SoTien,
+          c.Loai,
+          c.TrangThai,
+          c.TaoLuc as ThoiGian,
+          c.TinDangID,
+          c.PhongID,
+          c.HetHanLuc,
+          c.GhiChu,
+          c.HopDongID,
+          hd.KhachHangID,
+          hd.NgayBatDau,
+          hd.NgayKetThuc,
+          hd.GiaThueCuoiCung,
           kh.TenDayDu as TenKhachHang,
           kh.SoDienThoai as SDTKhachHang,
-          td.TieuDe as TieuDeTinDang
-        FROM giaodich gd
-        INNER JOIN cuochen ch ON EXISTS (
-          SELECT 1 FROM phong p
-          INNER JOIN phong_tindang pt ON p.PhongID = pt.PhongID
-          WHERE p.PhongID = ch.PhongID
-          AND pt.TinDangID = gd.TinDangLienQuanID
-        )
-        LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
-        LEFT JOIN tindang td ON gd.TinDangLienQuanID = td.TinDangID
-        WHERE ch.NhanVienBanHangID = ?
-        AND gd.Loai IN ('COC_GIU_CHO', 'COC_AN_NINH')
-        ${filters.loai ? 'AND gd.Loai = ?' : ''}
-        ${filters.trangThai ? 'AND gd.TrangThai = ?' : ''}
-        ${filters.tuNgay && filters.denNgay ? 'AND gd.ThoiGian BETWEEN ? AND ?' : ''}
-        ORDER BY gd.ThoiGian DESC
-        LIMIT ${Math.max(1, Math.min(100, parseInt(filters.limit) || 20))}
+          kh.Email as EmailKhachHang,
+          td.TieuDe as TieuDeTinDang,
+          da.TenDuAn,
+          da.DiaChi as DiaChiDuAn,
+          p.TenPhong
+        FROM coc c
+        LEFT JOIN hopdong hd ON c.HopDongID = hd.HopDongID OR (c.TinDangID = hd.TinDangID AND c.PhongID = hd.PhongID)
+        LEFT JOIN nguoidung kh ON hd.KhachHangID = kh.NguoiDungID
+        LEFT JOIN tindang td ON c.TinDangID = td.TinDangID
+        LEFT JOIN duan da ON td.DuAnID = da.DuAnID
+        LEFT JOIN phong p ON c.PhongID = p.PhongID
+        WHERE hd.NhanVienBanHangID = ?
+        ${loaiBE ? 'AND c.Loai = ?' : ''}
+        ${trangThaiBE ? 'AND c.TrangThai = ?' : ''}
+        ${filters.tuNgay && filters.denNgay ? 'AND c.TaoLuc BETWEEN ? AND DATE_ADD(?, INTERVAL 1 DAY)' : ''}
+        ORDER BY c.TaoLuc DESC
+        LIMIT ${Math.max(1, Math.min(100, parseInt(filters.limit) || 50))}
       `, [
         nhanVienId,
-        ...(filters.loai ? [filters.loai] : []),
-        ...(filters.trangThai ? [filters.trangThai] : []),
+        ...(loaiBE ? [loaiBE] : []),
+        ...(trangThaiBE ? [trangThaiBE] : []),
         ...(filters.tuNgay && filters.denNgay ? [filters.tuNgay, filters.denNgay] : [])
       ]);
+
+      // Map lại trạng thái backend sang frontend
+      const trangThaiReverseMap = {
+        HieuLuc: 'DaUyQuyen',
+        DaDoiTru: 'DaGhiNhan',
+        DaGiaiToa: 'DaHoanTien',
+        HetHan: 'DaHoanTien'
+      };
+      const loaiReverseMap = {
+        CocGiuCho: 'COC_GIU_CHO',
+        CocAnNinh: 'COC_AN_NINH'
+      };
+
+      const mappedList = danhSach.map(item => ({
+        ...item,
+        TrangThai: trangThaiReverseMap[item.TrangThai] || item.TrangThai,
+        Loai: loaiReverseMap[item.Loai] || item.Loai
+      }));
 
       res.json({
         success: true,
         message: 'Lấy danh sách giao dịch thành công',
         data: {
-          giaoDichs: danhSach,
-          tongSo: danhSach.length
+          giaoDichs: mappedList,
+          tongSo: mappedList.length
         }
       });
     } catch (error) {
@@ -506,44 +555,90 @@ class NhanVienBanHangController {
 
   /**
    * GET /api/nhan-vien-ban-hang/giao-dich/:id
-   * Chi tiết giao dịch
+   * Chi tiết cọc/giao dịch (query từ bảng coc)
    */
   static async xemChiTietGiaoDich(req, res) {
     try {
       const nhanVienId = req.user.id;
-      const giaoDichId = parseInt(req.params.id);
+      const cocId = parseInt(req.params.id);
 
       const [rows] = await require('../config/db').execute(`
         SELECT 
-          gd.*,
-          ch.CuocHenID,
-          ch.ThoiGianHen,
+          c.CocID as GiaoDichID,
+          c.SoTien,
+          c.Loai,
+          c.TrangThai,
+          c.TaoLuc as ThoiGian,
+          c.CapNhatLuc,
+          c.TinDangID,
+          c.PhongID,
+          c.HetHanLuc,
+          c.GhiChu,
+          c.HopDongID,
+          c.ChinhSachCocID,
+          c.TTL_Gio as TTL_CocGiuCho_Gio,
+          c.TaoLuc as CocTaoLuc,
+          c.CapNhatLuc as CocCapNhatLuc,
+          
+          hd.KhachHangID,
+          hd.NgayBatDau,
+          hd.NgayKetThuc,
+          hd.GiaThueCuoiCung,
+          hd.SoTienCoc as SoTienCocHopDong,
+          
           kh.TenDayDu as TenKhachHang,
           kh.SoDienThoai as SDTKhachHang,
           kh.Email as EmailKhachHang,
+          
           td.TieuDe as TieuDeTinDang,
-          da.DiaChi as DiaChiTinDang
-        FROM giaodich gd
-        LEFT JOIN tindang td ON gd.TinDangLienQuanID = td.TinDangID
+          
+          da.TenDuAn,
+          da.DiaChi as DiaChiTinDang,
+          
+          p.TenPhong,
+          
+          cs.TenChinhSach,
+          cs.TyLePhat_CocGiuCho as TyLePhat_CocGiuCho
+        FROM coc c
+        LEFT JOIN hopdong hd ON c.HopDongID = hd.HopDongID OR (c.TinDangID = hd.TinDangID AND c.PhongID = hd.PhongID)
+        LEFT JOIN nguoidung kh ON hd.KhachHangID = kh.NguoiDungID
+        LEFT JOIN tindang td ON c.TinDangID = td.TinDangID
         LEFT JOIN duan da ON td.DuAnID = da.DuAnID
-        LEFT JOIN phong_tindang pt ON td.TinDangID = pt.TinDangID
-        LEFT JOIN phong p ON pt.PhongID = p.PhongID
-        LEFT JOIN cuochen ch ON p.PhongID = ch.PhongID AND ch.NhanVienBanHangID = ?
-        LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
-        WHERE gd.GiaoDichID = ?
-      `, [nhanVienId, giaoDichId]);
+        LEFT JOIN phong p ON c.PhongID = p.PhongID
+        LEFT JOIN chinhsachcoc cs ON c.ChinhSachCocID = cs.ChinhSachCocID
+        WHERE c.CocID = ?
+        AND hd.NhanVienBanHangID = ?
+      `, [cocId, nhanVienId]);
 
       if (rows.length === 0) {
         return res.status(404).json({
           success: false,
-          message: 'Không tìm thấy giao dịch'
+          message: 'Không tìm thấy giao dịch hoặc không có quyền xem'
         });
       }
+
+      // Map trạng thái backend sang frontend
+      const trangThaiReverseMap = {
+        HieuLuc: 'DaUyQuyen',
+        DaDoiTru: 'DaGhiNhan',
+        DaGiaiToa: 'DaHoanTien',
+        HetHan: 'DaHoanTien'
+      };
+      const loaiReverseMap = {
+        CocGiuCho: 'COC_GIU_CHO',
+        CocAnNinh: 'COC_AN_NINH'
+      };
+
+      const result = {
+        ...rows[0],
+        TrangThai: trangThaiReverseMap[rows[0].TrangThai] || rows[0].TrangThai,
+        Loai: loaiReverseMap[rows[0].Loai] || rows[0].Loai
+      };
 
       res.json({
         success: true,
         message: 'Lấy chi tiết giao dịch thành công',
-        data: rows[0]
+        data: result
       });
     } catch (error) {
       console.error('[NhanVienBanHangController] Lỗi xemChiTietGiaoDich:', error);

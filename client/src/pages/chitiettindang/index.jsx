@@ -117,6 +117,8 @@ const ChiTietTinDang = () => {
   const [cocPhongId, setCocPhongId] = useState(null);
   const [soDuVi, setSoDuVi] = useState(null);
   const [checkingCoc, setCheckingCoc] = useState(false);
+  const [bangHoaHongOptions, setBangHoaHongOptions] = useState([]);
+  const [soThangKy, setSoThangKy] = useState(1);
   const [hopDongModalOpen, setHopDongModalOpen] = useState(false);
   const [hopDongData, setHopDongData] = useState(null);
   const [hopDongLoading, setHopDongLoading] = useState(false);
@@ -185,7 +187,7 @@ const ChiTietTinDang = () => {
 
     // Lấy KhuVucID từ tin đăng
     const khuVucId = tinDang?.KhuVucID;
-    let nhanVienId = 1; // Mặc định nếu không tìm thấy nhân viên phù hợp
+    let nhanVienId = 8; // Mặc định nếu không tìm thấy nhân viên phù hợp
 
     console.log("[ChiTietTinDang] 🔍 Bắt đầu tìm nhân viên phụ trách");
     console.log("[ChiTietTinDang] KhuVucID:", khuVucId);
@@ -417,6 +419,15 @@ const ChiTietTinDang = () => {
         // Parse danh sách ảnh
         const urls = parseImages(response.data.URL);
         setDanhSachAnh(urls);
+
+        // Parse bảng hoa hồng để tạo danh sách số tháng hợp đồng hợp lệ
+        const parsedBangHoaHong = parseBangHoaHong(response.data?.BangHoaHong);
+        setBangHoaHongOptions(parsedBangHoaHong);
+        if (parsedBangHoaHong.length > 0) {
+          setSoThangKy(parsedBangHoaHong[0].soThang);
+        } else {
+          setSoThangKy(1);
+        }
       }
     } catch (error) {
       console.error("Lỗi tải chi tiết tin đăng:", error);
@@ -425,37 +436,41 @@ const ChiTietTinDang = () => {
     }
   };
 
-  const openHopDongPreview = async (phong) => {
+  const fetchHopDongPreview = async (phong, soThangOverride) => {
     if (!tinDang?.TinDangID) {
       showToast("Không tìm thấy thông tin tin đăng", "error");
       return;
     }
 
-    setHopDongModalOpen(true);
+    const phongMucTieu = phong || hopDongPhong;
+    if (!phongMucTieu) {
+      showToast("Vui lòng chọn phòng trước khi xem hợp đồng", "error");
+      return;
+    }
+
     setHopDongLoading(true);
     setHopDongError(null);
-    setHopDongData(null);
-    setHopDongPhong(phong || null);
-    
-    // Set ngày chuyển vào mặc định là ngày mai
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    setNgayChuyenVao(tomorrow.toISOString().split('T')[0]);
 
     try {
+      const giaPhong = phongMucTieu?.Gia || tinDang?.Gia || 0;
+      const soThangHopDong = soThangOverride || soThangKy || 1;
+      const soThangCocToiThieu = Number(tinDang?.SoThangCocToiThieu) || 1;
+      const soTienCoc = (Number(giaPhong) || 0) * soThangCocToiThieu;
+
       const overrides = {
         chiPhi: {
-          giaThue: phong?.Gia || tinDang?.Gia || 0,
+          giaThue: giaPhong,
           giaDien: tinDang?.GiaDien || null,
           giaNuoc: tinDang?.GiaNuoc || null,
           giaDichVu: tinDang?.GiaDichVu || null,
           moTaDichVu: tinDang?.MoTaGiaDichVu || "",
-          soTienCoc: phong?.Gia || tinDang?.Gia || 0,
+          soTienCoc,
+          soThangKy: soThangHopDong,
         },
         batDongSan: {
           diaChi: tinDang?.DiaChi || "",
-          dienTich: phong?.DienTich || tinDang?.DienTich,
-          tenPhong: phong?.TenPhong || null,
+          dienTich: phongMucTieu?.DienTich || tinDang?.DienTich,
+          tenPhong: phongMucTieu?.TenPhong || null,
         },
       };
 
@@ -483,6 +498,33 @@ const ChiTietTinDang = () => {
     }
   };
 
+  const openHopDongPreview = async (phong) => {
+    if (!tinDang?.TinDangID) {
+      showToast("Không tìm thấy thông tin tin đăng", "error");
+      return;
+    }
+
+    setHopDongModalOpen(true);
+    setHopDongError(null);
+    setHopDongData(null);
+    setHopDongPhong(phong || null);
+    
+    // Set ngày chuyển vào mặc định là ngày mai
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setNgayChuyenVao(tomorrow.toISOString().split("T")[0]);
+
+    await fetchHopDongPreview(phong);
+  };
+
+  const handleChangeSoThangKy = async (value) => {
+    const months = Number(value) || 1;
+    setSoThangKy(months);
+    if (hopDongModalOpen && hopDongPhong) {
+      await fetchHopDongPreview(hopDongPhong, months);
+    }
+  };
+
   const closeHopDongModal = () => {
     setHopDongModalOpen(false);
     setHopDongData(null);
@@ -490,6 +532,7 @@ const ChiTietTinDang = () => {
     setHopDongLoading(false);
     setHopDongPhong(null);
     setNgayChuyenVao("");
+    setSoThangKy(bangHoaHongOptions[0]?.soThang || 1);
   };
 
   const handlePreDepositCheck = async (phong) => {
@@ -520,10 +563,12 @@ const ChiTietTinDang = () => {
 
       setSoDuVi(soDu);
       
-      // Giá phòng dùng để so sánh
+      // Số tiền cọc tối thiểu cần có = giá phòng * SoThangCocToiThieu
       const giaPhong = Number(phong.Gia || 0);
-      
-      if (soDu < giaPhong) {
+      const soThangCocToiThieu = Number(tinDang?.SoThangCocToiThieu) || 1;
+      const soTienCocToiThieu = giaPhong * soThangCocToiThieu;
+
+      if (soDu < soTienCocToiThieu) {
         showToast("Số dư ví không đủ để đặt cọc phòng này!", "error");
         setCheckingCoc(false);
         // Có thể điều hướng người dùng đi nạp tiền nếu muốn
@@ -551,12 +596,11 @@ const ChiTietTinDang = () => {
     }
 
     try {
-      // Tính số tiền cọc
+      // Tính số tiền cọc theo quy tắc: SoThangCocToiThieu * Giá phòng
       const soTienCoc =
         hopDongData?.payload?.chiPhi?.soTienCoc ||
-        hopDongPhong?.Gia ||
-        hopDongData?.payload?.chiPhi?.giaThue ||
-        0;
+        ((hopDongPhong?.Gia || hopDongData?.payload?.chiPhi?.giaThue || 0) *
+          (Number(tinDang?.SoThangCocToiThieu) || 1));
 
       // Kiểm tra số dư ví trước khi trừ tiền
       const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -607,7 +651,8 @@ const ChiTietTinDang = () => {
         noiDungSnapshot:
           hopDongData?.renderedHtml || hopDongData?.noiDungSnapshot || "",
         phongId: hopDongPhong?.PhongID,
-        ngayBatDau: ngayChuyenVao, // Ngày muốn chuyển vào
+        ngayBatDau: ngayChuyenVao,
+        soThangKy,
       });
 
       showToast("Đặt cọc thành công!", "success");
@@ -665,8 +710,36 @@ const ChiTietTinDang = () => {
     }
   };
 
+  const parseBangHoaHong = (bangHoaHongRaw) => {
+    try {
+      if (!bangHoaHongRaw) return [];
+      const parsed =
+        typeof bangHoaHongRaw === "string"
+          ? JSON.parse(bangHoaHongRaw)
+          : bangHoaHongRaw;
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .filter((item) => item?.soThang)
+        .map((item) => ({
+          soThang: Number(item.soThang),
+          tyLe: item.tyLe ?? null,
+        }))
+        .filter((item) => !Number.isNaN(item.soThang) && item.soThang > 0)
+        .sort((a, b) => a.soThang - b.soThang);
+    } catch (error) {
+      console.warn("[ChiTietTinDang] Không parse được BangHoaHong", error);
+      return [];
+    }
+  };
+
   const formatCurrency = (value) => {
     return parseInt(value || 0).toLocaleString("vi-VN") + " ₫";
+  };
+
+  const getSoTienCocHienTai = () => {
+    const gia = hopDongPhong?.Gia || tinDang?.Gia || 0;
+    const soThangCocToiThieu = Number(tinDang?.SoThangCocToiThieu) || 1;
+    return (Number(gia) || 0) * soThangCocToiThieu;
   };
 
   /**
@@ -1398,8 +1471,8 @@ const ChiTietTinDang = () => {
                   className="ctd-btn-secondary ctd-btn-full"
                   onClick={handleChiaSeHu}
                 >
-                  <HiOutlinePhone />
-                  <span>Liên hệ ngay</span>
+                  <HiOutlineShare />
+                  <span>Chia sẻ tin đăng</span>
                 </button>
                 <button
                   className="ctd-btn-secondary ctd-btn-deposit"
@@ -1700,6 +1773,40 @@ const ChiTietTinDang = () => {
 
               {!hopDongLoading && !hopDongError && hopDongData && (
                 <>
+                  {/* Chọn thời hạn hợp đồng (số tháng) */}
+                  <div className="hop-dong-modal__date-picker">
+                    <label htmlFor="soThangKy">
+                      <span className="date-picker-icon">📄</span>
+                      Thời hạn hợp đồng (tháng) <span className="required">*</span>
+                    </label>
+                    {bangHoaHongOptions.length > 0 ? (
+                      <select
+                        id="soThangKy"
+                        className="hop-dong-select"
+                        value={soThangKy}
+                        onChange={(e) => handleChangeSoThangKy(e.target.value)}
+                      >
+                        {bangHoaHongOptions.map((item) => (
+                          <option key={item.soThang} value={item.soThang}>
+                            {item.soThang} tháng
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="number"
+                        id="soThangKy"
+                        className="hop-dong-select"
+                        min={1}
+                        value={soThangKy}
+                        onChange={(e) => handleChangeSoThangKy(e.target.value)}
+                      />
+                    )}
+                    <p className="date-picker-hint">
+                      Tiền cọc tạm tính: {formatCurrency(getSoTienCocHienTai())}
+                    </p>
+                  </div>
+
                   {/* Input chọn ngày chuyển vào */}
                   <div className="hop-dong-modal__date-picker">
                     <label htmlFor="ngayChuyenVao">

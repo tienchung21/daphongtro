@@ -1,6 +1,10 @@
 /**
  * UC-SALE-06: Báo cáo Thu nhập
  * Income report with Recharts (Line, Bar, Pie), export PDF/Excel
+ * 
+ * CÔNG THỨC MỚI:
+ * - Doanh thu công ty = Số tiền cọc × % hoa hồng dự án (từ BangHoaHong JSON)
+ * - Thu nhập NVBH = Doanh thu công ty × tỷ lệ hoa hồng nhân viên (thường 50%)
  */
 
 import React, { useState, useEffect } from 'react';
@@ -10,7 +14,10 @@ import {
   HiOutlineDocumentArrowDown, 
   HiOutlinePrinter,
   HiOutlineCalendar,
-  HiOutlineChartBar
+  HiOutlineChartBar,
+  HiOutlineInformationCircle,
+  HiOutlineCalculator,
+  HiOutlineBuildingOffice2
 } from 'react-icons/hi2';
 import { useReactToPrint } from 'react-to-print';
 import { layBaoCaoThuNhap } from '../../services/nhanVienBanHangApi';
@@ -26,6 +33,7 @@ const BaoCaoThuNhap = () => {
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showFormulaInfo, setShowFormulaInfo] = useState(false);
   const [dateRange, setDateRange] = useState({
     from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
     to: new Date().toISOString().split('T')[0]
@@ -43,17 +51,22 @@ const BaoCaoThuNhap = () => {
 
       const response = await layBaoCaoThuNhap(dateRange);
       if (response.success) {
-        // Add safe defaults for missing fields
+        // Map dữ liệu từ API mới (HoaHongService)
         const data = response.data;
         setReportData({
-          tongThuNhap: data.tongGiaTri || 0,
-          tongThuNhapTruoc: 0,
-          hoaHong: data.tongHoaHong || 0,
-          hoaHongTruoc: 0,
+          // Metrics tổng quan
+          tongDoanhThuCongTy: data.tongGiaTri || 0,          // Doanh thu công ty (cũ: tongGiaTri)
+          tongThuNhapNVBH: data.tongHoaHong || 0,            // Thu nhập NVBH (cũ: tongHoaHong)
+          tyLeHoaHong: data.tyLeHoaHong || 50,               // Tỷ lệ hoa hồng nhân viên
           soCuocHenThanhCong: data.cuocHenHoanThanh || 0,
-          soCuocHenThanhCongTruoc: 0,
+          soHopDong: data.soGiaoDich || 0,                   // Số hợp đồng
           tyLeChot: data.tyLeChuyenDoi || 0,
-          tyLePhotTruoc: 0,
+          
+          // Chi tiết công thức (mới)
+          congThuc: data.congThuc || null,
+          chiTietHopDong: data.chiTietHopDong || [],         // Mới: chi tiết từng hợp đồng
+          
+          // Giữ lại cho charts (fallback nếu không có)
           thuNhapTheoNgay: data.thuNhapTheoNgay || [],
           hoaHongTheoTuan: data.hoaHongTheoTuan || [],
           phanBoLoaiPhong: data.phanBoLoaiPhong || [],
@@ -69,15 +82,30 @@ const BaoCaoThuNhap = () => {
 
   const handleExportExcel = () => {
     if (!reportData) return;
-    const exportData = reportData.chiTietHoaHong.map(item => ({
-      'Mã cuộc hẹn': item.CuocHenID,
-      'Khách hàng': item.TenKhachHang,
-      'Phòng': item.TenPhong,
-      'Ngày': formatDate(item.Ngay),
-      'Giá trị HĐ': item.GiaTriHopDong,
-      '% Hoa hồng': item.TyLeHoaHong,
-      'Số tiền': item.SoTienHoaHong
-    }));
+    
+    // Export chi tiết hợp đồng với công thức mới
+    const exportData = reportData.chiTietHopDong.length > 0
+      ? reportData.chiTietHopDong.map(item => ({
+          'Mã HĐ': item.hopDongId,
+          'Dự án': item.tenDuAn,
+          'Phòng': item.soPhong,
+          'Số tiền cọc': item.soTienCoc,
+          'Số tháng cọc': item.soThangCocThucTe,
+          '% HH Dự án': item.tyLeHoaHongDuAn,
+          'Doanh thu công ty': item.doanhThuCongTy,
+          'Thu nhập NVBH': item.thuNhapNVBH,
+          'Ngày': formatDate(item.ngayBatDau)
+        }))
+      : reportData.chiTietHoaHong.map(item => ({
+          'Mã cuộc hẹn': item.CuocHenID,
+          'Khách hàng': item.TenKhachHang,
+          'Phòng': item.TenPhong,
+          'Ngày': formatDate(item.Ngay),
+          'Giá trị HĐ': item.GiaTriHopDong,
+          '% Hoa hồng': item.TyLeHoaHong,
+          'Số tiền': item.SoTienHoaHong
+        }));
+    
     exportToExcel(exportData, `bao-cao-thu-nhap-${dateRange.from}-${dateRange.to}`, 'Báo cáo thu nhập');
   };
 
@@ -104,30 +132,30 @@ const BaoCaoThuNhap = () => {
 
   const metrics = reportData ? [
     {
-      label: 'Tổng thu nhập',
-      value: formatCurrency(reportData.tongThuNhap),
-      change: calculateChange(reportData.tongThuNhap, reportData.tongThuNhapTruoc),
-      icon: HiOutlineCurrencyDollar,
+      label: 'Doanh thu công ty',
+      value: formatCurrency(reportData.tongDoanhThuCongTy),
+      subtitle: 'Từ các hợp đồng',
+      icon: HiOutlineBuildingOffice2,
       color: 'primary'
     },
     {
-      label: 'Hoa hồng',
-      value: formatCurrency(reportData.hoaHong),
-      change: calculateChange(reportData.hoaHong, reportData.hoaHongTruoc),
+      label: 'Thu nhập của bạn',
+      value: formatCurrency(reportData.tongThuNhapNVBH),
+      subtitle: `${reportData.tyLeHoaHong}% doanh thu`,
       icon: HiOutlineCurrencyDollar,
       color: 'success'
     },
     {
-      label: 'Cuộc hẹn thành công',
-      value: reportData.soCuocHenThanhCong,
-      change: calculateChange(reportData.soCuocHenThanhCong, reportData.soCuocHenThanhCongTruoc),
+      label: 'Số hợp đồng',
+      value: reportData.soHopDong,
+      subtitle: 'Đã ký trong kỳ',
       icon: HiOutlineCalendar,
       color: 'warning'
     },
     {
       label: 'Tỷ lệ chốt',
       value: `${reportData.tyLeChot}%`,
-      change: calculateChange(reportData.tyLeChot, reportData.tyLePhotTruoc),
+      subtitle: `${reportData.soCuocHenThanhCong} cuộc hẹn thành công`,
       icon: HiOutlineChartBar,
       color: 'danger'
     }
@@ -174,12 +202,97 @@ const BaoCaoThuNhap = () => {
 
       {reportData && (
         <>
+          {/* Formula Info Banner */}
+          <div className="nvbh-formula-banner">
+            <div className="nvbh-formula-banner__header" onClick={() => setShowFormulaInfo(!showFormulaInfo)}>
+              <div className="nvbh-formula-banner__title">
+                <HiOutlineCalculator />
+                <span>Công thức tính thu nhập</span>
+              </div>
+              <button className="nvbh-formula-banner__toggle">
+                <HiOutlineInformationCircle />
+                {showFormulaInfo ? 'Ẩn' : 'Xem chi tiết'}
+              </button>
+            </div>
+            {showFormulaInfo && (
+              <div className="nvbh-formula-banner__content">
+                <div className="nvbh-formula-step">
+                  <span className="step-number">1</span>
+                  <div className="step-content">
+                    <strong>Doanh thu công ty</strong> = Số tiền cọc × % Hoa hồng dự án
+                    <small>% hoa hồng phụ thuộc vào số tháng cọc (VD: 30% cho 6 tháng, 70% cho 12 tháng)</small>
+                  </div>
+                </div>
+                <div className="nvbh-formula-step">
+                  <span className="step-number">2</span>
+                  <div className="step-content">
+                    <strong>Thu nhập của bạn</strong> = Doanh thu công ty × {reportData.tyLeHoaHong}%
+                    <small>Tỷ lệ hoa hồng được cấu hình trong hồ sơ nhân viên</small>
+                  </div>
+                </div>
+                {reportData.congThuc && (
+                  <div className="nvbh-formula-note">
+                    <HiOutlineInformationCircle />
+                    {reportData.congThuc.moTa}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
           {/* Metrics */}
           <div className="nvbh-bao-cao-thu-nhap__metrics">
             {metrics.map((metric, index) => (
               <MetricCard key={index} {...metric} />
             ))}
           </div>
+
+          {/* Chi tiết hợp đồng (MỚI) */}
+          {reportData.chiTietHopDong && reportData.chiTietHopDong.length > 0 && (
+            <div className="nvbh-bao-cao-thu-nhap__table">
+              <h2>
+                <HiOutlineBuildingOffice2 />
+                Chi tiết Hoa hồng theo Hợp đồng
+              </h2>
+              <div className="nvbh-table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Mã HĐ</th>
+                      <th>Dự án</th>
+                      <th>Phòng</th>
+                      <th>Số tiền cọc</th>
+                      <th>Tháng cọc</th>
+                      <th>% HH Dự án</th>
+                      <th>Doanh thu CT</th>
+                      <th>Thu nhập</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {reportData.chiTietHopDong.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.hopDongId}</td>
+                        <td>{item.tenDuAn}</td>
+                        <td>{item.soPhong || '-'}</td>
+                        <td>{formatCurrency(item.soTienCoc)}</td>
+                        <td>{item.soThangCocThucTe} tháng</td>
+                        <td className="highlight">{item.tyLeHoaHongDuAn}%</td>
+                        <td>{formatCurrency(item.doanhThuCongTy)}</td>
+                        <td className="amount success">{formatCurrency(item.thuNhapNVBH)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan="6"><strong>Tổng cộng</strong></td>
+                      <td><strong>{formatCurrency(reportData.tongDoanhThuCongTy)}</strong></td>
+                      <td className="amount success"><strong>{formatCurrency(reportData.tongThuNhapNVBH)}</strong></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          )}
 
           {/* Charts */}
           <div className="nvbh-bao-cao-thu-nhap__charts">
@@ -239,44 +352,47 @@ const BaoCaoThuNhap = () => {
             </div>
           </div>
 
-          {/* Commission Table */}
-          <div className="nvbh-bao-cao-thu-nhap__table">
-            <h2>Chi tiết Hoa hồng</h2>
-            <div className="nvbh-table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Mã CH</th>
-                    <th>Khách hàng</th>
-                    <th>Phòng</th>
-                    <th>Ngày</th>
-                    <th>Giá trị HĐ</th>
-                    <th>% HH</th>
-                    <th>Số tiền</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reportData.chiTietHoaHong.map((item, index) => (
-                    <tr key={index}>
-                      <td>{item.CuocHenID}</td>
-                      <td>{item.TenKhachHang}</td>
-                      <td>{item.TenPhong}</td>
-                      <td>{formatDate(item.Ngay)}</td>
-                      <td>{formatCurrency(item.GiaTriHopDong)}</td>
-                      <td>{item.TyLeHoaHong}%</td>
-                      <td className="amount">{formatCurrency(item.SoTienHoaHong)}</td>
+          {/* Commission Table (Legacy - hiển thị nếu không có chiTietHopDong) */}
+          {(!reportData.chiTietHopDong || reportData.chiTietHopDong.length === 0) && 
+           reportData.chiTietHoaHong && reportData.chiTietHoaHong.length > 0 && (
+            <div className="nvbh-bao-cao-thu-nhap__table">
+              <h2>Chi tiết Hoa hồng</h2>
+              <div className="nvbh-table-wrapper">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Mã CH</th>
+                      <th>Khách hàng</th>
+                      <th>Phòng</th>
+                      <th>Ngày</th>
+                      <th>Giá trị HĐ</th>
+                      <th>% HH</th>
+                      <th>Số tiền</th>
                     </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr>
-                    <td colSpan="6"><strong>Tổng cộng</strong></td>
-                    <td className="amount"><strong>{formatCurrency(reportData.hoaHong)}</strong></td>
-                  </tr>
-                </tfoot>
-              </table>
+                  </thead>
+                  <tbody>
+                    {reportData.chiTietHoaHong.map((item, index) => (
+                      <tr key={index}>
+                        <td>{item.CuocHenID}</td>
+                        <td>{item.TenKhachHang}</td>
+                        <td>{item.TenPhong}</td>
+                        <td>{formatDate(item.Ngay)}</td>
+                        <td>{formatCurrency(item.GiaTriHopDong)}</td>
+                        <td>{item.TyLeHoaHong}%</td>
+                        <td className="amount">{formatCurrency(item.SoTienHoaHong)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td colSpan="6"><strong>Tổng cộng</strong></td>
+                      <td className="amount"><strong>{formatCurrency(reportData.tongThuNhapNVBH)}</strong></td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
         </>
       )}
     </div>

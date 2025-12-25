@@ -32,8 +32,20 @@ node scripts/download-kyc-models.js
 
 - Sau khi clone repository lần đầu
 - Khi gặp lỗi "load model before inference"
-- Khi gặp lỗi "Based on the provided shape..."
+- Khi gặp lỗi "Based on the provided shape..." hoặc "tensor should have X values but has Y"
 - Sau khi xóa thư mục `client/public/models` hoặc `client/public/tessdata`
+- Khi models bị corrupt hoặc không tải đầy đủ
+
+## ⚠️ Lỗi "tensor should have X values but has Y"
+
+**Nguyên nhân:** Models bị corrupt hoặc không tương thích với version face-api.js
+
+**Giải pháp:**
+1. Xóa tất cả files trong `client/public/models/`
+2. Chạy lại script: `npm run download-kyc-models`
+3. Nếu vẫn lỗi, tải thủ công từ:
+   - https://github.com/justadudewhohacks/face-api.js/tree/master/weights
+   - Copy vào `client/public/models/`
 
 ## Tổng dung lượng
 ~23 MB (không nén)

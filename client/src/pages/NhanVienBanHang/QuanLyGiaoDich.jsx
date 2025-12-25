@@ -38,9 +38,9 @@ import './QuanLyGiaoDich.css';
 
 const STATUS_TABS = [
   { id: 'all', label: 'Tất cả', query: null },
-  { id: 'pending', label: 'Chờ xác nhận', query: 'DaUyQuyen' },
+  { id: 'pending', label: 'Đang giữ cọc', query: 'DaUyQuyen' },
   { id: 'confirmed', label: 'Đã xác nhận', query: 'DaGhiNhan' },
-  { id: 'refunded', label: 'Đã hoàn trả', query: 'DaHoanTien' }
+  { id: 'refunded', label: 'Đã giải tỏa', query: 'DaHoanTien' }
 ];
 
 const TYPE_OPTIONS = [
@@ -186,15 +186,16 @@ const QuanLyGiaoDich = () => {
   const handleExport = () => {
     if (transactions.length === 0) return;
     const exportData = transactions.map((t) => ({
-      'Mã giao dịch': t.GiaoDichID,
+      'Mã cọc': t.GiaoDichID,
       'Khách hàng': t.TenKhachHang || 'N/A',
-      'Số tiền': formatCurrency(t.SoTien),
-      'Loại': t.Loai,
-      'Trạng thái': t.TrangThai,
-      'Ngày tạo': formatDate(t.ThoiGian, 'datetime'),
-      'nhân viên phụ trách': t.NhanVienBanHang || '—'
+      'Phòng': t.TenPhong || 'N/A',
+      'Dự án': t.TenDuAn || 'N/A',
+      'Số tiền cọc': formatCurrency(t.SoTien),
+      'Loại': t.Loai === 'COC_AN_NINH' ? 'Cọc an ninh' : 'Cọc giữ chỗ',
+      'Trạng thái': t.TrangThai === 'DaUyQuyen' ? 'Đang giữ' : (t.TrangThai === 'DaGhiNhan' ? 'Đã xác nhận' : 'Đã hoàn'),
+      'Ngày tạo': formatDate(t.ThoiGian, 'datetime')
     }));
-    exportToExcel(exportData, 'nvbh-giao-dich', 'GiaoDich');
+    exportToExcel(exportData, 'nvbh-giao-dich-coc', 'GiaoDich');
   };
 
   const handleDownloadReceipt = async () => {
@@ -350,7 +351,7 @@ const TransactionStats = ({ stats, activeStatus = 'all', onQuickFilter }) => {
         aria-pressed={activeStatus === 'DaUyQuyen'}
       >
         <div>
-          <p>Đang chờ xác nhận</p>
+          <p>Đang giữ cọc</p>
           <h3>{stats.pending}</h3>
         </div>
         <HiOutlineShieldCheck />
@@ -374,7 +375,7 @@ const TransactionStats = ({ stats, activeStatus = 'all', onQuickFilter }) => {
         aria-pressed={activeStatus === 'DaHoanTien'}
       >
         <div>
-          <p>Đã hoàn trả</p>
+          <p>Đã giải tỏa</p>
           <h3>{stats.refunded}</h3>
         </div>
         <HiOutlineArrowPath />
@@ -386,7 +387,7 @@ const TransactionStats = ({ stats, activeStatus = 'all', onQuickFilter }) => {
         aria-pressed={activeStatus === 'all'}
       >
         <div>
-          <p>Tổng giá trị</p>
+          <p>Tổng giá trị cọc</p>
           <h3>{formatCurrency(stats.totalAmount)}</h3>
           <small>Cập nhật {stats.lastUpdated ? getTimeAgo(stats.lastUpdated) : '—'}</small>
         </div>
@@ -453,9 +454,9 @@ const TransactionFilters = ({ filters, onFilterChange }) => (
 const TransactionTable = ({ transactions, selectedId, onSelect }) => (
   <div className="nvbh-transaction-table">
     <div className="nvbh-transaction-table__header">
-      <span>Mã giao dịch</span>
+      <span>Mã cọc</span>
       <span>Khách hàng</span>
-      <span>Loại</span>
+      <span>Phòng</span>
       <span>Số tiền</span>
       <span>Thời gian</span>
       <span>Trạng thái</span>
@@ -468,8 +469,8 @@ const TransactionTable = ({ transactions, selectedId, onSelect }) => (
           onClick={() => onSelect(transaction.GiaoDichID)}
         >
           <span>#{transaction.GiaoDichID}</span>
-          <span>{truncateText(transaction.TenKhachHang || '—', 32)}</span>
-          <span>{transaction.Loai === 'COC_AN_NINH' ? 'Cọc an ninh' : 'Cọc giữ chỗ'}</span>
+          <span>{truncateText(transaction.TenKhachHang || '—', 24)}</span>
+          <span>{truncateText(transaction.TenPhong || transaction.TenDuAn || '—', 20)}</span>
           <span>{formatCurrency(transaction.SoTien)}</span>
           <span>{formatDate(transaction.ThoiGian, 'datetime')}</span>
           <span>
@@ -587,12 +588,16 @@ const TransactionDetailPanel = ({
             <dd>{transaction.TieuDeTinDang || '—'}</dd>
           </div>
           <div>
+            <dt>Phòng</dt>
+            <dd>{transaction.TenPhong || '—'}</dd>
+          </div>
+          <div>
             <dt>Dự án</dt>
             <dd>{transaction.TenDuAn || '—'}</dd>
           </div>
           <div>
             <dt>Địa chỉ</dt>
-            <dd>{transaction.DiaChiTinDang || '—'}</dd>
+            <dd>{transaction.DiaChiTinDang || transaction.DiaChiDuAn || '—'}</dd>
           </div>
         </dl>
       </div>

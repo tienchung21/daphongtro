@@ -7,7 +7,7 @@ const db = require('../config/db'); // nếu cần dùng trực tiếp
 const generateToken = (userId, vaiTroId) => {
   return jwt.sign(
     { userId, vaiTroId },
-    process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+    process.env.JWT_SECRET || '1355b670-f139-483a-be4e-fa80fc8e37a0',
     { expiresIn: '7d' } // Token hết hạn sau 7 ngày
   );
 };

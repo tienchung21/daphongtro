@@ -34,7 +34,8 @@
     "nanoid": "^5.1.6",
     "node-cron": "^3.0.3",
     "sharp": "^0.33.0",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "jest": "^29.7.0",

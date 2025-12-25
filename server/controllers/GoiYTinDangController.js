@@ -733,6 +733,179 @@ class GoiYTinDangController {
   }
 
   /**
+   * Tạo QR đặt cọc cho khách hàng quét
+   * POST /api/nhan-vien-ban-hang/goi-y/tao-qr-dat-coc
+   */
+  static async taoQRDatCoc(req, res) {
+    try {
+      const nhanVienId = req.user.id;
+      const { cuocHenId, tinDangId, phongId, soThangKy, soTienCoc } = req.body;
+
+      console.log(`[GoiYTinDangController] taoQRDatCoc - NVBH: ${nhanVienId}, CuocHen: ${cuocHenId}, TinDang: ${tinDangId}, Phong: ${phongId}`);
+
+      // Validate required fields
+      if (!cuocHenId || !tinDangId || !phongId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Thiếu thông tin cuộc hẹn, tin đăng hoặc phòng'
+        });
+      }
+
+      // Kiểm tra phòng còn trống không
+      const phongConTrong = await GoiYTinDangModel.kiemTraPhongConTrong(phongId);
+      if (!phongConTrong) {
+        return res.status(400).json({
+          success: false,
+          message: 'Phòng này không còn trống. Không thể đặt cọc.'
+        });
+      }
+
+      // Lấy thông tin phòng
+      const thongTinPhong = await GoiYTinDangModel.layChiTietPhong(phongId);
+      if (!thongTinPhong) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy thông tin phòng'
+        });
+      }
+
+      // Lấy thông tin tin đăng
+      const thongTinTinDang = await GoiYTinDangModel.layChiTietTinDangGoiY(tinDangId);
+      if (!thongTinTinDang) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy thông tin tin đăng'
+        });
+      }
+
+      // Lấy thông tin cuộc hẹn để có khách hàng ID
+      const [cuocHenRows] = await db.execute(`
+        SELECT 
+          ch.CuocHenID,
+          ch.KhachHangID,
+          kh.TenDayDu as TenKhachHang,
+          kh.SoDienThoai as SDTKhachHang,
+          kh.Email as EmailKhachHang
+        FROM cuochen ch
+        LEFT JOIN nguoidung kh ON ch.KhachHangID = kh.NguoiDungID
+        WHERE ch.CuocHenID = ?
+      `, [cuocHenId]);
+
+      const thongTinCuocHen = cuocHenRows.length > 0 ? cuocHenRows[0] : null;
+      if (!thongTinCuocHen) {
+        return res.status(404).json({
+          success: false,
+          message: 'Không tìm thấy thông tin cuộc hẹn'
+        });
+      }
+
+      // Lấy thông tin nhân viên
+      const [nhanVienRows] = await db.execute(`
+        SELECT 
+          nd.NguoiDungID,
+          nd.TenDayDu,
+          nd.SoDienThoai,
+          nd.Email,
+          hs.MaNhanVien
+        FROM nguoidung nd
+        LEFT JOIN hosonhanvien hs ON nd.NguoiDungID = hs.NguoiDungID
+        WHERE nd.NguoiDungID = ?
+      `, [nhanVienId]);
+
+      const thongTinNhanVien = nhanVienRows.length > 0 ? nhanVienRows[0] : null;
+
+      // Tính số tiền cọc nếu chưa có
+      // Giá phòng: ưu tiên GiaTinDang (nếu có), fallback GiaChuan
+      const [ptRows] = await db.execute(
+        `SELECT GiaTinDang FROM phong_tindang WHERE PhongID = ? AND TinDangID = ? LIMIT 1`,
+        [phongId, tinDangId]
+      );
+      const giaPhong = ptRows.length > 0 && ptRows[0].GiaTinDang != null
+        ? Number(ptRows[0].GiaTinDang)
+        : Number(thongTinPhong.GiaChuan) || 0;
+      const soThangCocToiThieu = Number(thongTinTinDang.SoThangCocToiThieu) || 1;
+      const tienCocTinhToan = soTienCoc || (giaPhong * soThangCocToiThieu);
+
+      // Tạo mã QR unique
+      const maQR = generateQRCode(12);
+
+      // Lưu session với thông tin đặt cọc
+      const soThangKyFinal = soThangKy || soThangCocToiThieu;
+      const session = QRSessionStore.create({
+        maQR,
+        nhanVienId,
+        cuocHenId,
+        tinDangId,
+        phongId,
+        loaiQR: 'DAT_COC', // Đánh dấu loại QR là đặt cọc
+        soThangKy: soThangKyFinal, // Thêm trực tiếp để QRSessionStore lưu đúng
+        thongTinDatCoc: {
+          soThangKy: soThangKyFinal,
+          soTienCoc: tienCocTinhToan,
+          khachHangId: thongTinCuocHen.KhachHangID
+        },
+        thongTinPhong,
+        thongTinTinDang: {
+          TinDangID: thongTinTinDang.TinDangID,
+          TieuDe: thongTinTinDang.TieuDe,
+          DiaChi: thongTinTinDang.DiaChi,
+          TenDuAn: thongTinTinDang.TenDuAn,
+          GiaDien: thongTinTinDang.GiaDien,
+          GiaNuoc: thongTinTinDang.GiaNuoc,
+          GiaDichVu: thongTinTinDang.GiaDichVu,
+          SoThangCocToiThieu: thongTinTinDang.SoThangCocToiThieu,
+          BangHoaHong: thongTinTinDang.BangHoaHong
+        },
+        thongTinKhachHang: {
+          KhachHangID: thongTinCuocHen.KhachHangID,
+          TenDayDu: thongTinCuocHen.TenKhachHang,
+          SoDienThoai: thongTinCuocHen.SDTKhachHang,
+          Email: thongTinCuocHen.EmailKhachHang
+        },
+        thongTinNhanVien: thongTinNhanVien ? {
+          NguoiDungID: thongTinNhanVien.NguoiDungID,
+          TenDayDu: thongTinNhanVien.TenDayDu,
+          SoDienThoai: thongTinNhanVien.SoDienThoai,
+          MaNhanVien: thongTinNhanVien.MaNhanVien
+        } : null
+      });
+
+      // Tính thời gian còn lại
+      const thoiGianConLai = QRSessionStore.getRemainingTime(maQR);
+
+      res.json({
+        success: true,
+        data: {
+          maQR,
+          qrUrl: `/dat-coc/${maQR}`,
+          thoiGianConLai,
+          hetHanLuc: session.hetHanLuc,
+          thongTinPhong: {
+            PhongID: thongTinPhong.PhongID,
+            TenPhong: thongTinPhong.TenPhong,
+            Gia: thongTinPhong.GiaChuan,
+            DienTich: thongTinPhong.DienTichChuan,
+            DiaChi: thongTinPhong.DiaChi,
+            TenDuAn: thongTinPhong.TenDuAn
+          },
+          thongTinDatCoc: {
+            soThangKy: soThangKy || soThangCocToiThieu,
+            soTienCoc: tienCocTinhToan
+          }
+        },
+        message: 'Tạo QR đặt cọc thành công'
+      });
+
+    } catch (error) {
+      console.error('[GoiYTinDangController] taoQRDatCoc error:', error);
+      res.status(500).json({
+        success: false,
+        message: error.message || 'Lỗi khi tạo QR đặt cọc'
+      });
+    }
+  }
+
+  /**
    * Kiểm tra trạng thái QR (NVBH polling)
    * GET /api/nhan-vien-ban-hang/goi-y/trang-thai/:maQR
    */

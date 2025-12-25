@@ -54,6 +54,11 @@ function create(sessionData, expiryMs = DEFAULT_EXPIRY_MS) {
     thongTinPhong: sessionData.thongTinPhong || null,
     thongTinNhanVien: sessionData.thongTinNhanVien || null,
     thongTinTinDang: sessionData.thongTinTinDang || null,
+    // Thêm các field cho đặt cọc
+    loaiQR: sessionData.loaiQR || 'XEM_NGAY', // 'XEM_NGAY' hoặc 'DAT_COC'
+    thongTinDatCoc: sessionData.thongTinDatCoc || null,
+    soThangKy: sessionData.soThangKy || null,
+    ngayChuyenVao: sessionData.ngayChuyenVao || null,
     taoLuc: now,
     hetHanLuc: now + expiryMs,
     phanHoiLuc: null
@@ -61,7 +66,7 @@ function create(sessionData, expiryMs = DEFAULT_EXPIRY_MS) {
 
   sessions.set(sessionData.maQR, session);
   
-  console.log(`[QRSessionStore] Created session: ${sessionData.maQR}, expires at ${new Date(session.hetHanLuc).toISOString()}`);
+  console.log(`[QRSessionStore] Created session: ${sessionData.maQR}, type: ${session.loaiQR}, expires at ${new Date(session.hetHanLuc).toISOString()}`);
   
   return session;
 }
@@ -90,7 +95,7 @@ function get(maQR) {
 }
 
 /**
- * Cập nhật trạng thái session
+ * Cập nhật trạng thái session (chỉ đổi trạng thái)
  * @param {string} maQR - Mã QR
  * @param {string} trangThai - Trạng thái mới (DONG_Y | TU_CHOI | HET_HAN)
  * @returns {QRSession|null}
@@ -114,6 +119,44 @@ function updateStatus(maQR, trangThai) {
   sessions.set(maQR, session);
 
   console.log(`[QRSessionStore] Updated session: ${maQR}, new status: ${trangThai}`);
+
+  return session;
+}
+
+/**
+ * Cập nhật nhiều field của session (merge data)
+ * Dùng cho các luồng cần lưu thêm cocId, ngayChuyenVao, v.v.
+ * @param {string} maQR
+ * @param {Partial<QRSession>} data
+ * @returns {QRSession|null}
+ */
+function update(maQR, data) {
+  const session = sessions.get(maQR);
+
+  if (!session) {
+    console.log(`[QRSessionStore] Cannot update (merge) - session not found: ${maQR}`);
+    return null;
+  }
+
+  // Nếu có truyền trangThai mới, đảm bảo chỉ cho phép đổi từ CHO_PHAN_HOI
+  if (data.trangThai && session.trangThai !== 'CHO_PHAN_HOI') {
+    console.log(
+      `[QRSessionStore] Cannot update (merge) status - session already responded: ${maQR}, status: ${session.trangThai}`
+    );
+  } else if (data.trangThai) {
+    session.trangThai = data.trangThai;
+    session.phanHoiLuc = Date.now();
+  }
+
+  // Merge các field khác
+  Object.assign(session, data);
+  sessions.set(maQR, session);
+
+  console.log(`[QRSessionStore] Merged session: ${maQR}`, {
+    trangThai: session.trangThai,
+    cocId: session.cocId,
+    ngayChuyenVao: session.ngayChuyenVao
+  });
 
   return session;
 }
@@ -251,6 +294,7 @@ module.exports = {
   create,
   get,
   updateStatus,
+  update,
   remove,
   cleanup,
   getActiveCount,

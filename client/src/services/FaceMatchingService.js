@@ -25,7 +25,15 @@ const FaceMatchingService = {
     }
   },
 
-  detectFace: async (imageElement) => {
+  /**
+   * Detect face với multi-strategy:
+   * 1. TinyFaceDetector (nhanh, lightweight)
+   * 2. SSD Mobilenet (chính xác hơn, chậm hơn)
+   * 3. Nếu ảnh nhỏ (<400px) và không detect được → coi toàn bộ ảnh là face (pre-cropped)
+   */
+  detectFace: async (imageElement, options = {}) => {
+    const { isPreCroppedFace = false, label = 'unknown' } = options;
+    
     if (
       !imageElement ||
       !Number.isFinite(imageElement.width) ||
@@ -33,8 +41,11 @@ const FaceMatchingService = {
       imageElement.width <= 1 ||
       imageElement.height <= 1
     ) {
+      console.warn(`[FaceMatchingService] ⚠️ Invalid image (${label})`);
       return null;
     }
+
+    console.log(`[FaceMatchingService] 🔍 Detecting face (${label}): ${imageElement.width}x${imageElement.height}, isPreCropped: ${isPreCroppedFace}`);
 
     // Resize if too large (max 800px width for detection)
     let input = imageElement;
@@ -43,28 +54,78 @@ const FaceMatchingService = {
       const scale = 800 / imageElement.width;
       canvas.width = 800;
       canvas.height = Math.floor(imageElement.height * scale);
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
       ctx.drawImage(imageElement, 0, 0, canvas.width, canvas.height);
       input = canvas;
     }
 
     try {
-      const detection = await faceapi
-        .detectSingleFace(input, new faceapi.TinyFaceDetectorOptions())
+      // Strategy 1: TinyFaceDetector (nhanh)
+      console.log(`[FaceMatchingService] 🔍 Trying TinyFaceDetector (${label})...`);
+      let detection = await faceapi
+        .detectSingleFace(input, new faceapi.TinyFaceDetectorOptions({ 
+          inputSize: 416,  // Tăng inputSize để detect face nhỏ hơn
+          scoreThreshold: 0.3  // Giảm threshold để dễ detect hơn
+        }))
         .withFaceLandmarks()
         .withFaceDescriptor();
 
-      // Guard against invalid boxes returned from upstream
-      const b = detection?.detection?.box || detection?.box;
-      const dims = detection?.detection?.imageDims || detection?.imageDims;
-      const isBoxValid = b && [b.x, b.y, b.width, b.height].every(Number.isFinite);
-      const isDimsValid = dims && [dims.width, dims.height].every(Number.isFinite);
-      if (!isBoxValid || !isDimsValid) {
-        return null;
+      if (detection) {
+        console.log(`[FaceMatchingService] ✅ TinyFaceDetector found face (${label})`);
+        return detection;
       }
-      return detection;
+
+      // Strategy 2: SSD Mobilenet (chính xác hơn)
+      console.log(`[FaceMatchingService] 🔍 Trying SSD Mobilenet (${label})...`);
+      detection = await faceapi
+        .detectSingleFace(input, new faceapi.SsdMobilenetv1Options({
+          minConfidence: 0.3  // Giảm threshold
+        }))
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+      if (detection) {
+        console.log(`[FaceMatchingService] ✅ SSD Mobilenet found face (${label})`);
+        return detection;
+      }
+
+      // Strategy 3: Nếu là ảnh pre-cropped face và nhỏ → extract descriptor từ toàn bộ ảnh
+      // Đây là trường hợp ảnh đã crop sẵn chỉ chứa khuôn mặt
+      if (isPreCroppedFace && imageElement.width < 400 && imageElement.height < 500) {
+        console.log(`[FaceMatchingService] 🔍 Pre-cropped face mode: trying full-image descriptor (${label})...`);
+        
+        // Tạo detection giả với full image như face region
+        // Sử dụng computeFaceDescriptor trực tiếp
+        try {
+          // Tạo canvas từ ảnh để extract descriptor
+          const canvas = document.createElement('canvas');
+          canvas.width = imageElement.width;
+          canvas.height = imageElement.height;
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          ctx.drawImage(imageElement, 0, 0);
+          
+          // Thử detect với threshold cực thấp
+          detection = await faceapi
+            .detectSingleFace(canvas, new faceapi.TinyFaceDetectorOptions({ 
+              inputSize: 224,  // Nhỏ hơn cho ảnh đã crop
+              scoreThreshold: 0.1  // Threshold rất thấp
+            }))
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+          if (detection) {
+            console.log(`[FaceMatchingService] ✅ Found face in pre-cropped image with low threshold (${label})`);
+            return detection;
+          }
+        } catch (e) {
+          console.warn(`[FaceMatchingService] ⚠️ Pre-cropped detection failed (${label}):`, e.message);
+        }
+      }
+
+      console.warn(`[FaceMatchingService] ⚠️ No face detected (${label})`);
+      return null;
     } catch (error) {
-      console.error('[FaceMatchingService] ❌ Detection error:', error);
+      console.error(`[FaceMatchingService] ❌ Detection error (${label}):`, error);
       return null;
     }
   },
@@ -73,23 +134,37 @@ const FaceMatchingService = {
    * Compare faces and return distance + similarity
    * @param {HTMLImageElement} imageElement1 - Card image (or cropped face)
    * @param {HTMLImageElement} imageElement2 - Selfie image
+   * @param {Object} options - { image1IsPreCropped: boolean }
    */
-  compareFaces: async (imageElement1, imageElement2) => {
-    const detection1 = await FaceMatchingService.detectFace(imageElement1);
-    const detection2 = await FaceMatchingService.detectFace(imageElement2);
+  compareFaces: async (imageElement1, imageElement2, options = {}) => {
+    const { image1IsPreCropped = true } = options;
+    
+    console.log('[FaceMatchingService] 🔄 Comparing faces...');
+    console.log(`  Image1 (card): ${imageElement1.width}x${imageElement1.height}`);
+    console.log(`  Image2 (selfie): ${imageElement2.width}x${imageElement2.height}`);
+    
+    const detection1 = await FaceMatchingService.detectFace(imageElement1, { 
+      isPreCroppedFace: image1IsPreCropped,
+      label: 'card-face'
+    });
+    const detection2 = await FaceMatchingService.detectFace(imageElement2, { 
+      isPreCroppedFace: false,
+      label: 'selfie'
+    });
 
     if (!detection1 || !detection2) {
-      throw new Error('Không tìm thấy khuôn mặt trong một hoặc cả hai ảnh');
+      const missing = [];
+      if (!detection1) missing.push('ảnh CCCD');
+      if (!detection2) missing.push('ảnh selfie');
+      throw new Error(`Không tìm thấy khuôn mặt trong ${missing.join(' và ')}`);
     }
 
     const distance = faceapi.euclideanDistance(detection1.descriptor, detection2.descriptor);
 
     // Map distance to similarity (0-1) for UI
-    // Distance 0.0 -> Sim 1.0
-    // Distance 0.6 -> Sim 0.4 (approx)
-    // Formula: Sim = 1 / (1 + distance) or just 1 - distance
-    // Let's use 1 - distance but clamped
     const similarity = Math.max(0, 1 - distance);
+
+    console.log(`[FaceMatchingService] ✅ Face match result: distance=${distance.toFixed(3)}, similarity=${(similarity * 100).toFixed(1)}%`);
 
     return {
       distance: distance,

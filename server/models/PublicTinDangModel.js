@@ -193,6 +193,7 @@ class PublicTinDangModel {
         td.TrangThai, td.TaoLuc, td.CapNhatLuc, td.DuyetLuc,td.KhuVucID,
         da.ChuDuAnID, da.TenDuAn,da.PhuongThucVao, da.DiaChi, da.YeuCauPheDuyetChu,
         da.ViDo, da.KinhDo,
+        da.BangHoaHong, da.SoThangCocToiThieu,
         kv.TenKhuVuc,
         (SELECT COUNT(*) FROM phong_tindang pt WHERE pt.TinDangID = td.TinDangID) as TongSoPhong
       FROM tindang td

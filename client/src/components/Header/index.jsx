@@ -1,5 +1,5 @@
 import "./header.css";
-import logo from "../assets/images/logo-hinh-mai-nha_.jpg";
+import logo from "../assets/images/Hommy_Logo_Web.svg";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import yeuThichApi from "../api/yeuThichApi";
@@ -88,9 +88,12 @@ function Header() {
     localStorage.removeItem("userId");
     localStorage.removeItem("user");
     localStorage.removeItem("currentUser");
+    localStorage.removeItem("token");
+    sessionStorage.clear();
     setCurrentUser(null);
     setFavorites([]);
-    window.location.reload();
+    // Force reload và redirect về login
+    window.location.href = "/login";
   };
 
   const resolveImageSrc = (value) => {

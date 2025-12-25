@@ -21,7 +21,8 @@ import {
   HiOutlineDocumentText,
   HiOutlineBuildingOffice,
   HiOutlineChevronDown,
-  HiOutlineChevronUp
+  HiOutlineChevronUp,
+  HiOutlineBanknotes
 } from 'react-icons/hi2';
 import {
   xemChiTietCuocHen,
@@ -39,6 +40,7 @@ import ModalBaoCaoKetQua from '../../components/NhanVienBanHang/ModalBaoCaoKetQu
 import ModalGoiYPhongKhac from '../../components/NhanVienBanHang/ModalGoiYPhongKhac/ModalGoiYPhongKhac';
 import PreviewTinDangSheet from '../../components/NhanVienBanHang/PreviewTinDangSheet';
 import ModalQRXemNgay from '../../components/NhanVienBanHang/ModalQRXemNgay';
+import ModalKhachHangDatCoc from '../../components/NhanVienBanHang/ModalKhachHangDatCoc/ModalKhachHangDatCoc';
 import './ChiTietCuocHen.css';
 
 const ChiTietCuocHen = () => {
@@ -56,6 +58,7 @@ const ChiTietCuocHen = () => {
   const [showGoiYModal, setShowGoiYModal] = useState(false);
   const [showPreviewSheet, setShowPreviewSheet] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
+  const [showDatCocModal, setShowDatCocModal] = useState(false); // Modal đặt cọc cho khách hàng
   const [selectedTinDangForPreview, setSelectedTinDangForPreview] = useState(null);
   const [qrData, setQrData] = useState(null); // { cuocHenId, tinDangId, phongId, tinDangInfo, phongInfo }
   const [actionLoading, setActionLoading] = useState(false);
@@ -136,7 +139,7 @@ const ChiTietCuocHen = () => {
   const handleCancel = async (reason) => {
     try {
       setActionLoading(true);
-      const response = await huyCuocHen(id, { lyDoHuy: reason });
+      const response = await huyCuocHen(id, reason);
       
       if (response.success) {
         alert('Đã hủy cuộc hẹn');
@@ -302,11 +305,17 @@ const ChiTietCuocHen = () => {
     );
   }
 
-  const canConfirm = appointment.TrangThai === 'ChoXacNhan';
-  const canReschedule = ['DaXacNhan', 'DaYeuCau'].includes(appointment.TrangThai);
-  const canCancel = ['ChoXacNhan', 'DaXacNhan', 'DaYeuCau'].includes(appointment.TrangThai);
-  const canReport = appointment.TrangThai === 'DaXacNhan';
-  const canGoiY = ['DaXacNhan', 'DangDienRa'].includes(appointment.TrangThai); // Có thể gợi ý khi cuộc hẹn đã xác nhận hoặc đang diễn ra
+  // Chuẩn hóa trạng thái để so sánh an toàn (tránh lệch hoa thường hoặc khoảng trắng)
+  const trangThaiCuocHen = (appointment.TrangThai || '').trim().toLowerCase();
+  const trangThaiPhong = (appointment.TrangThaiPhong || '').trim().toLowerCase();
+
+  const canConfirm = trangThaiCuocHen === 'choxacnhan';
+  const canReschedule = ['daxacnhan', 'dayeucau'].includes(trangThaiCuocHen);
+  const canCancel = ['choxacnhan', 'daxacnhan', 'dayeucau'].includes(trangThaiCuocHen);
+  const canReport = trangThaiCuocHen === 'daxacnhan';
+  const canGoiY = ['daxacnhan', 'dangdienra'].includes(trangThaiCuocHen); // Có thể gợi ý khi cuộc hẹn đã xác nhận hoặc đang diễn ra
+  // Có thể đặt cọc khi cuộc hẹn đã xác nhận/đang diễn ra và phòng còn trống
+  const canDatCoc = ['daxacnhan', 'dangdienra'].includes(trangThaiCuocHen) && trangThaiPhong === 'trong';
 
   // Parse coordinates for map
   const hasCoordinates = appointment.ToaDo && appointment.ToaDo.lat && appointment.ToaDo.lng;
@@ -981,6 +990,16 @@ const ChiTietCuocHen = () => {
             Gợi ý tin đăng khác
           </button>
         )}
+        {canDatCoc && (
+          <button
+            className="nvbh-btn nvbh-btn--success"
+            onClick={() => setShowDatCocModal(true)}
+            disabled={actionLoading}
+          >
+            <HiOutlineBanknotes />
+            Khách hàng đặt cọc
+          </button>
+        )}
         {canCancel && (
           <button
             className="nvbh-btn nvbh-btn--danger"
@@ -1028,7 +1047,11 @@ const ChiTietCuocHen = () => {
           tinDangHienTai={{
             TinDangID: appointment.TinDangID,
             KhuVucID: appointment.KhuVucID,
-            TieuDe: appointment.TieuDePhong
+            TieuDe: appointment.TieuDePhong,
+            GiaPhong: appointment.GiaPhong, // Giá phòng hiện tại (ưu tiên GiaTinDang > GiaChuan)
+            GiaChuanPhong: appointment.GiaChuanPhong, // Giá chuẩn từ phong
+            DienTich: appointment.DienTich, // Diện tích phòng hiện tại (ưu tiên DienTichTinDang > DienTichChuan)
+            DienTichChuanPhong: appointment.DienTichChuanPhong // Diện tích chuẩn từ phong
           }}
           onViewDetail={handleViewDetail}
           onCreateQR={handleCreateQR}
@@ -1062,6 +1085,20 @@ const ChiTietCuocHen = () => {
           tinDangInfo={qrData.tinDangInfo}
           phongInfo={qrData.phongInfo}
           onSuccess={handleQRSuccess}
+        />
+      )}
+
+      {/* Modal Khách hàng đặt cọc */}
+      {showDatCocModal && appointment && (
+        <ModalKhachHangDatCoc
+          isOpen={showDatCocModal}
+          onClose={() => setShowDatCocModal(false)}
+          cuocHenId={appointment.CuocHenID}
+          appointment={appointment}
+          onSuccess={() => {
+            setShowDatCocModal(false);
+            loadAppointment();
+          }}
         />
       )}
     </div>

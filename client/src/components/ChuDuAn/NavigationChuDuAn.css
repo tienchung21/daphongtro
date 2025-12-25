@@ -63,6 +63,24 @@
   text-align: center;
 }
 
+/* Logo styling - Gold color on dark emerald background */
+.cda-brand-logo {
+  width: 40px;
+  height: 40px;
+  filter: invert(68%) sepia(89%) saturate(399%) hue-rotate(6deg) brightness(92%) contrast(87%);
+  transition: all 0.3s ease;
+}
+
+.cda-brand-logo--collapsed {
+  width: 32px;
+  height: 32px;
+}
+
+.cda-brand-icon:hover .cda-brand-logo {
+  filter: brightness(0) invert(1);
+  transform: scale(1.05);
+}
+
 .cda-brand-text {
   display: flex;
   flex-direction: column;

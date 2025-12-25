@@ -40,14 +40,51 @@ const XacThucKYC = () => {
     ocr: { ...OCRServiceV2.CCCD_ROI },
     qr: {
       full: { x: 0, y: 0, width: 1, height: 1 },
-      trl: { x: 0.6924438618283316, y: 0.0074855560260057, width: 0.3, height: 0.4 },
-      trm: { x: 0.7244438618283315, y: 0.02501127822470541, width: 0.26, height: 0.32 },
-      trs: { x: 0.7942411152644188, y: 0.09223411162860625, width: 0.14, height: 0.22 },
-      tc: { x: 0.7476492301647519, y: 0.04126173970120754, width: 0.22, height: 0.32 }
+      trl: { x: 0.6943596950212068, y: 0, width: 0.28, height: 0.38 },
+      trm: { x: 0.7239388609855822, y: 0.0003052771011813199, width: 0.24, height: 0.33 },
+      trs: { x: 0.7688202812287943, y: 0.046528110505082154, width: 0.15, height: 0.23 },
+      tc: { x: 0.7450600625148778, y: 0, width: 0.2, height: 0.3 }
     }
   });
   const [dragState, setDragState] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const visionRef = React.useRef(null);
+
+  // Ripple effect state
+  const [ripple, setRipple] = useState({ active: false, x: 0, y: 0 });
+
+  // Sound effect helper
+  const playSuccessSound = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+
+      const ctx = new AudioContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+      oscillator.frequency.exponentialRampToValueAtTime(1046.5, ctx.currentTime + 0.1); // C6
+
+      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+
+      oscillator.start();
+      oscillator.stop(ctx.currentTime + 0.3);
+    } catch (e) {
+      console.error('Audio play failed', e);
+    }
+  };
+
+  const triggerRipple = () => {
+    setRipple({ active: true, x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    playSuccessSound();
+    setTimeout(() => setRipple({ active: false, x: 0, y: 0 }), 1000);
+  };
 
   useEffect(() => {
     // Load models on mount
@@ -63,18 +100,69 @@ const XacThucKYC = () => {
   }, []);
 
   const handleCapture = (imageSrc) => {
+    console.log(`📥 [XacThucKYC] handleCapture called - step: ${step}, imageSrc length: ${imageSrc?.length || 0}`);
+    
     if (step === STEPS.CCCD_FRONT) {
-      setImages(prev => ({ ...prev, cccdFront: imageSrc }));
-      setStep(STEPS.CCCD_BACK);
-      setInputMethod('camera');
+      console.log('✅ [XacThucKYC] Lưu ảnh mặt trước CCCD');
+      // Reset ocrData và qrData khi bắt đầu lại
+      setOcrData(null);
+      setQrData(null);
+      setMergedData(null);
+      setFaceMatchResult(null);
+      
+      setImages(prev => {
+        const newState = { ...prev, cccdFront: imageSrc };
+        console.log('📸 [XacThucKYC] State updated - cccdFront:', newState.cccdFront ? 'có ảnh' : 'null');
+        return newState;
+      });
+      triggerRipple();
+      setTimeout(() => {
+        setStep(STEPS.CCCD_BACK);
+        setInputMethod('camera');
+      }, 600); // Wait for ripple
     } else if (step === STEPS.CCCD_BACK) {
-      setImages(prev => ({ ...prev, cccdBack: imageSrc }));
-      setStep(STEPS.SELFIE);
-      setInputMethod('camera');
+      console.log('✅ [XacThucKYC] Lưu ảnh mặt sau CCCD');
+      setImages(prev => {
+        const newState = { ...prev, cccdBack: imageSrc };
+        console.log('📸 [XacThucKYC] State updated - cccdBack:', newState.cccdBack ? 'có ảnh' : 'null');
+        console.log('📸 [XacThucKYC] State updated - cccdFront:', newState.cccdFront ? 'có ảnh' : 'null');
+        // Đảm bảo cccdFront không bị ghi đè
+        if (!newState.cccdFront) {
+          console.error('❌ [XacThucKYC] CẢNH BÁO: cccdFront bị mất!');
+        }
+        return newState;
+      });
+      triggerRipple();
+      setTimeout(() => {
+        setStep(STEPS.SELFIE);
+        setInputMethod('camera');
+      }, 600);
     } else if (step === STEPS.SELFIE) {
-      setImages(prev => ({ ...prev, selfie: imageSrc }));
-      setStep(STEPS.PROCESSING);
-      processKYC(imageSrc);
+      console.log('✅ [XacThucKYC] Lưu ảnh selfie');
+      setImages(prev => {
+        const newState = { ...prev, selfie: imageSrc };
+        console.log('📸 [XacThucKYC] State updated - selfie:', newState.selfie ? 'có ảnh' : 'null');
+        console.log('📸 [XacThucKYC] State updated - cccdFront:', newState.cccdFront ? 'có ảnh' : 'null');
+        console.log('📸 [XacThucKYC] State updated - cccdBack:', newState.cccdBack ? 'có ảnh' : 'null');
+        
+        // Kiểm tra lại trước khi process
+        if (!newState.cccdFront) {
+          console.error('❌ [XacThucKYC] LỖI: Không có ảnh mặt trước!');
+          setError('Không tìm thấy ảnh mặt trước CCCD. Vui lòng chụp lại từ đầu.');
+          setStep(STEPS.FAILURE);
+          return prev; // Không update state
+        }
+        
+        // Gọi processKYC với state mới nhất để đảm bảo dùng đúng ảnh
+        setTimeout(() => {
+          setStep(STEPS.PROCESSING);
+          // Sử dụng newState thay vì images từ closure
+          processKYCWithState(newState, imageSrc);
+        }, 600);
+        
+        return newState;
+      });
+      triggerRipple();
     }
   };
 
@@ -85,7 +173,7 @@ const XacThucKYC = () => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const imageSrc = reader.result;
-      
+
       // Nếu đang ở bước CCCD, crop ảnh về tỷ lệ chuẩn ID card (1.586:1)
       if (step === STEPS.CCCD_FRONT || step === STEPS.CCCD_BACK) {
         try {
@@ -140,9 +228,20 @@ const XacThucKYC = () => {
     reader.readAsDataURL(file);
   };
 
-  const processKYC = async (selfieSrc) => {
+  // Helper function để process KYC với state cụ thể
+  const processKYCWithState = async (currentImages, selfieSrc) => {
     try {
       console.log('🚀 Bắt đầu xử lý KYC Optimized...');
+      console.log('📸 [processKYC] Kiểm tra ảnh trong state:');
+      console.log('   - cccdFront:', currentImages.cccdFront ? `có ảnh (${currentImages.cccdFront.substring(0, 50)}...)` : 'NULL');
+      console.log('   - cccdBack:', currentImages.cccdBack ? `có ảnh (${currentImages.cccdBack.substring(0, 50)}...)` : 'NULL');
+      console.log('   - selfie:', selfieSrc ? `có ảnh (${selfieSrc.substring(0, 50)}...)` : 'NULL');
+      
+      // Kiểm tra ảnh mặt trước có tồn tại không
+      if (!currentImages.cccdFront) {
+        throw new Error('Không tìm thấy ảnh mặt trước CCCD. Vui lòng chụp lại.');
+      }
+      
       setProcessingStatus('Đang khởi tạo...');
       const currentOcrRoi = roiConfig.ocr || OCRServiceV2.CCCD_ROI;
       const baseQrRegions = roiConfig.qr
@@ -156,15 +255,16 @@ const XacThucKYC = () => {
       // BƯỚC 1: Warping & Preprocessing
       setProcessingStatus('Đang xử lý ảnh CCCD (Warping)...');
       console.log('📐 BƯỚC 1: Warp Perspective CCCD...');
+      console.log('📸 [processKYC] Sử dụng ảnh mặt trước:', currentImages.cccdFront.substring(0, 50) + '...');
       // Note: OCRServiceV2.recognizeAll now handles warping internally and returns the warped image
 
       // BƯỚC 2: OCR Processing
       setProcessingStatus('Đang đọc thông tin (OCR)...');
       console.log('🔤 BƯỚC 2: OCR mặt trước CCCD...');
-      const parsedOCRData = await OCRServiceV2.recognizeAll(images.cccdFront, currentOcrRoi);
+      const parsedOCRData = await OCRServiceV2.recognizeAll(currentImages.cccdFront, currentOcrRoi);
       setOcrData(parsedOCRData);
 
-      const warpedCCCD = parsedOCRData.warpedImage || images.cccdFront;
+      const warpedCCCD = parsedOCRData.warpedImage || currentImages.cccdFront;
 
       // BƯỚC 3: QR Code Scanning
       setProcessingStatus('Đang quét mã QR...');
@@ -176,22 +276,33 @@ const XacThucKYC = () => {
       setProcessingStatus('Đang so khớp khuôn mặt...');
       console.log('👤 BƯỚC 4: So khớp khuôn mặt...');
 
-      // Crop face from CCCD using ROI (luôn cố gắng crop, kể cả khi warp thất bại)
-      let cardFaceImage = warpedCCCD;
+      // Crop face from CCCD using ROI - SỬ DỤNG ẢNH GỐC (không enhance) để giữ màu sắc tự nhiên
+      // parsedOCRData.warpedImage là ảnh đã warp TRƯỚC KHI apply Xiaomi Style
+      const warpedOriginal = parsedOCRData.warpedImage || currentImages.cccdFront;
+      let cardFaceImage = warpedOriginal;
+      let isPreCroppedFace = false;
+      
       try {
         console.log('   Cropping face from card (ROI)...');
         const faceRoi = currentOcrRoi.faceImage || OCRServiceV2.CCCD_ROI.faceImage;
-        cardFaceImage = await OCRServiceV2.cropROI(warpedCCCD, faceRoi);
+        cardFaceImage = await OCRServiceV2.cropROI(warpedOriginal, faceRoi);
+        isPreCroppedFace = true; // Đánh dấu đây là ảnh đã crop sẵn face
+        console.log('   ✅ Face cropped successfully');
       } catch (e) {
         console.warn('   Face cropping failed, using full image:', e);
       }
 
       const img1 = await createImage(cardFaceImage);
       const img2 = await createImage(selfieSrc);
+      
+      console.log(`   Card face image: ${img1.width}x${img1.height}, isPreCropped: ${isPreCroppedFace}`);
+      console.log(`   Selfie image: ${img2.width}x${img2.height}`);
 
       let matchResult = { distance: 1, similarity: 0, match: false, note: 'fallback_face_not_found' };
       try {
-        matchResult = await FaceMatchingService.compareFaces(img1, img2);
+        matchResult = await FaceMatchingService.compareFaces(img1, img2, { 
+          image1IsPreCropped: isPreCroppedFace 
+        });
         console.log(`✅ Face matching: Distance ${matchResult.distance.toFixed(2)} (Sim ${(matchResult.similarity * 100).toFixed(1)}%)`);
       } catch (faceErr) {
         console.warn('⚠️ Face matching failed, using fallback score', faceErr);
@@ -228,6 +339,8 @@ const XacThucKYC = () => {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const formData = new FormData();
 
@@ -263,24 +376,103 @@ const XacThucKYC = () => {
       formData.append('diaChi', mergedData?.finalData?.diaChi || '');
       formData.append('ngayCapCCCD', formatDateForDB(mergedData?.finalData?.ngayCap || ''));
 
+      // Tính toán trạng thái KYC dựa trên confidence và face similarity
+      // Làm tròn confidence giống cách giao diện hiển thị: (confidence * 100).toFixed(0)
+      const soCCCDConfidence = mergedData?.confidence?.soCCCD ?? 0;
+      const tenDayDuConfidence = mergedData?.confidence?.tenDayDu ?? 0;
+      const faceSimilarity = faceMatchResult?.similarity ?? 0;
+      
+      // Làm tròn để đồng bộ với UI - 0.995 -> 100%, 0.994 -> 99%
+      const soCCCDPercent = Math.round(soCCCDConfidence * 100);
+      const tenDayDuPercent = Math.round(tenDayDuConfidence * 100);
+      const faceSimPercent = Math.round(faceSimilarity * 100);
+      
+      // Logic xác định trạng thái KYC (dựa trên % đã làm tròn như UI hiển thị):
+      // - ThanhCong: soCCCD = 100% VÀ tenDayDu = 100% VÀ faceSim > 50%
+      // - ThatBai: soCCCD < 100% VÀ tenDayDu < 100% VÀ faceSim <= 50%
+      // - CanXemLai: (soCCCD = 100% VÀ tenDayDu = 100%) HOẶC faceSim > 50%
+      const isCCCDPerfect = soCCCDPercent >= 100;
+      const isTenPerfect = tenDayDuPercent >= 100;
+      const isFaceGood = faceSimPercent > 50;
+      
+      let trangThaiKYC;
+      if (isCCCDPerfect && isTenPerfect && isFaceGood) {
+        trangThaiKYC = 'ThanhCong';
+      } else if (!isCCCDPerfect && !isTenPerfect && !isFaceGood) {
+        trangThaiKYC = 'ThatBai';
+      } else {
+        // (isCCCDPerfect && isTenPerfect) || isFaceGood -> CanXemLai
+        trangThaiKYC = 'CanXemLai';
+      }
+      
+      console.log('📊 [KYC] Tính toán trạng thái:', {
+        soCCCDConfidence,
+        tenDayDuConfidence, 
+        faceSimilarity,
+        soCCCDPercent: soCCCDPercent + '%',
+        tenDayDuPercent: tenDayDuPercent + '%',
+        faceSimPercent: faceSimPercent + '%',
+        isCCCDPerfect,
+        isTenPerfect,
+        isFaceGood,
+        trangThaiKYC
+      });
+
       // Send both similarity and risk score
-      formData.append('faceSimilarity', faceMatchResult?.similarity.toString());
+      formData.append('faceSimilarity', faceSimilarity.toString());
       formData.append('riskScore', (mergedData?.riskScore ?? 0).toString());
       formData.append('riskLevel', mergedData?.riskLevel || 'UNKNOWN');
+      formData.append('trangThaiKYC', trangThaiKYC);
 
       console.log('📤 [KYC] Submitting data:', Object.fromEntries(formData));
 
       await KYCService.xacThuc(formData);
+      
+      // Cập nhật localStorage với trạng thái KYC mới
+      // Để Navigation và các trang khác biết user đã xác minh
+      try {
+        const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+        if (storedUser) {
+          // Map trạng thái KYC sang TrangThaiXacMinh
+          let newTrangThaiXacMinh = 'ChuaXacMinh';
+          if (trangThaiKYC === 'ThanhCong') {
+            newTrangThaiXacMinh = 'DaXacMinh';
+          } else if (trangThaiKYC === 'CanXemLai') {
+            newTrangThaiXacMinh = 'ChoDuyet';
+          }
+          // ThatBai vẫn giữ ChuaXacMinh
+          
+          storedUser.TrangThaiXacMinh = newTrangThaiXacMinh;
+          localStorage.setItem('user', JSON.stringify(storedUser));
+          
+          // Dispatch custom event để các component khác biết (cùng tab)
+          window.dispatchEvent(new Event('kyc-updated'));
+          
+          console.log('✅ [KYC] Updated localStorage TrangThaiXacMinh:', newTrangThaiXacMinh);
+        }
+      } catch (e) {
+        console.warn('⚠️ [KYC] Could not update localStorage:', e);
+      }
+      
+      triggerRipple();
       setStep(STEPS.SUCCESS);
     } catch (err) {
       console.error('❌ [KYC] Submit error:', err);
       setError(err.response?.data?.message || 'Gửi dữ liệu thất bại');
       setStep(STEPS.FAILURE);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Debug vision data
-  const visionImage = ocrData?.warpedImage || images.cccdFront;
+  // Debug vision data - LUÔN dùng ảnh mặt trước, không dùng ảnh mặt sau
+  // Ưu tiên hiển thị ảnh đã enhance (Xiaomi Style) để debug ROI chính xác hơn
+  // Fallback về warpedImage rồi ảnh gốc nếu không có enhanced
+  const visionImage = ocrData?.warpedEnhanced || ocrData?.warpedImage || images.cccdFront;
+  
+  // Đảm bảo visionImage không phải là ảnh mặt sau
+  // Nếu ocrData có warpedImage, nó đã được tạo từ cccdFront trong processKYC
+  // Nếu không có, fallback về cccdFront (luôn là mặt trước)
   const ocrBoxes = [
     { key: 'soCCCD', label: 'OCR: Số', roi: roiConfig.ocr.soCCCD },
     { key: 'tenDayDu', label: 'OCR: Họ tên', roi: roiConfig.ocr.tenDayDu },
@@ -387,6 +579,19 @@ const XacThucKYC = () => {
 
   return (
     <div className="kyc-page">
+      {/* Global Ripple Effect */}
+      {ripple.active && (
+        <motion.div
+          className="ripple-effect"
+          initial={{ scale: 0, opacity: 0.8, x: "-50%", y: "-50%" }}
+          animate={{ scale: 4, opacity: 0, x: "-50%", y: "-50%" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          style={{
+            left: ripple.x,
+            top: ripple.y,
+          }}
+        />
+      )}
       <div id="qr-reader-hidden" style={{ display: 'none' }}></div>
 
       <div className="kyc-container">
@@ -426,6 +631,7 @@ const XacThucKYC = () => {
 
               {inputMethod === 'camera' ? (
                 <CameraCapture
+                  key={`cccd-${step}`} // Force remount khi step thay đổi để reset state
                   label={step === STEPS.CCCD_FRONT ? "Chụp mặt trước CCCD" : "Chụp mặt sau CCCD"}
                   onCapture={handleCapture}
                   overlayType="card"
@@ -491,6 +697,12 @@ const XacThucKYC = () => {
                     <label>Mặt trước CCCD</label>
                     <img src={images.cccdFront} alt="Front" />
                   </div>
+                  {images.cccdBack && (
+                    <div className="image-preview">
+                      <label>Mặt sau CCCD</label>
+                      <img src={images.cccdBack} alt="Back" />
+                    </div>
+                  )}
                   <div className="image-preview">
                     <label>Ảnh chân dung</label>
                     <img src={images.selfie} alt="Selfie" />
@@ -583,8 +795,8 @@ const XacThucKYC = () => {
                     </div>
                   </div>
 
-                  {/* Conflicts */}
-                  {mergedData?.conflicts?.length > 0 && (
+                  {/* Conflicts - Đã ẩn theo yêu cầu */}
+                  {/* {mergedData?.conflicts?.length > 0 && (
                     <div className="conflicts-warning">
                       <strong>⚠️ Xung đột dữ liệu ({mergedData.conflicts.length})</strong>
                       <ul>
@@ -595,13 +807,15 @@ const XacThucKYC = () => {
                         ))}
                       </ul>
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
 
               <div className="actions">
-                <button className="btn-secondary" onClick={() => setStep(STEPS.INTRO)}>Làm lại</button>
-                <button className="btn-primary" onClick={handleSubmit}>Xác nhận gửi</button>
+                <button className="btn-secondary" onClick={() => setStep(STEPS.INTRO)} disabled={isSubmitting}>Làm lại</button>
+                <button className="btn-primary" onClick={handleSubmit} disabled={isSubmitting}>
+                  {isSubmitting ? 'Đang gửi...' : 'Xác nhận gửi'}
+                </button>
               </div>
             </motion.div>
           )}

@@ -5,6 +5,7 @@
 
 const ChuDuAnModel = require('../models/ChuDuAnModel');
 const NhatKyHeThongService = require('../services/NhatKyHeThongService');
+const HoaHongService = require('../services/HoaHongService');
 
 /**
  * @typedef {Object} ResponseFormat
@@ -1078,6 +1079,27 @@ class ChuDuAnController {
       const tuongTac = thongKeTong?.tuongTac || {};
       const coc = thongKeTong?.coc || {};
 
+      // ✨ Tính toán cọc hoàn về cho chủ dự án theo công thức mới
+      // cocHoanVeChuDuAn = soTienCoc - doanhThuCongTy
+      let tongCocHoanVeChuDuAn = 0;
+      let tongDoanhThuCongTy = 0;
+      
+      try {
+        // Lấy danh sách hợp đồng của chủ dự án trong tháng này
+        console.log('📊 [Dashboard] Đang gọi HoaHongService.baoCaoDoanhThuChuDuAn với chuDuAnId:', chuDuAnId);
+        const doanhThuResult = await HoaHongService.baoCaoDoanhThuChuDuAn(chuDuAnId);
+        console.log('📊 [Dashboard] Kết quả từ HoaHongService:', doanhThuResult);
+        if (doanhThuResult) {
+          tongCocHoanVeChuDuAn = doanhThuResult.tongCocHoanVeChuDuAn || 0;
+          tongDoanhThuCongTy = doanhThuResult.tongDoanhThuCongTy || 0;
+        }
+        console.log('📊 [Dashboard] Giá trị cuối cùng:', { tongCocHoanVeChuDuAn, tongDoanhThuCongTy });
+      } catch (err) {
+        console.warn('⚠️ Không thể tính hoa hồng cho Chủ dự án:', err.message);
+        // Fallback: Sử dụng giá trị cọc cũ nếu không tính được
+        tongCocHoanVeChuDuAn = coc.TongTienCoc || 0;
+      }
+
       const summary = {
         tongTinDang: tongQuan.TongTinDang || 0,
         tinDangDangHoatDong: tongQuan.TinDangDaDang || 0,
@@ -1100,6 +1122,9 @@ class ChuDuAnController {
         tongGiaoDichCoc: coc.TongGiaoDichCoc || 0,
         tongTienCoc: coc.TongTienCoc || 0,
         doanhThuThang: coc.TongTienCocThangNay || 0,
+        // ✨ Thêm các field mới theo công thức hoa hồng
+        cocHoanVeChuDuAnThang: tongCocHoanVeChuDuAn, // Số tiền cọc sau khi trừ hoa hồng
+        doanhThuCongTyThang: tongDoanhThuCongTy, // Phần công ty giữ lại
         cuocHenSapToi: cuocHenSapToi.length // Số lượng cuộc hẹn sắp tới
       };
 

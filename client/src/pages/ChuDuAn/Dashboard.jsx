@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import ChuDuAnLayout from '../../layouts/ChuDuAnLayout';
-import { useDashboardData } from '../../hooks/useDashboardData';
+import { useDashboardData, useDoanhThuTheoThang } from '../../hooks/useDashboardData';
 import './Dashboard.css';
 
 // React Icons
@@ -24,6 +24,9 @@ import {
 function DashboardChuDuAn() {
   // React Query hook - tự động handle loading, error, caching
   const { data: dashboardData, isLoading: loading, error, refetch } = useDashboardData();
+  
+  // Hook lấy doanh thu 6 tháng gần nhất từ API thực
+  const { data: doanhThuTheoThang = [] } = useDoanhThuTheoThang();
 
   const formatNumber = (value = 0) => {
     return Number(value || 0).toLocaleString('vi-VN');
@@ -175,13 +178,13 @@ function DashboardChuDuAn() {
             <HiOutlineCurrencyDollar />
           </div>
           <div className="metric-card-content">
-            <div className="cda-metric-label">Doanh thu tháng này</div>
+            <div className="cda-metric-label">Doanh thu ước tính (tháng này)</div>
             <div className="cda-metric-value" style={{ fontSize: '1.5rem' }}>
-              {formatCurrency(dashboardData?.doanhThuThang || 0)}
+              {formatCurrency(dashboardData?.cocHoanVeChuDuAnThang || 0)}
             </div>
             <div className="cda-metric-change">
               <HiOutlineHome style={{ width: '16px', height: '16px' }} />
-              <span>{formatNumber(dashboardData?.tongPhongTrong || 0)} phòng trống</span>
+              <span>Tiền cọc sau trừ hoa hồng công ty</span>
             </div>
           </div>
         </div>
@@ -200,26 +203,49 @@ function DashboardChuDuAn() {
           <div className="cda-card-body">
             <div className="chart-revenue-wrapper">
               <div className="chart-revenue-bars">
-                {[
-                  { month: 'T5', revenue: 85, contracts: 12, label: 'Tháng 5' },
-                  { month: 'T6', revenue: 92, contracts: 15, label: 'Tháng 6' },
-                  { month: 'T7', revenue: 78, contracts: 11, label: 'Tháng 7' },
-                  { month: 'T8', revenue: 95, contracts: 16, label: 'Tháng 8' },
-                  { month: 'T9', revenue: 88, contracts: 14, label: 'Tháng 9' },
-                  { month: 'T10', revenue: 100, contracts: 18, label: 'Tháng 10' }
-                ].map((data) => (
-                  <div key={data.month} className="chart-revenue-bar-wrapper">
-                    <div className="chart-revenue-bar" style={{ height: `${data.revenue}%` }}>
-                      <div className="chart-revenue-bar-fill"></div>
-                      <div className="chart-revenue-tooltip">
-                        <strong>{data.label}</strong>
-                        <div>Doanh thu: {formatCurrency(data.revenue * 1500000)}</div>
-                        <div>Hợp đồng: {data.contracts}</div>
+                {(() => {
+                  // Chuyển đổi dữ liệu từ API sang format biểu đồ
+                  const chartData = doanhThuTheoThang.length > 0 
+                    ? doanhThuTheoThang.map(item => {
+                        const [year, month] = (item.Thang || '').split('-');
+                        return {
+                          month: `T${parseInt(month)}`,
+                          revenue: Number(item.TongTien) || 0,
+                          contracts: Number(item.SoGiaoDich) || 0,
+                          label: `Tháng ${parseInt(month)}/${year}`
+                        };
+                      })
+                    : [];
+
+                  // Tính max để normalize height %
+                  const maxRevenue = chartData.length > 0 
+                    ? Math.max(...chartData.map(d => d.revenue), 1) 
+                    : 1;
+
+                  // Nếu không có dữ liệu, hiển thị thông báo
+                  if (chartData.length === 0) {
+                    return (
+                      <div style={{ textAlign: 'center', padding: '2rem', color: '#9ca3af' }}>
+                        <p>Chưa có dữ liệu doanh thu</p>
+                        <p style={{ fontSize: '0.875rem' }}>Dữ liệu sẽ hiển thị khi có hợp đồng được thanh toán</p>
                       </div>
+                    );
+                  }
+
+                  return chartData.map((data) => (
+                    <div key={data.month} className="chart-revenue-bar-wrapper">
+                      <div className="chart-revenue-bar" style={{ height: `${(data.revenue / maxRevenue * 100) || 5}%` }}>
+                        <div className="chart-revenue-bar-fill"></div>
+                        <div className="chart-revenue-tooltip">
+                          <strong>{data.label}</strong>
+                          <div>Doanh thu: {formatCurrency(data.revenue)}</div>
+                          <div>Giao dịch: {data.contracts}</div>
+                        </div>
+                      </div>
+                      <div className="chart-revenue-label">{data.month}</div>
                     </div>
-                    <div className="chart-revenue-label">{data.month}</div>
-                  </div>
-                ))}
+                  ));
+                })()}
               </div>
             </div>
           </div>
@@ -466,8 +492,8 @@ function DashboardChuDuAn() {
           <div className="cda-card-body">
             {Array.isArray(dashboardData?.cuocHenSapToiList) && dashboardData.cuocHenSapToiList.length > 0 ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                {dashboardData.cuocHenSapToiList.slice(0, 5).map((cuocHen) => (
-                  <div key={cuocHen.CuocHenID} style={{ 
+                {dashboardData.cuocHenSapToiList.slice(0, 5).map((cuocHen, index) => (
+                  <div key={`${cuocHen.CuocHenID}-${index}`} style={{ 
                     padding: '0.75rem', 
                     borderRadius: '0.5rem', 
                     border: '1px solid #e5e7eb'

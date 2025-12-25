@@ -52,6 +52,19 @@
   box-shadow: 0 4px 16px 0 rgba(31, 38, 135, 0.2);
 }
 
+/* Logo styling - Gold on light glass background */
+.operator-nav__brand-logo {
+  width: 32px;
+  height: 32px;
+  filter: invert(68%) sepia(89%) saturate(399%) hue-rotate(6deg) brightness(92%) contrast(87%);
+  transition: all 0.3s ease;
+}
+
+.operator-nav__brand-icon:hover .operator-nav__brand-logo {
+  filter: invert(38%) sepia(82%) saturate(516%) hue-rotate(8deg) brightness(97%) contrast(89%);
+  transform: scale(1.05);
+}
+
 .operator-nav__brand-text {
   flex: 1;
 }

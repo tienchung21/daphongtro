@@ -1,4 +1,13 @@
 const KycService = require('../services/KycService');
+const path = require('path');
+
+// Helper: Chuyển absolute path thành relative path để lưu vào DB
+const toRelativePath = (absolutePath) => {
+  if (!absolutePath) return null;
+  // Chuẩn hóa path separator thành forward slash cho URL
+  const relativePath = path.relative(path.join(__dirname, '..'), absolutePath);
+  return relativePath.replace(/\\/g, '/');
+};
 
 class KycController {
   static async xacThucKYC(req, res) {
@@ -8,7 +17,7 @@ class KycController {
       
       const { 
         soCCCD, tenDayDu, ngaySinh, diaChi, ngayCapCCCD, 
-        faceSimilarity 
+        faceSimilarity, trangThaiKYC 
       } = req.body;
       
       const userId = req.user.id; // Assuming auth middleware adds user to req
@@ -21,28 +30,37 @@ class KycController {
         });
       }
       
-      // Get file paths
-      const cccdFront = req.files['cccdFront'] ? req.files['cccdFront'][0].path : null;
-      const cccdBack = req.files['cccdBack'] ? req.files['cccdBack'][0].path : null;
-      const selfie = req.files['selfie'] ? req.files['selfie'][0].path : null;
+      // Get file paths (absolute từ multer)
+      const cccdFrontAbs = req.files['cccdFront'] ? req.files['cccdFront'][0].path : null;
+      const cccdBackAbs = req.files['cccdBack'] ? req.files['cccdBack'][0].path : null;
+      const selfieAbs = req.files['selfie'] ? req.files['selfie'][0].path : null;
 
-      if (!cccdFront || !cccdBack || !selfie) {
+      if (!cccdFrontAbs || !cccdBackAbs || !selfieAbs) {
         return res.status(400).json({ message: 'Thiếu ảnh xác thực' });
       }
       
-      console.log('🖼️ [KYC] Image paths:', { cccdFront, cccdBack, selfie });
+      // Chuyển sang relative path để lưu vào DB
+      const cccdFront = toRelativePath(cccdFrontAbs);
+      const cccdBack = toRelativePath(cccdBackAbs);
+      const selfie = toRelativePath(selfieAbs);
+      
+      console.log('🖼️ [KYC] Image paths (relative):', { cccdFront, cccdBack, selfie });
 
-      // Determine status based on similarity
-      let trangThai = 'CanXemLai';
-      let lyDo = null;
+      // Sử dụng trạng thái KYC từ frontend (đã tính toán dựa trên logic mới)
+      // Logic frontend:
+      // - ThanhCong: soCCCD = 100% VÀ tenDayDu = 100% VÀ faceSim > 50%
+      // - ThatBai: soCCCD < 100% VÀ tenDayDu < 100% VÀ faceSim <= 50%
+      // - CanXemLai: (soCCCD = 100% VÀ tenDayDu = 100%) HOẶC faceSim > 50%
+      const trangThai = trangThaiKYC || 'CanXemLai';
       const similarity = parseFloat(faceSimilarity);
       
-      if (similarity >= 0.85) {
-        trangThai = 'ThanhCong';
-      } else if (similarity < 0.6) {
-        trangThai = 'ThatBai';
-        lyDo = 'Độ khớp khuôn mặt thấp (' + (similarity * 100).toFixed(2) + '%)';
+      // Xác định lý do nếu thất bại
+      let lyDo = null;
+      if (trangThai === 'ThatBai') {
+        lyDo = 'Độ khớp thông tin và khuôn mặt không đạt yêu cầu';
       }
+
+      console.log('📊 [KYC] Trạng thái từ frontend:', trangThaiKYC, '-> Sử dụng:', trangThai);
 
       const kycData = {
         NguoiDungID: userId,

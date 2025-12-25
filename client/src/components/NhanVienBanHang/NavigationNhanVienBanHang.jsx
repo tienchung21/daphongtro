@@ -8,6 +8,9 @@ import { NavLink } from 'react-router-dom';
 import { useChatContext } from '../../context/ChatContext';
 import './NavigationNhanVienBanHang.css';
 
+// Logo Hommy
+import HommyLogoIcon from '../../assets/images/Hommy_Logo_Icon.svg';
+
 // Icons (sử dụng SVG inline để tránh phụ thuộc thư viện)
 // Icon Sparkles cho logo (theo Figma)
 const SparklesIcon = () => (
@@ -108,7 +111,7 @@ const NavigationNhanVienBanHang = ({ collapsed, mobileOpen, onToggle, onCloseMob
       <div className="nvbh-sidebar__logo">
         <div className="nvbh-sidebar__logo-content">
           <div className="nvbh-sidebar__logo-icon">
-            <SparklesIcon />
+            <img src={HommyLogoIcon} alt="Hommy" className="nvbh-sidebar__logo-img" />
           </div>
           {!collapsed && (
             <span className="nvbh-sidebar__logo-text">Sales Hub</span>
